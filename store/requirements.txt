@@ -1,0 +1,8 @@
+# requirements.txt
+
+# FastAPI dependencies.
+aiohttp
+fastapi
+pyjwt
+uvicorn[standard]
+python-multipart

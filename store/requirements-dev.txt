@@ -1,0 +1,12 @@
+# requirements-dev.txt
+
+black
+darglint
+mypy
+pytest
+pytest-aiohttp
+pytest-asyncio
+pytest-mock
+pytest-timeout
+pytest-trio
+ruff

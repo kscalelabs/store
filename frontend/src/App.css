@@ -2,8 +2,6 @@ body {
   font-family: "Courier New", Courier, monospace;
   font-weight: bold;
   letter-spacing: 0.05em;
-
-.container {
 }
 
 .content {
@@ -17,7 +15,6 @@ body {
 
 a {
   text-decoration: none;
-  padding: 0 0.5em;
   text-align: center;
 }
 
