@@ -18,17 +18,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  run-base-tests:
+  run-tests:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          python-version: "3.11"
+          node-version: "20"
 
       - name: Restore cache
         id: restore-cache
@@ -37,14 +37,34 @@ jobs:
           path: |
             ${{ env.pythonLocation }}
             .mypy_cache/
-          key: python-requirements-${{ env.pythonLocation }}-${{ github.event.pull_request.base.sha || github.sha }}
+            node_modules/
+          key: tests-${{ github.event.pull_request.base.sha || github.sha }}
           restore-keys: |
-            python-requirements-${{ env.pythonLocation }}
-            python-requirements-
+            tests-
 
-      - name: Install package
+      - name: Install Node package
+        working-directory: frontend
         run: |
-          pip install --upgrade --upgrade-strategy eager --extra-index-url https://download.pytorch.org/whl/cpu -e '.[dev]'
+          npm install
+
+      - name: Run tests
+        working-directory: frontend
+        run: |
+          npm test -- --watchAll=false
+  
+      - name: Build frontend
+        run: |
+          npm run build
+        working-directory: frontend
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install Python package
+        run: |
+          pip install --upgrade --upgrade-strategy eager -e '.[dev]'
 
       - name: Run static checks
         run: |
