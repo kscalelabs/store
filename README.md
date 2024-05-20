@@ -2,13 +2,9 @@
 
 This is the code for our online store. This is a simple store for buying and selling humanoid robots.
 
-## Frontend
+## Development
 
-To develop just the frontend, see the [frontend README](../frontend/README.md).
-
-## Full
-
-To develop the full stack, start FastAPI and React in separate terminals:
+To develop the application, start FastAPI and React in separate terminals:
 
 ### FastAPI
 
