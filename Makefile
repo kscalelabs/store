@@ -46,27 +46,16 @@ clean:
 #       Static Checks      #
 # ------------------------ #
 
-py-files := $(shell find . -name '*.py')
-
 format:
-	@black $(py-files)
-	@ruff format $(py-files)
+	@black store
+	@ruff format store
 .PHONY: format
 
-format-cpp:
-	@clang-format -i $(shell find . -name '*.cpp' -o -name '*.h')
-	@cmake-format -i $(shell find . -name 'CMakeLists.txt' -o -name '*.cmake')
-.PHONY: format-cpp
-
 static-checks:
-	@black --diff --check $(py-files)
-	@ruff check $(py-files)
-	@mypy --install-types --non-interactive $(py-files)
+	@black --diff --check store
+	@ruff check store
+	@mypy --install-types --non-interactive store
 .PHONY: lint
-
-mypy-daemon:
-	@dmypy run -- $(py-files)
-.PHONY: mypy-daemon
 
 # ------------------------ #
 #        Unit tests        #
