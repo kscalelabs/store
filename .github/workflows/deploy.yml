@@ -25,7 +25,7 @@ jobs:
         uses: docker/setup-buildx-action@v1
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
             role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_NAME }}
             aws-region: ${{ secrets.AWS_REGION }}
