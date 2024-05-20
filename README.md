@@ -24,5 +24,7 @@ Automatically rebuild the React frontend code when a file is changed:
 
 ```bash
 cd frontend
-npm watch
+nvm use 20.10.0  # If you're using nvm
+npm install  # If you haven't already
+npm run watch
 ```
