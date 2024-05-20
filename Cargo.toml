@@ -1,0 +1,43 @@
+[package]
+name = "kscale-store"
+version = "0.1.0"
+edition = "2021"
+
+# Backend types that the frontend will want access to (in order to make good post requests)
+[lib]
+name = "backend"
+path = "src/backend/lib.rs"
+
+# Initializes Postgres db by creating the necessary types and tables
+[[bin]]
+name = "init-data"
+path = "src/init/main.rs"
+
+[[bin]]
+name = "init-config"
+path = "src/init-config/main.rs"
+
+# Website itself
+[[bin]]
+name = "kscale-store"
+path = "src/site/main.rs"
+
+[dependencies]
+axum = "0.5"
+argon2 = "0.4"
+async-trait = "0.1"
+bb8 = "0.8"
+bb8-postgres = "0.8"
+lettre = { version = "0.10", default-features = false, features = ["builder", "hostname", "smtp-transport", "tokio1-rustls-tls"] }
+once_cell = "1"
+postgres-types = { version = "0.2", features = ["derive", "with-uuid-1"] }
+rand = { version = "0.8", features = ["std", "std_rng"] }
+serde = { version = "1", features = ["derive"] }
+strum = { version = "0.24"}
+text_io = "0.1"
+tokio = { version = "1", features = ["full"] }
+tokio-postgres = "0.7"
+toml = "0.5"
+tower-cookies = "0.7"
+uuid = { version = "1", features = ["v4"] }
+zxcvbn = "2"
