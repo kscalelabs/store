@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Installs the package in the container.
 ADD . /app
-RUN pip install --no-cache-dir '.[lambda]'
+RUN pip install --no-cache-dir .
 
 # Runs the application.
 CMD ["store.app.aws.handler"]
