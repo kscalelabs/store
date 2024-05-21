@@ -14,3 +14,5 @@ if not (FRONTEND_BUILD_DIR := FRONTEND_DIR / "build").exists():
 
 # Mounts the static frontend files to the /static path.
 app.mount("/", StaticFiles(directory=FRONTEND_BUILD_DIR, html=True), name="static")
+
+application = app  # For WSGI compatibility

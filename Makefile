@@ -23,24 +23,11 @@ all:
 .PHONY: all
 
 # ------------------------ #
-#          Build           #
+#          Serve           #
 # ------------------------ #
 
-install:
-	@pip install --verbose -e .
-.PHONY: install
-
-install-dev:
-	@pip install --verbose -e '.[dev]'
-.PHONY: install
-
-build-ext:
-	@python setup.py build_ext --inplace
-.PHONY: build-ext
-
-clean:
-	rm -rf build dist *.so **/*.so **/*.pyi **/*.pyc **/*.pyd **/*.pyo **/__pycache__ *.egg-info .eggs/ .ruff_cache/
-.PHONY: clean
+serve:
+	uvicorn store.app.main:application --reload
 
 # ------------------------ #
 #       Static Checks      #
