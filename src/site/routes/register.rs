@@ -38,9 +38,9 @@ async fn register_html(
                     <div>
                         <input name="code" type="hidden" value="{}">
                         <label for="email">Email address (you can't edit this)</label>
+                        <input name="email" readonly type="text" value="{}">
                     </div>
                     <div>
-                        <input name="email" readonly type="text" value="{}">
                         <label for="password">Password</label>
                         <input name="password" required type="password">
                     </div>
