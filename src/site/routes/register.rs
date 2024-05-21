@@ -125,7 +125,7 @@ pub async fn post_req(
     Extension(mailer): Extension<AsyncSmtpTransport<Tokio1Executor>>,
 ) -> Response {
     match User::get(&email, &pool).await {
-        Ok(_) => Html(reg_req_html(Some("A user with this email address already exists.</div>")
+        Ok(_) => Html(reg_req_html(Some("A user with this email address already exists.")
                 )).into_response(),
         Err(e) => match e {
             ApiError::ClientError => {
