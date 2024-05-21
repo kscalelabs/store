@@ -24,12 +24,13 @@ async fn listing_html(
         res += &format!(
             r#"<div class="listing">
                 <div>
-                    <span class="listing-title">{}</span>
+                    <span class="listing-title"><a href="listings/?id={}">{}</a></span>
                     |
                     <span class="listing-price">{}</span>
                 </div>
                 <div class="listing-contact">{}</div>
             </div>"#,
+            listing.id,
             listing.title,
             listing.price,
             if let Ok(user) = User::from_uuid(listing.user_id, pool).await {
