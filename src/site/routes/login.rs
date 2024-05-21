@@ -75,7 +75,7 @@ pub async fn post(
             Ok(()) => match cookie.to_string(&config.domain) {
                 Some(s) => (
                     [(header::SET_COOKIE, s)],
-                    Redirect::to("/settings")
+                    Redirect::to("/")
                 ).into_response(),
                 None => Html(login_html(Some("Serverside error encountered when trying to login: The cookie's lifetime is not being set correctly."))).into_response(),
             },

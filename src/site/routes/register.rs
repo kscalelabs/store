@@ -186,7 +186,7 @@ pub async fn post(
                     Ok(()) => match &cookie.to_string(&config.domain) {
                         Some(cookie) => (
                             [(header::SET_COOKIE, cookie)],
-                            Redirect::to("/settings")
+                            Redirect::to("/")
                         ).into_response(),
                         None => Redirect::to("/login").into_response(),
                     },
