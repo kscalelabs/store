@@ -14,15 +14,19 @@ pub struct Listing {
     ///
     /// I currently have no strategy to deal with collisions we are just going to pray that doesn't
     /// happen.
-    id: String,
+    pub id: String,
     /// Which user posted this listing?
     /// Users are identified by ID.
     user_id: Uuid,
-    title: String,
-    description: Option<String>,
+    /// We use i32 because at this scale the exact cents don't matter.
+    /// So the integer represents the dollar price.
+    /// (It's signed because the respective Postgres entry is signed.)
+    pub price: i32,
+    pub title: String,
+    pub description: Option<String>,
     /// Optional external URL, such as an Amazon link. The inexistence of an external URL
     /// indicates that the buyer should directly contact the seller via email.
-    url: Option<String>
+    pub url: Option<String>
 }
 
 impl TryFrom<Row> for Listing {
@@ -31,6 +35,7 @@ impl TryFrom<Row> for Listing {
         Ok(Self {
             id: row.try_get("id")?,
             user_id: row.try_get("user_id")?,
+            price: row.try_get("price")?,
             title: row.try_get("title")?,
             description: row.try_get("description")?,
             url: row.try_get("url")?,
@@ -48,6 +53,7 @@ impl SqlTable for Listing {
                 "CREATE TABLE IF NOT EXISTS {} (
                     id          VARCHAR (8)     NOT NULL UNIQUE,
                     user_id     UUID            NOT NULL,
+                    price       INTEGER         NOT NULL,
                     title       TEXT            NOT NULL,
                     description TEXT,
                     url         TEXT
@@ -63,10 +69,10 @@ impl SqlTable for Listing {
         connection
             .execute(
                 &format!(
-                    "INSERT INTO {} (id, user_id, title, description, url) VALUES ($1, $2, $3, $4, $5)",
+                    "INSERT INTO {} (id, user_id, price, title, description, url) VALUES ($1, $2, $3, $4, $5, $6)",
                     Self::table_name()
                 ),
-                &[&self.id, &self.user_id, &self.title, &self.description, &self.url],
+                &[&self.id, &self.user_id, &self.price, &self.title, &self.description, &self.url],
             )
             .await?;
         Ok(())
