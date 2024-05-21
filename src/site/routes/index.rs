@@ -26,7 +26,7 @@ async fn listing_html(
                 <div>
                     <span class="listing-title"><a href="listings/?id={}">{}</a></span>
                     |
-                    <span class="listing-price">{}</span>
+                    <span class="listing-price">${}</span>
                 </div>
                 <div class="listing-contact">{}</div>
             </div>"#,

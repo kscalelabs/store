@@ -102,6 +102,20 @@ a:visited {
 	}
 }
 
+div.listing {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
+div.listing-contact {
+	color: gray;
+}
+
+span.listing-price {
+	color: green;
+}
+
 form {
 	max-width: 400px;
 }
