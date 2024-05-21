@@ -64,6 +64,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Sync + Send>> {
             "/settings/change-password",
             post(routes::settings::change_password),
         )
+        .route("/new", get(routes::listing::get_new))
+        .route("/new", post(routes::listing::post_new))
         .fallback(routes::error404.into_service())
         .layer(Extension(pool))
         .layer(Extension(config))

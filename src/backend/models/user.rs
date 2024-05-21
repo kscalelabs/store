@@ -455,7 +455,7 @@ impl ChangeEmailCode {
 /// The table that stores user authentication data.
 #[derive(Debug, PartialEq, ToSql, FromSql)]
 pub struct User {
-    uuid: Uuid,
+    pub uuid: Uuid,
     pub email: String,
     password_hash: String,
 }

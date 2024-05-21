@@ -126,7 +126,7 @@ form > div > *:not(:first-child) {
 	margin-top: 0.25rem;
 }
 
-form input[type=text], [type=password], select, button {
+form input[type=text], [type=number], [type=password], select, button {
 	width: 100%;
 	box-sizing: border-box;
 	display: block;
