@@ -4,5 +4,8 @@
 aiohttp
 fastapi
 pyjwt
-uvicorn[standard]
 python-multipart
+
+# Deployment dependencies.
+uvicorn[standard]
+mangum
