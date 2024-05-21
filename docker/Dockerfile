@@ -11,4 +11,3 @@ RUN pip install --no-cache-dir --upgrade .
 
 # Run the FastAPI application.
 CMD ["fastapi", "run", "store/app/main.py", "--port", "80"]
-# CMD ["fastapi", "run", "store/app/main.py", "--port", "80", "--proxy-headers"]

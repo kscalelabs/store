@@ -1,0 +1,12 @@
+{
+  "AWSEBDockerrunVersion": 2,
+  "containerDefinitions": [
+    {
+      "name": "kscale-store",
+      "image": "725596835855.dkr.ecr.us-east-1.amazonaws.com/store:latest",
+      "essential": true,
+      "memory": 128,
+      "cpu": 10
+    }
+  ]
+}
