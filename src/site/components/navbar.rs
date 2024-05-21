@@ -15,7 +15,7 @@ pub fn navbar(email: Option<String>) -> String {
     format!(
         r#"
         <nav>
-            <a class="nav nav-home" href="/"><img src="favicon.ico" style="height: 1em"> K-Scale Store</a>
+            <a class="nav nav-home" href="/"><img src="/favicon.ico" style="height: 1em"> K-Scale Store</a>
             {}
         </nav>
     "#,
