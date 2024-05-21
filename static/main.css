@@ -1,0 +1,166 @@
+/* CSS variables */
+:root {
+	--pale-blue: #2563eb;
+	/* Dark mode custom colors */
+	--dark-fg: #f0f0f0;
+	--dark-bg: #0a0a0a;
+}
+
+html {
+	font-family: sans-serif;
+	max-width: 800px;
+	margin: auto;
+}
+
+@media (prefers-color-scheme: dark) {
+	html {
+		color: var(--dark-fg);
+		background-color: var(--dark-bg);
+	}
+}
+
+nav {
+	display: flex;
+	flex-direction: row;
+	column-gap: 1rem;
+	padding-bottom: 0.1rem;
+	border-style: none none solid none;
+	border-width: 0.15rem;
+}
+
+@media print {
+	nav {
+		display: none;
+	}
+}
+
+a.nav-home {
+	font-size: 1.5rem;
+	font-weight: bold;
+	color: black;
+	text-decoration: none;
+	margin-right: auto;
+}
+
+a.nav-home:hover {
+	text-decoration: underline;
+}
+
+a.nav-home:visited {
+	color: black;
+}
+
+a.nav-link {
+	font-size: 1.25rem;
+	color: black;
+	text-decoration: none;
+	display: flex;
+	align-items: center;
+}
+
+a.nav-link:hover {
+	text-decoration: underline;
+}
+
+a.nav-link:visited {
+	color: black;
+}
+
+@media (prefers-color-scheme: dark) {
+	a.nav-home {
+		color: var(--dark-fg);
+	}
+	a.nav-home:visited {
+		color: var(--dark-fg);
+	}
+	a.nav-link {
+		color: var(--dark-fg);
+	}
+	a.nav-link:visited {
+		color: var(--dark-fg);
+	}
+}
+
+a {
+	color: var(--pale-blue);
+}
+
+a:hover {
+	text-decoration: none;
+}
+
+a:visited {
+	color: MediumBlue;
+}
+
+@media (prefers-color-scheme: dark) {
+	a {
+		color: DodgerBlue;
+	}
+	a:visited {
+		color: var(--pale-blue);
+	}
+}
+
+form {
+	max-width: 400px;
+}
+
+form > div:not(:first-child) {
+	margin-top: 0.5rem;
+}
+
+form > div > *:not(:first-child) {
+	margin-top: 0.25rem;
+}
+
+form input[type=text], [type=password], select, button {
+	width: 100%;
+	box-sizing: border-box;
+	display: block;
+}
+
+form input, select {
+	line-height: 1.5;
+	padding: 0.25rem 0.5rem;
+	font-size: 1rem;
+	font-family: sans-serif;
+	border-style: solid;
+	border-width: 1px;
+	border-color: DarkGray;
+}
+
+form input:read-only {
+	background-color: Gainsboro;
+}
+
+@media (prefers-color-scheme: dark) {
+	form input, select {
+		color: var(--dark-fg);
+		background-color: #404040;
+		border-style: none;
+	}
+	form input:read-only {
+		color: #a0a0a0;
+		background-color: #282828;
+	}
+}
+
+form button {
+	margin-top: 1rem;
+	color: var(--dark-fg);
+	background-color: var(--pale-blue);
+	border-style: none;
+	line-height: 1.5;
+	padding: 0.25rem 0.5rem;
+	font-size: 1rem;
+	font-family: sans-serif;
+}
+
+form button.danger {
+	background-color: Crimson;
+}
+
+.error {
+	color: red;
+}
