@@ -3,6 +3,7 @@ use async_trait::async_trait;
 use bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
 use postgres_types::{FromSql, ToSql};
+use rand::{distributions::Alphanumeric, thread_rng, Rng};
 use tokio_postgres::row::Row;
 use tokio_postgres::NoTls;
 use uuid::Uuid;
@@ -59,7 +60,7 @@ impl SqlTable for Listing {
                     title       TEXT            NOT NULL,
                     description TEXT,
                     url         TEXT,
-                    active      BOOL            NOT NULL,
+                    active      BOOL            NOT NULL
                 )",
             Self::table_name(),
         )
@@ -79,5 +80,37 @@ impl SqlTable for Listing {
             )
             .await?;
         Ok(())
+    }
+}
+
+/// Generates a random 8-character long alphanumeric string.
+///
+/// Used to generate listing ids
+fn rand_8() -> String {
+    thread_rng()
+        .sample_iter(&Alphanumeric)
+        .take(8)
+        .map(char::from)
+        .collect()
+}
+
+impl Listing {
+    /// Creates a new Listing and inserts it into the database.
+    pub fn create(
+        user_id: Uuid,
+        title: String,
+        price: i32,
+        description: Option<String>,
+        url: Option<String>
+    ) -> Self {
+        Self {
+            id: rand_8(),
+            user_id,
+            title,
+            price,
+            description,
+            url,
+            active: true
+        }
     }
 }
