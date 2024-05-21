@@ -1,4 +1,4 @@
-"""Defines the main entrypoint for the FastAPI application."""
+"""Defines the main entrypoint for the FastAPI app."""
 
 from pathlib import Path
 
