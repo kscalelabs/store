@@ -18,27 +18,32 @@ async fn listing_html(
 ) -> String {
     let mut res: String = String::from("<h1>Listings</h1>");
     if email.is_some() {
-        res += r#"<p><a href="/new">+ Post a listing</a></p>"#
+        res += r#"<div class="listing">
+                      <a href="/new">+ Post a listing</a>
+                      <a href="/edit">Edit your listings</a>
+                  </div>"#
     };
     for listing in listings {
-        res += &format!(
-            r#"<div class="listing">
-                <div>
-                    <span class="listing-title"><a href="listings/?id={}">{}</a></span>
-                    |
-                    <span class="listing-price">${}</span>
-                </div>
-                <div class="listing-contact">{}</div>
-            </div>"#,
-            listing.id,
-            listing.title,
-            listing.price,
-            if let Ok(user) = User::from_uuid(listing.user_id, pool).await {
-                user.email
-            } else {
-                String::from("Error: Could not retrieve listing email.")
-            }
-        )
+        if listing.active {
+            res += &format!(
+                r#"<div class="listing">
+                    <div>
+                        <span class="listing-title"><a href="listings/?id={}">{}</a></span>
+                        |
+                        <span class="listing-price">${}</span>
+                    </div>
+                    <div class="listing-contact">{}</div>
+                </div>"#,
+                listing.id,
+                listing.title,
+                listing.price,
+                if let Ok(user) = User::from_uuid(listing.user_id, pool).await {
+                    user.email
+                } else {
+                    String::from("Error: Could not retrieve listing email.")
+                }
+            )
+        }
     }
     html("Listings", email, &res)
 }

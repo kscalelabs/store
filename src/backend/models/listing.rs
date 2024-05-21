@@ -27,6 +27,7 @@ pub struct Listing {
     /// Optional external URL, such as an Amazon link. The inexistence of an external URL
     /// indicates that the buyer should directly contact the seller via email.
     pub url: Option<String>,
+    pub active: bool,
 }
 
 impl TryFrom<Row> for Listing {
@@ -39,6 +40,7 @@ impl TryFrom<Row> for Listing {
             title: row.try_get("title")?,
             description: row.try_get("description")?,
             url: row.try_get("url")?,
+            active: row.try_get("active")?,
         })
     }
 }
@@ -56,7 +58,8 @@ impl SqlTable for Listing {
                     price       INTEGER         NOT NULL,
                     title       TEXT            NOT NULL,
                     description TEXT,
-                    url         TEXT
+                    url         TEXT,
+                    active      BOOL            NOT NULL,
                 )",
             Self::table_name(),
         )
@@ -69,10 +72,10 @@ impl SqlTable for Listing {
         connection
             .execute(
                 &format!(
-                    "INSERT INTO {} (id, user_id, price, title, description, url) VALUES ($1, $2, $3, $4, $5, $6)",
+                    "INSERT INTO {} (id, user_id, price, title, description, url, active) VALUES ($1, $2, $3, $4, $5, $6, $7)",
                     Self::table_name()
                 ),
-                &[&self.id, &self.user_id, &self.price, &self.title, &self.description, &self.url],
+                &[&self.id, &self.user_id, &self.price, &self.title, &self.description, &self.url, &self.active],
             )
             .await?;
         Ok(())
