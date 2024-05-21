@@ -19,8 +19,34 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Restore cache
+        id: restore-cache
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            ${{ env.pythonLocation }}
+            node_modules/
+          key: deploy-${{ github.event.pull_request.base.sha || github.sha }}
+          restore-keys: |
+            deploy-
+
+      - name: Install Node package
+        working-directory: frontend
+        run: |
+          npm install
+      
+      - name: Build frontend
+        run: |
+          npm run build
+        working-directory: frontend
+  
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 

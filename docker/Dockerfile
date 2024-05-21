@@ -4,7 +4,7 @@ FROM public.ecr.aws/lambda/python:3.11
 
 WORKDIR /app
 
-# Copies files and installs the project.
+# Installs the package in the container.
 ADD . /app
 RUN pip install --no-cache-dir '.[lambda]'
 
