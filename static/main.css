@@ -24,8 +24,6 @@ nav {
 	flex-direction: row;
 	column-gap: 1rem;
 	padding-bottom: 0.1rem;
-	border-style: none none solid none;
-	border-width: 0.15rem;
 }
 
 @media print {
