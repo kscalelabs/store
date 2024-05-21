@@ -15,4 +15,4 @@ RUN pip install --no-cache-dir .
 # RUN python -m pytest
 
 # Runs the application.
-CMD ["store.app.aws.handler"]
+CMD ["store/app/aws.handler"]

@@ -12,4 +12,4 @@ if [[ ! -f "store/requirements.txt" ]]; then
 fi
 
 # Builds the API Docker image.
-docker build --platform linux/amd64 -t kscale-store -f docker/Dockerfile .
+docker buildx build --platform linux/amd64 -t kscale-store -f docker/Dockerfile .
