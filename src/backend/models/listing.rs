@@ -1,5 +1,11 @@
+use super::traits::SqlTable;
+use async_trait::async_trait;
+use bb8::Pool;
+use bb8_postgres::PostgresConnectionManager;
 use uuid::Uuid;
 use postgres_types::{FromSql, ToSql};
+use tokio_postgres::row::Row;
+use tokio_postgres::NoTls;
 
 #[derive(Debug, ToSql, FromSql)]
 pub struct Listing {
