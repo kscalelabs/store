@@ -9,7 +9,7 @@ pub fn navbar(email: Option<String>) -> String {
             escape_html(&email)
         ),
         None => String::from(
-            r#"<a class="nav nav-link" href="register">Register</a><a class="nav nav-link" href="/login">Login</a>"#
+            r#"<a class="nav nav-link" href="register">Register</a><a class="nav nav-link" href="/login">Login</a>"#,
         ),
     };
     format!(

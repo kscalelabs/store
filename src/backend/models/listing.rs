@@ -2,10 +2,10 @@ use super::traits::SqlTable;
 use async_trait::async_trait;
 use bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
-use uuid::Uuid;
 use postgres_types::{FromSql, ToSql};
 use tokio_postgres::row::Row;
 use tokio_postgres::NoTls;
+use uuid::Uuid;
 
 #[derive(Debug, ToSql, FromSql)]
 pub struct Listing {
@@ -17,7 +17,7 @@ pub struct Listing {
     pub id: String,
     /// Which user posted this listing?
     /// Users are identified by ID.
-    user_id: Uuid,
+    pub user_id: Uuid,
     /// We use i32 because at this scale the exact cents don't matter.
     /// So the integer represents the dollar price.
     /// (It's signed because the respective Postgres entry is signed.)
@@ -26,7 +26,7 @@ pub struct Listing {
     pub description: Option<String>,
     /// Optional external URL, such as an Amazon link. The inexistence of an external URL
     /// indicates that the buyer should directly contact the seller via email.
-    pub url: Option<String>
+    pub url: Option<String>,
 }
 
 impl TryFrom<Row> for Listing {
@@ -50,7 +50,7 @@ impl SqlTable for Listing {
     }
     fn create_query() -> String {
         format!(
-                "CREATE TABLE IF NOT EXISTS {} (
+            "CREATE TABLE IF NOT EXISTS {} (
                     id          VARCHAR (8)     NOT NULL UNIQUE,
                     user_id     UUID            NOT NULL,
                     price       INTEGER         NOT NULL,
@@ -58,8 +58,8 @@ impl SqlTable for Listing {
                     description TEXT,
                     url         TEXT
                 )",
-                Self::table_name(),
-            )
+            Self::table_name(),
+        )
     }
     async fn insert(
         &self,

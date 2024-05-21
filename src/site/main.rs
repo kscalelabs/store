@@ -44,6 +44,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Sync + Send>> {
 
     // Application configuration
     let app = Router::new()
+        .route("/", get(routes::index::get))
         .route("/register", get(routes::register::get))
         .route("/register", post(routes::register::post))
         .route("/register/generate-code", post(routes::register::post_req))

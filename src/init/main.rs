@@ -1,4 +1,5 @@
 use backend::config::Config;
+use backend::models::listing::Listing;
 use backend::models::traits::SqlTable;
 use backend::models::user::{AuthCookie, ChangeEmailCode, InviteCode, User};
 use bb8::Pool;
@@ -30,6 +31,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .batch_execute(&ChangeEmailCode::create_query())
         .await?;
     connection.batch_execute(&User::create_query()).await?;
+    connection.batch_execute(&Listing::create_query()).await?;
 
     Ok(())
 }

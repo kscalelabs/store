@@ -22,10 +22,7 @@ enum FormError {
     None,
 }
 
-fn settings_html(
-    email: &str,
-    error: FormError,
-) -> String {
+fn settings_html(email: &str, error: FormError) -> String {
     html(
         "Settings - K-Scale Store",
         Some(String::from(email)),
@@ -78,9 +75,7 @@ pub async fn get(
 ) -> Response {
     match parse_cookie(cookies, "Settings", &pool).await {
         Ok(res) => match res {
-            Some(user) => {
-                Html(settings_html(&user.email, FormError::None)).into_response()
-            }
+            Some(user) => Html(settings_html(&user.email, FormError::None)).into_response(),
             None => Redirect::to("/login").into_response(),
         },
         Err(e) => e,
@@ -97,7 +92,7 @@ pub async fn get_change_email(
     Query(Code { code }): Query<Code>,
     Extension(pool): Extension<Pool<PostgresConnectionManager<NoTls>>>,
 ) -> impl IntoResponse {
-    let email: Option<String> = match parse_cookie(cookies, "Change Email - K-Scale Store", &pool).await {
+    let email: Option<String> = match parse_cookie(cookies, "Change Email", &pool).await {
         Ok(res) => match res {
             Some(user) => Some(user.email),
             None => None,
@@ -212,9 +207,10 @@ pub async fn change_password(
                     }
                 }
                 false => Html(settings_html(
-                        &user.email,
-                        FormError::ChangePassword(String::from("Wrong password submitted.")),
-                    )).into_response(),
+                    &user.email,
+                    FormError::ChangePassword(String::from("Wrong password submitted.")),
+                ))
+                .into_response(),
             },
             None => Redirect::to("/login").into_response(),
         },

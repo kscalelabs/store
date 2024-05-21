@@ -12,7 +12,7 @@ use backend::models::user::{AuthCookie, InviteCode, User};
 use backend::ApiError;
 use bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
-use lettre::{AsyncTransport, AsyncSmtpTransport, Tokio1Executor};
+use lettre::{AsyncSmtpTransport, AsyncTransport, Tokio1Executor};
 use serde::Deserialize;
 use tokio_postgres::NoTls;
 use tower_cookies::Cookies;
@@ -74,7 +74,8 @@ fn reg_req_html(error: Option<&str>) -> String {
     html(
         "Register - K-Scale Store",
         None,
-        &format!(r#"
+        &format!(
+            r#"
             <h1>Register</h1>
             <p>To create an account, enter your email address. You will then be sent an email containing a registration link. (This helps to avoid part of the song and dance with email verification.)</p>
             <form action="/register/generate-code" method="POST">
@@ -91,7 +92,7 @@ fn reg_req_html(error: Option<&str>) -> String {
             } else {
                 String::new()
             }
-        )
+        ),
     )
 }
 
@@ -105,9 +106,9 @@ pub async fn get(
             Some(_user) => Redirect::to("/settings").into_response(),
             None => match &code {
                 Some(code) => Html(register_html(code, None, &pool).await).into_response(),
-                None => Html(reg_req_html(None)).into_response()
-            }
-        }
+                None => Html(reg_req_html(None)).into_response(),
+            },
+        },
         Err(e) => e,
     }
 }

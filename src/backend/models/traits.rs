@@ -2,6 +2,7 @@ use crate::ApiError;
 use async_trait::async_trait;
 use bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
+use postgres_types::ToSql;
 use std::fmt::Debug;
 use strum::IntoEnumIterator;
 use tokio_postgres::row::Row;
@@ -21,9 +22,9 @@ pub trait SqlTable: Sized + TryFrom<Row> {
     /// The SQL query that retrieves an object from the table.
     ///
     /// This function is automatically generated.
-    async fn get_one(
+    async fn get_one<T: ToSql + Sync + std::marker::Send>(
         field: &str,
-        value: &str,
+        value: T,
         pool: &Pool<PostgresConnectionManager<NoTls>>,
     ) -> Result<Self, ApiError> {
         let connection = match pool.get().await {

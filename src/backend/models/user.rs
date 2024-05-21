@@ -535,6 +535,13 @@ impl User {
     ) -> Result<Self, ApiError> {
         Self::get_one("email", email, pool).await
     }
+    /// Gets user from uuid
+    pub async fn from_uuid(
+        uuid: Uuid,
+        pool: &Pool<PostgresConnectionManager<NoTls>>,
+    ) -> Result<Self, ApiError> {
+        Self::get_one("uuid", uuid, pool).await
+    }
     /// Check whether an email-password pair is valid
     pub async fn auth(
         email: &str,
