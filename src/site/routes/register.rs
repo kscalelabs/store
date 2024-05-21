@@ -35,8 +35,8 @@ async fn register_html(
                 r#"<h1>Register</h1>
                 <p>All passwords must have a rating of 4 when measured against <a href="https://lowe.github.io/tryzxcvbn/">zxcvbn</a>. To make a strong password, either <a href="https://xkcd.com/936/?correct=horse&battery=staple">use a string of unrelated words</a> or better yet, use a <a href="https://www.passwordstore.org/">password manager</a>.</p>
                 <form action="/register" method="POST">
+                    <input name="code" type="hidden" value="{}">
                     <div>
-                        <input name="code" type="hidden" value="{}">
                         <label for="email">Email address (you can't edit this)</label>
                         <input name="email" readonly type="text" value="{}">
                     </div>
