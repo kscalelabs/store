@@ -2,9 +2,17 @@
 
 FROM public.ecr.aws/lambda/python:3.11
 
+WORKDIR ${LAMBDA_TASK_ROOT}
+
 # Installs the package in the container.
-COPY . ${LAMBDA_TASK_ROOT}
+COPY . .
+# RUN pip install --no-cache-dir '.[dev]'
 RUN pip install --no-cache-dir .
+
+# Runs tests inside the container to make sure it built correctly.
+# RUN black --diff --check store
+# RUN ruff check store
+# RUN python -m pytest
 
 # Runs the application.
 CMD ["store.app.aws.handler"]
