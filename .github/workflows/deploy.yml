@@ -41,12 +41,12 @@ jobs:
         working-directory: frontend
         run: |
           npm install
-      
+
       - name: Build frontend
         run: |
           npm run build
         working-directory: frontend
-  
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
@@ -66,8 +66,7 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
           IMAGE_TAG: latest
         run: |
-          docker buildx build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f docker/Dockerfile .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker buildx build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f docker/Dockerfile . --push
 
       - name: Update Lambda function to use new Docker image
         env:
