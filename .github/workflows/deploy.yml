@@ -47,32 +47,32 @@ jobs:
           npm run build
         working-directory: frontend
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v1
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-            role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_NAME }}
-            aws-region: ${{ secrets.AWS_REGION }}
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #       role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_NAME }}
+      #       aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Log in to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+      # - name: Log in to Amazon ECR
+      #   id: login-ecr
+      #   uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build, tag, and push Docker image
-        env:
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-          IMAGE_TAG: latest
-        run: |
-          docker buildx build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f docker/Dockerfile . --push
+      # - name: Build, tag, and push Docker image
+      #   env:
+      #     ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+      #     ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+      #     IMAGE_TAG: latest
+      #   run: |
+      #     docker buildx build --platform linux/amd64 -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f docker/Dockerfile . --push
 
-      - name: Update Lambda function to use new Docker image
-        env:
-          FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-          IMAGE_TAG: latest
-        run: |
-          aws lambda update-function-code --function-name $FUNCTION_NAME --image-uri $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      # - name: Update Lambda function to use new Docker image
+      #   env:
+      #     FUNCTION_NAME: ${{ secrets.LAMBDA_FUNCTION_NAME }}
+      #     ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+      #     ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+      #     IMAGE_TAG: latest
+      #   run: |
+      #     aws lambda update-function-code --function-name $FUNCTION_NAME --image-uri $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG

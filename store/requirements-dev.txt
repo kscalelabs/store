@@ -1,12 +1,18 @@
 # requirements-dev.txt
 
+# Linting
 black
 darglint
 mypy
+ruff
+
+# Testing
 pytest
 pytest-aiohttp
 pytest-asyncio
 pytest-mock
 pytest-timeout
 pytest-trio
-ruff
+
+# Deployment
+awsebcli

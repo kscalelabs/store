@@ -8,4 +8,3 @@ python-multipart
 
 # Deployment dependencies.
 uvicorn[standard]
-mangum
