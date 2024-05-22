@@ -1,4 +1,5 @@
 use crate::dirs::config_path;
+use derivative::Derivative;
 use serde::{Deserialize, Serialize};
 use std::fs::read_to_string;
 
@@ -28,11 +29,18 @@ impl Default for Ports {
 }
 
 /// Used when creating the connection pool.
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Derivative, Deserialize, Serialize)]
+#[derivative(Default)]
 pub struct Postgres {
+    /// Address of host of Postgres database.
+    /// If you intend to host your Postgres database on the same machine as the website, this
+    /// should be localhost.
+    #[derivative(Default(value=r#"String::from("localhost")"#))]
+    pub host: String,
     /// Name of the database that stores all of your store instance's data.
     pub dbname: String,
     /// Postgres username (used for access control to the database)
+    #[derivative(Default(value=r#"String::from("postgres")"#))]
     pub user: String,
     /// Postgres password (used for access control to the database)
     pub password: String,

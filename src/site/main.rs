@@ -24,7 +24,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Sync + Send>> {
     // Set up Postgres connection pool
     let mut pg_config = tokio_postgres::config::Config::new();
     pg_config
-        .host("localhost")
+        .host(&config.postgres.host)
         .dbname(&config.postgres.dbname)
         .user(&config.postgres.user)
         .password(&config.postgres.password);
