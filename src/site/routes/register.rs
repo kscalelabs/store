@@ -119,10 +119,10 @@ pub struct RegistrationRequest {
 }
 
 pub async fn post_req(
-    Form(RegistrationRequest { email }): Form<RegistrationRequest>,
     Extension(pool): Extension<Pool<PostgresConnectionManager<NoTls>>>,
     Extension(config): Extension<Config>,
     Extension(mailer): Extension<AsyncSmtpTransport<Tokio1Executor>>,
+    Form(RegistrationRequest { email }): Form<RegistrationRequest>,
 ) -> Response {
     match User::get(&email, &pool).await {
         Ok(_) => Html(reg_req_html(Some("A user with this email address already exists.")
@@ -169,9 +169,9 @@ pub struct Registration {
 }
 
 pub async fn post(
-    Form(registration): Form<Registration>,
     Extension(pool): Extension<Pool<PostgresConnectionManager<NoTls>>>,
     Extension(config): Extension<Config>,
+    Form(registration): Form<Registration>,
 ) -> Response {
     match User::create(&registration.code, &registration.password, &pool).await {
         Ok(user) => match user.insert(&pool).await {

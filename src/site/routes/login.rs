@@ -66,9 +66,9 @@ pub struct Login {
 }
 
 pub async fn post(
-    Form(Login { email, password }): Form<Login>,
     Extension(pool): Extension<Pool<PostgresConnectionManager<NoTls>>>,
     Extension(config): Extension<Config>,
+    Form(Login { email, password }): Form<Login>,
 ) -> Response {
     match AuthCookie::create(&email, &password, &pool).await {
         Ok(cookie) => match cookie.insert(&pool).await {

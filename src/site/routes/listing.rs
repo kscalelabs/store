@@ -60,13 +60,13 @@ pub struct ListingRequest {
 
 pub async fn post_new(
     cookies: Cookies,
+    Extension(pool): Extension<Pool<PostgresConnectionManager<NoTls>>>,
     Form(ListingRequest {
         title,
         price,
         description,
         url,
     }): Form<ListingRequest>,
-    Extension(pool): Extension<Pool<PostgresConnectionManager<NoTls>>>,
 ) -> Response {
     match parse_cookie(cookies, "New Listing", &pool).await {
         Ok(res) => match res {

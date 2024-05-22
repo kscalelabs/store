@@ -1,6 +1,6 @@
 use crate::dirs::config_path;
 use serde::{Deserialize, Serialize};
-use std::fs::read;
+use std::fs::read_to_string;
 
 /// General configuration
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -63,7 +63,7 @@ pub struct Mail {
 impl Config {
     /// Gets configuration from the designated configuration path (see the config_path function)
     pub fn get() -> Self {
-        toml::from_slice(&read(config_path()).unwrap())
+        toml::from_str(&read_to_string(config_path()).unwrap())
             .unwrap_or_else(|e| panic!("There were errors deserializing the configuration: {}", e))
     }
 }

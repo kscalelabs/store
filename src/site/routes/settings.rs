@@ -122,10 +122,10 @@ pub struct ChangeEmail {
 
 pub async fn post_change_email(
     cookies: Cookies,
-    Form(ChangeEmail { email }): Form<ChangeEmail>,
     Extension(config): Extension<Config>,
     Extension(pool): Extension<Pool<PostgresConnectionManager<NoTls>>>,
     Extension(mailer): Extension<AsyncSmtpTransport<Tokio1Executor>>,
+    Form(ChangeEmail { email }): Form<ChangeEmail>,
 ) -> Response {
     match parse_cookie(cookies, "Settings", &pool).await {
         Ok(res) => match res {
@@ -178,12 +178,12 @@ pub struct ChangePassword {
 }
 
 pub async fn change_password(
+    cookies: Cookies,
+    Extension(pool): Extension<Pool<PostgresConnectionManager<NoTls>>>,
     Form(ChangePassword {
         old_password,
         new_password,
     }): Form<ChangePassword>,
-    cookies: Cookies,
-    Extension(pool): Extension<Pool<PostgresConnectionManager<NoTls>>>,
 ) -> Response {
     match parse_cookie(cookies, "Settings", &pool).await {
         Ok(res) => match res {
