@@ -721,7 +721,6 @@ dependencies = [
  "tokio-postgres",
  "toml",
  "tower-cookies",
- "url-escape",
  "uuid",
  "zxcvbn",
 ]
@@ -1706,15 +1705,6 @@ name = "untrusted"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
-
-[[package]]
-name = "url-escape"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "44e0ce4d1246d075ca5abec4b41d33e87a6054d08e2366b63205665e950db218"
-dependencies = [
- "percent-encoding",
-]
 
 [[package]]
 name = "uuid"

@@ -116,12 +116,12 @@ pub async fn get_listing(
                                         listing.price,
                                         if listing.active {""} else {"<p><strong>This listing is no longer active.</strong> What follows is merely an archive of a prior listing.</p>"},
                                         if let Ok(user) = seller {
-                                            format!(r#"<a href="mailto:{}">{}</a>"#, url_escape::encode_component(&user.email), escape_html(&user.email))
+                                            format!(r#"<a href="mailto:{}">{}</a>"#, escape_html(&user.email), escape_html(&user.email))
                                         } else {
                                             String::from("Error: Could not retrieve listing email.")
                                         },
                                         match listing.url {
-                                            Some(url) => format!(r#"External purchase link: <a href="{}">{}</a>"#, url_escape::encode_component(&url), escape_html(&url)),
+                                            Some(url) => format!(r#"External purchase link: <a href="{}">{}</a>"#, escape_html(&url), escape_html(&url)),
                                             None => String::from("There is no external purchase link. Contact the seller directly to make your purchase.")
                                         },
                                         match listing.description {
@@ -232,7 +232,7 @@ pub async fn get_edit_listing(
                                     None => String::new(),
                                 },
                                 &match listing.url {
-                                    Some(url) => url_escape::encode_component(&url).to_string(),
+                                    Some(url) => escape_html(&url),
                                     None => String::new(),
                                 },
                                 if listing.active { r#"checked="""# } else { "" },
