@@ -9,5 +9,8 @@ WORKDIR /app
 COPY . /app
 RUN pip install --no-cache-dir --upgrade .
 
+# Expose the port that the application runs on.
+EXPOSE 80
+
 # Run the FastAPI application.
 CMD ["fastapi", "run", "store/app/main.py", "--port", "80"]
