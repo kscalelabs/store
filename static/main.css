@@ -119,7 +119,7 @@ div.listing-contact a:hover {
 	text-decoration: underline;
 }
 
-span.listing-price {
+{div, span}.listing-price {
 	color: green;
 }
 

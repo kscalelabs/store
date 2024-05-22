@@ -160,21 +160,13 @@ pub async fn get_edit_main(
                     for listing in listings {
                         res += &format!(
                             r#"<div class="listing">
-                                <div>
-                                    <span class="listing-title"><a href="listings?id={}">{}</a></span>
-                                    |
-                                    <span class="listing-price">${}</span>
+                                <div class="listing-title"><a href="listings?id={}">{}</a>
                                 </div>
-                                <div class="listing-contact">{}</div>
+                                <div class="listing-price">${}</div>
                             </div>"#,
                             listing.id,
                             listing.title,
                             listing.price,
-                            if let Ok(user) = User::from_uuid(listing.user_id, &pool).await {
-                                format!(r#"<a href="mailto:{}">{}</a>"#, url_escape::encode_component(&user.email), escape_html(&user.email))
-                            } else {
-                                String::from("Error: Could not retrieve listing email.")
-                            }
                         )
                     }
                     Html(html("Edit Your Listings", Some(user.email), &res)).into_response()
