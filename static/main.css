@@ -106,8 +106,17 @@ div.listing {
 	justify-content: space-between;
 }
 
-div.listing-contact {
+div.listing-post {
+	margin-bottom: 1em;
+}
+
+div.listing-contact a {
 	color: gray;
+	text-decoration: none;
+}
+
+div.listing-contact a:hover {
+	text-decoration: underline;
 }
 
 span.listing-price {

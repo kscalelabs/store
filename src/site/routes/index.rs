@@ -18,7 +18,7 @@ async fn listing_html(
 ) -> String {
     let mut res: String = String::from("<h1>Listings</h1>");
     if email.is_some() {
-        res += r#"<div class="listing">
+        res += r#"<div class="listing listing-post">
                       <a href="/new">+ Post a listing</a>
                       <a href="/edit">Edit your listings</a>
                   </div>"#
