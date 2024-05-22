@@ -160,10 +160,11 @@ pub async fn get_edit_main(
                     for listing in listings {
                         res += &format!(
                             r#"<div class="listing">
-                                <div class="listing-title"><a href="listings/edit?id={}">{}</a>
+                                <div class="listing-title{}"><a href="listings/edit?id={}">{}</a>
                                 </div>
                                 <div class="listing-price">${}</div>
                             </div>"#,
+                            if listing.active { "" } else { " listing-inactive" },
                             listing.id,
                             escape_html(&listing.title),
                             listing.price,

@@ -119,7 +119,11 @@ div.listing-contact a:hover {
 	text-decoration: underline;
 }
 
-{div, span}.listing-price {
+div.listing-inactive a {
+	color: gray;
+}
+
+div.listing-price, span.listing-price {
 	color: green;
 }
 
@@ -141,7 +145,7 @@ form input[type=text], [type=number], [type=password], textarea, select, button 
 	display: block;
 }
 
-form input, select {
+form input, textarea, select {
 	line-height: 1.5;
 	padding: 0.25rem 0.5rem;
 	font-size: 1rem;
@@ -151,17 +155,17 @@ form input, select {
 	border-color: DarkGray;
 }
 
-form input:read-only {
+form input:read-only, textarea:read-only {
 	background-color: Gainsboro;
 }
 
 @media (prefers-color-scheme: dark) {
-	form input, select {
+	form input, textarea, select {
 		color: var(--dark-fg);
 		background-color: #404040;
 		border-style: none;
 	}
-	form input:read-only {
+	form input:read-only, textarea:read-only {
 		color: #a0a0a0;
 		background-color: #282828;
 	}
