@@ -120,7 +120,7 @@ pub async fn get_listing(
                                         match listing.description {
                                             Some(description) => {
                                                 let mut desc: String = String::new();
-                                                for line in description.split("\n").filter(|&x| !x.is_empty()) {
+                                                for line in description.split('\n').filter(|&x| !x.is_empty()) {
                                                     desc += "<p>";
                                                     desc += &escape_html(line);
                                                     desc += "</p>";
