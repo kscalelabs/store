@@ -76,6 +76,30 @@ pub trait SqlTable: Sized + TryFrom<Row> {
             Err(_) => None,
         }
     }
+    /// The SQL query that gets all objects from a table
+    /// satisfying a certain condition (filter).
+    ///
+    /// This function is automatically generated.
+    ///
+    /// I really hate the function signature but I can't even coerce everything into a
+    /// `Box<dyn Error>`, so no Result.
+    async fn get_all_filtered<T: ToSql + Sync + std::marker::Send>(field: &str, value: T, pool: &Pool<PostgresConnectionManager<NoTls>>) -> Option<Vec<Self>> {
+        let connection = match pool.get().await {
+            Ok(c) => c,
+            Err(_) => return None,
+        };
+        let rows = match connection
+            .query(&format!("SELECT * FROM {} WHERE {} = $1", Self::table_name(), field), &[&value])
+            .await
+        {
+            Ok(r) => r,
+            Err(_) => return None,
+        };
+        match rows.into_iter().map(|row| Self::try_from(row)).collect() {
+            Ok(v) => Some(v),
+            Err(_) => None,
+        }
+    }
     /// The SQL query that inserts an object into the table.
     ///
     /// This function is to be manually written for every struct.

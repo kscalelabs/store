@@ -1,6 +1,7 @@
 use crate::routes::html;
 use crate::utils::{escape_html, parse_cookie, serde::empty_to_none};
 use axum::extract::Query;
+use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse, Redirect, Response};
 use axum::{Extension, Form};
 use backend::ApiError;
@@ -142,6 +143,45 @@ pub async fn get_listing(
                     ApiError::ServerError(e) => Html(html("Invalid Listing", res.map(|user| user.email), &format!("<h1>Server-Side Error</h1><p>Failed to query listings with following error: {}</p>", e))).into_response(),
                 }
             }
+        },
+        Err(e) => e
+    }
+}
+
+pub async fn get_edit_main(
+    cookies: Cookies,
+    Extension(pool): Extension<Pool<PostgresConnectionManager<NoTls>>>,
+) -> Response {
+    match parse_cookie(cookies, "Register", &pool).await {
+        Ok(res) => match res {
+            Some(user) => match Listing::get_all_filtered("user_id", user.uuid, &pool).await {
+                Some(listings) => {
+                    let mut res: String = String::from("<h1>Edit Your Listings</h1>");
+                    for listing in listings {
+                        res += &format!(
+                            r#"<div class="listing">
+                                <div>
+                                    <span class="listing-title"><a href="listings?id={}">{}</a></span>
+                                    |
+                                    <span class="listing-price">${}</span>
+                                </div>
+                                <div class="listing-contact">{}</div>
+                            </div>"#,
+                            listing.id,
+                            listing.title,
+                            listing.price,
+                            if let Ok(user) = User::from_uuid(listing.user_id, &pool).await {
+                                format!(r#"<a href="mailto:{}">{}</a>"#, url_escape::encode_component(&user.email), escape_html(&user.email))
+                            } else {
+                                String::from("Error: Could not retrieve listing email.")
+                            }
+                        )
+                    }
+                    Html(html("Edit Your Listings", Some(user.email), &res)).into_response()
+                },
+                None => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+            },
+            None => Redirect::to("/").into_response()
         },
         Err(e) => e
     }
