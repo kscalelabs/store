@@ -94,7 +94,7 @@ pub async fn get_listing(
     Query(Id { id }): Query<Id>,
     Extension(pool): Extension<Pool<PostgresConnectionManager<NoTls>>>,
 ) -> Response {
-    match parse_cookie(cookies, "Register", &pool).await {
+    match parse_cookie(cookies, "Listing", &pool).await {
         Ok(res) => {
             match Listing::get_one("id", &id, &pool).await {
                 Ok(listing) => {
@@ -152,7 +152,7 @@ pub async fn get_edit_main(
     cookies: Cookies,
     Extension(pool): Extension<Pool<PostgresConnectionManager<NoTls>>>,
 ) -> Response {
-    match parse_cookie(cookies, "Register", &pool).await {
+    match parse_cookie(cookies, "Edit Your Listings", &pool).await {
         Ok(res) => match res {
             Some(user) => match Listing::get_all_filtered("user_id", user.uuid, &pool).await {
                 Some(listings) => {
@@ -165,7 +165,7 @@ pub async fn get_edit_main(
                                 <div class="listing-price">${}</div>
                             </div>"#,
                             listing.id,
-                            listing.title,
+                            escape_html(&listing.title),
                             listing.price,
                         )
                     }
@@ -176,5 +176,129 @@ pub async fn get_edit_main(
             None => Redirect::to("/").into_response()
         },
         Err(e) => e
+    }
+}
+
+pub async fn get_edit_listing(
+    cookie: Cookies,
+    Query(Id { id }): Query<Id>,
+    Extension(pool): Extension<Pool<PostgresConnectionManager<NoTls>>>,
+) -> Response {
+    match parse_cookie(cookie, "Edit Listing", &pool).await {
+        Ok(res) => {
+            match res {
+                Some(user) => match Listing::get_one("id", &id, &pool).await {
+                    Ok(listing) => if listing.user_id == user.uuid {
+                        Html(html(
+                            &listing.title,
+                            Some(user.email),
+                            &format!(
+                                r#"<h1>Edit {}</h1>
+                                    <p>If an external purchase link is not provided, the buyer will directly contact you through email to arrange the purchase.</p>
+                                    <form action="/listings/edit" method="POST">
+                                    <input name="id" type="hidden" value={}>
+                                    <div>
+                                        <label for="title">Title (descriptive)*</label>
+                                        <input name="title" required type="text" value={}>
+                                    </div>
+                                    <div>
+                                        <label for="price">Price (in dollars)*</label>
+                                        <input name="price" required type="text" value={}>
+                                    </div>
+                                    <div>
+                                        <label for="description">Description<label>
+                                        <textarea name="description" rows="20">{}</textarea>
+                                    </div>
+                                    <div>
+                                        <label for="url">External Purchase Link<label>
+                                        <input name="url" type="text" value={}>
+                                    </div>
+                                    <div>
+                                        <input type="radio" name="active" value="true"{}>
+                                        <label for="admin">Make posting active</label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" name="active" value="false"{}>
+                                        <label for="admin">Deactivate posting</label>
+                                    </div>
+                                    <button type="submit">Edit</submit>
+                                "#,
+                                escape_html(&listing.title),
+                                id,
+                                escape_html(&listing.title),
+                                listing.price,
+                                match listing.description {
+                                    Some(desc) => escape_html(&desc),
+                                    None => String::new(),
+                                },
+                                &match listing.url {
+                                    Some(url) => url_escape::encode_component(&url).to_string(),
+                                    None => String::new(),
+                                },
+                                if listing.active { r#"checked="""# } else { "" },
+                                if listing.active { "" } else { r#"checked="""# },
+                            ))).into_response()
+                    } else {
+                        Html(html("No Permissions", Some(user.email), "<h1>No Permissions</h1><p>You do not have permission to edit this listing, likely because you are not the user who created it.</p>")).into_response()
+                    },
+                    Err(e) => match e {
+                        ApiError::ClientError => Html(html("Invalid Listing", Some(user.email), "<h1>Invalid Listing</h1><p>This listing link is invalid.</p>")).into_response(),
+                        ApiError::ServerError(e) => Html(html("Invalid Listing", Some(user.email), &format!("<h1>Server-Side Error</h1><p>Failed to query listings with following error: {}</p>", e))).into_response(),
+                    }
+                },
+                None => Html(html("No Permissions", None, "<h1>No Permissions</h1><p>You must be logged in to edit this listing.</p>")).into_response()
+            }
+        },
+        Err(e) => e,
+    }
+}
+
+#[derive(Deserialize)]
+pub struct EditRequest {
+    id: String,
+    title: String,
+    price: i32,
+    #[serde(deserialize_with = "empty_to_none")]
+    description: Option<String>,
+    #[serde(deserialize_with = "empty_to_none")]
+    url: Option<String>,
+    active: bool,
+}
+
+pub async fn post_edit_listing(
+    cookies: Cookies,
+    Extension(pool): Extension<Pool<PostgresConnectionManager<NoTls>>>,
+    Form(EditRequest {
+        id,
+        title,
+        price,
+        description,
+        url,
+        active,
+    }): Form<EditRequest>,
+) -> Response {
+    match parse_cookie(cookies, "Edit Listing", &pool).await {
+        Ok(res) => match res {
+            Some(user) => {
+                match Listing::get_one("id", &id, &pool).await {
+                    Ok(listing) => {
+                        if listing.user_id == user.uuid {
+                            match Listing::edit(&id, &title, price, description, url, active, &pool).await {
+                                Ok(()) => Redirect::to(&format!("/listings?id={}", id)).into_response(),
+                                Err(e) => Html(html("Edit Listing", Some(user.email), &format!("<h1>Edit Listing</h1><p>Serverside error encountered when trying to edit listing: {}</p><p>Please resubmit your edit. (You may resubmit your edit by simply refreshing the page.)</p>", e))).into_response()
+                            }
+                        } else {
+                            Html(html("No Permissions", Some(user.email), "<h1>No Permissions</h1><p>You do not have permission to edit this listing, likely because you are not the user who created it.</p>")).into_response()
+                        }
+                    },
+                    Err(e) => match e {
+                        ApiError::ClientError => Html(html("Invalid Listing", Some(user.email), "<h1>Invalid Listing</h1><p>This listing link is invalid.</p>")).into_response(),
+                        ApiError::ServerError(e) => Html(html("Invalid Listing", Some(user.email), &format!("<h1>Server-Side Error</h1><p>Failed to query listings with following error: {}</p>", e))).into_response(),
+                    }
+                }
+            },
+            None => Html(html("No Permissions", None, "<h1>No Permissions</h1><p>You must be logged in to edit this listing.</p>")).into_response()
+        },
+        Err(e) => e,
     }
 }

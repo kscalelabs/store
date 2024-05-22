@@ -113,4 +113,26 @@ impl Listing {
             active: true,
         }
     }
+    /// Edits the listing with the given ID.
+    pub async fn edit(
+        id: &str,
+        title: &str,
+        price: i32,
+        description: Option<String>,
+        url: Option<String>,
+        active: bool,
+        pool: &Pool<PostgresConnectionManager<NoTls>>,
+    ) -> Result<(), bb8::RunError<tokio_postgres::error::Error>> {
+        let connection = pool.get().await?;
+        connection
+            .execute(
+                &format!(
+                    "UPDATE {} SET title = $1, price = $2, description = $3, url = $4, active = $5 WHERE id = $6",
+                    Self::table_name()
+                ),
+                &[&title, &price, &description, &url, &active, &id],
+            )
+            .await?;
+        Ok(())
+    }
 }
