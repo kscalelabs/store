@@ -28,7 +28,7 @@ async fn listing_html(
             res += &format!(
                 r#"<div class="listing">
                     <div>
-                        <span class="listing-title"><a href="listings/?id={}">{}</a></span>
+                        <span class="listing-title"><a href="listings?id={}">{}</a></span>
                         |
                         <span class="listing-price">${}</span>
                     </div>
@@ -54,12 +54,7 @@ pub async fn get(
 ) -> Response {
     match Listing::get_all(&pool).await {
         Some(listings) => match parse_cookie(cookies, "Listings", &pool).await {
-            Ok(res) => match res {
-                Some(user) => {
-                    Html(listing_html(listings, Some(user.email), &pool).await).into_response()
-                }
-                None => Html(listing_html(listings, None, &pool).await).into_response(),
-            },
+            Ok(res) => Html(listing_html(listings, res.map(|user| user.email), &pool).await).into_response(),
             Err(e) => e,
         },
         None => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
