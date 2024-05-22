@@ -160,7 +160,7 @@ pub async fn get_edit_main(
                     for listing in listings {
                         res += &format!(
                             r#"<div class="listing">
-                                <div class="listing-title"><a href="listings?id={}">{}</a>
+                                <div class="listing-title"><a href="listings/edit?id={}">{}</a>
                                 </div>
                                 <div class="listing-price">${}</div>
                             </div>"#,
