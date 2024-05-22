@@ -95,20 +95,26 @@ pub async fn get_listing(
 ) -> Response {
     match parse_cookie(cookies, "Register", &pool).await {
         Ok(res) => {
-            match Listing::get_one("id", id, &pool).await {
-                Ok(listing) => Html(html(
+            match Listing::get_one("id", &id, &pool).await {
+                Ok(listing) => {
+                        let seller = User::from_uuid(listing.user_id, &pool).await;
+                        Html(html(
                             &listing.title,
-                            res.map(|user| user.email),
-                            &format!(r#"<h1><span class="listing-title">{}</span> | <span class="listing-price">${}</span></h1>
+                            res.as_ref().map(|user| user.email.clone()),
+                            &format!(r#"<h1><span class="listing-title">{}{}</span> | <span class="listing-price">${}</span></h1>
                                         {}
                                         <p>Contact: {}</p>
                                         <p>{}</p>
                                         {}
                                      "#,
                                         escape_html(&listing.title),
+                                        match (&res, &seller) {
+                                            (Some(user), Ok(seller)) if user.email == seller.email => format!(r#" (<a href="/listings/edit?id={}">Edit</a>)"#, id),
+                                            _ => String::new()
+                                        },
                                         listing.price,
                                         if listing.active {""} else {"<p><strong>This listing is no longer active.</strong> What follows is merely an archive of a prior listing.</p>"},
-                                        if let Ok(user) = User::from_uuid(listing.user_id, &pool).await {
+                                        if let Ok(user) = seller {
                                             format!(r#"<a href="mailto:{}">{}</a>"#, url_escape::encode_component(&user.email), escape_html(&user.email))
                                         } else {
                                             String::from("Error: Could not retrieve listing email.")
@@ -129,7 +135,8 @@ pub async fn get_listing(
                                             },
                                             None => String::new()
                                         },
-                            ))).into_response(),
+                        ))).into_response()
+                },
                 Err(e) => match e {
                     ApiError::ClientError => Html(html("Invalid Listing", res.map(|user| user.email), "<h1>Invalid Listing</h1><p>This listing link is invalid.</p>")).into_response(),
                     ApiError::ServerError(e) => Html(html("Invalid Listing", res.map(|user| user.email), &format!("<h1>Server-Side Error</h1><p>Failed to query listings with following error: {}</p>", e))).into_response(),
