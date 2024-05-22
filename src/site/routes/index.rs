@@ -38,7 +38,7 @@ async fn listing_html(
                 listing.title,
                 listing.price,
                 if let Ok(user) = User::from_uuid(listing.user_id, pool).await {
-                    user.email
+                    &format!(r#"<a href="mailto:{}">{}</a>"#, escape_html(user.email), escape_html(user.email))
                 } else {
                     String::from("Error: Could not retrieve listing email.")
                 }
@@ -54,7 +54,8 @@ pub async fn get(
 ) -> Response {
     match Listing::get_all(&pool).await {
         Some(listings) => match parse_cookie(cookies, "Listings", &pool).await {
-            Ok(res) => Html(listing_html(listings, res.map(|user| user.email), &pool).await).into_response(),
+            Ok(res) => Html(listing_html(listings, res.map(|user| user.email), &pool).await)
+                .into_response(),
             Err(e) => e,
         },
         None => StatusCode::INTERNAL_SERVER_ERROR.into_response(),
