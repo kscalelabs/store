@@ -1,3 +1,5 @@
+pub mod serde;
+
 use crate::components::html;
 use axum::{
     http::StatusCode,

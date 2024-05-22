@@ -101,7 +101,7 @@ impl Listing {
         title: String,
         price: i32,
         description: Option<String>,
-        url: Option<String>
+        url: Option<String>,
     ) -> Self {
         Self {
             id: rand_8(),
@@ -110,7 +110,7 @@ impl Listing {
             price,
             description,
             url,
-            active: true
+            active: true,
         }
     }
 }

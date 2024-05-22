@@ -66,6 +66,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Sync + Send>> {
         )
         .route("/new", get(routes::listing::get_new))
         .route("/new", post(routes::listing::post_new))
+        .route("/listings", get(routes::listing::get_listing))
         .fallback(routes::error404.into_service())
         .layer(Extension(pool))
         .layer(Extension(config))

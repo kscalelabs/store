@@ -1,5 +1,5 @@
 use crate::routes::html;
-use crate::utils::parse_cookie;
+use crate::utils::{escape_html, parse_cookie};
 use axum::http::StatusCode;
 use axum::response::{Html, IntoResponse, Response};
 use axum::Extension;
@@ -38,7 +38,7 @@ async fn listing_html(
                 listing.title,
                 listing.price,
                 if let Ok(user) = User::from_uuid(listing.user_id, pool).await {
-                    &format!(r#"<a href="mailto:{}">{}</a>"#, escape_html(user.email), escape_html(user.email))
+                    format!(r#"<a href="mailto:{}">{}</a>"#, url_escape::encode_component(&user.email), escape_html(&user.email))
                 } else {
                     String::from("Error: Could not retrieve listing email.")
                 }
