@@ -10,7 +10,7 @@ pub fn html(title: &str, email: Option<String>, body: &str) -> String {
         <!DOCTYPE HTML>
         <html lang="en">
             <head>
-                <title>{}</title>
+                <title>{} - K-Scale Store</title>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <link rel="stylesheet" href="/main.css">
                 <link rel="icon" href="/favicon.ico">
