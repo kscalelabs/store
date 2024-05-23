@@ -1,7 +1,11 @@
 # requirements.txt
 
+# Standard dependencies.
+omegaconf
+
 # FastAPI dependencies.
 aiohttp
+aiosmtplib
 fastapi
 pyjwt
 python-multipart
