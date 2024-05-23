@@ -1,28 +1,22 @@
 use serde::{Deserialize, Serialize};
 
+// Reasoning for using this macro:
+//      https://github.com/softprops/envy/issues/55
+serde_with::with_prefix!(p_postgres "postgres_");
+serde_with::with_prefix!(p_mail "mail_");
 /// General configuration
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Config {
     /// Used for cookies as well as links included in automated emails
     pub domain: String,
     /// Configures the ports that the site runs on
-    pub ports: Ports,
+    pub port: u16,
     /// Postgres database connection information
+    #[serde(flatten, with = "p_postgres")]
     pub postgres: Postgres,
     /// Configures mailserver for automated mails (registration, password change, etc)
+    #[serde(flatten, with = "p_mail")]
     pub mail: Mail,
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct Ports {
-    /// The port that the main website runs on.
-    pub site: u16,
-}
-
-impl Default for Ports {
-    fn default() -> Self {
-        Self { site: 3000 }
-    }
 }
 
 /// Used when creating the connection pool.

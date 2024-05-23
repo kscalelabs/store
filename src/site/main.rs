@@ -19,7 +19,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Sync + Send>> {
     let config = Config::get();
     // We have to assign this primitive to a separate variable `port` because `config` is moved
     // later, in .layer(Extension(config))
-    let port = config.ports.site;
+    let port = config.port;
 
     // Set up Postgres connection pool
     let mut pg_config = tokio_postgres::config::Config::new();
