@@ -4,6 +4,6 @@ import App from "./App";
 
 test("renders stompy urdf link", () => {
   render(<App />);
-  const linkElement = screen.getByText(/Website/i);
+  const linkElement = screen.getByText(/MJCF/i);
   expect(linkElement).toBeInTheDocument();
 });
