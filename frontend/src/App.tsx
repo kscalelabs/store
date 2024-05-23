@@ -6,10 +6,6 @@ function App() {
     <div className="container">
       <div className="content">
         <h1>K-Scale Store</h1>
-        <p>
-          <a href="https://kscale.dev">Website</a> |{" "}
-          <a href="https://github.com/kscalelabs">Github</a>
-        </p>
         <h2>Stompy</h2>
         <p>Stompy artifact downloads</p>
         <p>
