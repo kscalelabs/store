@@ -2,6 +2,11 @@
 
 # Standard dependencies.
 omegaconf
+bson
+pydantic
+
+# AWS dependencies.
+boto3
 
 # FastAPI dependencies.
 aiohttp
