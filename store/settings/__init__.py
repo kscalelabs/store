@@ -27,9 +27,7 @@ def _load_environment_settings() -> EnvironmentSettings:
     config = OmegaConf.load(config_path)
     config = OmegaConf.merge(OmegaConf.structured(EnvironmentSettings), config)
     OmegaConf.resolve(config)
-    settings = cast(EnvironmentSettings, config)
-    settings.environment = environment
-    return settings
+    return cast(EnvironmentSettings, config)
 
 
 class _LazyLoadSettings(Generic[T]):

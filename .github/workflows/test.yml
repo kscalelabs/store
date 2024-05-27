@@ -21,6 +21,23 @@ jobs:
   run-tests:
     timeout-minutes: 10
     runs-on: ubuntu-latest
+
+    # DynamoDB Local
+    services:
+      dynamodb-local:
+        image: amazon/dynamodb-local
+        options: >-
+          -p 8000:8000
+          -v /tmp/dynamodb:/data
+        ports:
+          - 8000:8000
+        env:
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_REGION: us-east-1
+          DYNAMODB_LOCAL: true
+          DYNAMODB_ENDPOINT: http://localhost:8000
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
@@ -51,7 +68,7 @@ jobs:
         working-directory: frontend
         run: |
           npm test -- --watchAll=false
-  
+
       - name: Build frontend
         run: |
           npm run build
