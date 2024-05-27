@@ -27,10 +27,10 @@ jobs:
       dynamodb-local:
         image: amazon/dynamodb-local
         options: >-
-          -p 8080:8080
+          -p 0:8080
           -v /tmp/dynamodb:/data
         ports:
-          - 8080:8080
+          - 8080
         env:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
