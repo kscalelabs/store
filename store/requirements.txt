@@ -6,7 +6,7 @@ bson
 pydantic
 
 # AWS dependencies.
-boto3
+aioboto3
 
 # FastAPI dependencies.
 aiohttp

@@ -2,9 +2,9 @@
 
 import asyncio
 
-from mypy_boto3_dynamodb.service_resource import DynamoDBServiceResource
+from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 
-from store.app.api.db import get_db
+from store.app.api.db import get_aio_db
 from store.app.api.model import Token, User
 
 
@@ -15,8 +15,8 @@ async def add_user(user: User, db: DynamoDBServiceResource) -> None:
         user: The user to add.
         db: The DynamoDB database.
     """
-    table = db.Table("Users")
-    table.put_item(Item=user.model_dump())
+    table = await db.Table("Users")
+    await table.put_item(Item=user.model_dump())
 
 
 async def get_user(user_id: str, db: DynamoDBServiceResource) -> User:
@@ -26,8 +26,8 @@ async def get_user(user_id: str, db: DynamoDBServiceResource) -> User:
         user_id: The ID of the user to retrieve.
         db: The DynamoDB database.
     """
-    table = db.Table("Users")
-    user_dict = table.get_item(Key={"user_id": user_id})
+    table = await db.Table("Users")
+    user_dict = await table.get_item(Key={"user_id": user_id})
     user = User.model_validate(user_dict["Item"])
     return user
 
@@ -38,8 +38,8 @@ async def get_user_count(db: DynamoDBServiceResource) -> int:
     Args:
         db: The DynamoDB database.
     """
-    table = db.Table("Users")
-    return table.item_count
+    table = await db.Table("Users")
+    return await table.item_count
 
 
 async def add_token(token: Token, db: DynamoDBServiceResource) -> None:
@@ -49,8 +49,8 @@ async def add_token(token: Token, db: DynamoDBServiceResource) -> None:
         token: The token to add.
         db: The DynamoDB database.
     """
-    table = db.Table("UserTokens")
-    table.put_item(Item=token.model_dump())
+    table = await db.Table("UserTokens")
+    await table.put_item(Item=token.model_dump())
 
 
 async def get_token(token_id: str, db: DynamoDBServiceResource) -> Token:
@@ -60,15 +60,20 @@ async def get_token(token_id: str, db: DynamoDBServiceResource) -> Token:
         token_id: The ID of the token to retrieve.
         db: The DynamoDB database.
     """
-    table = db.Table("UserTokens")
-    token_dict = table.get_item(Key={"token_id": token_id})
+    table = await db.Table("UserTokens")
+    token_dict = await table.get_item(Key={"token_id": token_id})
     token = Token.model_validate(token_dict["Item"])
     return token
 
 
+async def test_adhoc() -> None:
+    async with get_aio_db() as db:
+        await add_user(User(user_id="ben", email="ben@kscale.dev"), db)
+        # print(await get_user("ben", db))
+        # print(await get_user_count(db))
+        # await get_token("ben", db)
+
+
 if __name__ == "__main__":
     # python -m store.app.api.crud.users
-    asyncio.run(add_user(User(user_id="ben", email="ben@kscale.dev"), get_db()))
-    # print(asyncio.run(get_user("ben", get_db())))
-    # print(asyncio.run(get_user_count(get_db())))
-    # asyncio.run(get_token("ben", get_db()))
+    asyncio.run(test_adhoc())

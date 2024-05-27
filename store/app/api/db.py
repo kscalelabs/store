@@ -2,22 +2,26 @@
 """Defines base tools for interacting with the database."""
 
 import asyncio
-from typing import Literal
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator, Literal
 
-import boto3
-from mypy_boto3_dynamodb.service_resource import DynamoDBServiceResource
+import aioboto3
+from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 
 from store.settings import settings
 
 
-def get_db() -> DynamoDBServiceResource:
-    return boto3.resource(
+@asynccontextmanager
+async def get_aio_db() -> AsyncGenerator[DynamoDBServiceResource, None]:
+    session = aioboto3.Session()
+    async with session.resource(
         "dynamodb",
         endpoint_url=settings.database.endpoint_url,
         region_name=settings.database.region_name,
         aws_access_key_id=settings.database.aws_access_key_id,
         aws_secret_access_key=settings.database.aws_secret_access_key,
-    )
+    ) as db:
+        yield db
 
 
 async def _create_dynamodb_table(
@@ -30,7 +34,7 @@ async def _create_dynamodb_table(
     write_capacity_units: int = 2,
     billing_mode: Literal["PROVISIONED", "PAY_PER_REQUEST"] = "PAY_PER_REQUEST",
 ) -> None:
-    db.create_table(
+    table = await db.create_table(
         AttributeDefinitions=[{"AttributeName": n, "AttributeType": t} for n, t in columns],
         TableName=name,
         KeySchema=[{"AttributeName": pk[0], "KeyType": pk[1]} for pk in pks],
@@ -39,27 +43,31 @@ async def _create_dynamodb_table(
         DeletionProtectionEnabled=deletion_protection,
         BillingMode=billing_mode,
     )
-    db.Table(name).wait_until_exists()
+    await table.wait_until_exists()
 
 
-async def create_tables(db: DynamoDBServiceResource) -> None:
+async def create_tables(db: DynamoDBServiceResource | None = None) -> None:
     """Initializes all of the database tables.
 
     Args:
         db: The DynamoDB database.
     """
-    await _create_dynamodb_table(
-        db=db,
-        name="Users",
-        columns=[
-            ("user_id", "S"),
-        ],
-        pks=[
-            ("user_id", "HASH"),
-        ],
-    )
+    if db is None:
+        async with get_aio_db() as db:
+            await create_tables(db)
+    else:
+        await _create_dynamodb_table(
+            db=db,
+            name="Users",
+            columns=[
+                ("user_id", "S"),
+            ],
+            pks=[
+                ("user_id", "HASH"),
+            ],
+        )
 
 
 if __name__ == "__main__":
     # python -m store.app.api.db
-    asyncio.run(create_tables(get_db()))
+    asyncio.run(create_tables())
