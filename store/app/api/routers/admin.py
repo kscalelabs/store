@@ -3,6 +3,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic.main import BaseModel
 
+from store.app.api.crud.users import get_user
+from store.app.api.db import ServiceResource, get_db
 from store.app.api.model import User
 from store.app.api.routers.users import SessionTokenData, get_session_token
 from store.settings import settings
@@ -15,8 +17,11 @@ async def is_admin(user_obj: User) -> bool:
     return email in settings.user.admin_emails
 
 
-async def assert_is_admin(token_data: SessionTokenData = Depends(get_session_token)) -> SessionTokenData:
-    admin_user_obj = await User.get_or_none(id=token_data.user_id)
+async def assert_is_admin(
+    token_data: SessionTokenData = Depends(get_session_token),
+    db: ServiceResource = Depends(get_db),
+) -> SessionTokenData:
+    admin_user_obj = await get_user(user_id=token_data.user_id, db=db)
 
     # Validates that the logged in user can take admin actions.
     if not admin_user_obj:

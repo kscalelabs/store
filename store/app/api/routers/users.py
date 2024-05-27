@@ -10,6 +10,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel
 
+from store.app.api.crud.users import add_user
+from store.app.api.db import ServiceResource, get_db
 from store.app.api.email import OneTimePassPayload, send_delete_email, send_otp_email, send_waitlist_email
 from store.app.api.model import Token, User
 from store.app.api.token import create_refresh_token, create_token, load_refresh_token, load_token
@@ -84,7 +86,7 @@ async def login_user(data: UserSignup) -> bool:
 
     if (
         settings.debug
-        and (authorized_emails := settings.user.authorized_users) is not None
+        and (authorized_emails := settings.user.authorized_emails) is not None
         and email in authorized_emails
     ):
         logger.warning("Login URL: %s?otp=%s", data.login_url, payload.encode())
@@ -103,14 +105,15 @@ class UserLoginResponse(BaseModel):
     token_type: str
 
 
-async def add_to_waitlist(email: str) -> None:
+async def add_to_waitlist(email: str, db: ServiceResource) -> None:
     await asyncio.gather(
         send_waitlist_email(email),
-        User.create(email=email, banned=True),
+        # User.create(email=email, banned=True),
+        add_user(user=User(email=email), db=db),
     )
 
 
-async def create_or_get(email: str) -> User:
+async def create_or_get(email: str, db: ServiceResource) -> User:
     # Gets or creates the user object.
     user_obj = await User.get_or_none(email=email)
     if user_obj is None:
@@ -119,7 +122,7 @@ async def create_or_get(email: str) -> User:
         # they are waitlisted).
         if (authorized_emails := settings.user.authorized_users) is not None:
             if email not in authorized_emails and email not in settings.user.admin_emails:
-                await add_to_waitlist(email)
+                await add_to_waitlist(email, db)
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="You're on the waitlist!")
         user_obj = await User.create(email=email)
 
@@ -139,9 +142,13 @@ async def get_login_response(response: Response, user_obj: User) -> UserLoginRes
 
 
 @user_router.post("/otp", response_model=UserLoginResponse)
-async def otp(data: OneTimePass, response: Response) -> UserLoginResponse:
+async def otp(
+    data: OneTimePass,
+    response: Response,
+    db: ServiceResource = Depends(get_db),
+) -> UserLoginResponse:
     payload = OneTimePassPayload.decode(data.payload)
-    user_obj = await create_or_get(payload.email)
+    user_obj = await create_or_get(payload.email, db)
     return await get_login_response(response, user_obj)
 
 
@@ -161,7 +168,11 @@ async def get_google_user_info(token: str) -> dict:
 
 
 @user_router.post("/google")
-async def google_login(data: GoogleLogin, response: Response) -> UserLoginResponse:
+async def google_login(
+    data: GoogleLogin,
+    response: Response,
+    db: ServiceResource = Depends(get_db),
+) -> UserLoginResponse:
     try:
         idinfo = await get_google_user_info(data.token)
         email = idinfo["email"]
@@ -169,7 +180,7 @@ async def google_login(data: GoogleLogin, response: Response) -> UserLoginRespon
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Google token")
     if idinfo.get("email_verified") is not True:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Google email not verified")
-    user_obj = await create_or_get(email)
+    user_obj = await create_or_get(email, db)
     return await get_login_response(response, user_obj)
 
 

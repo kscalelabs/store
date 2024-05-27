@@ -30,6 +30,17 @@ async def get_user(user_id: str, db: ServiceResource) -> User:
     return user
 
 
+async def update_user(user_id: str, db: ServiceResource) -> None:
+    """Updates a user in the database.
+
+    Args:
+        user_id: The ID of the user to retrieve.
+        db: The DynamoDB database.
+    """
+    table = db.Table("Users")
+    table.update_item(Key={"user_id": user_id}, AttributeUpdates=updates)
+
+
 async def get_user_count(db: ServiceResource) -> int:
     """Counts the users in the database.
 
@@ -67,6 +78,7 @@ async def get_token(token_id: str, db: ServiceResource) -> Token:
 if __name__ == "__main__":
     # python -m store.app.api.crud.users
     # asyncio.run(add_user(User(user_id="ben", email="ben@kscale.dev"), get_db()))
-    print(asyncio.run(get_user("ben", get_db())))
+    # print(asyncio.run(get_user("ben", get_db())))
+    print(asyncio.run(update_user("ben", get_db())))
     # print(asyncio.run(get_user_count(get_db())))
     # asyncio.run(get_token("ben", get_db()))

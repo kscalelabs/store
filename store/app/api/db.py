@@ -12,6 +12,7 @@ from store.settings import settings
 class Table:
     def put_item(self, *, Item: Any) -> Any: ...  # noqa: N803, ANN401
     def get_item(self, *, Key: Any) -> Any: ...  # noqa: N803, ANN401
+    def update_item(self, *, Key: Any, AttributeUpdates: Any) -> Any: ...  # noqa: N803, ANN401
     def wait_until_exists(self) -> None: ...
     @property
     def item_count(self) -> int: ...
