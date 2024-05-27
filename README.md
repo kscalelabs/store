@@ -4,7 +4,35 @@ This is the code for our online store. This is a simple store for buying and sel
 
 ## Development
 
-To develop the application, start FastAPI and React in separate terminals:
+To develop the application, start React and FastAPI in separate terminals:
+
+### React
+
+To install the React dependencies, use [nvm](https://github.com/nvm-sh/nvm) and [npm](https://www.npmjs.com/):
+
+```bash
+cd frontend
+nvm use 20.10.0
+npm install
+```
+
+To serve the React frontend in development mode:
+
+```bash
+npm start
+```
+
+To build the React frontend for production:
+
+```bash
+npm run build
+```
+
+To automatically rebuild the React frontend code when a file is changed:
+
+```bash
+npm run watch
+```
 
 ### FastAPI
 
@@ -34,15 +62,4 @@ Initialize the test databases by running the creation script:
 
 ```bash
 python -m store.app.api.db
-```
-
-### React
-
-Automatically rebuild the React frontend code when a file is changed:
-
-```bash
-cd frontend
-nvm use 20.10.0  # If you're using nvm
-npm install  # If you haven't already
-npm run watch
 ```
