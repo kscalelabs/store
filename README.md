@@ -30,7 +30,7 @@ docker pull amazon/dynamodb-local  # If you haven't already
 docker run -d -p 8080:8080 amazon/dynamodb-local  # Start the container in the background
 ```
 
-Create a test database by running the creation script:
+Initialize the test databases by running the creation script:
 
 ```bash
 python -m store.app.api.db

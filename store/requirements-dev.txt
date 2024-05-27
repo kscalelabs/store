@@ -15,5 +15,4 @@ pytest-timeout
 pytest-trio
 
 # Types
-boto3-stubs[dynamodb]
-types-aioboto3[essential]
+types-aioboto3[dynamodb]
