@@ -12,7 +12,7 @@ from store.settings import settings
 
 
 @asynccontextmanager
-async def get_aio_db() -> AsyncGenerator[DynamoDBServiceResource, None]:
+async def get_db() -> AsyncGenerator[DynamoDBServiceResource, None]:
     session = aioboto3.Session()
     async with session.resource(
         "dynamodb",
@@ -53,7 +53,7 @@ async def create_tables(db: DynamoDBServiceResource | None = None) -> None:
         db: The DynamoDB database.
     """
     if db is None:
-        async with get_aio_db() as db:
+        async with get_db() as db:
             await create_tables(db)
     else:
         await _create_dynamodb_table(

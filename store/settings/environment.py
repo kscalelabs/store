@@ -39,6 +39,7 @@ class EmailSettings:
 @dataclass
 class SiteSettings:
     homepage: str = field(default=MISSING)
+    image_prefix: str = field(default=MISSING)
 
 
 @dataclass

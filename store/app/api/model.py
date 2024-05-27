@@ -8,14 +8,13 @@ from pydantic import BaseModel
 
 
 class User(BaseModel):
-    user_id: str
     email: str
     banned: bool = field(default=False)
     deleted: bool = field(default=False)
 
 
 class Token(BaseModel):
-    token_id: str
-    user_id: str
+    email: str
+    ip_addr: str  # TODO: Use proper IP addresses here instead.
     issued: datetime.datetime = field(default_factory=datetime.datetime.now)
     disabled: bool = field(default=False)

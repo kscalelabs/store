@@ -7,3 +7,4 @@ crypto:
   jwt_secret: ${oc.env:JWT_SECRET}
 site:
   homepage: http://localhost:3000
+  image_prefix: http://localhost:3000/images/

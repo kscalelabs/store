@@ -5,7 +5,10 @@ import logging
 
 import jwt
 from fastapi import HTTPException, status
+from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 
+from store.app.api.crud.users import add_token
+from store.app.api.model import Token
 from store.settings import settings
 from store.utils import server_time
 
@@ -55,3 +58,35 @@ def load_token(payload: str) -> dict:
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     return data
+
+
+async def create_refresh_token(email: str, ip_addr: str, db: DynamoDBServiceResource) -> str:
+    """Creates a refresh token for a user.
+
+    Refresh tokens never expire. They are used to generate short-lived session
+    tokens which are used for authentication.
+
+    Args:
+        email: The email for the user associated with this token.
+        ip_addr: The IP address of the token.
+        db: The database resource for the token.
+
+    Returns:
+        The encoded JWT.
+    """
+    token = Token(email=email, ip_addr=ip_addr)
+    await add_token(token, db)
+    return create_token({"eml": email, "ip": ip_addr})
+
+
+def load_refresh_token(payload: str) -> tuple[str, str]:
+    """Loads the refresh token payload.
+
+    Args:
+        payload: The JWT-encoded payload.
+
+    Returns:
+        The decoded refresh token data.
+    """
+    data = load_token(payload)
+    return data["eml"], data["ip"]
