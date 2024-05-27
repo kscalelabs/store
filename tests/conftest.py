@@ -8,7 +8,8 @@ from _pytest.python import Function
 from fastapi.testclient import TestClient
 from pytest_mock.plugin import MockerFixture, MockType
 
-os.environ["ENVIRONMENT"] = "test"
+os.environ["ROBOLIST_ENVIRONMENT"] = "local"
+os.environ["JWT_SECRET"] = "123456"
 
 
 def pytest_collection_modifyitems(items: list[Function]) -> None:
