@@ -1,7 +1,16 @@
 # requirements.txt
 
+# Standard dependencies.
+omegaconf
+bson
+pydantic
+
+# AWS dependencies.
+aioboto3
+
 # FastAPI dependencies.
 aiohttp
+aiosmtplib
 fastapi
 pyjwt
 python-multipart

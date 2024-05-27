@@ -14,5 +14,5 @@ pytest-mock
 pytest-timeout
 pytest-trio
 
-# Deployment
-awsebcli
+# Types
+types-aioboto3[dynamodb]
