@@ -27,16 +27,16 @@ jobs:
       dynamodb-local:
         image: amazon/dynamodb-local
         options: >-
-          -p 8000:8000
+          -p 8080:8080
           -v /tmp/dynamodb:/data
         ports:
-          - 8000:8000
+          - 8080:8080
         env:
           AWS_ACCESS_KEY_ID: test
           AWS_SECRET_ACCESS_KEY: test
           AWS_REGION: us-east-1
-          DYNAMODB_LOCAL: true
-          DYNAMODB_ENDPOINT: http://localhost:8000
+          DYNAMODB_ENDPOINT: http://localhost:8080
+          ROBOLIST_ENVIRONMENT: local
 
     steps:
       - name: Check out repository

@@ -30,6 +30,10 @@ warn_redundant_casts = true
 incremental = true
 namespace_packages = false
 
+plugins = [
+    "mypy_boto3_dynamodb.plugin",
+]
+
 [[tool.mypy.overrides]]
 
 module = [
@@ -37,6 +41,10 @@ module = [
 ]
 
 ignore_missing_imports = true
+
+[tool.mypy_boto3_dynamodb]
+
+ignore_missing_service = true
 
 [tool.isort]
 

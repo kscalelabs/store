@@ -2,28 +2,15 @@
 """Defines base tools for interacting with the database."""
 
 import asyncio
-from typing import Any, Literal
+from typing import Literal
 
 import boto3
+from mypy_boto3_dynamodb.service_resource import DynamoDBServiceResource
 
 from store.settings import settings
 
 
-class Table:
-    def put_item(self, *, Item: Any) -> Any: ...  # noqa: N803, ANN401
-    def get_item(self, *, Key: Any) -> Any: ...  # noqa: N803, ANN401
-    def update_item(self, *, Key: Any, AttributeUpdates: Any) -> Any: ...  # noqa: N803, ANN401
-    def wait_until_exists(self) -> None: ...
-    @property
-    def item_count(self) -> int: ...
-
-
-class ServiceResource:
-    def Table(self, name: str) -> Table: ...  # noqa: N802
-    def create_table(self, **kwargs: Any) -> None: ...  # noqa: ANN401
-
-
-def get_db() -> ServiceResource:
+def get_db() -> DynamoDBServiceResource:
     return boto3.resource(
         "dynamodb",
         endpoint_url=settings.database.endpoint_url,
@@ -34,7 +21,7 @@ def get_db() -> ServiceResource:
 
 
 async def _create_dynamodb_table(
-    db: ServiceResource,
+    db: DynamoDBServiceResource,
     name: str,
     columns: list[tuple[str, Literal["S", "N", "B"]]],
     pks: list[tuple[str, Literal["HASH", "RANGE"]]],
@@ -47,46 +34,6 @@ async def _create_dynamodb_table(
         AttributeDefinitions=[{"AttributeName": n, "AttributeType": t} for n, t in columns],
         TableName=name,
         KeySchema=[{"AttributeName": pk[0], "KeyType": pk[1]} for pk in pks],
-        # LocalSecondaryIndexes=[
-        #     {
-        #         "IndexName": "string",
-        #         "KeySchema": [
-        #             {"AttributeName": "string", "KeyType": "HASH" | "RANGE"},
-        #         ],
-        #         "Projection": {
-        #             "ProjectionType": "ALL" | "KEYS_ONLY" | "INCLUDE",
-        #             "NonKeyAttributes": [
-        #                 "string",
-        #             ],
-        #         },
-        #     },
-        # ],
-        # GlobalSecondaryIndexes=[
-        #     {
-        #         "IndexName": "string",
-        #         "KeySchema": [
-        #             {"AttributeName": "string", "KeyType": "HASH" | "RANGE"},
-        #         ],
-        #         "Projection": {
-        #             "ProjectionType": "ALL" | "KEYS_ONLY" | "INCLUDE",
-        #             "NonKeyAttributes": [
-        #                 "string",
-        #             ],
-        #         },
-        #         "ProvisionedThroughput": {"ReadCapacityUnits": 123, "WriteCapacityUnits": 123},
-        #         "OnDemandThroughput": {"MaxReadRequestUnits": 123, "MaxWriteRequestUnits": 123},
-        #     },
-        # ],
-        # StreamSpecification={
-        #     "StreamEnabled": True | False,
-        #     "StreamViewType": "NEW_IMAGE" | "OLD_IMAGE" | "NEW_AND_OLD_IMAGES" | "KEYS_ONLY",
-        # },
-        # SSESpecification={"Enabled": True | False, "SSEType": "AES256" | "KMS", "KMSMasterKeyId": "string"},
-        # Tags=[
-        #     {"Key": "string", "Value": "string"},
-        # ],
-        # TableClass="STANDARD" | "STANDARD_INFREQUENT_ACCESS",
-        # ResourcePolicy="string",
         ProvisionedThroughput={"ReadCapacityUnits": read_capacity_units, "WriteCapacityUnits": write_capacity_units},
         OnDemandThroughput={"MaxReadRequestUnits": read_capacity_units, "MaxWriteRequestUnits": write_capacity_units},
         DeletionProtectionEnabled=deletion_protection,
@@ -95,7 +42,7 @@ async def _create_dynamodb_table(
     db.Table(name).wait_until_exists()
 
 
-async def create_tables(db: ServiceResource) -> None:
+async def create_tables(db: DynamoDBServiceResource) -> None:
     """Initializes all of the database tables.
 
     Args:
