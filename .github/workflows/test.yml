@@ -36,6 +36,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: test
           AWS_REGION: us-east-1
           ROBOLIST_ENVIRONMENT: local
+          JWT_SECRET: test
 
     steps:
       - name: Check out repository

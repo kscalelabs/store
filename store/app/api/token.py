@@ -6,7 +6,6 @@ import logging
 import jwt
 from fastapi import HTTPException, status
 
-from store.app.api.model import Token, User
 from store.settings import settings
 from store.utils import server_time
 
@@ -56,32 +55,3 @@ def load_token(payload: str) -> dict:
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     return data
-
-
-async def create_refresh_token(user: User) -> str:
-    """Creates a refresh token for a user.
-
-    Refresh tokens never expire. They are used to generate short-lived session
-    tokens which are used for authentication.
-
-    Args:
-        user: The user to create the token for.
-
-    Returns:
-        The encoded JWT.
-    """
-    token = await Token.create(user=user)
-    return create_token({"uid": user.id, "tid": token.id})
-
-
-def load_refresh_token(payload: str) -> tuple[int, int]:
-    """Loads the refresh token payload.
-
-    Args:
-        payload: The JWT-encoded payload.
-
-    Returns:
-        The user ID and token ID.
-    """
-    data = load_token(payload)
-    return data["uid"], data["tid"]
