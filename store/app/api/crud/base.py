@@ -55,10 +55,10 @@ class BaseCrud:
                 "ReadCapacityUnits": read_capacity_units,
                 "WriteCapacityUnits": write_capacity_units,
             },
-            OnDemandThroughput={
-                "MaxReadRequestUnits": read_capacity_units,
-                "MaxWriteRequestUnits": write_capacity_units,
-            },
+            # OnDemandThroughput={
+            #     "MaxReadRequestUnits": read_capacity_units,
+            #     "MaxWriteRequestUnits": write_capacity_units,
+            # },
             DeletionProtectionEnabled=deletion_protection,
             BillingMode=billing_mode,
         )

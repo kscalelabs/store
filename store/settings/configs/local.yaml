@@ -1,5 +1,5 @@
 database:
-  endpoint_url: http://localhost:8080
+  endpoint_url: http://localhost:8000
   region_name: us-east-1
   aws_access_key_id: fakeAwsKeyId
   aws_secret_access_key: fakeSecretAccessKey

@@ -1,37 +1,54 @@
 import React from "react";
-
-interface ListingLink {
-  name: string;
-  url: string;
-}
+import Col from "react-bootstrap/Col";
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
+import { Carousel } from "react-bootstrap";
+import "holderjs";
 
 interface ListingsResponseItem {
   name: string;
   owner: string;
-  links: ListingLink[];
+  links: { name: string; url: string }[];
+  images: { url: string; caption: string }[];
 }
 
 interface ListingsResponse {
   listings: ListingsResponseItem[];
 }
 
-const Listing = ({ name, owner, links }: ListingsResponseItem) => {
+const Listing = ({ name, owner, links, images }: ListingsResponseItem) => {
   return (
-    <>
-      <h3>{name}</h3>
-      <p>{owner}</p>
+    <Col>
+      <Row>
+        <h3>{name}</h3>
+        <p>{owner}</p>
+      </Row>
       {links && (
-        <ul>
-          {links.map((link, key) => (
-            <li>
-              <a key={key} href={link.url}>
-                {link.name}
-              </a>
-            </li>
-          ))}
-        </ul>
+        <Row>
+          <ul>
+            {links.map((link, key) => (
+              <li>
+                <a key={key} href={link.url}>
+                  {link.name}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </Row>
       )}
-    </>
+      {images && (
+        <Carousel indicators data-bs-theme="dark">
+          {images.map((image, key) => (
+            <Carousel.Item key={key}>
+              <img src={image.url} alt={image.caption} />
+              <Carousel.Caption>
+                <h3>{image.caption}</h3>
+              </Carousel.Caption>
+            </Carousel.Item>
+          ))}
+        </Carousel>
+      )}
+    </Col>
   );
 };
 
@@ -55,17 +72,31 @@ const Listings = () => {
             url: "https://media.kscale.dev/stompy/latest_mjcf.tar.gz",
           },
         ],
+        images: [
+          {
+            url: "holder.js/171x180",
+            caption: "Image 1",
+          },
+          {
+            url: "holder.js/171x180",
+            caption: "Image 2",
+          },
+          {
+            url: "holder.js/171x180",
+            caption: "Image 3",
+          },
+        ],
       },
     ],
   };
 
   return (
-    <div>
+    <Container>
       <h2>Listings</h2>
       {response.listings.map((item, key) => (
         <Listing key={key} {...item} />
       ))}
-    </div>
+    </Container>
   );
 };
 

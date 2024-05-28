@@ -55,7 +55,7 @@ When developing locally, use the `amazon/dynamodb-local` Docker image to run a l
 
 ```bash
 docker pull amazon/dynamodb-local  # If you haven't already
-docker run -d -p 8080:8080 amazon/dynamodb-local  # Start the container in the background
+docker run -d -p 8000:8000 amazon/dynamodb-local  # Start the container in the background
 ```
 
 Initialize the test databases by running the creation script:

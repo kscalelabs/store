@@ -10,6 +10,7 @@
     "@types/node": "^16.18.97",
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.3.0",
+    "holderjs": "^2.9.9",
     "nth-check": ">=2.0.1",
     "postcss": ">=8.4.31",
     "react": "^18.3.1",
@@ -45,6 +46,7 @@
   },
   "devDependencies": {
     "axios": "^1.7.2",
+    "bootstrap": "^5.3.3",
     "nodemon": "^3.1.0",
     "react-bootstrap": "^2.10.2",
     "react-router-dom": "^6.23.1"

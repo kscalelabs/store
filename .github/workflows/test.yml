@@ -34,10 +34,10 @@ jobs:
       dynamodb-local:
         image: amazon/dynamodb-local
         options: >-
-          -p 0:8080
+          -p 0:8000
           -v /tmp/dynamodb:/data
         ports:
-          - 8080
+          - 8000
 
     steps:
       - name: Check out repository
