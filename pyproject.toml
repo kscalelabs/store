@@ -6,8 +6,10 @@ include = '\.pyi?$'
 
 [tool.pytest.ini_options]
 
-addopts = "-rx -rf -x -q --full-trace"
+timeout = 60
+addopts = "-rx -rf -x -q --tb=short"
 testpaths = ["tests"]
+asyncio_mode = "auto"
 
 markers = [
     "slow: Marks test as being slow",

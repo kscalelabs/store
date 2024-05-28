@@ -7,12 +7,15 @@ mypy
 ruff
 
 # Testing
+moto[dynamodb]
 pytest
 pytest-aiohttp
+pytest-aiomoto
 pytest-asyncio
 pytest-mock
 pytest-timeout
 pytest-trio
+s3fs
 
 # Types
 types-aioboto3[dynamodb]

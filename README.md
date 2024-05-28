@@ -36,10 +36,25 @@ npm run watch
 
 ### FastAPI
 
+Create a Python virtual environment using either [uv](https://astral.sh/blog/uv) or [virtualenv](https://virtualenv.pypa.io/en/latest/) with at least Python 3.11. This should look something like this:
+
+```bash
+uv venv .venv --python 3.11  # If using uv
+python -m venv .venv  # Using vanilla virtualenv
+source .venv/bin/activate
+```
+
+Install the project:
+
+```bash
+uv pip install -e '.[dev]'  # If using uv
+pip install -e '.[dev]'  # Using vanilla pip
+```
+
 Serve the FastAPI application in development mode:
 
 ```bash
-fastapi dev 'store/app/main.py'
+fastapi dev 'store/app/main.py' --port 8080  # On port 8080 to avoid conflicts with Docker
 ```
 
 #### Configuration
@@ -55,7 +70,7 @@ When developing locally, use the `amazon/dynamodb-local` Docker image to run a l
 
 ```bash
 docker pull amazon/dynamodb-local  # If you haven't already
-docker run -d -p 8080:8080 amazon/dynamodb-local  # Start the container in the background
+docker run -d -p 8000:8000 amazon/dynamodb-local  # Start the container in the background
 ```
 
 Initialize the test databases by running the creation script:

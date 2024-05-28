@@ -6,6 +6,8 @@ import logging
 import jwt
 from fastapi import HTTPException, status
 
+from store.app.api.db import Crud
+from store.app.api.model import Token
 from store.settings import settings
 from store.utils import server_time
 
@@ -55,3 +57,34 @@ def load_token(payload: str) -> dict:
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     return data
+
+
+async def create_refresh_token(email: str, crud: Crud) -> str:
+    """Creates a refresh token for a user.
+
+    Refresh tokens never expire. They are used to generate short-lived session
+    tokens which are used for authentication.
+
+    Args:
+        email: The email for the user associated with this token.
+        crud: The CRUD class for the databases.
+
+    Returns:
+        The encoded JWT.
+    """
+    token = Token(email=email)
+    await crud.add_token(token)
+    return create_token({"eml": email})
+
+
+def load_refresh_token(payload: str) -> str:
+    """Loads the refresh token payload.
+
+    Args:
+        payload: The JWT-encoded payload.
+
+    Returns:
+        The decoded refresh token data.
+    """
+    data = load_token(payload)
+    return data["eml"]
