@@ -1,4 +1,3 @@
-# mypy: disable-error-code="var-annotated"
 """Defines the table models for the API."""
 
 import datetime
@@ -15,6 +14,6 @@ class User(BaseModel):
 
 class Token(BaseModel):
     email: str
-    ip_addr: str  # TODO: Use proper IP addresses here instead.
+    ip_addr: str
     issued: datetime.datetime = field(default_factory=datetime.datetime.now)
     disabled: bool = field(default=False)

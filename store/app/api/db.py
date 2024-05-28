@@ -1,4 +1,3 @@
-# mypy: disable-error-code="empty-body"
 """Defines base tools for interacting with the database."""
 
 import asyncio
