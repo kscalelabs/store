@@ -21,7 +21,8 @@ class UserCrud(BaseCrud):
         return user
 
     async def delete_user(self, user: User) -> None:
-        raise NotImplementedError
+        table = await self.db.Table("Users")
+        await table.delete_item(Key={"email": user.email})
 
     async def list_users(self) -> list[User]:
         warnings.warn("`list_users` probably shouldn't be called in production", ResourceWarning)
@@ -34,11 +35,11 @@ class UserCrud(BaseCrud):
         return await table.item_count
 
     async def add_token(self, token: Token) -> None:
-        table = await self.db.Table("UserTokens")
+        table = await self.db.Table("Tokens")
         await table.put_item(Item=token.model_dump())
 
     async def get_token(self, email: str) -> Token | None:
-        table = await self.db.Table("UserTokens")
+        table = await self.db.Table("Tokens")
         token_dict = await table.get_item(Key={"email": email})
         if "Item" not in token_dict:
             return None

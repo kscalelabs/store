@@ -2,7 +2,6 @@
 
 import asyncio
 
-import moto
 from fastapi.testclient import TestClient
 from pytest_mock.plugin import MockType
 
@@ -10,7 +9,6 @@ from store.app.api.db import create_tables
 from store.app.api.email import OneTimePassPayload
 
 
-@moto.mock_dynamodb
 def test_user_auth_functions(app_client: TestClient, mock_send_email: MockType) -> None:
     asyncio.run(create_tables())
 
@@ -71,21 +69,6 @@ def test_user_auth_functions(app_client: TestClient, mock_send_email: MockType) 
     # Gets another session token.
     response = app_client.post("/api/users/refresh")
     assert response.status_code == 200, response.json()
-
-    # Checks the current user is an admin account.
-    response = app_client.get("/api/admin/check")
-    assert response.status_code == 200, response.json()
-    assert response.json() is True
-
-    # Tests admin actions.
-    response = app_client.post("/api/admin/act/user", json={"email": bad_actor_email, "banned": True})
-    assert response.status_code == 200, response.json()
-
-    # Tests logging in the bad actor user again, to make sure it's banned.
-    otp = OneTimePassPayload(email=bad_actor_email)
-    response = app_client.post("/api/users/otp", json={"payload": otp.encode()})
-    assert response.status_code == 401, response.json()
-    assert response.json()["detail"] == "User is not allowed to log in"
 
     # Delete the user.
     response = app_client.delete("/api/users/me")

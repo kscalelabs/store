@@ -28,6 +28,7 @@ def mock_aws() -> Generator[None, None, None]:
                 env_vars[k] = os.environ[k]
                 del os.environ[k]
 
+        # Starts a local AWS server.
         server = ThreadedMotoServer(port=0)
         server.start()
         port = server._server.socket.getsockname()[1]
