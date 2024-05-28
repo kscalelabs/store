@@ -26,7 +26,8 @@
         "test": "react-scripts test",
         "eject": "react-scripts eject",
         "watch": "nodemon serve",
-        "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
+        "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+        "lint": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\" && eslint src"
     },
     "eslintConfig": {
         "extends": [

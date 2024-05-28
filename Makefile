@@ -48,6 +48,7 @@ static-checks:
 	@black --diff --check store
 	@ruff check store
 	@mypy --install-types --non-interactive store
+	@cd frontend && npm run lint
 .PHONY: lint
 
 # ------------------------ #
