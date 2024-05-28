@@ -26,7 +26,7 @@ def mock_aws() -> Generator[None, None, None]:
         for k in (
             "AWS_ACCESS_KEY_ID",
             "AWS_SECRET_ACCESS_KEY",
-            "AWS_ENDPOINT_URL_DYNAMODB",
+            "AWS_ENDPOINT_URL",
             "AWS_REGION",
             "AWS_DEFAULT_REGION",
         ):
