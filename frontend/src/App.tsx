@@ -1,22 +1,26 @@
-import React from "react";
-import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Route, Routes, BrowserRouter } from "react-router-dom";
+import React from "react";
+import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
+import "./App.css";
 
-import Listings from "components/Listings";
-import RobotDetails from "pages/Robot";
 import Authentication from "components/Authentication";
+import Listings from "components/Listings";
+import Home from "pages/Home";
+import RobotDetails from "pages/Robot";
 import { Container } from "react-bootstrap";
 
 const App = () => {
   return (
     <BrowserRouter>
       <Container style={{ marginTop: 20 }}>
-        <h1>robolist.xyz</h1>
+        <h1>
+          <Link to="/">robolist.xyz</Link>
+        </h1>
         <p>Buy and sell robots</p>
         <Authentication />
         <Routes>
-          <Route path="/" element={<Listings />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/robots/" element={<Listings />} />
           <Route path="/robots/:id" element={<RobotDetails />} />
         </Routes>
       </Container>
