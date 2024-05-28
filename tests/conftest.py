@@ -26,7 +26,7 @@ def mock_aws() -> Generator[None, None, None]:
         for k in (
             "AWS_ACCESS_KEY_ID",
             "AWS_SECRET_ACCESS_KEY",
-            "AWS_ENDPOINT_URL",
+            "AWS_ENDPOINT_URL_DYNAMODB",
             "AWS_REGION",
             "AWS_DEFAULT_REGION",
         ):
@@ -42,7 +42,7 @@ def mock_aws() -> Generator[None, None, None]:
         server = ThreadedMotoServer(port=0)
         server.start()
         port = server._server.socket.getsockname()[1]
-        os.environ["AWS_ENDPOINT_URL"] = f"http://127.0.0.1:{port}"
+        os.environ["AWS_ENDPOINT_URL_DYNAMODB"] = f"http://127.0.0.1:{port}"
 
         with mock_dynamodb():
             yield
