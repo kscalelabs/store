@@ -41,6 +41,7 @@ start-docker:
 format:
 	@black store
 	@ruff format store
+	@cd frontend && npm run format
 .PHONY: format
 
 static-checks:
