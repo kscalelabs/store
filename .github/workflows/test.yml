@@ -1,4 +1,4 @@
-name: Python Checks
+name: CI Checks (Linting and Tests)
 
 on:
   push:

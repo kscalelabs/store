@@ -35,20 +35,36 @@ start-docker:
 	@docker run --name store-db -d -p 8000:8000 amazon/dynamodb-local
 
 # ------------------------ #
-#       Static Checks      #
+#      Code Formatting     #
 # ------------------------ #
 
-format:
+format-backend:
 	@black store
 	@ruff format store
+.PHONY: format
+
+format-frontend:
 	@cd frontend && npm run format
 .PHONY: format
 
-static-checks:
+format: format-backend format-frontend
+.PHONY: format
+
+# ------------------------ #
+#       Static Checks      #
+# ------------------------ #
+
+static-checks-backend:
 	@black --diff --check store
 	@ruff check store
 	@mypy --install-types --non-interactive store
+.PHONY: lint
+
+static-checks-frontend:
 	@cd frontend && npm run lint
+.PHONY: lint
+
+static-checks: static-checks-backend static-checks-frontend
 .PHONY: lint
 
 # ------------------------ #
