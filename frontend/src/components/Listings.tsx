@@ -3,7 +3,6 @@ import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import { Carousel } from "react-bootstrap";
-import "holderjs";
 
 interface ListingsResponseItem {
   name: string;
@@ -74,15 +73,15 @@ const Listings = () => {
         ],
         images: [
           {
-            url: "holder.js/171x180",
+            url: "https://media.robolist.xyz/logo.png",
             caption: "Image 1",
           },
           {
-            url: "holder.js/171x180",
+            url: "https://media.robolist.xyz/logo.png",
             caption: "Image 2",
           },
           {
-            url: "holder.js/171x180",
+            url: "https://media.robolist.xyz/logo.png",
             caption: "Image 3",
           },
         ],

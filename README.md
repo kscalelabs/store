@@ -36,10 +36,25 @@ npm run watch
 
 ### FastAPI
 
+Create a Python virtual environment using either [uv](https://astral.sh/blog/uv) or [virtualenv](https://virtualenv.pypa.io/en/latest/) with at least Python 3.11. This should look something like this:
+
+```bash
+uv venv .venv --python 3.11  # If using uv
+python -m venv .venv  # Using vanilla virtualenv
+source .venv/bin/activate
+```
+
+Install the project:
+
+```bash
+uv pip install -e '.[dev]'  # If using uv
+pip install -e '.[dev]'  # Using vanilla pip
+```
+
 Serve the FastAPI application in development mode:
 
 ```bash
-fastapi dev 'store/app/main.py'
+fastapi dev 'store/app/main.py' --port 8080  # On port 8080 to avoid conflicts with Docker
 ```
 
 #### Configuration

@@ -4,7 +4,7 @@ database:
   aws_access_key_id: fakeAwsKeyId
   aws_secret_access_key: fakeSecretAccessKey
 crypto:
-  jwt_secret: ${oc.env:JWT_SECRET}
+  jwt_secret: fakeJwtSecret
 site:
-  homepage: http://localhost:3000
-  image_prefix: http://localhost:3000/images/
+  homepage: http://localhost:8080
+  image_prefix: http://localhost:8080/images/
