@@ -9,7 +9,6 @@ import aiohttp
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel
-from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 
 from store.app.api.db import Crud
 from store.app.api.email import OneTimePassPayload, send_delete_email, send_otp_email, send_waitlist_email
@@ -40,34 +39,30 @@ def set_token_cookie(response: Response, token: str, key: str) -> None:
 
 class RefreshTokenData(BaseModel):
     email: str
-    ip_addr: str
 
     @classmethod
-    async def encode(cls, user: User, ip_addr: str, db: DynamoDBServiceResource) -> str:
-        return await create_refresh_token(user.email, ip_addr, db)
+    async def encode(cls, user: User, crud: Crud) -> str:
+        return await create_refresh_token(user.email, crud)
 
     @classmethod
     def decode(cls, payload: str) -> "RefreshTokenData":
-        email, ip_addr = load_refresh_token(payload)
-        return cls(email=email, ip_addr=ip_addr)
+        email = load_refresh_token(payload)
+        return cls(email=email)
 
 
 class SessionTokenData(BaseModel):
     email: str
-    ip_addr: str
 
     def encode(self) -> str:
         expire_minutes = settings.crypto.expire_token_minutes
         expire_after = datetime.timedelta(minutes=expire_minutes)
-        return create_token({"eml": self.email, "ip": self.ip_addr}, expire_after=expire_after)
+        return create_token({"eml": self.email}, expire_after=expire_after)
 
     @classmethod
-    def decode(cls, payload: str, host: str) -> "SessionTokenData":
+    def decode(cls, payload: str) -> "SessionTokenData":
         data = load_token(payload)
-        email, ip_addr = data["eml"], data["ip"]
-        if ip_addr != host:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid IP address")
-        return cls(email=email, ip_addr=ip_addr)
+        email = data["eml"]
+        return cls(email=email)
 
 
 class UserSignup(BaseModel):
@@ -125,14 +120,11 @@ async def create_or_get(email: str, crud: Crud) -> User:
 
 
 async def get_login_response(
-    request: Request,
     response: Response,
     user_obj: User,
-    db: DynamoDBServiceResource,
+    crud: Crud,
 ) -> UserLoginResponse:
-    if (client := request.client) is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing IP address")
-    refresh_token = await RefreshTokenData.encode(user_obj, client.host, db)
+    refresh_token = await RefreshTokenData.encode(user_obj, crud)
     set_token_cookie(response, refresh_token, REFRESH_TOKEN_COOKIE_KEY)
     return UserLoginResponse(token=refresh_token, token_type=TOKEN_TYPE)
 
@@ -140,13 +132,12 @@ async def get_login_response(
 @users_router.post("/otp", response_model=UserLoginResponse)
 async def otp_endpoint(
     data: OneTimePass,
-    request: Request,
     response: Response,
     crud: Crud = Depends(Crud),
 ) -> UserLoginResponse:
     payload = OneTimePassPayload.decode(data.payload)
     user_obj = await create_or_get(payload.email, crud)
-    return await get_login_response(request, response, user_obj, crud)
+    return await get_login_response(response, user_obj, crud)
 
 
 class GoogleLogin(BaseModel):
@@ -167,7 +158,6 @@ async def get_google_user_info(token: str) -> dict:
 @users_router.post("/google")
 async def google_login_endpoint(
     data: GoogleLogin,
-    request: Request,
     response: Response,
     crud: Crud = Depends(Crud),
 ) -> UserLoginResponse:
@@ -179,7 +169,7 @@ async def google_login_endpoint(
     if idinfo.get("email_verified") is not True:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Google email not verified")
     user_obj = await create_or_get(email, crud)
-    return await get_login_response(request, response, user_obj, crud)
+    return await get_login_response(response, user_obj, crud)
 
 
 async def get_refresh_token(request: Request) -> RefreshTokenData:
@@ -202,10 +192,6 @@ async def get_refresh_token(request: Request) -> RefreshTokenData:
 
 
 async def get_session_token(request: Request) -> SessionTokenData:
-    if (client := request.client) is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing IP address")
-    ip_addr = client.host
-
     # Tries Authorization header.
     authorization = request.headers.get("Authorization") or request.headers.get("authorization")
     if authorization:
@@ -214,12 +200,12 @@ async def get_session_token(request: Request) -> SessionTokenData:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
         if scheme.lower() != TOKEN_TYPE.lower():
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
-        return SessionTokenData.decode(credentials, ip_addr)
+        return SessionTokenData.decode(credentials)
 
     # Tries Cookie.
     cookie_token = request.cookies.get(SESSION_TOKEN_COOKIE_KEY)
     if cookie_token:
-        return SessionTokenData.decode(cookie_token, ip_addr)
+        return SessionTokenData.decode(cookie_token)
 
     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
 
@@ -270,9 +256,9 @@ async def refresh_endpoint(
     data: RefreshTokenData = Depends(get_refresh_token),
     crud: Crud = Depends(Crud),
 ) -> RefreshTokenResponse:
-    token = await crud.get_token(data.email, data.ip_addr)
+    token = await crud.get_token(data.email)
     if not token or token.disabled:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token")
-    session_token = SessionTokenData(email=data.email, ip_addr=data.ip_addr).encode()
+    session_token = SessionTokenData(email=data.email).encode()
     set_token_cookie(response, session_token, SESSION_TOKEN_COOKIE_KEY)
     return RefreshTokenResponse(token=session_token, token_type=TOKEN_TYPE)

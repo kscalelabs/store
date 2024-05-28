@@ -37,9 +37,9 @@ class UserCrud(BaseCrud):
         table = await self.db.Table("UserTokens")
         await table.put_item(Item=token.model_dump())
 
-    async def get_token(self, email: str, ip_addr: str) -> Token | None:
+    async def get_token(self, email: str) -> Token | None:
         table = await self.db.Table("UserTokens")
-        token_dict = await table.get_item(Key={"email": email, "ip_addr": ip_addr})
+        token_dict = await table.get_item(Key={"email": email})
         if "Item" not in token_dict:
             return None
         token = Token.model_validate(token_dict["Item"])

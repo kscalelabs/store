@@ -14,6 +14,5 @@ class User(BaseModel):
 
 class Token(BaseModel):
     email: str
-    ip_addr: str
     issued: datetime.datetime = field(default_factory=datetime.datetime.now)
     disabled: bool = field(default=False)
