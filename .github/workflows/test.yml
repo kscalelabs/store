@@ -67,9 +67,8 @@ jobs:
           npm install
 
       - name: Run tests
-        working-directory: frontend
         run: |
-          npm test -- --watchAll=false
+          make test-frontend
 
       - name: Build frontend
         run: |
@@ -92,7 +91,7 @@ jobs:
 
       - name: Run unit tests
         run: |
-          make test
+          make test-backend
 
       - name: Save cache
         uses: actions/cache/save@v3
