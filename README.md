@@ -34,6 +34,12 @@ To automatically rebuild the React frontend code when a file is changed:
 npm run watch
 ```
 
+To run code formatting:
+
+```bash
+npm run format
+```
+
 ### FastAPI
 
 Create a Python virtual environment using either [uv](https://astral.sh/blog/uv) or [virtualenv](https://virtualenv.pypa.io/en/latest/) with at least Python 3.11. This should look something like this:
