@@ -17,3 +17,6 @@ python-multipart
 
 # Deployment dependencies.
 uvicorn[standard]
+
+# Types
+types-aioboto3[dynamodb]
