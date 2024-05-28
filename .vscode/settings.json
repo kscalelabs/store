@@ -1,39 +1,34 @@
 {
-  "[jsonc]": {
-    "editor.defaultFormatter": "vscode.json-language-features",
-    "editor.tabSize": 2,
-    "editor.formatOnSave": true
-  },
+  // Configuration languages.
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.tabSize": 2,
     "editor.formatOnSave": true
   },
+  // Static frontend languages.
   "[html]": {
     "editor.defaultFormatter": "vscode.html-language-features",
     "editor.tabSize": 2,
     "editor.formatOnSave": true
   },
+  // React languages.
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.tabSize": 2,
-    "editor.formatOnSave": true
-  },
-  "[javascriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.tabSize": 2,
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "always"
+    },
     "editor.formatOnSave": true
   },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.tabSize": 2,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "always"
+    },
     "editor.formatOnSave": true
   },
-  "[typescriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.tabSize": 2,
-    "editor.formatOnSave": true
-  },
+  // Backend languages.
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,
