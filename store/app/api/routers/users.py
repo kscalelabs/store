@@ -11,8 +11,7 @@ from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 
-from store.app.api.crud.users import add_user, delete_user, get_token, get_user
-from store.app.api.db import get_db
+from store.app.api.db import Crud
 from store.app.api.email import OneTimePassPayload, send_delete_email, send_otp_email, send_waitlist_email
 from store.app.api.model import User
 from store.app.api.token import create_refresh_token, create_token, load_refresh_token, load_token
@@ -101,19 +100,19 @@ class UserLoginResponse(BaseModel):
     token_type: str
 
 
-async def add_to_waitlist(email: str, db: DynamoDBServiceResource) -> None:
+async def add_to_waitlist(email: str, crud: Crud) -> None:
     await asyncio.gather(
         send_waitlist_email(email),
-        add_user(User(email=email, banned=True), db),
+        crud.add_user(User(email=email, banned=True)),
     )
 
 
-async def create_or_get(email: str, db: DynamoDBServiceResource) -> User:
+async def create_or_get(email: str, crud: Crud) -> User:
     # Gets or creates the user object.
-    user_obj = await get_user(email, db)
+    user_obj = await crud.get_user(email)
     if user_obj is None:
-        await add_user(User(email=email), db)
-        if (user_obj := await get_user(email, db)) is None:
+        await crud.add_user(User(email=email))
+        if (user_obj := await crud.get_user(email)) is None:
             raise RuntimeError("Failed to add user to the database")
 
     # Validates user.
@@ -143,11 +142,11 @@ async def otp_endpoint(
     data: OneTimePass,
     request: Request,
     response: Response,
-    db: DynamoDBServiceResource = Depends(get_db),
+    crud: Crud = Depends(Crud),
 ) -> UserLoginResponse:
     payload = OneTimePassPayload.decode(data.payload)
-    user_obj = await create_or_get(payload.email, db)
-    return await get_login_response(request, response, user_obj, db)
+    user_obj = await create_or_get(payload.email, crud)
+    return await get_login_response(request, response, user_obj, crud)
 
 
 class GoogleLogin(BaseModel):
@@ -170,7 +169,7 @@ async def google_login_endpoint(
     data: GoogleLogin,
     request: Request,
     response: Response,
-    db: DynamoDBServiceResource = Depends(get_db),
+    crud: Crud = Depends(Crud),
 ) -> UserLoginResponse:
     try:
         idinfo = await get_google_user_info(data.token)
@@ -179,8 +178,8 @@ async def google_login_endpoint(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Google token")
     if idinfo.get("email_verified") is not True:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Google email not verified")
-    user_obj = await create_or_get(email, db)
-    return await get_login_response(request, response, user_obj, db)
+    user_obj = await create_or_get(email, crud)
+    return await get_login_response(request, response, user_obj, crud)
 
 
 async def get_refresh_token(request: Request) -> RefreshTokenData:
@@ -232,9 +231,9 @@ class UserInfoResponse(BaseModel):
 @users_router.get("/me", response_model=UserInfoResponse)
 async def get_user_info_endpoint(
     data: SessionTokenData = Depends(get_session_token),
-    db: DynamoDBServiceResource = Depends(get_db),
+    crud: Crud = Depends(Crud),
 ) -> UserInfoResponse:
-    user_obj = await get_user(data.email, db)
+    user_obj = await crud.get_user(data.email)
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
     return UserInfoResponse(email=user_obj.email)
@@ -243,12 +242,12 @@ async def get_user_info_endpoint(
 @users_router.delete("/me")
 async def delete_user_endpoint(
     data: SessionTokenData = Depends(get_session_token),
-    db: DynamoDBServiceResource = Depends(get_db),
+    crud: Crud = Depends(Crud),
 ) -> bool:
-    user_obj = await get_user(data.email, db)
+    user_obj = await crud.get_user(data.email)
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
-    await delete_user(user_obj, db)
+    await crud.delete_user(user_obj)
     await send_delete_email(user_obj.email)
     return True
 
@@ -269,9 +268,9 @@ class RefreshTokenResponse(BaseModel):
 async def refresh_endpoint(
     response: Response,
     data: RefreshTokenData = Depends(get_refresh_token),
-    db: DynamoDBServiceResource = Depends(get_db),
+    crud: Crud = Depends(Crud),
 ) -> RefreshTokenResponse:
-    token = await get_token(data.email, data.ip_addr, db)
+    token = await crud.get_token(data.email, data.ip_addr)
     if not token or token.disabled:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token")
     session_token = SessionTokenData(email=data.email, ip_addr=data.ip_addr).encode()
