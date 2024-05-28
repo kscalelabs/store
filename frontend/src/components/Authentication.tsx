@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Button, Form, InputGroup } from "react-bootstrap";
+import { useRef, useState } from "react";
+import { Button, Form, InputGroup, Tooltip } from "react-bootstrap";
 import Overlay from "react-bootstrap/Overlay";
-import { Tooltip } from "react-bootstrap";
 
 const isValidEmail = (email: string) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
