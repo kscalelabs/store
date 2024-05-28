@@ -55,6 +55,12 @@ static-checks:
 #        Unit tests        #
 # ------------------------ #
 
-test:
-	python -m pytest
+test-backend:
+	@python -m pytest
+
+test-frontend:
+	@cd frontend && npm run test -- --watchAll=false
+
+test: test-backend test-frontend
+
 .PHONY: test
