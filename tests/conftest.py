@@ -28,6 +28,10 @@ def mock_aws() -> Generator[None, None, None]:
                 env_vars[k] = os.environ[k]
                 del os.environ[k]
 
+        os.environ["AWS_SECRET_ACCESS_KEY"] = "test"
+        os.environ["AWS_ACCESS_KEY_ID"] = "test"
+        os.environ["AWS_REGION"] = "us-east-1"
+
         # Starts a local AWS server.
         server = ThreadedMotoServer(port=0)
         server.start()
