@@ -14,7 +14,7 @@ pytest-asyncio
 pytest-mock
 pytest-timeout
 pytest-trio
-moto[dynamodb]
+moto[dynamodb,ec2,s3,all]
 
 # Types
 types-aioboto3[dynamodb]
