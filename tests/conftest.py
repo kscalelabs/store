@@ -23,14 +23,20 @@ def mock_aws() -> Generator[None, None, None]:
 
     try:
         env_vars: dict[str, str] = {}
-        for k in ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_ENDPOINT_URL_DYNAMODB", "AWS_REGION"):
+        for k in (
+            "AWS_ACCESS_KEY_ID",
+            "AWS_SECRET_ACCESS_KEY",
+            "AWS_ENDPOINT_URL_DYNAMODB",
+            "AWS_REGION",
+            "AWS_DEFAULT_REGION",
+        ):
             if k in os.environ:
                 env_vars[k] = os.environ[k]
                 del os.environ[k]
 
         os.environ["AWS_SECRET_ACCESS_KEY"] = "test"
         os.environ["AWS_ACCESS_KEY_ID"] = "test"
-        os.environ["AWS_REGION"] = "us-east-1"
+        os.environ["AWS_DEFAULT_REGION"] = os.environ["AWS_REGION"] = "us-east-1"
 
         # Starts a local AWS server.
         server = ThreadedMotoServer(port=0)
