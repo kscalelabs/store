@@ -1,14 +1,12 @@
 """Defines the base CRUD interface."""
 
-from typing import Any, Literal, Self
+from typing import Any, AsyncContextManager, Literal, Self
 
 import aioboto3
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 
-from store.settings import settings
 
-
-class BaseCrud:
+class BaseCrud(AsyncContextManager["BaseCrud"]):
     def __init__(self) -> None:
         super().__init__()
 
@@ -22,13 +20,7 @@ class BaseCrud:
 
     async def __aenter__(self) -> Self:
         session = aioboto3.Session()
-        db = session.resource(
-            "dynamodb",
-            endpoint_url=settings.database.endpoint_url,
-            region_name=settings.database.region_name,
-            aws_access_key_id=settings.database.aws_access_key_id,
-            aws_secret_access_key=settings.database.aws_secret_access_key,
-        )
+        db = session.resource("dynamodb")
         db = await db.__aenter__()
         self.__db = db
         return self
@@ -43,23 +35,12 @@ class BaseCrud:
         columns: list[tuple[str, Literal["S", "N", "B"]]],
         pks: list[tuple[str, Literal["HASH", "RANGE"]]],
         deletion_protection: bool = False,
-        read_capacity_units: int = 2,
-        write_capacity_units: int = 2,
-        billing_mode: Literal["PROVISIONED", "PAY_PER_REQUEST"] = "PAY_PER_REQUEST",
     ) -> None:
         table = await self.db.create_table(
             AttributeDefinitions=[{"AttributeName": n, "AttributeType": t} for n, t in columns],
             TableName=name,
             KeySchema=[{"AttributeName": pk[0], "KeyType": pk[1]} for pk in pks],
-            ProvisionedThroughput={
-                "ReadCapacityUnits": read_capacity_units,
-                "WriteCapacityUnits": write_capacity_units,
-            },
-            # OnDemandThroughput={
-            #     "MaxReadRequestUnits": read_capacity_units,
-            #     "MaxWriteRequestUnits": write_capacity_units,
-            # },
             DeletionProtectionEnabled=deletion_protection,
-            BillingMode=billing_mode,
+            BillingMode="PAY_PER_REQUEST",
         )
         await table.wait_until_exists()

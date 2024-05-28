@@ -1,6 +1,7 @@
 """Defines base tools for interacting with the database."""
 
 import asyncio
+from typing import AsyncGenerator, Self
 
 from store.app.api.crud.base import BaseCrud
 from store.app.api.crud.users import UserCrud
@@ -12,6 +13,11 @@ class Crud(
 ):
     """Composes the various CRUD classes into a single class."""
 
+    @classmethod
+    async def get(cls) -> AsyncGenerator[Self, None]:
+        async with cls() as crud:
+            yield crud
+
 
 async def create_tables(crud: Crud | None = None) -> None:
     """Initializes all of the database tables.
@@ -22,15 +28,31 @@ async def create_tables(crud: Crud | None = None) -> None:
     if crud is None:
         async with Crud() as crud:
             await create_tables(crud)
+
     else:
-        await crud._create_dynamodb_table(
-            name="Users",
-            columns=[
-                ("user_id", "S"),
-            ],
-            pks=[
-                ("user_id", "HASH"),
-            ],
+        await asyncio.gather(
+            crud._create_dynamodb_table(
+                name="Users",
+                columns=[
+                    ("email", "S"),
+                    ("banned", "B"),
+                    ("deleted", "B"),
+                ],
+                pks=[
+                    ("email", "HASH"),
+                ],
+            ),
+            crud._create_dynamodb_table(
+                name="Tokens",
+                columns=[
+                    ("email", "S"),
+                    ("issued", "S"),
+                    ("disabled", "B"),
+                ],
+                pks=[
+                    ("email", "HASH"),
+                ],
+            ),
         )
 
 

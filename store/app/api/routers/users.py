@@ -4,6 +4,7 @@ import asyncio
 import datetime
 import logging
 from email.utils import parseaddr as parse_email_address
+from typing import Annotated
 
 import aiohttp
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
@@ -133,7 +134,7 @@ async def get_login_response(
 async def otp_endpoint(
     data: OneTimePass,
     response: Response,
-    crud: Crud = Depends(Crud),
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UserLoginResponse:
     payload = OneTimePassPayload.decode(data.payload)
     user_obj = await create_or_get(payload.email, crud)
@@ -159,7 +160,7 @@ async def get_google_user_info(token: str) -> dict:
 async def google_login_endpoint(
     data: GoogleLogin,
     response: Response,
-    crud: Crud = Depends(Crud),
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UserLoginResponse:
     try:
         idinfo = await get_google_user_info(data.token)
@@ -216,8 +217,8 @@ class UserInfoResponse(BaseModel):
 
 @users_router.get("/me", response_model=UserInfoResponse)
 async def get_user_info_endpoint(
-    data: SessionTokenData = Depends(get_session_token),
-    crud: Crud = Depends(Crud),
+    data: Annotated[SessionTokenData, Depends(get_session_token)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UserInfoResponse:
     user_obj = await crud.get_user(data.email)
     if user_obj is None:
@@ -227,8 +228,8 @@ async def get_user_info_endpoint(
 
 @users_router.delete("/me")
 async def delete_user_endpoint(
-    data: SessionTokenData = Depends(get_session_token),
-    crud: Crud = Depends(Crud),
+    data: Annotated[SessionTokenData, Depends(get_session_token)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
     user_obj = await crud.get_user(data.email)
     if user_obj is None:
@@ -239,7 +240,10 @@ async def delete_user_endpoint(
 
 
 @users_router.delete("/logout")
-async def logout_user_endpoint(response: Response, data: SessionTokenData = Depends(get_session_token)) -> bool:
+async def logout_user_endpoint(
+    response: Response,
+    data: Annotated[SessionTokenData, Depends(get_session_token)],
+) -> bool:
     response.delete_cookie(key=SESSION_TOKEN_COOKIE_KEY)
     response.delete_cookie(key=REFRESH_TOKEN_COOKIE_KEY)
     return True
@@ -253,8 +257,8 @@ class RefreshTokenResponse(BaseModel):
 @users_router.post("/refresh", response_model=RefreshTokenResponse)
 async def refresh_endpoint(
     response: Response,
-    data: RefreshTokenData = Depends(get_refresh_token),
-    crud: Crud = Depends(Crud),
+    data: Annotated[RefreshTokenData, Depends(get_refresh_token)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> RefreshTokenResponse:
     token = await crud.get_token(data.email)
     if not token or token.disabled:

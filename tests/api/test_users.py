@@ -1,14 +1,19 @@
 """Runs tests on the user APIs."""
 
+import asyncio
+
+import moto
 from fastapi.testclient import TestClient
-from moto import mock_aws
 from pytest_mock.plugin import MockType
 
+from store.app.api.db import create_tables
 from store.app.api.email import OneTimePassPayload
 
 
-@mock_aws
+@moto.mock_dynamodb
 def test_user_auth_functions(app_client: TestClient, mock_send_email: MockType) -> None:
+    asyncio.run(create_tables())
+
     test_email = "test@example.com"
     login_url = "/"
     bad_actor_email = "badactor@gmail.com"

@@ -20,14 +20,6 @@ class UserSettings:
 
 
 @dataclass
-class DatabaseSettings:
-    endpoint_url: str = field(default=MISSING)
-    region_name: str = field(default=MISSING)
-    aws_access_key_id: str = field(default=MISSING)
-    aws_secret_access_key: str = field(default=MISSING)
-
-
-@dataclass
 class EmailSettings:
     host: str = field(default=MISSING)
     port: int = field(default=MISSING)
@@ -44,7 +36,6 @@ class SiteSettings:
 
 @dataclass
 class EnvironmentSettings:
-    database: DatabaseSettings = field(default_factory=DatabaseSettings)
     user: UserSettings = field(default_factory=UserSettings)
     crypto: CryptoSettings = field(default_factory=CryptoSettings)
     email: EmailSettings = field(default_factory=EmailSettings)

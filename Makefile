@@ -26,8 +26,13 @@ all:
 #          Serve           #
 # ------------------------ #
 
-serve:
-	uvicorn store.app.main:application --reload
+start-fastapi:
+	@fastapi dev 'store/app/main.py' --port 8080
+
+start-docker:
+	@docker kill store-db || true
+	@docker rm store-db || true
+	@docker run --name store-db -d -p 8000:8000 amazon/dynamodb-local
 
 # ------------------------ #
 #       Static Checks      #
