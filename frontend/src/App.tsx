@@ -5,7 +5,6 @@ import { Route, Routes, BrowserRouter } from "react-router-dom";
 
 import Listings from "components/Listings";
 import RobotDetails from "pages/Robot";
-import NotFound from "pages/NotFound";
 import Authentication from "components/Authentication";
 import { Container } from "react-bootstrap";
 
@@ -19,7 +18,6 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Listings />} />
           <Route path="/robots/:id" element={<RobotDetails />} />
-          <Route path="*" element={<NotFound />} />
         </Routes>
       </Container>
     </BrowserRouter>
