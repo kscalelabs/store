@@ -1,0 +1,5 @@
+crypto:
+  jwt_secret: ${oc.env:JWT_SECRET}
+site:
+  homepage: https://robolist.xyz
+  image_url: https://media.robolist.xyz

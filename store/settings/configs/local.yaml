@@ -2,4 +2,3 @@ crypto:
   jwt_secret: fakeJwtSecret
 site:
   homepage: http://localhost:8080
-  image_prefix: http://localhost:8080/images/
