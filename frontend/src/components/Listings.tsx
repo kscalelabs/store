@@ -26,10 +26,8 @@ const Listing = ({ name, owner, links, images }: ListingsResponseItem) => {
         <Row>
           <ul>
             {links.map((link, key) => (
-              <li>
-                <a key={key} href={link.url}>
-                  {link.name}
-                </a>
+              <li key={key}>
+                <a href={link.url}>{link.name}</a>
               </li>
             ))}
           </ul>
