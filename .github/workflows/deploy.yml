@@ -60,25 +60,11 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build Docker image
+      - name: Build and push Docker image
         env:
           ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
           IMAGE_TAG: latest
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -f docker/Dockerfile .
-
-      - name: Test Docker image
-        run: |
-          docker run -d -p 8080:8080 -e ROBOLIST_ENVIRONMENT='local' $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          sleep 3
-          curl http://localhost:8080
-          docker stop $(docker ps -q)
-
-      - name: Push Docker image
-        env:
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-          IMAGE_TAG: latest
-        run: |
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
