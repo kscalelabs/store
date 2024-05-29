@@ -63,6 +63,9 @@ Serve the FastAPI application in development mode:
 fastapi dev 'store/app/main.py' --port 8080  # On port 8080 to avoid conflicts with Docker
 ```
 
+> [!NOTE]
+> You will need to run `npm run build` at least once in order to generate the static files in `frontend/build/static`.
+
 #### Configuration
 
 Settings for the app backend live in the `store/settings/` directory. You can use the following environment variables:
