@@ -34,11 +34,11 @@ const RobotDetails = () => {
     owner: "K-Scale Labs",
     description: `Stompy is a 4-legged robot that can walk and jump.
 
-# Purpose
+## Purpose
 
 Stompy is designed to be a versatile platform for research and development in legged robotics.
 
-# Links
+## Links
 
 - [Wiki Entry](https://humanoids.wiki/w/Stompy)
 - [URDF (with STLs)](https://media.kscale.dev/stompy/latest_stl_urdf.tar.gz)
@@ -92,15 +92,15 @@ Stompy is designed to be a versatile platform for research and development in le
       <Row className="mt-5">
         <Col xl={6} md={4} sm={12}>
           <Row>
-            <h1>{name}</h1>
-            <p>
-              {owner}
-              <br />
+            <Col>
+              <h1>{name}</h1>
               <small className="text-muted">ID: {id}</small>
-            </p>
+              <br />
+              <i>{owner}</i>
+            </Col>
           </Row>
+          <hr />
           <Row>
-            <h2>Description</h2>
             <Col>
               <Markdown
                 components={{
