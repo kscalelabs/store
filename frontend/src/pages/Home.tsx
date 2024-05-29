@@ -1,18 +1,16 @@
-import { Link } from "react-router-dom";
+import { Col, Row } from "react-bootstrap";
 
 const RobotDetails = () => {
   return (
-    <div>
-      <h2>Home</h2>
-      <p>Welcome to RoboList!</p>
-      <ul>
-        <li>
-          <Link to="/robots/">Robots</Link>
-        </li>
-        <li>
-          <Link to="/robots/1">Robot 1</Link>
-        </li>
-      </ul>
+    <div className="p-5 rounded-lg">
+      <Row>
+        <Col>
+          <h1 className="display-4">robolist</h1>
+          <p className="lead">
+            Buy, sell and build robot hardware and software
+          </p>
+        </Col>
+      </Row>
     </div>
   );
 };

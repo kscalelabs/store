@@ -15,7 +15,7 @@ const Authentication = () => {
   return (
     <div style={{ maxWidth: 400 }}>
       {authenticated ? (
-        <InputGroup className="mb-3">
+        <InputGroup>
           <InputGroup.Text>{email}</InputGroup.Text>
           <Button
             variant="outline-secondary"
@@ -25,7 +25,7 @@ const Authentication = () => {
           </Button>
         </InputGroup>
       ) : (
-        <InputGroup className="mb-3">
+        <InputGroup>
           <InputGroup.Text>✉️</InputGroup.Text>
           <Form.Control
             placeholder="Email"
@@ -44,8 +44,8 @@ const Authentication = () => {
             Log In
           </Button>
           <Overlay
-            placement="right"
-            show={email !== null && !isValidEmail(email)}
+            placement="bottom-end"
+            show={email !== null && email.length > 3 && !isValidEmail(email)}
             target={target.current}
           >
             {(props) => <Tooltip {...props}>Invalid email</Tooltip>}
