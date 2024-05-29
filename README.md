@@ -70,6 +70,17 @@ Settings for the app backend live in the `store/settings/` directory. You can us
 - `ROBOLIST_ENVIRONMENT_SECRETS` should be the path to a local `.env` file containing any environment secrets
 - `ROBOLIST_ENVIRONMENT` is the stem of one of the config files in the `store/settings/configs/` directory. When developing locally this should usually just be `local`
 
+To locally develop, setting the following environment variables will work (presuming you have set everything else up):
+
+```
+export ROBOLIST_ENVIRONMENT=local
+export ROBOLIST_ENVIRONMENT_SECRETS=.env
+export AWS_DEFAULT_REGION='us-east-1'
+export AWS_ACCESS_KEY_ID=test
+export AWS_SECRET_ACCESS_KEY=test
+export AWS_ENDPOINT_URL_DYNAMODB=http://127.0.0.1:8000
+```
+
 #### Database
 
 When developing locally, use the `amazon/dynamodb-local` Docker image to run a local instance of DynamoDB:
