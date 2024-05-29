@@ -47,8 +47,8 @@ async def create_tables(crud: Crud | None = None) -> None:
                 name="Robots",
                 keys=[
                     ("id", "S", "HASH"),
-                ]
-            )
+                ],
+            ),
         )
 
 
