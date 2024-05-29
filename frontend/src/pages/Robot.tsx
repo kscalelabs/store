@@ -90,7 +90,7 @@ const RobotDetails = () => {
       </Breadcrumb>
 
       <Row className="mt-5">
-        <Col md={3} xs={12}>
+        <Col xl={9} lg={8} md={6} sm={12}>
           <h3>{name}</h3>
           <p>
             {owner}
@@ -111,7 +111,7 @@ const RobotDetails = () => {
           )}
         </Col>
         {images && (
-          <Col md={9} xs={12}>
+          <Col xl={3} lg={4} md={6} sm={12}>
             <Carousel
               indicators
               data-bs-theme="dark"
@@ -122,7 +122,6 @@ const RobotDetails = () => {
                 <Carousel.Item key={key}>
                   <div
                     style={{
-                      maxHeight: 300,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -140,8 +139,17 @@ const RobotDetails = () => {
                       }}
                     />
                   </div>
-                  <Carousel.Caption>
-                    <h3>{image.caption}</h3>
+                  <Carousel.Caption
+                    style={{
+                      backgroundColor: "rgba(255, 255, 255, 0.5)",
+                      color: "black",
+                      padding: "0.1rem",
+                      // Put the caption at the top
+                      top: 10,
+                      bottom: "unset",
+                    }}
+                  >
+                    {image.caption}
                   </Carousel.Caption>
                 </Carousel.Item>
               ))}
@@ -181,7 +189,7 @@ const RobotDetails = () => {
         onHide={handleClose}
         fullscreen="md-down"
         centered
-        size="xl"
+        size="lg"
         scrollable
       >
         <Modal.Header closeButton>
@@ -190,11 +198,13 @@ const RobotDetails = () => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <img
-            style={{ width: "100%" }}
-            src={images[imageIndex].url}
-            alt={images[imageIndex].caption}
-          />
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <img
+              style={{ width: "95%", aspectRatio: "1/1" }}
+              src={images[imageIndex].url}
+              alt={images[imageIndex].caption}
+            />
+          </div>
         </Modal.Body>
         <Modal.Footer>
           <ButtonGroup>
