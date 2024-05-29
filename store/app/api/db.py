@@ -33,19 +33,19 @@ async def create_tables(crud: Crud | None = None) -> None:
         await asyncio.gather(
             crud._create_dynamodb_table(
                 name="Users",
-                columns=[
+                keys=[
                     ("id", "S", "HASH"),
                 ],
             ),
             crud._create_dynamodb_table(
                 name="Tokens",
-                columns=[
+                keys=[
                     ("id", "S", "HASH"),
                 ],
             ),
             crud._create_dynamodb_table(
                 name="Robots",
-                columns=[
+                keys=[
                     ("id", "S", "HASH"),
                 ]
             )

@@ -32,13 +32,13 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     async def _create_dynamodb_table(
         self,
         name: str,
-        columns: list[tuple[str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]],
+        keys: list[tuple[str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]],
         deletion_protection: bool = False,
     ) -> None:
         table = await self.db.create_table(
-            AttributeDefinitions=[{"AttributeName": n, "AttributeType": t} for n, t, _ in columns],
+            AttributeDefinitions=[{"AttributeName": n, "AttributeType": t} for n, t, _ in keys],
             TableName=name,
-            KeySchema=[{"AttributeName": n, "KeyType": t} for n, _, t in columns],
+            KeySchema=[{"AttributeName": n, "KeyType": t} for n, _, t in keys],
             DeletionProtectionEnabled=deletion_protection,
             BillingMode="PAY_PER_REQUEST",
         )
