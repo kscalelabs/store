@@ -6,7 +6,6 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
-from starlette.datastructures import Headers
 
 from store.app.api.routers.main import api_router
 from store.settings import settings
@@ -36,23 +35,6 @@ async def value_error_exception_handler(request: Request, exc: ValueError) -> JS
         status_code=status.HTTP_400_BAD_REQUEST,
         content={"message": "The request was invalid.", "detail": str(exc)},
     )
-
-
-class NotModifiedResponse(Response):
-    NOT_MODIFIED_HEADERS = (
-        "cache-control",
-        "content-location",
-        "date",
-        "etag",
-        "expires",
-        "vary",
-    )
-
-    def __init__(self, headers: Headers):
-        super().__init__(
-            status_code=304,
-            headers={name: value for name, value in headers.items() if name in self.NOT_MODIFIED_HEADERS},
-        )
 
 
 # Mounts the static frontend files to the /static path.
