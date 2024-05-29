@@ -34,19 +34,21 @@ async def create_tables(crud: Crud | None = None) -> None:
             crud._create_dynamodb_table(
                 name="Users",
                 columns=[
-                    ("email", "S", "HASH"),
-                    # ("banned", "B", "RANGE"),
-                    # ("deleted", "B", "RANGE"),
+                    ("id", "S", "HASH"),
                 ],
             ),
             crud._create_dynamodb_table(
                 name="Tokens",
                 columns=[
-                    ("email", "S", "HASH"),
-                    # ("issued", "N", "RANGE"),
-                    # ("disabled", "B", "RANGE"),
+                    ("id", "S", "HASH"),
                 ],
             ),
+            crud._create_dynamodb_table(
+                name="Robots",
+                columns=[
+                    ("id", "S", "HASH"),
+                ]
+            )
         )
 
 
