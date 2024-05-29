@@ -16,6 +16,7 @@ interface RobotDetailsResponse {
   owner: string;
   links: { name: string; url: string }[];
   images: { url: string; caption: string }[];
+  bom: { name: string; part_number: string; quantity: number; price: number }[];
 }
 
 const RobotDetails = () => {
@@ -58,6 +59,20 @@ const RobotDetails = () => {
         caption: "Stompy the robot 3",
       },
     ],
+    bom: [
+      {
+        name: "Actuator",
+        part_number: "1234",
+        quantity: 10,
+        price: 100,
+      },
+      {
+        name: "Sensor",
+        part_number: "5678",
+        quantity: 5,
+        price: 50,
+      },
+    ],
   };
 
   const { name, owner, links, images } = response;
@@ -74,7 +89,7 @@ const RobotDetails = () => {
         <Breadcrumb.Item active>{name}</Breadcrumb.Item>
       </Breadcrumb>
 
-      <Row>
+      <Row className="mt-5">
         <Col md={3} xs={12}>
           <h3>{name}</h3>
           <p>
@@ -100,7 +115,7 @@ const RobotDetails = () => {
             <Carousel
               indicators
               data-bs-theme="dark"
-              style={{ marginTop: 20, border: "1px solid #ccc" }}
+              style={{ border: "1px solid #ccc" }}
             >
               {images.map((image, key) => (
                 <Carousel.Item key={key}>
@@ -132,6 +147,32 @@ const RobotDetails = () => {
             </Carousel>
           </Col>
         )}
+      </Row>
+
+      <Row className="mt-5">
+        <Col>
+          <h4>Bill of Materials</h4>
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Part Number</th>
+                <th>Quantity</th>
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {response.bom.map((part, key) => (
+                <tr key={key}>
+                  <td>{part.name}</td>
+                  <td>{part.part_number}</td>
+                  <td>{part.quantity}</td>
+                  <td>${part.price}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Col>
       </Row>
 
       <Modal show={show} onHide={handleClose}>

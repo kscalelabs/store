@@ -35,7 +35,7 @@ const Listings = () => {
         <Breadcrumb.Item active>Listings</Breadcrumb.Item>
       </Breadcrumb>
 
-      <Row>
+      <Row className="mt-5">
         {response.listings.map(
           ({ name, owner, description, id, photo }, key) => (
             <Col key={key} md={3} xs={6}>
