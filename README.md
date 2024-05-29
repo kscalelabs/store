@@ -98,3 +98,19 @@ Initialize the test databases by running the creation script:
 ```bash
 python -m store.app.api.db
 ```
+
+### Miscellaneous
+
+#### DynamoDB Admin
+
+DynamoDB Admin is a GUI that allows you to visually see your tables and their entries. To install, run
+
+```bash
+npm i -g dynamodb-admin
+```
+
+To run, **source the same environment variables that you use for FastAPI** and then run
+
+```bash
+dynamodb-admin
+```
