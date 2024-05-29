@@ -1,7 +1,9 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import Authentication from "components/Authentication";
 import Listings from "components/Listings";
+import NotFoundRedirect from "components/NotFoundRedirect";
 import Home from "pages/Home";
+import NotFound from "pages/NotFound";
 import RobotDetails from "pages/Robot";
 import { Container, Nav, Navbar } from "react-bootstrap";
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
@@ -35,6 +37,8 @@ const App = () => {
             <Route path="/" element={<Home />} />
             <Route path="/robots/" element={<Listings />} />
             <Route path="/robots/:id" element={<RobotDetails />} />
+            <Route path="/404" element={<NotFound />} />
+            <Route path="*" element={<NotFoundRedirect />} />
           </Routes>
         </Container>
       </Container>
