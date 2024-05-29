@@ -29,6 +29,9 @@ all:
 start-fastapi:
 	@fastapi dev 'store/app/main.py' --port 8080
 
+start-frontend-rebuild:
+	@cd frontend && npm run watch
+
 start-docker:
 	@docker kill store-db || true
 	@docker rm store-db || true

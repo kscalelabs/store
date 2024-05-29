@@ -4,7 +4,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from store.app.api.routers.main import api_router
@@ -16,6 +16,15 @@ FRONTEND_DIR = (Path(__file__).parent / "frontend").resolve()
 if not (FRONTEND_BUILD_DIR := FRONTEND_DIR / "build").exists():
     raise FileNotFoundError(f"Frontend is not built to {FRONTEND_BUILD_DIR}")
 
+FRONTEND_STATIC_DIR = FRONTEND_BUILD_DIR / "static"
+if not FRONTEND_STATIC_DIR.exists():
+    raise FileNotFoundError(f"Frontend static files not found at {FRONTEND_STATIC_DIR}")
+
+FRONTEND_INDEX_FILE = FRONTEND_BUILD_DIR / "index.html"
+if not FRONTEND_INDEX_FILE.exists():
+    raise FileNotFoundError(f"Frontend index file not found at {FRONTEND_INDEX_FILE}")
+
+FRONTEND_OTHER_FILES = {f.name for f in FRONTEND_BUILD_DIR.glob("*") if f.is_file()}
 
 app.include_router(api_router, prefix="/api")
 
@@ -29,7 +38,16 @@ async def value_error_exception_handler(request: Request, exc: ValueError) -> JS
 
 
 # Mounts the static frontend files to the /static path.
-app.mount("/", StaticFiles(directory=FRONTEND_BUILD_DIR, html=True), name="static")
+app.mount("/static", StaticFiles(directory=FRONTEND_STATIC_DIR, html=True), name="/static")
+
+
+# Redirects all other paths to the index.html file.
+@app.get("/{full_path:path}")
+async def redirect_to_index(full_path: str) -> FileResponse:
+    if full_path in FRONTEND_OTHER_FILES:
+        return FileResponse(FRONTEND_BUILD_DIR / full_path)
+    return FileResponse(FRONTEND_INDEX_FILE)
+
 
 # Adds CORS middleware.
 app.add_middleware(
