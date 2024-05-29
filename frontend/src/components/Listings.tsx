@@ -1,52 +1,17 @@
-import { Carousel } from "react-bootstrap";
-import Col from "react-bootstrap/Col";
-import Container from "react-bootstrap/Container";
-import Row from "react-bootstrap/Row";
+import { Breadcrumb, Card, Col, Container, Row } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 interface ListingsResponseItem {
   name: string;
   owner: string;
-  links: { name: string; url: string }[];
-  images: { url: string; caption: string }[];
+  description: string;
+  id: string;
+  photo?: string;
 }
 
 interface ListingsResponse {
   listings: ListingsResponseItem[];
 }
-
-const Listing = ({ name, owner, links, images }: ListingsResponseItem) => {
-  return (
-    <Col>
-      <Row>
-        <h3>{name}</h3>
-        <p>{owner}</p>
-      </Row>
-      {links && (
-        <Row>
-          <ul>
-            {links.map((link, key) => (
-              <li key={key}>
-                <a href={link.url}>{link.name}</a>
-              </li>
-            ))}
-          </ul>
-        </Row>
-      )}
-      {images && (
-        <Carousel indicators data-bs-theme="dark">
-          {images.map((image, key) => (
-            <Carousel.Item key={key}>
-              <img src={image.url} alt={image.caption} />
-              <Carousel.Caption>
-                <h3>{image.caption}</h3>
-              </Carousel.Caption>
-            </Carousel.Item>
-          ))}
-        </Carousel>
-      )}
-    </Col>
-  );
-};
 
 const Listings = () => {
   const response: ListingsResponse = {
@@ -54,44 +19,46 @@ const Listings = () => {
       {
         name: "Stompy",
         owner: "K-Scale Labs",
-        links: [
-          {
-            name: "URDF (with STLs)",
-            url: "https://media.kscale.dev/stompy/latest_stl_urdf.tar.gz",
-          },
-          {
-            name: "URDF (with OBJs)",
-            url: "https://media.kscale.dev/stompy/latest_obj_urdf.tar.gz",
-          },
-          {
-            name: "MJCF",
-            url: "https://media.kscale.dev/stompy/latest_mjcf.tar.gz",
-          },
-        ],
-        images: [
-          {
-            url: "https://media.robolist.xyz/logo.png",
-            caption: "Image 1",
-          },
-          {
-            url: "https://media.robolist.xyz/logo.png",
-            caption: "Image 2",
-          },
-          {
-            url: "https://media.robolist.xyz/logo.png",
-            caption: "Image 3",
-          },
-        ],
+        description: "An open-source humanoid robot costing less than $10k",
+        id: "1",
+        photo: "https://media.robolist.xyz/stompy.png",
       },
     ],
   };
 
+  const navigate = useNavigate();
+
   return (
     <Container>
-      <h2>Listings</h2>
-      {response.listings.map((item, key) => (
-        <Listing key={key} {...item} />
-      ))}
+      <Breadcrumb>
+        <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
+        <Breadcrumb.Item active>Listings</Breadcrumb.Item>
+      </Breadcrumb>
+
+      <Row>
+        {response.listings.map(
+          ({ name, owner, description, id, photo }, key) => (
+            <Col key={key} md={3} xs={6}>
+              <Card onClick={() => navigate(`/robots/${id}`)}>
+                {photo && (
+                  <Card.Img
+                    style={{ aspectRatio: "1/1" }}
+                    variant="top"
+                    src={photo}
+                  />
+                )}
+                <Card.Body>
+                  <Card.Title>{name}</Card.Title>
+                  <Card.Subtitle className="mb-2 text-muted">
+                    {owner}
+                  </Card.Subtitle>
+                  <Card.Text>{description}</Card.Text>
+                </Card.Body>
+              </Card>
+            </Col>
+          ),
+        )}
+      </Row>
     </Container>
   );
 };
