@@ -9,12 +9,13 @@ import {
   Modal,
   Row,
 } from "react-bootstrap";
+import Markdown from "react-markdown";
 import { useNavigate, useParams } from "react-router-dom";
 
 interface RobotDetailsResponse {
   name: string;
   owner: string;
-  links: { name: string; url: string }[];
+  description: string;
   images: { url: string; caption: string }[];
   bom: { name: string; part_number: string; quantity: number; price: number }[];
 }
@@ -31,20 +32,19 @@ const RobotDetails = () => {
   const response: RobotDetailsResponse = {
     name: "Stompy",
     owner: "K-Scale Labs",
-    links: [
-      {
-        name: "URDF (with STLs)",
-        url: "https://media.kscale.dev/stompy/latest_stl_urdf.tar.gz",
-      },
-      {
-        name: "URDF (with OBJs)",
-        url: "https://media.kscale.dev/stompy/latest_obj_urdf.tar.gz",
-      },
-      {
-        name: "MJCF",
-        url: "https://media.kscale.dev/stompy/latest_mjcf.tar.gz",
-      },
-    ],
+    description: `Stompy is a 4-legged robot that can walk and jump.
+
+## Purpose
+
+Stompy is designed to be a versatile platform for research and development in legged robotics.
+
+## Links
+
+- [Wiki Entry](https://humanoids.wiki/w/Stompy)
+- [URDF (with STLs)](https://media.kscale.dev/stompy/latest_stl_urdf.tar.gz)
+- [URDF (with OBJs)](https://media.kscale.dev/stompy/latest_obj_urdf.tar.gz)
+- [MJCF](https://media.kscale.dev/stompy/latest_mjcf.tar.gz)
+`,
     images: [
       {
         url: "https://media.robolist.xyz/stompy.png",
@@ -75,7 +75,7 @@ const RobotDetails = () => {
     ],
   };
 
-  const { name, owner, links, images } = response;
+  const { name, owner, description, images } = response;
 
   const navigate = useNavigate();
 
@@ -90,28 +90,50 @@ const RobotDetails = () => {
       </Breadcrumb>
 
       <Row className="mt-5">
-        <Col md={3} xs={12}>
-          <h3>{name}</h3>
-          <p>
-            {owner}
-            <br />
-            <small className="text-muted">ID: {id}</small>
-          </p>
-          {links && (
-            <div>
-              <h4>Links</h4>
-              <ul>
-                {links.map((link, key) => (
-                  <li key={key}>
-                    <a href={link.url}>{link.name}</a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+        <Col xl={6} md={4} sm={12}>
+          <Row>
+            <Col>
+              <h1>{name}</h1>
+              <small className="text-muted">ID: {id}</small>
+              <br />
+              <i>{owner}</i>
+            </Col>
+          </Row>
+          <hr />
+          <Row>
+            <Col>
+              <Markdown
+                components={{
+                  p: ({ node, ...props }) => <p {...props} className="mb-3" />,
+                  li: ({ node, ...props }) => (
+                    <li {...props} className="mb-1" />
+                  ),
+                  h1: ({ node, ...props }) => (
+                    <h3 {...props} className="mt-1" />
+                  ),
+                  h2: ({ node, ...props }) => (
+                    <h4 {...props} className="mt-1" />
+                  ),
+                  h3: ({ node, ...props }) => (
+                    <h5 {...props} className="mt-1" />
+                  ),
+                  h4: ({ node, ...props }) => (
+                    <h6 {...props} className="mt-1" />
+                  ),
+                  h5: ({ node, ...props }) => (
+                    <h6 {...props} className="mt-1" />
+                  ),
+                  h6: ({ node, ...props }) => <h6 {...props} />,
+                }}
+              >
+                {description}
+              </Markdown>
+            </Col>
+          </Row>
         </Col>
+
         {images && (
-          <Col md={9} xs={12}>
+          <Col xl={6} md={8} sm={12}>
             <Carousel
               indicators
               data-bs-theme="dark"
@@ -122,7 +144,6 @@ const RobotDetails = () => {
                 <Carousel.Item key={key}>
                   <div
                     style={{
-                      maxHeight: 300,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -140,8 +161,17 @@ const RobotDetails = () => {
                       }}
                     />
                   </div>
-                  <Carousel.Caption>
-                    <h3>{image.caption}</h3>
+                  <Carousel.Caption
+                    style={{
+                      backgroundColor: "rgba(255, 255, 255, 0.5)",
+                      color: "black",
+                      padding: "0.1rem",
+                      // Put the caption at the top
+                      top: 10,
+                      bottom: "unset",
+                    }}
+                  >
+                    {image.caption}
                   </Carousel.Caption>
                 </Carousel.Item>
               ))}
@@ -151,29 +181,27 @@ const RobotDetails = () => {
       </Row>
 
       <Row className="mt-5">
-        <Col>
-          <h4>Bill of Materials</h4>
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Part Number</th>
-                <th>Quantity</th>
-                <th>Price</th>
+        <h4>Bill of Materials</h4>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Part Number</th>
+              <th>Quantity</th>
+              <th>Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {response.bom.map((part, key) => (
+              <tr key={key}>
+                <td>{part.name}</td>
+                <td>{part.part_number}</td>
+                <td>{part.quantity}</td>
+                <td>${part.price}</td>
               </tr>
-            </thead>
-            <tbody>
-              {response.bom.map((part, key) => (
-                <tr key={key}>
-                  <td>{part.name}</td>
-                  <td>{part.part_number}</td>
-                  <td>{part.quantity}</td>
-                  <td>${part.price}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Col>
+            ))}
+          </tbody>
+        </table>
       </Row>
 
       <Modal
@@ -181,7 +209,7 @@ const RobotDetails = () => {
         onHide={handleClose}
         fullscreen="md-down"
         centered
-        size="xl"
+        size="lg"
         scrollable
       >
         <Modal.Header closeButton>
@@ -190,11 +218,13 @@ const RobotDetails = () => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <img
-            style={{ width: "100%" }}
-            src={images[imageIndex].url}
-            alt={images[imageIndex].caption}
-          />
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <img
+              style={{ width: "95%", aspectRatio: "1/1" }}
+              src={images[imageIndex].url}
+              alt={images[imageIndex].caption}
+            />
+          </div>
         </Modal.Body>
         <Modal.Footer>
           <ButtonGroup>
