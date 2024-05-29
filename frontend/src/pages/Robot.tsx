@@ -116,6 +116,7 @@ const RobotDetails = () => {
               indicators
               data-bs-theme="dark"
               style={{ border: "1px solid #ccc" }}
+              interval={null}
             >
               {images.map((image, key) => (
                 <Carousel.Item key={key}>
@@ -175,7 +176,14 @@ const RobotDetails = () => {
         </Col>
       </Row>
 
-      <Modal show={show} onHide={handleClose}>
+      <Modal
+        show={show}
+        onHide={handleClose}
+        fullscreen="md-down"
+        centered
+        size="xl"
+        scrollable
+      >
         <Modal.Header closeButton>
           <Modal.Title>
             {images[imageIndex].caption} ({imageIndex + 1} of {images.length})
