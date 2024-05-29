@@ -4,7 +4,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from store.app.api.routers.main import api_router
@@ -43,10 +43,10 @@ app.mount("/static", StaticFiles(directory=FRONTEND_STATIC_DIR, html=True), name
 
 # Redirects all other paths to the index.html file.
 @app.get("/{full_path:path}")
-async def redirect_to_index(full_path: str) -> FileResponse:
+async def redirect_to_index(full_path: str, request: Request) -> Response:
     if full_path in FRONTEND_OTHER_FILES:
-        return FileResponse(FRONTEND_BUILD_DIR / full_path)
-    return FileResponse(FRONTEND_INDEX_FILE)
+        return await StaticFiles(directory=FRONTEND_BUILD_DIR).get_response(full_path, request.scope)
+    return await StaticFiles(directory=FRONTEND_BUILD_DIR).get_response("index.html", request.scope)
 
 
 # Adds CORS middleware.
