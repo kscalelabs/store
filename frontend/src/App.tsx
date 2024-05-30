@@ -1,7 +1,10 @@
 import "bootstrap/dist/css/bootstrap.min.css";
 import Authentication from "components/Authentication";
+import DarkModeToggle from "components/DarkModeToggle";
 import Listings from "components/Listings";
 import NotFoundRedirect from "components/NotFoundRedirect";
+import { DarkModeProvider } from "components/useDarkMode";
+import { ThemeProvider } from "hooks/theme";
 import Home from "pages/Home";
 import NotFound from "pages/NotFound";
 import RobotDetails from "pages/Robot";
@@ -9,9 +12,6 @@ import { Container, Nav, Navbar } from "react-bootstrap";
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
 import "./App.css";
 import "./index.css";
-import { DarkModeProvider} from "components/useDarkMode";
-import {ThemeProvider} from "hooks/theme";
-import DarkModeToggle from "components/DarkModeToggle";
 
 const App = () => {
   return (
@@ -19,7 +19,7 @@ const App = () => {
       <DarkModeProvider>
         <BrowserRouter>
           <Container fluid>
-            <Navbar className="bg-body-tertiary fixed-top" expand = "lg">
+            <Navbar className="bg-body-tertiary fixed-top" expand="lg">
               <Container fluid>
                 <Navbar.Brand as={Link} to="/">
                   robolist
@@ -48,8 +48,8 @@ const App = () => {
                 <Route path="/" element={<Home />} />
                 <Route path="/robots/" element={<Listings />} />
                 <Route path="/robots/:id" element={<RobotDetails />} />
- .              <Route path="/404" element={<NotFound />} />
- .              <Route path="*" element={<NotFoundRedirect />} />
+                . <Route path="/404" element={<NotFound />} />
+                . <Route path="*" element={<NotFoundRedirect />} />
               </Routes>
             </Container>
           </Container>

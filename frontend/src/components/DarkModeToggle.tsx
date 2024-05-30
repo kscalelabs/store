@@ -1,31 +1,28 @@
-
-import { useRef, useState } from "react";
-import { Button, Form, InputGroup, Tooltip } from "react-bootstrap";
-import useDarkMode from "./useDarkMode";
+import { useRef } from "react";
+import { Button } from "react-bootstrap";
 import darkModes from "../constants/darkModes";
-
+import useDarkMode from "./useDarkMode";
 
 const DarkModeToggle = () => {
-
-const {darkMode, setDarkMode} = useDarkMode();
-const target = useRef(null);
+  const { darkMode, setDarkMode } = useDarkMode();
+  const target = useRef(null);
 
   return (
     <div style={{ maxWidth: 400 }}>
-      {darkMode===darkModes.dark ? (
+      {darkMode === darkModes.dark ? (
         <Button
-        variant="outline-secondary"
-        onClick={() => setDarkMode(darkModes.light)}
+          variant="outline-secondary"
+          onClick={() => setDarkMode(darkModes.light)}
         >
-        ☾
+          ☾
         </Button>
       ) : (
         <Button
-        variant="outline-secondary"
-        onClick={() => setDarkMode(darkModes.dark)}
-        ref={target}
+          variant="outline-secondary"
+          onClick={() => setDarkMode(darkModes.dark)}
+          ref={target}
         >
-        𖤓
+          𖤓
         </Button>
       )}
     </div>

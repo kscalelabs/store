@@ -11,7 +11,6 @@ import {
 } from "react-bootstrap";
 import Markdown from "react-markdown";
 import { useNavigate, useParams } from "react-router-dom";
-import { useTheme } from "../hooks/theme";
 
 interface RobotDetailsResponse {
   name: string;
