@@ -33,12 +33,24 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         self,
         name: str,
         keys: list[tuple[str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]],
+        # It turns out having HASH on a GSI does not actually enforce uniqueness.
+        # Instead, the difference is: you cannot query RANGE fields alone but you may query HASH fields
+        gsis: list[tuple[str, str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]] = [],
         deletion_protection: bool = False,
     ) -> None:
         table = await self.db.create_table(
-            AttributeDefinitions=[{"AttributeName": n, "AttributeType": t} for n, t, _ in keys],
+            AttributeDefinitions=[{"AttributeName": n, "AttributeType": t} for n, t, _ in keys]
+            + [{"AttributeName": n, "AttributeType": t} for _, n, t, _ in gsis],
             TableName=name,
             KeySchema=[{"AttributeName": n, "KeyType": t} for n, _, t in keys],
+            GlobalSecondaryIndexes=[
+                {
+                    "IndexName": i,
+                    "KeySchema": [{"AttributeName": n, "KeyType": t}],
+                    "Projection": {"ProjectionType": "ALL"},
+                }
+                for i, n, _, t in gsis
+            ],
             DeletionProtectionEnabled=deletion_protection,
             BillingMode="PAY_PER_REQUEST",
         )

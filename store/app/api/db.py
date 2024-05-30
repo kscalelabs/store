@@ -36,18 +36,23 @@ async def create_tables(crud: Crud | None = None) -> None:
                 keys=[
                     ("id", "S", "HASH"),
                 ],
+                gsis=[
+                    ("emailIndex", "email", "S", "HASH"),
+                ],
             ),
             crud._create_dynamodb_table(
                 name="Tokens",
                 keys=[
                     ("id", "S", "HASH"),
                 ],
+                gsis=[("emailIndex", "email", "S", "HASH")],
             ),
             crud._create_dynamodb_table(
                 name="Robots",
                 keys=[
                     ("id", "S", "HASH"),
                 ],
+                gsis=[("ownerIndex", "owner", "S", "HASH")],
             ),
         )
 
