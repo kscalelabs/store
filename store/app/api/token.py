@@ -74,7 +74,7 @@ async def create_refresh_token(email: str, crud: Crud) -> str:
     """
     token = Token(email=email)
     await crud.add_token(token)
-    return create_token({"eml": email})
+    return create_token({"email": email})
 
 
 def load_refresh_token(payload: str) -> str:
@@ -87,4 +87,4 @@ def load_refresh_token(payload: str) -> str:
         The decoded refresh token data.
     """
     data = load_token(payload)
-    return data["eml"]
+    return data["email"]
