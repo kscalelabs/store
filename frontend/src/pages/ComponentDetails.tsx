@@ -93,26 +93,14 @@ const ComponentDetails = () => {
             <Col>
               <Markdown
                 components={{
-                  p: ({ node, ...props }) => <p {...props} className="mb-3" />,
-                  li: ({ node, ...props }) => (
-                    <li {...props} className="mb-1" />
-                  ),
-                  h1: ({ node, ...props }) => (
-                    <h3 {...props} className="mt-1" />
-                  ),
-                  h2: ({ node, ...props }) => (
-                    <h4 {...props} className="mt-1" />
-                  ),
-                  h3: ({ node, ...props }) => (
-                    <h5 {...props} className="mt-1" />
-                  ),
-                  h4: ({ node, ...props }) => (
-                    <h6 {...props} className="mt-1" />
-                  ),
-                  h5: ({ node, ...props }) => (
-                    <h6 {...props} className="mt-1" />
-                  ),
-                  h6: ({ node, ...props }) => <h6 {...props} />,
+                  p: ({ ...props }) => <p {...props} className="mb-3" />,
+                  li: ({ ...props }) => <li {...props} className="mb-1" />,
+                  h1: ({ ...props }) => <h3 {...props} className="mt-1" />,
+                  h2: ({ ...props }) => <h4 {...props} className="mt-1" />,
+                  h3: ({ ...props }) => <h5 {...props} className="mt-1" />,
+                  h4: ({ ...props }) => <h6 {...props} className="mt-1" />,
+                  h5: ({ ...props }) => <h6 {...props} className="mt-1" />,
+                  h6: ({ ...props }) => <h6 {...props} />,
                 }}
               >
                 {description}
