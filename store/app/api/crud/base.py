@@ -30,12 +30,20 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         if self.__db is not None:
             await self.__db.__aexit__(exc_type, exc_val, exc_tb)
 
+		"""Creates a table in the Dynamo database.
+
+		Args:
+			name: Name of the table.
+			keys: Primary and secondary keys. Do not include non-key attributes.
+			gsis: Making an attribute a GSI is required in oredr to query against it.
+				Note HASH on a GSI does not actually enforce uniqueness.
+				Instead, the difference is: you cannot query RANGE fields alone but you may query HASH fields
+			deletion_protection: Whether the table is protected from being deleted.
+		"""
     async def _create_dynamodb_table(
         self,
         name: str,
         keys: list[tuple[str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]],
-        # It turns out having HASH on a GSI does not actually enforce uniqueness.
-        # Instead, the difference is: you cannot query RANGE fields alone but you may query HASH fields
         gsis: list[tuple[str, str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]] = [],
         deletion_protection: bool = False,
     ) -> None:

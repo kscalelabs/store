@@ -17,7 +17,7 @@ class User(BaseModel):
 class Token(BaseModel):
     # Email of the user the token belongs to
     email: str
-    # Id of the token itself, not the user it belongs to.
+    # ID of the token itself, not the user it belongs to.
     id: str
     issued: Decimal = field(default_factory=lambda: Decimal(datetime.datetime.now().timestamp()))
     disabled: bool = field(default=False)
