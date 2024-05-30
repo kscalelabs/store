@@ -7,6 +7,8 @@ const THEME_KEY = "__THEME";
 interface ThemeColors {
   backgroundColor: string;
   color: string;
+  // cardBackgroundColor: string;
+  // cardColor: string;
 }
 
 const COLORS: { [key in Theme]: ThemeColors } = {
@@ -18,6 +20,19 @@ const COLORS: { [key in Theme]: ThemeColors } = {
     backgroundColor: "#201a42",
     color: "#f5f2ef",
   },
+  // light: {
+  //   backgroundColor: "#f5f2ef",
+  //   color: "#201a42",
+  //   cardBackgroundColor: "#fff",
+  //   cardColor: "#201a42",
+  // },
+  // dark: {
+  //   backgroundColor: "#201a42",
+  //   color: "#f5f2ef",
+  //   cardBackgroundColor: "#333",
+  //   cardColor: "#f5f2ef",
+  // },
+
 };
 
 const getThemeFromLocalStorage = (): Theme => {
@@ -55,9 +70,17 @@ export const ThemeProvider = (props: ThemeProviderProps) => {
   };
 
   useEffect(() => {
+    
     document.body.setAttribute("data-bs-theme", theme);
+    document.body.classList.toggle("dark-mode", theme === "dark");
+    document.body.classList.toggle("light-mode", theme === "light");
     document.body.style.backgroundColor = COLORS[theme].backgroundColor;
     document.body.style.color = COLORS[theme].color;
+
+    // document.body.classList.toggle("dark-mode", theme === "dark");
+    // document.body.classList.toggle("light-mode", theme === "light");
+    // document.body.style.backgroundColor = COLORS[theme].backgroundColor;
+    // document.body.style.color = COLORS[theme].color;
   }, [theme]);
 
   return (

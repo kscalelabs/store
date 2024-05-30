@@ -1,5 +1,6 @@
 import { Breadcrumb, Card, Col, Container, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import "../index.css";
 
 interface ListingsResponseItem {
   name: string;
