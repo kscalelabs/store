@@ -34,7 +34,7 @@ def set_token_cookie(response: Response, token: str, key: str) -> None:
         value=token,
         httponly=True,
         secure=False,
-        samesite="Lax",
+        samesite="lax",
     )
 
 
@@ -99,7 +99,7 @@ class UserLoginResponse(BaseModel):
 async def add_to_waitlist(email: str, crud: Crud) -> None:
     await asyncio.gather(
         send_waitlist_email(email),
-        crud.add_user(User(email=email, banned=True)),
+        crud.add_user(User(id=str(uuid.uuid4()), email=email, banned=True)),
     )
 
 

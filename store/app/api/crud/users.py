@@ -1,6 +1,7 @@
 """Defines CRUD interface for user API."""
 
 import asyncio
+import uuid
 import warnings
 
 from boto3.dynamodb.conditions import Key
@@ -51,7 +52,7 @@ class UserCrud(BaseCrud):
 
 async def test_adhoc() -> None:
     async with UserCrud() as crud:
-        await crud.add_user(User(email="ben@kscale.dev"))
+        await crud.add_user(User(id=str(uuid.uuid4()), email="ben@kscale.dev"))
         # print(await crud.get_user("ben"))
         # print(await crud.get_user_count())
         # await crud.get_token("ben")
