@@ -8,4 +8,5 @@ const NotFoundRedirect = () => {
   }, [navigate]);
   return null;
 };
+
 export default NotFoundRedirect;
