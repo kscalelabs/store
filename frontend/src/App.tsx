@@ -1,5 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import TopNavbar from "components/nav/NavBar";
+import TopNavbar from "components/nav/TopNavbar";
 import NotFoundRedirect from "components/NotFoundRedirect";
 import ComponentDetails from "pages/ComponentDetails";
 import Components from "pages/Components";
