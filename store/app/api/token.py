@@ -2,6 +2,7 @@
 
 import datetime
 import logging
+import uuid
 
 import jwt
 from fastapi import HTTPException, status
@@ -10,8 +11,6 @@ from store.app.api.db import Crud
 from store.app.api.model import Token
 from store.settings import settings
 from store.utils import server_time
-
-import uuid
 
 logger = logging.getLogger(__name__)
 

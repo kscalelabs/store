@@ -3,7 +3,6 @@
 import asyncio
 import warnings
 
-import boto3
 from boto3.dynamodb.conditions import Key
 
 from store.app.api.crud.base import BaseCrud

@@ -1,10 +1,10 @@
 """Defines the base CRUD interface."""
 
+import itertools
 from typing import Any, AsyncContextManager, Literal, Self
 
 import aioboto3
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
-import itertools
 
 
 class BaseCrud(AsyncContextManager["BaseCrud"]):

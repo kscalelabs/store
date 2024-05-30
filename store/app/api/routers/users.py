@@ -3,6 +3,7 @@
 import asyncio
 import datetime
 import logging
+import uuid
 from email.utils import parseaddr as parse_email_address
 from typing import Annotated
 
@@ -16,8 +17,6 @@ from store.app.api.email import OneTimePassPayload, send_delete_email, send_otp_
 from store.app.api.model import User
 from store.app.api.token import create_refresh_token, create_token, load_refresh_token, load_token
 from store.settings import settings
-
-import uuid
 
 logger = logging.getLogger(__name__)
 
