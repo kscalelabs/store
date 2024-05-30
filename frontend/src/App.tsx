@@ -10,8 +10,8 @@ import NotFound from "pages/NotFound";
 import RobotDetails from "pages/Robot";
 import { Container, Nav, Navbar } from "react-bootstrap";
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
-import "./App.css";
-import "./index.css";
+import "App.css";
+import "index.css";
 
 const App = () => {
   return (
@@ -19,7 +19,7 @@ const App = () => {
       <DarkModeProvider>
         <BrowserRouter>
           <Container fluid>
-            <Navbar className="bg-body-tertiary fixed-top" expand="lg">
+            <Navbar className="bg-light-subtle fixed-top" expand="lg">
               <Container fluid>
                 <Navbar.Brand as={Link} to="/">
                   robolist

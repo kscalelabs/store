@@ -1,23 +1,22 @@
 import React, { createContext, ReactNode, useContext, useEffect } from "react";
-import darkModes from "../constants/darkModes";
-import { useTheme } from "../hooks/theme";
-import "../index.css";
+import colorModes from "constants/colorModes";
+import { useTheme } from "hooks/theme";
 
 interface DarkModeContextProps {
-  darkMode: boolean;
+  colorMode: boolean;
   toggleDarkMode: () => void;
 }
 
 const DarkModeContext = createContext<
-  undefined | { darkMode: string; setDarkMode: Function }
+  undefined | { colorMode: string; setDarkMode: Function }
 >(undefined);
 
 export const DarkModeProvider = ({ children }: { children: ReactNode }) => {
-  const [darkMode, trueSetDarkMode] = React.useState<string>(darkModes.light);
+  const [colorMode, trueSetDarkMode] = React.useState<string>(colorModes.light);
   const { setTheme } = useTheme();
 
   const getMediaQueryPreference = () => {
-    return darkModes.light;
+    return colorModes.light;
   };
 
   const storeUserPreference = (choice: string) => {
@@ -31,7 +30,7 @@ export const DarkModeProvider = ({ children }: { children: ReactNode }) => {
   const setDarkMode = (choice: string) => {
     trueSetDarkMode(choice);
     storeUserPreference(choice);
-    const theme = choice === darkModes.dark ? "dark" : "light";
+    const theme = choice === colorModes.dark ? "dark" : "light";
     setTheme(theme);
   };
 
@@ -46,7 +45,7 @@ export const DarkModeProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <DarkModeContext.Provider value={{ darkMode, setDarkMode }}>
+    <DarkModeContext.Provider value={{ colorMode, setDarkMode }}>
       {children}
     </DarkModeContext.Provider>
   );
