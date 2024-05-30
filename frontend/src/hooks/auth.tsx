@@ -1,6 +1,13 @@
-import axios, { AxiosError, AxiosInstance } from "axios";
+import axios, { AxiosError, AxiosInstance, isAxiosError } from "axios";
 import { BACKEND_URL } from "constants/backend";
-import React, { createContext, useCallback, useEffect, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 const REFRESH_TOKEN_KEY = "__REFRESH_TOKEN";
@@ -51,7 +58,7 @@ const AuthenticationContext = createContext<
 >(undefined);
 
 interface AuthenticationProviderProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
@@ -137,7 +144,7 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
           );
           localSessionToken = response.data.token;
         } catch (refreshError) {
-          if (axios.isAxiosError(refreshError)) {
+          if (isAxiosError(refreshError)) {
             const axiosError = refreshError as AxiosError;
             if (axiosError?.response?.status === 401) {
               logout();
@@ -180,7 +187,7 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
 };
 
 export const useAuthentication = (): AuthenticationContextProps => {
-  const context = React.useContext(AuthenticationContext);
+  const context = useContext(AuthenticationContext);
   if (!context) {
     throw new Error(
       "useAuthentication must be used within a AuthenticationProvider",
@@ -190,7 +197,7 @@ export const useAuthentication = (): AuthenticationContextProps => {
 };
 
 interface OneTimePasswordWrapperProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 interface UserLoginResponse {
@@ -216,6 +223,7 @@ export const OneTimePasswordWrapper = ({
           setRefreshToken(response.data.token);
           navigate("/");
         } catch (error) {
+          // Do nothing
         } finally {
           searchParams.delete("otp");
         }

@@ -1,14 +1,15 @@
-import axios, { AxiosError } from "axios";
+import { AxiosError, isAxiosError } from "axios";
 
 export const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
+// eslint-disable-next-line
 export const humanReadableError = (error: any | undefined) => {
-  if (axios.isAxiosError(error)) {
+  if (isAxiosError(error)) {
     const axiosError = error as AxiosError;
     const request = axiosError.request,
       response = axiosError.response;
     if (response) {
-      const detail = (response.data as any).detail;
+      const detail = (response.data as any).detail; // eslint-disable-line
       if (typeof detail === "string") {
         return detail;
       }

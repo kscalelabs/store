@@ -1,4 +1,10 @@
-import React, { createContext, useCallback, useContext, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useState,
+} from "react";
 import { Toast, ToastContainer } from "react-bootstrap";
 
 const DELAY = 5000;
@@ -20,9 +26,9 @@ const alertTypeToBg = (kind: AlertType) => {
 };
 
 interface AlertQueueContextProps {
-  alerts: Map<string, [string | React.ReactNode, AlertType]>;
+  alerts: Map<string, [string | ReactNode, AlertType]>;
   removeAlert: (alertId: string) => void;
-  addAlert: (alert: string | React.ReactNode, kind: AlertType) => void;
+  addAlert: (alert: string | ReactNode, kind: AlertType) => void;
 }
 
 const AlertQueueContext = createContext<AlertQueueContextProps | undefined>(
@@ -37,7 +43,7 @@ export const AlertQueueProvider = (props: AlertQueueProviderProps) => {
   const { children } = props;
 
   const [alerts, setAlerts] = useState<
-    Map<string, [string | React.ReactNode, AlertType]>
+    Map<string, [string | ReactNode, AlertType]>
   >(new Map());
 
   const generateAlertId = useCallback(() => {
@@ -45,7 +51,7 @@ export const AlertQueueProvider = (props: AlertQueueProviderProps) => {
   }, []);
 
   const addAlert = useCallback(
-    (alert: string | React.ReactNode, kind: AlertType) => {
+    (alert: string | ReactNode, kind: AlertType) => {
       setAlerts((prev) => {
         const newAlerts = new Map(prev);
         const alertId = generateAlertId();
@@ -93,7 +99,7 @@ export const useAlertQueue = () => {
 };
 
 interface AlertQueueProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export const AlertQueue = (props: AlertQueueProps) => {

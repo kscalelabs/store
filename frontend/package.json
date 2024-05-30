@@ -12,7 +12,6 @@
     "holderjs": "^2.9.9",
     "nth-check": ">=2.0.1",
     "postcss": ">=8.4.31",
-    "prettier": "^3.2.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^9.0.1",
@@ -20,20 +19,15 @@
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
+  "type": "module",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "watch": "nodemon serve",
-    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
-    "lint": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\" && eslint 'src/**/*.{js,jsx,ts,tsx}' --fix",
+    "lint": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\" && eslint 'src/**/*.{js,jsx,ts,tsx}'"
   },
   "browserslist": {
     "production": [
@@ -53,10 +47,23 @@
     "@types/jest": "^29.5.12",
     "axios": "^1.7.2",
     "bootstrap": "^5.3.3",
+    "globals": "^15.3.0",
     "nodemon": "^3.1.0",
+    "prettier": "^3.2.5",
     "prettier-plugin-organize-imports": "^3.2.4",
     "react-bootstrap": "^2.10.2",
     "react-router-dom": "^6.23.1",
-    "ts-jest": "^29.1.4"
+    "ts-jest": "^29.1.4",
+    "eslint": "^8.0.0",
+    "@babel/eslint-parser": "^7.24.6",
+    "babel-eslint": "*",
+    "@eslint/compat": "*",
+    "@eslint/js": "*",
+    "eslint-config-prettier": "*",
+    "eslint-import-resolver-typescript": "*",
+    "eslint-plugin-prettier": "*",
+    "eslint-plugin-react": "*",
+    "eslint-plugin-import": "*",
+    "typescript-eslint": "*"
   }
 }
