@@ -1,14 +1,4 @@
-import React from "react";
-import {
-  Breadcrumb,
-  Button,
-  ButtonGroup,
-  Carousel,
-  Col,
-  Container,
-  Modal,
-  Row,
-} from "react-bootstrap";
+import { Row } from "react-bootstrap";
 const OrganizationsDetails = () => {
   return (
     <Row className="mt-5">

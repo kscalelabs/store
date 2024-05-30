@@ -1,7 +1,7 @@
+import useDarkMode from "components/useDarkMode";
+import colorModes from "constants/colorModes";
 import { useRef } from "react";
 import { Button } from "react-bootstrap";
-import colorModes from "constants/colorModes";
-import useDarkMode from "components/useDarkMode";
 
 const DarkModeToggle = () => {
   const { colorMode, setDarkMode } = useDarkMode();

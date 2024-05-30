@@ -1,6 +1,6 @@
-import React, { createContext, ReactNode, useContext, useEffect } from "react";
 import colorModes from "constants/colorModes";
 import { useTheme } from "hooks/theme";
+import React, { createContext, ReactNode, useContext, useEffect } from "react";
 
 interface DarkModeContextProps {
   colorMode: boolean;

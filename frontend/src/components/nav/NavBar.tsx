@@ -1,7 +1,7 @@
 import Authentication from "components/Authentication";
+import DarkModeToggle from "components/DarkModeToggle";
 import { Container, Nav, Navbar } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import DarkModeToggle from "components/DarkModeToggle";
 
 const TopNavbar = () => {
   return (
@@ -21,8 +21,8 @@ const TopNavbar = () => {
             </Nav.Link>
           </Nav>
           <Navbar.Text className="me-3">
-                      <DarkModeToggle />
-                    </Navbar.Text>
+            <DarkModeToggle />
+          </Navbar.Text>
           <Navbar.Text>
             <Authentication />
           </Navbar.Text>
