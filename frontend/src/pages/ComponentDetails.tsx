@@ -10,17 +10,18 @@ import {
   Row,
 } from "react-bootstrap";
 import Markdown from "react-markdown";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
-interface RobotDetailsResponse {
+interface ComponentDetailsResponse {
   name: string;
   owner: string;
   description: string;
   images: { url: string; caption: string }[];
-  bom: { name: string; part_number: string; quantity: number; price: number }[];
+  purchase_links: { name: string; url: string; price: number }[];
+  used_by: { name: string; id: string; stars: number }[];
 }
 
-const RobotDetails = () => {
+const ComponentDetails = () => {
   const { id } = useParams();
   const [show, setShow] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
@@ -29,48 +30,36 @@ const RobotDetails = () => {
   const handleShow = () => setShow(true);
 
   // This is a placeholder before the backend is hooked up.
-  const response: RobotDetailsResponse = {
-    name: "Stompy",
-    owner: "K-Scale Labs",
-    description: `Stompy is a 4-legged robot that can walk and jump.
-
-## Purpose
-
-Stompy is designed to be a versatile platform for research and development in legged robotics.
-
-## Links
-
-- [Wiki Entry](https://humanoids.wiki/w/Stompy)
-- [URDF (with STLs)](https://media.kscale.dev/stompy/latest_stl_urdf.tar.gz)
-- [URDF (with OBJs)](https://media.kscale.dev/stompy/latest_obj_urdf.tar.gz)
-- [MJCF](https://media.kscale.dev/stompy/latest_mjcf.tar.gz)
-`,
+  const response: ComponentDetailsResponse = {
+    name: "RMD X8",
+    owner: "MyActuator",
+    description: `The RMD X8 is a quasi-direct drive motor from MyActuator.`,
     images: [
       {
-        url: "https://media.robolist.xyz/stompy.png",
-        caption: "Stompy the robot 1",
+        url: "https://media.robolist.xyz/rmd_x8.png",
+        caption: "Actuator 1",
       },
       {
-        url: "https://media.robolist.xyz/stompy.png",
-        caption: "Stompy the robot 2",
+        url: "https://media.robolist.xyz/rmd_x8.png",
+        caption: "Actuator 2",
       },
       {
-        url: "https://media.robolist.xyz/stompy.png",
-        caption: "Stompy the robot 3",
+        url: "https://media.robolist.xyz/rmd_x8.png",
+        caption: "Actuator 3",
       },
     ],
-    bom: [
+    purchase_links: [
       {
-        name: "Actuator",
-        part_number: "1234",
-        quantity: 10,
-        price: 100,
+        name: "RobotShop",
+        url: "https://www.robotshop.com/products/myactuator-rmd-x8-v3-can-bus-16-helical-mc-x-500-o-brushless-servo-driver",
+        price: 389,
       },
+    ],
+    used_by: [
       {
-        name: "Sensor",
-        part_number: "5678",
-        quantity: 5,
-        price: 50,
+        name: "Stompy",
+        id: "1234",
+        stars: 5,
       },
     ],
   };
@@ -83,14 +72,14 @@ Stompy is designed to be a versatile platform for research and development in le
     <Container>
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
-        <Breadcrumb.Item onClick={() => navigate("/robots/")}>
-          Listings
+        <Breadcrumb.Item onClick={() => navigate("/components/")}>
+          Components
         </Breadcrumb.Item>
         <Breadcrumb.Item active>{name}</Breadcrumb.Item>
       </Breadcrumb>
 
       <Row className="mt-5">
-        <Col xl={6} md={4} sm={12}>
+        <Col lg={6} md={12} className="mb-3">
           <Row>
             <Col>
               <h1>{name}</h1>
@@ -130,10 +119,54 @@ Stompy is designed to be a versatile platform for research and development in le
               </Markdown>
             </Col>
           </Row>
+
+          <Row className="mt-3">
+            <h4>Purchase</h4>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Price</th>
+                </tr>
+              </thead>
+              <tbody>
+                {response.purchase_links.map((part, key) => (
+                  <tr key={key}>
+                    <td>
+                      <a href={part.url}>{part.name}</a>
+                    </td>
+                    <td>${part.price}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Row>
+
+          <Row className="mt-3">
+            <h4>Robots</h4>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Stars</th>
+                </tr>
+              </thead>
+              <tbody>
+                {response.used_by.map((part, key) => (
+                  <tr key={key}>
+                    <td>
+                      <Link to={`/robot/${part.id}`}>{part.name}</Link>
+                    </td>
+                    <td>{part.stars}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Row>
         </Col>
 
         {images && (
-          <Col xl={6} md={8} sm={12}>
+          <Col lg={6} md={12}>
             <Carousel
               indicators
               data-bs-theme="dark"
@@ -178,30 +211,6 @@ Stompy is designed to be a versatile platform for research and development in le
             </Carousel>
           </Col>
         )}
-      </Row>
-
-      <Row className="mt-5">
-        <h4>Bill of Materials</h4>
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Part Number</th>
-              <th>Quantity</th>
-              <th>Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            {response.bom.map((part, key) => (
-              <tr key={key}>
-                <td>{part.name}</td>
-                <td>{part.part_number}</td>
-                <td>{part.quantity}</td>
-                <td>${part.price}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </Row>
 
       <Modal
@@ -251,4 +260,4 @@ Stompy is designed to be a versatile platform for research and development in le
   );
 };
 
-export default RobotDetails;
+export default ComponentDetails;
