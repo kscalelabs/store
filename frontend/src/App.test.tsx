@@ -3,6 +3,6 @@ import App from "./App";
 
 test("renders stompy urdf link", () => {
   render(<App />);
-  const linkElement = screen.getByText(/Listings/i);
+  const linkElement = screen.getByText(/Robots/i);
   expect(linkElement).toBeInTheDocument();
 });
