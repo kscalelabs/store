@@ -4,6 +4,7 @@ from typing import Any, AsyncContextManager, Literal, Self
 
 import aioboto3
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
+import itertools
 
 
 class BaseCrud(AsyncContextManager["BaseCrud"]):
@@ -39,8 +40,10 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         deletion_protection: bool = False,
     ) -> None:
         table = await self.db.create_table(
-            AttributeDefinitions=[{"AttributeName": n, "AttributeType": t} for n, t, _ in keys]
-            + [{"AttributeName": n, "AttributeType": t} for _, n, t, _ in gsis],
+            AttributeDefinitions=[
+                {"AttributeName": n, "AttributeType": t}
+                for n, t in itertools.chain(((n, t) for (n, t, _) in keys), ((n, t) for _, n, t, _ in gsis))
+            ],
             TableName=name,
             KeySchema=[{"AttributeName": n, "KeyType": t} for n, _, t in keys],
             GlobalSecondaryIndexes=[
