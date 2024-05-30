@@ -11,6 +11,8 @@ from store.app.api.model import Token
 from store.settings import settings
 from store.utils import server_time
 
+import uuid
+
 logger = logging.getLogger(__name__)
 
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
@@ -72,7 +74,7 @@ async def create_refresh_token(email: str, crud: Crud) -> str:
     Returns:
         The encoded JWT.
     """
-    token = Token(email=email)
+    token = Token(id=str(uuid.uuid4()), email=email)
     await crud.add_token(token)
     return create_token({"email": email})
 

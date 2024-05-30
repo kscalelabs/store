@@ -17,6 +17,8 @@ from store.app.api.model import User
 from store.app.api.token import create_refresh_token, create_token, load_refresh_token, load_token
 from store.settings import settings
 
+import uuid
+
 logger = logging.getLogger(__name__)
 
 users_router = APIRouter()
@@ -106,7 +108,7 @@ async def create_or_get(email: str, crud: Crud) -> User:
     # Gets or creates the user object.
     user_obj = await crud.get_user(email)
     if user_obj is None:
-        await crud.add_user(User(email=email))
+        await crud.add_user(User(id=str(uuid.uuid4()), email=email))
         if (user_obj := await crud.get_user(email)) is None:
             raise RuntimeError("Failed to add user to the database")
 

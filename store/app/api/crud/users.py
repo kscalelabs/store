@@ -3,6 +3,9 @@
 import asyncio
 import warnings
 
+import boto3
+from boto3.dynamodb.conditions import Key
+
 from store.app.api.crud.base import BaseCrud
 from store.app.api.model import Token, User
 
@@ -14,15 +17,15 @@ class UserCrud(BaseCrud):
 
     async def get_user(self, email: str) -> User | None:
         table = await self.db.Table("Users")
-        user_dict = await table.get_item(Key={"email": email})
-        if "Item" not in user_dict:
+        user_dict = await table.query(IndexName="emailIndex", KeyConditionExpression=Key("email").eq(email))
+        if len(user_dict["Items"]) == 0:
             return None
-        user = User.model_validate(user_dict["Item"])
+        user = User.model_validate(user_dict["Items"][0])
         return user
 
     async def delete_user(self, user: User) -> None:
         table = await self.db.Table("Users")
-        await table.delete_item(Key={"email": user.email})
+        await table.delete_item(Key={"id": user.id})
 
     async def list_users(self) -> list[User]:
         warnings.warn("`list_users` probably shouldn't be called in production", ResourceWarning)
@@ -40,10 +43,10 @@ class UserCrud(BaseCrud):
 
     async def get_token(self, email: str) -> Token | None:
         table = await self.db.Table("Tokens")
-        token_dict = await table.get_item(Key={"email": email})
-        if "Item" not in token_dict:
+        token_dict = await table.query(IndexName="emailIndex", KeyConditionExpression=Key("email").eq(email))
+        if len(token_dict["Items"]) == 0:
             return None
-        token = Token.model_validate(token_dict["Item"])
+        token = Token.model_validate(token_dict["Items"][0])
         return token
 
 
