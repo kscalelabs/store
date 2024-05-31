@@ -1,8 +1,8 @@
 interface GoogleIdentity {
   accounts: {
     id: {
-      initialize(options: any): void;
-      prompt(callback: (notification: any) => void): void;
+      initialize(options: any): void; // eslint-disable-line
+      prompt(callback: (notification: any) => void): void; // eslint-disable-line
     };
   };
 }
