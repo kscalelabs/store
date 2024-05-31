@@ -2,7 +2,7 @@ import { Col, Row } from "react-bootstrap";
 
 const NotFound = () => {
   return (
-    <div className="p-5 rounded-lg">
+    <div className="pt-5 rounded-lg">
       <Row>
         <Col>
           <h1 className="display-4">404 Not Found</h1>
