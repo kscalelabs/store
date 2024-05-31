@@ -1,4 +1,4 @@
-import Authentication from "components/Authentication";
+import AuthComponent from "components/auth/AuthComponent";
 import { Col, Offcanvas, Row } from "react-bootstrap";
 
 interface Props {
@@ -20,9 +20,7 @@ const Sidebar = ({ show, onHide }: Props) => {
             height: "100%",
           }}
         >
-          <Row>
-            <Authentication />
-          </Row>
+          <AuthComponent />
           <Row style={{ marginTop: "auto" }} />
           <Row>
             <a href="#">About</a>

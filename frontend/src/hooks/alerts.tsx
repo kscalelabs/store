@@ -112,7 +112,7 @@ export const AlertQueue = (props: AlertQueueProps) => {
       <ToastContainer
         className="p-3"
         position="bottom-center"
-        style={{ zIndex: 10, position: "fixed" }}
+        style={{ zIndex: 1000, position: "fixed", marginBottom: 50 }}
       >
         {Array.from(alerts).map(([alertId, [alert, kind]]) => {
           return (
