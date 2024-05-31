@@ -17,11 +17,11 @@ interface ThemeColors {
 
 const COLORS: { [key in Theme]: ThemeColors } = {
   light: {
-    backgroundColor: "#f5f2ef",
+    backgroundColor: "#ffffff",
     color: "#201a42",
   },
   dark: {
-    backgroundColor: "#201a42",
+    backgroundColor: "#000000",
     color: "#f5f2ef",
   },
 };
@@ -62,6 +62,8 @@ export const ThemeProvider = (props: ThemeProviderProps) => {
 
   useEffect(() => {
     document.body.setAttribute("data-bs-theme", theme);
+    document.body.classList.toggle("dark-mode", theme === "dark");
+    document.body.classList.toggle("light-mode", theme === "light");
     document.body.style.backgroundColor = COLORS[theme].backgroundColor;
     document.body.style.color = COLORS[theme].color;
   }, [theme]);

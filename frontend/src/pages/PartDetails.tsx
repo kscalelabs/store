@@ -12,7 +12,7 @@ import {
 import Markdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-interface ComponentDetailsResponse {
+interface PartDetailsResponse {
   name: string;
   owner: string;
   description: string;
@@ -21,7 +21,7 @@ interface ComponentDetailsResponse {
   used_by: { name: string; id: string; stars: number }[];
 }
 
-const ComponentDetails = () => {
+const PartDetails = () => {
   const { id } = useParams();
   const [show, setShow] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
@@ -30,7 +30,7 @@ const ComponentDetails = () => {
   const handleShow = () => setShow(true);
 
   // This is a placeholder before the backend is hooked up.
-  const response: ComponentDetailsResponse = {
+  const response: PartDetailsResponse = {
     name: "RMD X8",
     owner: "MyActuator",
     description: `The RMD X8 is a quasi-direct drive motor from MyActuator.`,
@@ -72,14 +72,14 @@ const ComponentDetails = () => {
     <Container>
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
-        <Breadcrumb.Item onClick={() => navigate("/components/")}>
-          Components
+        <Breadcrumb.Item onClick={() => navigate("/parts/")}>
+          Parts
         </Breadcrumb.Item>
         <Breadcrumb.Item active>{name}</Breadcrumb.Item>
       </Breadcrumb>
 
-      <Row className="mt-5">
-        <Col lg={6} md={12} className="mb-3">
+      <Row className="mt-3">
+        <Col lg={6} md={12} className="mb-5">
           <Row>
             <Col>
               <h1>{name}</h1>
@@ -248,4 +248,4 @@ const ComponentDetails = () => {
   );
 };
 
-export default ComponentDetails;
+export default PartDetails;

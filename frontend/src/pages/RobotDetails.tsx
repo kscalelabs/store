@@ -133,7 +133,7 @@ Stompy is designed to be a versatile platform for research and development in le
                 {response.bom.map((part, key) => (
                   <tr key={key}>
                     <td>
-                      <Link to={`/component/${part.id}`}>{part.name}</Link>
+                      <Link to={`/part/${part.id}`}>{part.name}</Link>
                     </td>
                     <td>{part.quantity}</td>
                     <td>${part.price}</td>
