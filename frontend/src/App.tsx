@@ -16,7 +16,6 @@ const App = () => {
   return (
     <ThemeProvider>
       <BrowserRouter>
-        <Container>
           <TopNavbar />
 
           <Container className="mt-3">
@@ -29,7 +28,6 @@ const App = () => {
               <Route path="/404" element={<NotFound />} />
               <Route path="*" element={<NotFoundRedirect />} />
             </Routes>
-          </Container>
 
           <footer className="fixed-bottom">
             {/* Solid background */}
