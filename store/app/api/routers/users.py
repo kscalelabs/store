@@ -44,7 +44,7 @@ class RefreshTokenData(BaseModel):
 
     @classmethod
     async def encode(cls, user: User, crud: Crud) -> str:
-        return await create_refresh_token(user.email, crud)
+        return await create_refresh_token(user.user_id, crud)
 
     @classmethod
     def decode(cls, payload: str) -> "RefreshTokenData":

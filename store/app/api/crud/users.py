@@ -36,7 +36,7 @@ class UserCrud(BaseCrud):
 
     async def delete_user(self, user: User) -> None:
         table = await self.db.Table("Users")
-        await table.delete_item(Key={"id": user.user_id})
+        await table.delete_item(Key={"user_id": user.user_id})
 
     async def list_users(self) -> list[User]:
         warnings.warn("`list_users` probably shouldn't be called in production", ResourceWarning)
