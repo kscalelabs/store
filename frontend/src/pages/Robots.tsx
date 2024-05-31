@@ -35,7 +35,7 @@ const Robots = () => {
 
       <Row className="mt-5">
         {response.robots.map(({ name, owner, description, id, photo }, key) => (
-          <Col key={key} md={3} xs={6}>
+          <Col key={key} md={3} sm={6} xs={12}>
             <Card onClick={() => navigate(`/robot/${id}`)}>
               {photo && (
                 <Card.Img

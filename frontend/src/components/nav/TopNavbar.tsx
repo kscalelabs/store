@@ -18,7 +18,7 @@ const TopNavbar = () => {
   return (
     <>
       <Navbar className="bg-body-tertiary" expand="lg">
-        <Container>
+        <Container fluid>
           <Navbar.Brand as={Link} to="/">
             robolist
           </Navbar.Brand>
