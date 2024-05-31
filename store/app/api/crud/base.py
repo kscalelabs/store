@@ -1,9 +1,13 @@
 """Defines the base CRUD interface."""
 
+import itertools
+import logging
 from typing import Any, AsyncContextManager, Literal, Self
 
 import aioboto3
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
+
+logger = logging.getLogger(__name__)
 
 
 class BaseCrud(AsyncContextManager["BaseCrud"]):
@@ -32,13 +36,38 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     async def _create_dynamodb_table(
         self,
         name: str,
-        columns: list[tuple[str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]],
+        keys: list[tuple[str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]],
+        gsis: list[tuple[str, str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]] = [],
         deletion_protection: bool = False,
     ) -> None:
+        """Creates a table in the Dynamo database.
+
+        Args:
+            name: Name of the table.
+            keys: Primary and secondary keys. Do not include non-key attributes.
+            gsis: Making an attribute a GSI is required in order to query
+                against it. Note HASH on a GSI does not actually enforce
+                uniqueness. Instead, the difference is: you cannot query
+                RANGE fields alone, but you may query HASH fields.
+            deletion_protection: Whether the table is protected from being
+                deleted.
+        """
+        logger.info("Creating %s table", name)
         table = await self.db.create_table(
-            AttributeDefinitions=[{"AttributeName": n, "AttributeType": t} for n, t, _ in columns],
+            AttributeDefinitions=[
+                {"AttributeName": n, "AttributeType": t}
+                for n, t in itertools.chain(((n, t) for (n, t, _) in keys), ((n, t) for _, n, t, _ in gsis))
+            ],
             TableName=name,
-            KeySchema=[{"AttributeName": n, "KeyType": t} for n, _, t in columns],
+            KeySchema=[{"AttributeName": n, "KeyType": t} for n, _, t in keys],
+            GlobalSecondaryIndexes=[
+                {
+                    "IndexName": i,
+                    "KeySchema": [{"AttributeName": n, "KeyType": t}],
+                    "Projection": {"ProjectionType": "ALL"},
+                }
+                for i, n, _, t in gsis
+            ],
             DeletionProtectionEnabled=deletion_protection,
             BillingMode="PAY_PER_REQUEST",
         )

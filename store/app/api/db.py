@@ -1,6 +1,7 @@
 """Defines base tools for interacting with the database."""
 
 import asyncio
+import logging
 from typing import AsyncGenerator, Self
 
 from store.app.api.crud.base import BaseCrud
@@ -25,28 +26,50 @@ async def create_tables(crud: Crud | None = None) -> None:
     Args:
         crud: The top-level CRUD class.
     """
+    logging.basicConfig(level=logging.INFO)
+
     if crud is None:
         async with Crud() as crud:
             await create_tables(crud)
 
     else:
-        await asyncio.gather(
-            crud._create_dynamodb_table(
-                name="Users",
-                columns=[
-                    ("email", "S", "HASH"),
-                    # ("banned", "B", "RANGE"),
-                    # ("deleted", "B", "RANGE"),
-                ],
-            ),
-            crud._create_dynamodb_table(
-                name="Tokens",
-                columns=[
-                    ("email", "S", "HASH"),
-                    # ("issued", "N", "RANGE"),
-                    # ("disabled", "B", "RANGE"),
-                ],
-            ),
+        await crud._create_dynamodb_table(
+            name="Users",
+            keys=[
+                ("user_id", "S", "HASH"),
+            ],
+            gsis=[
+                ("emailIndex", "email", "S", "HASH"),
+            ],
+        )
+        await crud._create_dynamodb_table(
+            name="Tokens",
+            keys=[
+                ("token_id", "S", "HASH"),
+            ],
+            gsis=[
+                ("userIdIndex", "user_id", "S", "HASH"),
+            ],
+        )
+        await crud._create_dynamodb_table(
+            name="Robots",
+            keys=[
+                ("robot_id", "S", "HASH"),
+            ],
+            gsis=[
+                ("ownerIndex", "owner", "S", "HASH"),
+                ("nameIndex", "name", "S", "HASH"),
+            ],
+        )
+        await crud._create_dynamodb_table(
+            name="Parts",
+            keys=[
+                ("part_id", "S", "HASH"),
+            ],
+            gsis=[
+                ("ownerIndex", "owner", "S", "HASH"),
+                ("nameIndex", "name", "S", "HASH"),
+            ],
         )
 
 

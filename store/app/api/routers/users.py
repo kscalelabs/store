@@ -1,8 +1,8 @@
 """Defines the API endpoint for creating, deleting and updating user information."""
 
-import asyncio
 import datetime
 import logging
+import uuid
 from email.utils import parseaddr as parse_email_address
 from typing import Annotated
 
@@ -12,7 +12,7 @@ from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel
 
 from store.app.api.db import Crud
-from store.app.api.email import OneTimePassPayload, send_delete_email, send_otp_email, send_waitlist_email
+from store.app.api.email import OneTimePassPayload, send_delete_email, send_otp_email
 from store.app.api.model import User
 from store.app.api.token import create_refresh_token, create_token, load_refresh_token, load_token
 from store.settings import settings
@@ -39,31 +39,32 @@ def set_token_cookie(response: Response, token: str, key: str) -> None:
 
 
 class RefreshTokenData(BaseModel):
-    email: str
+    user_id: str
+    token_id: str
 
     @classmethod
     async def encode(cls, user: User, crud: Crud) -> str:
-        return await create_refresh_token(user.email, crud)
+        return await create_refresh_token(user.user_id, crud)
 
     @classmethod
     def decode(cls, payload: str) -> "RefreshTokenData":
-        email = load_refresh_token(payload)
-        return cls(email=email)
+        user_id, token_id = load_refresh_token(payload)
+        return cls(user_id=user_id, token_id=token_id)
 
 
 class SessionTokenData(BaseModel):
-    email: str
+    user_id: str
+    token_id: str
 
     def encode(self) -> str:
         expire_minutes = settings.crypto.expire_token_minutes
         expire_after = datetime.timedelta(minutes=expire_minutes)
-        return create_token({"eml": self.email}, expire_after=expire_after)
+        return create_token({"uid": self.user_id, "tid": self.token_id}, expire_after=expire_after, extra="session")
 
     @classmethod
     def decode(cls, payload: str) -> "SessionTokenData":
-        data = load_token(payload)
-        email = data["eml"]
-        return cls(email=email)
+        data = load_token(payload, extra="session")
+        return cls(user_id=data["uid"], token_id=data["tid"])
 
 
 class UserSignup(BaseModel):
@@ -77,6 +78,10 @@ def validate_email(email: str) -> str:
     except Exception:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email")
     return email
+
+
+def get_new_user_id() -> str:
+    return str(uuid.uuid4())
 
 
 @users_router.post("/login")
@@ -96,27 +101,13 @@ class UserLoginResponse(BaseModel):
     token_type: str
 
 
-async def add_to_waitlist(email: str, crud: Crud) -> None:
-    await asyncio.gather(
-        send_waitlist_email(email),
-        crud.add_user(User(email=email, banned=True)),
-    )
-
-
 async def create_or_get(email: str, crud: Crud) -> User:
     # Gets or creates the user object.
-    user_obj = await crud.get_user(email)
+    user_obj = await crud.get_user_from_email(email)
     if user_obj is None:
-        await crud.add_user(User(email=email))
-        if (user_obj := await crud.get_user(email)) is None:
+        await crud.add_user(User(user_id=get_new_user_id(), email=email))
+        if (user_obj := await crud.get_user_from_email(email)) is None:
             raise RuntimeError("Failed to add user to the database")
-
-    # Validates user.
-    if user_obj.banned:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User is not allowed to log in")
-    if user_obj.deleted:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User is deleted")
-
     return user_obj
 
 
@@ -220,7 +211,7 @@ async def get_user_info_endpoint(
     data: Annotated[SessionTokenData, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UserInfoResponse:
-    user_obj = await crud.get_user(data.email)
+    user_obj = await crud.get_user(data.user_id)
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
     return UserInfoResponse(email=user_obj.email)
@@ -231,7 +222,7 @@ async def delete_user_endpoint(
     data: Annotated[SessionTokenData, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    user_obj = await crud.get_user(data.email)
+    user_obj = await crud.get_user(data.user_id)
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
     await crud.delete_user(user_obj)
@@ -260,9 +251,9 @@ async def refresh_endpoint(
     data: Annotated[RefreshTokenData, Depends(get_refresh_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> RefreshTokenResponse:
-    token = await crud.get_token(data.email)
-    if not token or token.disabled:
+    token = await crud.get_token(data.token_id)
+    if token is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token")
-    session_token = SessionTokenData(email=data.email).encode()
+    session_token = SessionTokenData(user_id=data.user_id, token_id=data.token_id).encode()
     set_token_cookie(response, session_token, SESSION_TOKEN_COOKIE_KEY)
     return RefreshTokenResponse(token=session_token, token_type=TOKEN_TYPE)

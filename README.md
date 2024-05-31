@@ -40,6 +40,14 @@ To run code formatting:
 npm run format
 ```
 
+#### Environment Variables
+
+You will need to set `REACT_APP_GOOGLE_CLIENT_ID`. To do this, create a `.env.local` file in the `frontend` directory and add the following line:
+
+```
+REACT_APP_GOOGLE_CLIENT_ID=your-client-id
+```
+
 ### FastAPI
 
 Create a Python virtual environment using either [uv](https://astral.sh/blog/uv) or [virtualenv](https://virtualenv.pypa.io/en/latest/) with at least Python 3.11. This should look something like this:

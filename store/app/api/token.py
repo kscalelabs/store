@@ -2,6 +2,7 @@
 
 import datetime
 import logging
+import uuid
 
 import jwt
 from fastapi import HTTPException, status
@@ -16,7 +17,16 @@ logger = logging.getLogger(__name__)
 TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
-def create_token(data: dict, expire_after: datetime.timedelta | None = None) -> str:
+def get_token_id() -> str:
+    """Generates a unique token ID.
+
+    Returns:
+        A unique token ID.
+    """
+    return str(uuid.uuid4())
+
+
+def create_token(data: dict, expire_after: datetime.timedelta | None = None, extra: str | None = None) -> str:
     """Creates a token from a dictionary.
 
     The "exp" key is reserved for internal use.
@@ -24,10 +34,14 @@ def create_token(data: dict, expire_after: datetime.timedelta | None = None) -> 
     Args:
         data: The data to encode.
         expire_after: If provided, token will expire after this amount of time.
+        extra: Additional secret to append to the secret key.
 
     Returns:
         The encoded JWT.
     """
+    secret = settings.crypto.jwt_secret
+    if extra is not None:
+        secret += extra
     if "exp" in data:
         raise ValueError("The payload should not contain an expiration time")
     to_encode = data.copy()
@@ -38,46 +52,51 @@ def create_token(data: dict, expire_after: datetime.timedelta | None = None) -> 
         expires = server_time() + expire_after
         to_encode.update({"exp": expires})
 
-    encoded_jwt = jwt.encode(to_encode, settings.crypto.jwt_secret, algorithm=settings.crypto.algorithm)
+    encoded_jwt = jwt.encode(to_encode, secret, algorithm=settings.crypto.algorithm)
     return encoded_jwt
 
 
-def load_token(payload: str) -> dict:
+def load_token(payload: str, extra: str | None = None) -> dict:
     """Loads the token payload.
 
     Args:
         payload: The JWT-encoded payload.
         only_once: If ``True``, the token will be marked as used.
+        extra: Additional secret to append to the secret key.
 
     Returns:
         The decoded payload.
     """
+    secret = settings.crypto.jwt_secret
+    if extra is not None:
+        secret += extra
     try:
-        data: dict = jwt.decode(payload, settings.crypto.jwt_secret, algorithms=[settings.crypto.algorithm])
+        data: dict = jwt.decode(payload, secret, algorithms=[settings.crypto.algorithm])
     except Exception:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     return data
 
 
-async def create_refresh_token(email: str, crud: Crud) -> str:
+async def create_refresh_token(user_id: str, crud: Crud) -> str:
     """Creates a refresh token for a user.
 
     Refresh tokens never expire. They are used to generate short-lived session
     tokens which are used for authentication.
 
     Args:
-        email: The email for the user associated with this token.
+        user_id: The user ID to associate with the token.
         crud: The CRUD class for the databases.
 
     Returns:
         The encoded JWT.
     """
-    token = Token(email=email)
+    token_id = get_token_id()
+    token = Token(user_id=user_id, token_id=token_id)
     await crud.add_token(token)
-    return create_token({"eml": email})
+    return create_token({"uid": user_id, "tid": token_id})
 
 
-def load_refresh_token(payload: str) -> str:
+def load_refresh_token(payload: str) -> tuple[str, str]:
     """Loads the refresh token payload.
 
     Args:
@@ -87,4 +106,4 @@ def load_refresh_token(payload: str) -> str:
         The decoded refresh token data.
     """
     data = load_token(payload)
-    return data["eml"]
+    return data["uid"], data["tid"]
