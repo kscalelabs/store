@@ -18,7 +18,7 @@ const App = () => {
       <BrowserRouter>
         <TopNavbar />
 
-        <Container className="mt-3">
+        <Container className="content">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/robots/" element={<Robots />} />
@@ -28,14 +28,14 @@ const App = () => {
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<NotFoundRedirect />} />
           </Routes>
-
-          <footer className="fixed-bottom">
-            {/* Solid background */}
-            <div className="text-center bg-body-tertiary p-2">
-              <a href="mailto:support@robolist.xyz">support@robolist.xyz</a>
-            </div>
-          </footer>
         </Container>
+
+        <footer className="fixed-bottom">
+          {/* Solid background */}
+          <div className="text-center bg-body-tertiary p-2">
+            <a href="mailto:support@robolist.xyz">support@robolist.xyz</a>
+          </div>
+        </footer>
       </BrowserRouter>
     </ThemeProvider>
   );
