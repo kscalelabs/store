@@ -80,7 +80,7 @@ def validate_email(email: str) -> str:
     return email
 
 
-def get_user_id() -> str:
+def get_new_user_id() -> str:
     return str(uuid.uuid4())
 
 
@@ -103,12 +103,11 @@ class UserLoginResponse(BaseModel):
 
 async def create_or_get(email: str, crud: Crud) -> User:
     # Gets or creates the user object.
-    user_obj = await crud.get_user(email)
+    user_obj = await crud.get_user_from_email(email)
     if user_obj is None:
-        await crud.add_user(User(user_id=get_user_id(), email=email))
-        if (user_obj := await crud.get_user(email)) is None:
+        await crud.add_user(User(user_id=get_new_user_id(), email=email))
+        if (user_obj := await crud.get_user_from_email(email)) is None:
             raise RuntimeError("Failed to add user to the database")
-
     return user_obj
 
 
