@@ -15,7 +15,15 @@ class UserCrud(BaseCrud):
         table = await self.db.Table("Users")
         await table.put_item(Item=user.model_dump())
 
-    async def get_user(self, email: str) -> User | None:
+    async def get_user(self, user_id: str) -> User | None:
+        table = await self.db.Table("Users")
+        user_dict = await table.get_item(Key={"user_id": user_id})
+        if "Item" not in user_dict:
+            return None
+        user = User.model_validate(user_dict["Item"])
+        return user
+
+    async def get_user_from_email(self, email: str) -> User | None:
         table = await self.db.Table("Users")
         user_dict = await table.query(IndexName="emailIndex", KeyConditionExpression=KeyCondition("email").eq(email))
         items = user_dict["Items"]
@@ -44,13 +52,19 @@ class UserCrud(BaseCrud):
         table = await self.db.Table("Tokens")
         await table.put_item(Item=token.model_dump())
 
-    async def get_token(self, email: str) -> Token | None:
+    async def get_token(self, token_id: str) -> Token | None:
         table = await self.db.Table("Tokens")
-        token_dict = await table.query(IndexName="emailIndex", KeyConditionExpression=KeyCondition("email").eq(email))
-        if len(token_dict["Items"]) == 0:
+        token_dict = await table.get_item(Key={"token_id": token_id})
+        if "Item" not in token_dict:
             return None
-        token = Token.model_validate(token_dict["Items"][0])
+        token = Token.model_validate(token_dict["Item"])
         return token
+
+    async def get_user_tokens(self, user_id: str) -> list[Token]:
+        table = await self.db.Table("Tokens")
+        tokens = table.query(IndexName="userIdIndex", KeyConditionExpression=KeyCondition("user_id").eq(user_id))
+        tokens = [Token.model_validate(token) for token in await tokens]
+        return tokens
 
 
 async def test_adhoc() -> None:
