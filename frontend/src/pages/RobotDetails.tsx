@@ -5,7 +5,6 @@ import {
   ButtonGroup,
   Carousel,
   Col,
-  Container,
   Modal,
   Row,
 } from "react-bootstrap";
