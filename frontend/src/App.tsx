@@ -16,24 +16,22 @@ const App = () => {
   return (
     <ThemeProvider>
       <BrowserRouter>
-        <Container>
-          <TopNavbar />
+        <TopNavbar />
 
-          <Container className="mt-3">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/robots/" element={<Robots />} />
-              <Route path="/robot/:id" element={<RobotDetails />} />
-              <Route path="/parts/" element={<Parts />} />
-              <Route path="/part/:id" element={<PartDetails />} />
-              <Route path="/404" element={<NotFound />} />
-              <Route path="*" element={<NotFoundRedirect />} />
-            </Routes>
-          </Container>
+        <Container className="mt-3">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/robots/" element={<Robots />} />
+            <Route path="/robot/:id" element={<RobotDetails />} />
+            <Route path="/parts/" element={<Parts />} />
+            <Route path="/part/:id" element={<PartDetails />} />
+            <Route path="/404" element={<NotFound />} />
+            <Route path="*" element={<NotFoundRedirect />} />
+          </Routes>
 
           <footer className="fixed-bottom">
             {/* Solid background */}
-            <div className="text-center bg-light p-2">
+            <div className="text-center bg-body-tertiary p-2">
               <a href="mailto:support@robolist.xyz">support@robolist.xyz</a>
             </div>
           </footer>

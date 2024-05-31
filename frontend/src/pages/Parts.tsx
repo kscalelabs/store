@@ -1,4 +1,4 @@
-import { Breadcrumb, Card, Col, Container, Row } from "react-bootstrap";
+import { Breadcrumb, Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
 interface PartsResponse {
@@ -27,7 +27,7 @@ const Parts = () => {
   const navigate = useNavigate();
 
   return (
-    <Container>
+    <>
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
         <Breadcrumb.Item active>Parts</Breadcrumb.Item>
@@ -55,7 +55,7 @@ const Parts = () => {
           </Col>
         ))}
       </Row>
-    </Container>
+    </>
   );
 };
 

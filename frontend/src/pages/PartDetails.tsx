@@ -5,7 +5,6 @@ import {
   ButtonGroup,
   Carousel,
   Col,
-  Container,
   Modal,
   Row,
 } from "react-bootstrap";
@@ -69,7 +68,7 @@ const PartDetails = () => {
   const navigate = useNavigate();
 
   return (
-    <Container>
+    <>
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
         <Breadcrumb.Item onClick={() => navigate("/parts/")}>
@@ -244,7 +243,7 @@ const PartDetails = () => {
           </ButtonGroup>
         </Modal.Footer>
       </Modal>
-    </Container>
+    </>
   );
 };
 
