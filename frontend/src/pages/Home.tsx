@@ -9,9 +9,7 @@ const RobotDetails = () => {
       <Col>
         <Row className="mb-5">
           <h1 className="display-4">robolist</h1>
-          <p className="lead">
-            Buy, sell and build robot hardware and software
-          </p>
+          <p className="lead">Buy and sell robots and robot parts</p>
         </Row>
         <Row>
           <Col md={6} sm={12} className="mt-2">
