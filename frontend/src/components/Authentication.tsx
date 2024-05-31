@@ -13,7 +13,7 @@ const Authentication = () => {
   const target = useRef(null);
 
   return (
-    <div style={{ maxWidth: 400 }}>
+    <div>
       {authenticated ? (
         <InputGroup>
           <InputGroup.Text>{email}</InputGroup.Text>

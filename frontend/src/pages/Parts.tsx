@@ -1,7 +1,7 @@
 import { Breadcrumb, Card, Col, Container, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
-interface ComponentsResponse {
+interface PartsResponse {
   robots: {
     name: string;
     owner: string;
@@ -11,8 +11,8 @@ interface ComponentsResponse {
   }[];
 }
 
-const Components = () => {
-  const response: ComponentsResponse = {
+const Parts = () => {
+  const response: PartsResponse = {
     robots: [
       {
         name: "RMD X8",
@@ -30,13 +30,13 @@ const Components = () => {
     <Container>
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
-        <Breadcrumb.Item active>Components</Breadcrumb.Item>
+        <Breadcrumb.Item active>Parts</Breadcrumb.Item>
       </Breadcrumb>
 
       <Row className="mt-5">
         {response.robots.map(({ name, owner, description, id, photo }, key) => (
           <Col key={key} md={3} xs={6}>
-            <Card onClick={() => navigate(`/component/${id}`)}>
+            <Card onClick={() => navigate(`/part/${id}`)}>
               {photo && (
                 <Card.Img
                   style={{ aspectRatio: "1/1" }}
@@ -59,4 +59,4 @@ const Components = () => {
   );
 };
 
-export default Components;
+export default Parts;
