@@ -27,7 +27,7 @@ const Robots = () => {
   const navigate = useNavigate();
 
   return (
-    <Container>
+    <>
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
         <Breadcrumb.Item active>Robots</Breadcrumb.Item>
@@ -55,7 +55,7 @@ const Robots = () => {
           </Col>
         ))}
       </Row>
-    </Container>
+    </>
   );
 };
 

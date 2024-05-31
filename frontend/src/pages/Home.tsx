@@ -5,7 +5,7 @@ const RobotDetails = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="p-5 rounded-lg">
+    <div className="pt-5 rounded-lg">
       <Col>
         <Row className="mb-5">
           <h1 className="display-4">robolist</h1>

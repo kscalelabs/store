@@ -80,7 +80,7 @@ Stompy is designed to be a versatile platform for research and development in le
   const navigate = useNavigate();
 
   return (
-    <Container>
+    <>
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
         <Breadcrumb.Item onClick={() => navigate("/robots/")}>
@@ -235,7 +235,7 @@ Stompy is designed to be a versatile platform for research and development in le
           </ButtonGroup>
         </Modal.Footer>
       </Modal>
-    </Container>
+    </>
   );
 };
 
