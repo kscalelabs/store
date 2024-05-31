@@ -13,9 +13,25 @@ const Sidebar = ({ show, onHide }: Props) => {
         <Offcanvas.Title>Settings</Offcanvas.Title>
       </Offcanvas.Header>
       <Offcanvas.Body>
-        <Col>
+        <Col
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            height: "100%",
+          }}
+        >
           <Row>
             <Authentication />
+          </Row>
+          <Row style={{ marginTop: "auto" }} />
+          <Row>
+            <a href="#">About</a>
+          </Row>
+          <Row>
+            <a href="#">Privacy Policy</a>
+          </Row>
+          <Row>
+            <a href="#">Terms of Service</a>
           </Row>
         </Col>
       </Offcanvas.Body>
