@@ -1,4 +1,5 @@
 crypto:
   jwt_secret: fakeJwtSecret
 site:
-  homepage: http://localhost:8080
+  homepage: http://localhost:3000
+  api: http://localhost:8080

@@ -4,12 +4,6 @@ This is the code for our online store. This is a simple store for buying and sel
 
 ## Development
 
-> [!IMPORTANT]
-> Because in localhost we are mounting our dev frontend on 127.0.0.1:3000 and our API on 127.0.0.1:8080, CORS will prevent us from programatically sending or accepting responses from 127.0.0.1:8080 because our frontend on 127.0.0.1:3000 is considered a separate domain.
->
-> - Firefox: You need to use an extension like CORS Everywhere.
-> - Chrome/Chromium: Run `chrome` or `chromium` with the `--disable-web-security` flag (along with a non-standard `--user-data-dir=` flag).
-
 To develop the application, start React and FastAPI in separate terminals:
 
 ### React
