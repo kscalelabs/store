@@ -42,7 +42,7 @@ npm run format
 
 #### Environment Variables
 
-You will need to set `REACT_APP_GOOGLE_CLIENT_ID`. To do this, create a `.env.local` file in the `frontend` directory and add the following line:
+You will need to set `REACT_APP_GOOGLE_CLIENT_ID`. To do this, first create a Google client id (see [this LogRocket post](https://blog.logrocket.com/guide-adding-google-login-react-app/)). Then create a `.env.local` file in the `frontend` directory and add the following line:
 
 ```
 REACT_APP_GOOGLE_CLIENT_ID=your-client-id
