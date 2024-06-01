@@ -22,7 +22,7 @@ class UserSettings:
 @dataclass
 class EmailSettings:
     host: str = field(default=MISSING)
-    port: int = field(default=MISSING)
+    port: int = field(default=587)
     email: str = field(default=MISSING)
     password: str = field(default=MISSING)
     name: str = field(default=MISSING)
