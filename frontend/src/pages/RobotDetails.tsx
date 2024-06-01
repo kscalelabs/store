@@ -49,9 +49,9 @@ Stompy is designed to be a versatile platform for research and development in le
 
 ### Single Arm Sim Artifacts
 
-- [URDF (with STLs)](https://media.kscale.dev/stompy_arm/latest_stl_urdf.tar.gz)
-- [URDF (with OBJs)](https://media.kscale.dev/stompy_arm/latest_obj_urdf.tar.gz)
-- [MJCF](https://media.kscale.dev/stompy_arm/latest_mjcf.tar.gz)
+- [URDF (with STLs)](https://media.kscale.dev/stompy/arm_latest_stl_urdf.tar.gz)
+- [URDF (with OBJs)](https://media.kscale.dev/stompy/arm_latest_obj_urdf.tar.gz)
+- [MJCF](https://media.kscale.dev/stompy/arm_latest_mjcf.tar.gz)
 `,
     images: [
       {
