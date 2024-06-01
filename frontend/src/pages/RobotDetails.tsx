@@ -40,9 +40,18 @@ Stompy is designed to be a versatile platform for research and development in le
 ## Links
 
 - [Wiki Entry](https://humanoids.wiki/w/Stompy)
+
+### Full Body Sim Artifacts
+
 - [URDF (with STLs)](https://media.kscale.dev/stompy/latest_stl_urdf.tar.gz)
 - [URDF (with OBJs)](https://media.kscale.dev/stompy/latest_obj_urdf.tar.gz)
 - [MJCF](https://media.kscale.dev/stompy/latest_mjcf.tar.gz)
+
+### Single Arm Sim Artifacts
+
+- [URDF (with STLs)](https://media.kscale.dev/stompy_arm/latest_stl_urdf.tar.gz)
+- [URDF (with OBJs)](https://media.kscale.dev/stompy_arm/latest_obj_urdf.tar.gz)
+- [MJCF](https://media.kscale.dev/stompy_arm/latest_mjcf.tar.gz)
 `,
     images: [
       {
