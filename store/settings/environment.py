@@ -31,6 +31,7 @@ class EmailSettings:
 @dataclass
 class SiteSettings:
     homepage: str = field(default=MISSING)
+    api: str = field(default=MISSING)
     image_url: str | None = field(default=None)
 
 
