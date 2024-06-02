@@ -7,6 +7,9 @@
 /// config file
 pub mod config;
 
+/// Directories where data (config, Git repositories, etc) are read
+pub mod dirs;
+
 /// Utilities to send mail
 ///
 /// The mailer connection pool should be set up in main.rs (for the API and the site)
