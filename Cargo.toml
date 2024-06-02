@@ -37,4 +37,3 @@ tokio-postgres = "0.7"
 tower-cookies = "0.10"
 uuid = { version = "1", features = ["v4"] }
 zxcvbn = "2"
-serde_with = "3.8.1"

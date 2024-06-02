@@ -22,25 +22,13 @@ to install the repository. (Note: the link should be whatever the link to this r
 
 ## Initialization
 
-First we start by setting some environment variables (mass import them from a .env if running locally; see https://stackoverflow.com/questions/19331497/set-environment-variables-from-file-of-key-value-pairs). You will want to set
+Run
 
-```
-DOMAIN              The domain you are hosting your website on
+    init-config
 
-PORT                The port you wish to host the website on
+to initialize `~/.config/kscale-store/config.toml`.
 
-POSTGRES_HOST       The IP address of the machine you wish to host Postgres on (if it's the same machine as the server, use localhost)
-POSTGRES_DBNAME     Database name in Postgres
-POSTGRES_USER
-POSTGRES_PASSWORD   Password to Postgres user
-
-MAIL_RELAY          e.g. smtp.gmail.com
-MAIL_NAME           The display name on your email address
-MAIL_EMAIL          Your noreply email address
-MAIL_PASSWORD       Your noreply email's password. Note for Gmail you will need an app password: https://myaccount.google.com/u/1/apppasswords
-```
-
-This includes information about the Postgres database, which you must make yourself through the `psql` command line utility.
+Afterwards, edit `~/.config/kscale-store/config.toml` and fill in the appropriate variables for each parameter. This includes information about the Postgres database, which you must make yourself through the `psql` command line utility.
 
 After setting up the Postgres database, run
 
