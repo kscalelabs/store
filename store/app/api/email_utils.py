@@ -11,7 +11,7 @@ from email.mime.text import MIMEText
 
 import aiosmtplib
 
-from store.app.api.token import create_token, load_token
+from store.app.api.token_utils import create_token, load_token
 from store.settings import settings
 
 logger = logging.getLogger(__name__)

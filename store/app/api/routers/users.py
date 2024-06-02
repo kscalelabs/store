@@ -12,9 +12,9 @@ from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel
 
 from store.app.api.db import Crud
-from store.app.api.email import OneTimePassPayload, send_delete_email, send_otp_email
+from store.app.api.email_utils import OneTimePassPayload, send_delete_email, send_otp_email
 from store.app.api.model import User
-from store.app.api.token import create_refresh_token, create_token, load_refresh_token, load_token
+from store.app.api.token_utils import create_refresh_token, create_token, load_refresh_token, load_token
 from store.settings import settings
 
 logger = logging.getLogger(__name__)
