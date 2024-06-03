@@ -21,10 +21,10 @@ const App = () => {
         <AuthenticationProvider>
           <AlertQueueProvider>
             <AlertQueue>
-              <TopNavbar />
+              <OneTimePasswordWrapper>
+                <TopNavbar />
 
-              <Container className="content">
-                <OneTimePasswordWrapper>
+                <Container className="content">
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/robots/" element={<Robots />} />
@@ -34,15 +34,15 @@ const App = () => {
                     <Route path="/404" element={<NotFound />} />
                     <Route path="*" element={<NotFoundRedirect />} />
                   </Routes>
-                </OneTimePasswordWrapper>
-              </Container>
+                </Container>
 
-              <footer className="fixed-bottom">
-                {/* Solid background */}
-                <div className="text-center bg-body-tertiary p-2">
-                  <a href="mailto:support@robolist.xyz">support@robolist.xyz</a>
-                </div>
-              </footer>
+                <footer className="fixed-bottom">
+                  {/* Solid background */}
+                  <div className="text-center bg-body-tertiary p-2">
+                    <a href="mailto:support@robolist.xyz">support@robolist.xyz</a>
+                  </div>
+                </footer>
+              </OneTimePasswordWrapper>
             </AlertQueue>
           </AlertQueueProvider>
         </AuthenticationProvider>
