@@ -3,8 +3,3 @@ crypto:
 site:
   homepage: http://localhost:3000
   api: http://localhost:8080
-email:
-  host: ${oc.env:ROBOLIST_SMTP_HOST}
-  email: ${oc.env:ROBOLIST_SMTP_EMAIL}
-  password: ${oc.env:ROBOLIST_SMTP_PASSWORD}
-  name: ${oc.env:ROBOLIST_SMTP_NAME}
