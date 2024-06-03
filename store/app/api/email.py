@@ -36,16 +36,17 @@ async def send_email(subject: str, body: str, to: str) -> None:
 @dataclass
 class OneTimePassPayload:
     email: str
+    lifetime: str
 
     def encode(self) -> str:
         expire_minutes = settings.crypto.expire_otp_minutes
         expire_after = datetime.timedelta(minutes=expire_minutes)
-        return encode_jwt({"email": self.email}, expire_after=expire_after)
+        return encode_jwt({"email": self.email, "lifetime": self.lifetime}, expire_after=expire_after)
 
     @classmethod
     def decode(cls, payload: str) -> "OneTimePassPayload":
         data = decode_jwt(payload)
-        return cls(email=data["email"])
+        return cls(email=data["email"], lifetime=data["lifetime"])
 
 
 async def send_otp_email(payload: OneTimePassPayload, login_url: str) -> None:

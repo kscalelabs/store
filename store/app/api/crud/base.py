@@ -6,6 +6,7 @@ from typing import Any, AsyncContextManager, Literal, Self
 
 import aioboto3
 from botocore.exceptions import ClientError
+from redis import Redis
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 
 logger = logging.getLogger(__name__)
@@ -16,6 +17,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         super().__init__()
 
         self.__db: DynamoDBServiceResource | None = None
+        self.__kv: Redis | None = None
 
     @property
     def db(self) -> DynamoDBServiceResource:
@@ -28,6 +30,9 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         db = session.resource("dynamodb")
         db = await db.__aenter__()
         self.__db = db
+
+        # TO-DO: USE ENV VARS
+        self.kv = Redis(host = 'localhost', port=6379, db=0)
         return self
 
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:  # noqa: ANN401

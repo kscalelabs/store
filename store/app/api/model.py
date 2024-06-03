@@ -5,9 +5,7 @@ methods for converting from our input data into the format the database
 expects (for example, converting a UUID into a string).
 """
 
-import datetime
 import uuid
-from dataclasses import field
 from decimal import Decimal
 
 from pydantic import BaseModel
@@ -26,16 +24,16 @@ class User(BaseModel):
     def to_uuid(self) -> uuid.UUID:
         return uuid.UUID(self.user_id)
 
-
+# Stored in Redis rather than DynamoDB
 class ApiKey(BaseModel):
     api_key_hash: str  # Primary key
     user_id: str
-    issued: Decimal = field(default_factory=lambda: Decimal(datetime.datetime.now().timestamp()))
+    lifetime: int
 
     @classmethod
-    def from_api_key(cls, api_key: uuid.UUID, user_id: uuid.UUID) -> "ApiKey":
+    def from_api_key(cls, api_key: uuid.UUID, user_id: uuid.UUID, lifetime: int) -> "ApiKey":
         api_key_hash = hash_api_key(api_key)
-        return cls(api_key_hash=api_key_hash, user_id=str(user_id))
+        return cls(api_key_hash=api_key_hash, user_id=str(user_id), lifetime=lifetime)
 
 
 class PurchaseLink(BaseModel):
