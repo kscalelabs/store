@@ -24,6 +24,7 @@ class User(BaseModel):
     def to_uuid(self) -> uuid.UUID:
         return uuid.UUID(self.user_id)
 
+
 # Stored in Redis rather than DynamoDB
 class ApiKey(BaseModel):
     api_key_hash: str  # Primary key

@@ -99,6 +99,7 @@ async def get_login_response(email: str, lifetime: int, crud: Crud) -> UserLogin
     Args:
         email: The validated email of the user.
         crud: The database CRUD object.
+        lifetime: The lifetime (in seconds) of the API key to be returned.
 
     Returns:
         The API key for the user.

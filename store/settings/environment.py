@@ -4,12 +4,14 @@ from dataclasses import dataclass, field
 
 from omegaconf import MISSING
 
+
 @dataclass
 class RedisSettings:
     host: str = field(default=MISSING)
     password: str = field(default=MISSING)
     port: int = field(default=6379)
     db: int = field(default=0)
+
 
 @dataclass
 class CryptoSettings:

@@ -8,6 +8,7 @@ import aioboto3
 from botocore.exceptions import ClientError
 from redis import Redis
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
+
 from store.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -32,7 +33,9 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         db = await db.__aenter__()
         self.__db = db
 
-        self.kv = Redis(host = settings.redis.host, password=settings.redis.password, port=settings.redis.port, db=settings.redis.db)
+        self.kv = Redis(
+            host=settings.redis.host, password=settings.redis.password, port=settings.redis.port, db=settings.redis.db
+        )
         return self
 
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:  # noqa: ANN401
