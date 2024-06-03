@@ -8,3 +8,8 @@ email:
   email: ${oc.env:ROBOLIST_SMTP_EMAIL}
   password: ${oc.env:ROBOLIST_SMTP_PASSWORD}
   name: ${oc.env:ROBOLIST_SMTP_NAME}
+redis:
+  host: ${oc.env:ROBOLIST_REDIS_HOST,localhost}
+  port: ${oc.env:ROBOLIST_REDIS_PORT,6379}
+  password: ${oc.env:ROBOLIST_REDIS_PASSWORD,}
+  db: ${oc.env:ROBOLIST_REDIS_DB,0}
