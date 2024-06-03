@@ -17,7 +17,7 @@ const getLocalStorageApiKey = (): string | null => {
 };
 
 const setLocalStorageApiKey = (token: string) => {
-localStorage.setItem(API_KEY_ID, token);
+  localStorage.setItem(API_KEY_ID, token);
 };
 
 const deleteLocalStorageApiKey = () => {
@@ -67,8 +67,15 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
   }, [apiKey]);
 
   const logout = useCallback(() => {
-    setApiKey(null);
-    navigate("/");
+    (async () => {
+      try {
+        await api.delete<boolean>("/users/logout");
+        setApiKey(null);
+        navigate("/");
+      } catch (error) {
+        // Do nothing
+      }
+    })();
   }, [navigate]);
 
   // Adds the API key to the request header, if it is set.
