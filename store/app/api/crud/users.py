@@ -37,13 +37,11 @@ class UserCrud(BaseCrud):
         return user
 
     async def get_user_id_from_api_key(self, api_key: uuid.UUID) -> uuid.UUID | None:
-        table = await self.db.Table("ApiKeys")
         api_key_hash = hash_api_key(api_key)
-        row = await table.get_item(Key={"api_key_hash": api_key_hash})
-        if "Item" not in row:
+        user_id = self.kv.get(api_key_hash)
+        if user_id is None:
             return None
-        user_id = cast(str, row["Item"]["user_id"])
-        return uuid.UUID(user_id)
+        return uuid.UUID(user_id.decode('utf-8'))
 
     async def delete_user(self, user: User) -> None:
         table = await self.db.Table("Users")
@@ -68,8 +66,7 @@ class UserCrud(BaseCrud):
         return row is not None and row == user_id
 
     async def delete_api_key(self, api_key: uuid.UUID) -> None:
-        table = await self.db.Table("ApiKeys")
-        await table.delete_item(Key={"api_key_hash": hash_api_key(api_key)})
+        self.kv.delete(hash_api_key(api_key))
 
 
 async def test_adhoc() -> None:
