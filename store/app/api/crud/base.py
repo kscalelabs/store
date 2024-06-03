@@ -6,6 +6,7 @@ from typing import Any, AsyncContextManager, Literal, Self
 
 import aioboto3
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
+from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,8 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         gsis: list[tuple[str, str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]] = [],
         deletion_protection: bool = False,
     ) -> None:
-        """Creates a table in the Dynamo database.
+        """Creates a table in the Dynamo database if a table of that name does
+            not already exist.
 
         Args:
             name: Name of the table.
@@ -52,23 +54,26 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             deletion_protection: Whether the table is protected from being
                 deleted.
         """
-        logger.info("Creating %s table", name)
-        table = await self.db.create_table(
-            AttributeDefinitions=[
-                {"AttributeName": n, "AttributeType": t}
-                for n, t in itertools.chain(((n, t) for (n, t, _) in keys), ((n, t) for _, n, t, _ in gsis))
-            ],
-            TableName=name,
-            KeySchema=[{"AttributeName": n, "KeyType": t} for n, _, t in keys],
-            GlobalSecondaryIndexes=[
-                {
-                    "IndexName": i,
-                    "KeySchema": [{"AttributeName": n, "KeyType": t}],
-                    "Projection": {"ProjectionType": "ALL"},
-                }
-                for i, n, _, t in gsis
-            ],
-            DeletionProtectionEnabled=deletion_protection,
-            BillingMode="PAY_PER_REQUEST",
-        )
-        await table.wait_until_exists()
+        try:
+            await self.db.meta.client.describe_table(TableName=name)
+        except ClientError as e:
+            logger.info("Creating %s table", name)
+            table = await self.db.create_table(
+                AttributeDefinitions=[
+                    {"AttributeName": n, "AttributeType": t}
+                    for n, t in itertools.chain(((n, t) for (n, t, _) in keys), ((n, t) for _, n, t, _ in gsis))
+                ],
+                TableName=name,
+                KeySchema=[{"AttributeName": n, "KeyType": t} for n, _, t in keys],
+                GlobalSecondaryIndexes=[
+                    {
+                        "IndexName": i,
+                        "KeySchema": [{"AttributeName": n, "KeyType": t}],
+                        "Projection": {"ProjectionType": "ALL"},
+                    }
+                    for i, n, _, t in gsis
+                ],
+                DeletionProtectionEnabled=deletion_protection,
+                BillingMode="PAY_PER_REQUEST",
+            )
+            await table.wait_until_exists()
