@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from pytest_mock.plugin import MockType
 
 from store.app.api.db import create_tables
-from store.app.api.email import OneTimePassPayload
+from store.app.api.email_utils import OneTimePassPayload
 
 
 def test_user_auth_functions(app_client: TestClient, mock_send_email: MockType) -> None:
