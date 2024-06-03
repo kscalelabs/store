@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosInstance, isAxiosError } from "axios";
+import axios, { AxiosInstance } from "axios";
 import { BACKEND_URL } from "constants/backend";
 import {
   createContext,
@@ -52,10 +52,6 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
   const api = axios.create({
     baseURL: BACKEND_URL,
     withCredentials: true,
-  });
-
-  const baseApi = axios.create({
-    baseURL: BACKEND_URL,
   });
 
   useEffect(() => {
