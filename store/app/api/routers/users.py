@@ -5,6 +5,7 @@ import uuid
 from email.utils import parseaddr as parse_email_address
 from typing import Annotated
 
+import aiohttp
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel
@@ -88,6 +89,34 @@ class UserLoginResponse(BaseModel):
     api_key: str
 
 
+async def get_login_response(email: str, crud: Crud) -> UserLoginResponse:
+    """Takes the user email and returns an API key.
+
+    This function gets a user API key for an email which has been validated,
+    either through an OTP or through Google OAuth.
+
+    Args:
+        email: The validated email of the user.
+        crud: The database CRUD object.
+
+    Returns:
+        The API key for the user.
+    """
+    # If the user doesn't exist, then create a new user.
+    user_obj = await crud.get_user_from_email(email)
+    if user_obj is None:
+        await crud.add_user(User(user_id=str(get_new_user_id()), email=email))
+        if (user_obj := await crud.get_user_from_email(email)) is None:
+            raise RuntimeError("Failed to add user to the database")
+
+    # Issue a new API key for the user.
+    user_id: uuid.UUID = user_obj.to_uuid()
+    api_key: uuid.UUID = get_new_api_key(user_id)
+    await crud.add_api_key(api_key, user_id)
+
+    return UserLoginResponse(api_key=str(api_key))
+
+
 @users_router.post("/otp", response_model=UserLoginResponse)
 async def otp_endpoint(
     data: OneTimePass,
@@ -103,21 +132,38 @@ async def otp_endpoint(
         The API key if the one-time password is valid.
     """
     payload = OneTimePassPayload.decode(data.payload)
+    return await get_login_response(payload.email, crud)
 
-    # If the user doesn't exist, then create a new user.
-    email = payload.email
-    user_obj = await crud.get_user_from_email(email)
-    if user_obj is None:
-        await crud.add_user(User(user_id=str(get_new_user_id()), email=email))
-        if (user_obj := await crud.get_user_from_email(email)) is None:
-            raise RuntimeError("Failed to add user to the database")
 
-    # Issue a new API key for the user.
-    user_id: uuid.UUID = user_obj.to_uuid()
-    api_key: uuid.UUID = get_new_api_key(user_id)
-    await crud.add_api_key(api_key, user_id)
+async def get_google_user_info(token: str) -> dict:
+    async with aiohttp.ClientSession() as session:
+        response = await session.get(
+            "https://www.googleapis.com/oauth2/v3/userinfo",
+            params={"access_token": token},
+        )
+        if response.status != 200:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Google token")
+        return await response.json()
 
-    return UserLoginResponse(api_key=str(api_key))
+
+class GoogleLogin(BaseModel):
+    token: str  # This is the token that Google gives us for authenticated users.
+
+
+@users_router.post("/google")
+async def google_login_endpoint(
+    data: GoogleLogin,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> UserLoginResponse:
+    try:
+        idinfo = await get_google_user_info(data.token)
+        email = idinfo["email"]
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Google token")
+    if idinfo.get("email_verified") is not True:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Google email not verified")
+
+    return await get_login_response(email, crud)
 
 
 class UserInfoResponse(BaseModel):
