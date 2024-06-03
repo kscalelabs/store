@@ -34,7 +34,10 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         self.__db = db
 
         self.kv = Redis(
-            host=settings.redis.host, password=settings.redis.password, port=settings.redis.port, db=settings.redis.db
+            host=settings.redis.host,
+            password=settings.redis.password,
+            port=settings.redis.port,
+            db=settings.redis.db,
         )
         return self
 

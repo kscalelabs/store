@@ -25,8 +25,9 @@ class User(BaseModel):
         return uuid.UUID(self.user_id)
 
 
-# Stored in Redis rather than DynamoDB
 class ApiKey(BaseModel):
+    """Stored in Redis rather than DynamoDB."""
+
     api_key_hash: str  # Primary key
     user_id: str
     lifetime: int

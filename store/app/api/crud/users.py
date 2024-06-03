@@ -3,7 +3,6 @@
 import asyncio
 import uuid
 import warnings
-from typing import cast
 
 from boto3.dynamodb.conditions import Key as KeyCondition
 
@@ -41,7 +40,7 @@ class UserCrud(BaseCrud):
         user_id = self.kv.get(api_key_hash)
         if user_id is None:
             return None
-        return uuid.UUID(user_id.decode('utf-8'))
+        return uuid.UUID(user_id.decode("utf-8"))
 
     async def delete_user(self, user: User) -> None:
         table = await self.db.Table("Users")
