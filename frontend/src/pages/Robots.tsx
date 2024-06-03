@@ -21,7 +21,8 @@ const Robots = () => {
         id: "1",
         photo: "https://media.robolist.xyz/stompy.png",
       },
-    ],
+    ]
+    //robots: []
   };
 
   const navigate = useNavigate();

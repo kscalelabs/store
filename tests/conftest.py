@@ -75,7 +75,7 @@ def mock_send_email(mocker: MockerFixture) -> MockType:
 
 @pytest.fixture()
 def authenticated_user(app_client: TestClient) -> tuple[TestClient, str, str]:
-    from store.app.api.email import OneTimePassPayload
+    from store.app.api.email_utils import OneTimePassPayload
 
     test_email = "test@example.com"
 

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Breadcrumb,
   Button,
@@ -8,6 +7,8 @@ import {
   Modal,
   Row,
 } from "react-bootstrap";
+import rob from "hooks/rob";
+import { useEffect, useState } from "react";
 import Markdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
@@ -22,70 +23,105 @@ interface RobotDetailsResponse {
 const RobotDetails = () => {
   const { id } = useParams();
   const [show, setShow] = useState(false);
+  const [robot, setRobot] = useState<RobotDetailsResponse | null>(null);
   const [imageIndex, setImageIndex] = useState(0);
+  const [error, setError] = useState<string| null>(null);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  // This is a placeholder before the backend is hooked up.
-  const response: RobotDetailsResponse = {
-    name: "Stompy",
-    owner: "K-Scale Labs",
-    description: `Stompy is an open-source humanoid robot that anyone can 3D print.
-
-## Purpose
-
-Stompy is designed to be a versatile platform for research and development in legged robotics.
-
-## Links
-
-- [Wiki Entry](https://humanoids.wiki/w/Stompy)
-
-### Full Body Sim Artifacts
-
-- [URDF (with STLs)](https://media.kscale.dev/stompy/latest_stl_urdf.tar.gz)
-- [URDF (with OBJs)](https://media.kscale.dev/stompy/latest_obj_urdf.tar.gz)
-- [MJCF](https://media.kscale.dev/stompy/latest_mjcf.tar.gz)
-
-### Single Arm Sim Artifacts
-
-- [URDF (with STLs)](https://media.kscale.dev/stompy/arm_latest_stl_urdf.tar.gz)
-- [URDF (with OBJs)](https://media.kscale.dev/stompy/arm_latest_obj_urdf.tar.gz)
-- [MJCF](https://media.kscale.dev/stompy/arm_latest_mjcf.tar.gz)
-`,
-    images: [
-      {
-        url: "https://media.robolist.xyz/stompy.png",
-        caption: "Stompy the robot 1",
-      },
-      {
-        url: "https://media.robolist.xyz/stompy.png",
-        caption: "Stompy the robot 2",
-      },
-      {
-        url: "https://media.robolist.xyz/stompy.png",
-        caption: "Stompy the robot 3",
-      },
-    ],
-    bom: [
-      {
-        name: "Actuator",
-        id: "1234",
-        quantity: 10,
-        price: 100,
-      },
-      {
-        name: "Sensor",
-        id: "5678",
-        quantity: 5,
-        price: 50,
-      },
-    ],
-  };
-
-  const { name, owner, description, images } = response;
+  useEffect(() => {
+    const fetchRobot = async () => {
+      try {
+        const robotData = await rob.getRobotById(id);
+        setRobot(robotData);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError ("An unexpected error occurred")
+        }
+      }
+    }
+    fetchRobot();
+  }, [id]);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (error) {
+      navigate('/404'); // Redirect to a 404 page
+    }
+  }, [error, navigate]);
+
+  if (!robot) {
+    return <p>Loading</p>
+  }
+  const response: RobotDetailsResponse = {
+    name: robot?.name,
+    owner: robot?.owner,
+    description: robot?.description,
+    images: robot?.images,
+    bom: robot?.bom,
+  }
+/*
+  // This is a placeholder before the backend is hooked up.
+//   const response: RobotDetailsResponse = {
+//     name: "Stompy",
+//     owner: "K-Scale Labs",
+//     description: `Stompy is an open-source humanoid robot that anyone can 3D print.
+
+// ## Purpose
+
+// Stompy is designed to be a versatile platform for research and development in legged robotics.
+
+// ## Links
+
+// - [Wiki Entry](https://humanoids.wiki/w/Stompy)
+
+// ### Full Body Sim Artifacts
+
+// - [URDF (with STLs)](https://media.kscale.dev/stompy/latest_stl_urdf.tar.gz)
+// - [URDF (with OBJs)](https://media.kscale.dev/stompy/latest_obj_urdf.tar.gz)
+// - [MJCF](https://media.kscale.dev/stompy/latest_mjcf.tar.gz)
+
+// ### Single Arm Sim Artifacts
+
+// - [URDF (with STLs)](https://media.kscale.dev/stompy/arm_latest_stl_urdf.tar.gz)
+// - [URDF (with OBJs)](https://media.kscale.dev/stompy/arm_latest_obj_urdf.tar.gz)
+// - [MJCF](https://media.kscale.dev/stompy/arm_latest_mjcf.tar.gz)
+// `,
+//     images: [
+//       {
+//         url: "https://media.robolist.xyz/stompy.png",
+//         caption: "Stompy the robot 1",
+//       },
+//       {
+//         url: "https://media.robolist.xyz/stompy.png",
+//         caption: "Stompy the robot 2",
+//       },
+//       {
+//         url: "https://media.robolist.xyz/stompy.png",
+//         caption: "Stompy the robot 3",
+//       },
+//     ],
+//     bom: [
+//       {
+//         name: "Actuator",
+//         id: "1234",
+//         quantity: 10,
+//         price: 100,
+//       },
+//       {
+//         name: "Sensor",
+//         id: "5678",
+//         quantity: 5,
+//         price: 50,
+//       },
+//     ],
+//   };
+*/
+  const { name, owner, description, images, bom } = response;
 
   return (
     <>
