@@ -12,7 +12,7 @@ from pydantic.main import BaseModel
 
 from store.app.api.crypto import get_new_api_key, get_new_user_id
 from store.app.api.db import Crud
-from store.app.api.email import OneTimePassPayload, send_delete_email, send_otp_email
+from store.app.api.email_utils import OneTimePassPayload, send_delete_email, send_otp_email
 from store.app.api.model import User
 
 logger = logging.getLogger(__name__)
