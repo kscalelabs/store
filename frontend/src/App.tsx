@@ -1,4 +1,5 @@
 import "bootstrap/dist/css/bootstrap.min.css";
+import Footer from "components/nav/Footer";
 import TopNavbar from "components/nav/TopNavbar";
 import NotFoundRedirect from "components/NotFoundRedirect";
 import { AlertQueue, AlertQueueProvider } from "hooks/alerts";
@@ -36,14 +37,7 @@ const App = () => {
                   </Routes>
                 </Container>
 
-                <footer className="fixed-bottom">
-                  {/* Solid background */}
-                  <div className="text-center bg-body-tertiary p-2">
-                    <a href="mailto:support@robolist.xyz">
-                      support@robolist.xyz
-                    </a>
-                  </div>
-                </footer>
+                <Footer />
               </OneTimePasswordWrapper>
             </AlertQueue>
           </AlertQueueProvider>
