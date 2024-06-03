@@ -5,8 +5,8 @@ import logging
 from typing import Any, AsyncContextManager, Literal, Self
 
 import aioboto3
-from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 from botocore.exceptions import ClientError
+from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 
 logger = logging.getLogger(__name__)
 
@@ -41,8 +41,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         gsis: list[tuple[str, str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]] = [],
         deletion_protection: bool = False,
     ) -> None:
-        """Creates a table in the Dynamo database if a table of that name does
-            not already exist.
+        """Creates a table in the Dynamo database if a table of that name does not already exist.
 
         Args:
             name: Name of the table.
@@ -56,7 +55,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         """
         try:
             await self.db.meta.client.describe_table(TableName=name)
-        except ClientError as e:
+        except ClientError:
             logger.info("Creating %s table", name)
             table = await self.db.create_table(
                 AttributeDefinitions=[
