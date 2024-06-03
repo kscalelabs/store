@@ -5,7 +5,7 @@ import GoogleAuthComponent from "./GoogleAuthComponent";
 const AuthComponent = () => {
   return (
     <>
-      <Row>
+      {/* <Row>
         <Col>
           <EmailAuthComponent />
         </Col>
@@ -14,7 +14,7 @@ const AuthComponent = () => {
         <Col xs="auto">
           <GoogleAuthComponent />
         </Col>
-      </Row>
+      </Row> */}
     </>
   );
 };

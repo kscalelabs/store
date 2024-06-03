@@ -1,7 +1,7 @@
 """Defines the main API endpoint."""
 
 import logging
-from typing import Union
+from typing import List,Union
 
 import boto3
 from botocore.exceptions import ClientError
@@ -22,20 +22,32 @@ api_router.include_router(users_router, prefix="/users", tags=["users"])
 # Configure your DynamoDB client
 dynamodb = boto3.resource(
     "dynamodb",
-    region_name="us-east-1",  # Replace with your AWS region
-    aws_access_key_id="something",  # Replace with your AWS access key
-    aws_secret_access_key="something",  # Replace with your AWS secret key
+    # region_name="us-east-1",  # Replace with your AWS region
+    # aws_access_key_id="something",  # Replace with your AWS access key
+    # aws_secret_access_key="something",  # Replace with your AWS secret key
 )
 
 # Replace 'Robots' with your DynamoDB table name
 table = dynamodb.Table("Robots")
 
+class Bom(BaseModel):
+    name: str
+    id: str
+    quantity: int
+    price: float
+
+
+class Image(BaseModel):
+    url: str
+    caption: str
 
 class Robot(BaseModel):
     robot_id: str
     name: str
     description: str
     owner: str
+    bom: List[Bom]
+    images: List[Image]
 
 
 @api_router.get("/robots/{robot_id}", response_model=Robot)
