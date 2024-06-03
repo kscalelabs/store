@@ -18,7 +18,7 @@ const GoogleAuthComponentInner = () => {
   const [credential, setCredential] = useState<string | null>(null);
   const [disableButton, setDisableButton] = useState(false);
 
-  const { setRefreshToken, api } = useAuthentication();
+  const { setApiKey, api } = useAuthentication();
   const { addAlert } = useAlertQueue();
 
   useEffect(() => {
@@ -28,7 +28,7 @@ const GoogleAuthComponentInner = () => {
           const response = await api.post<UserLoginResponse>("/users/google", {
             token: credential,
           });
-          setRefreshToken(response.data.token);
+          setApiKey(response.data.token);
         } catch (error) {
           addAlert(humanReadableError(error), "error");
         } finally {
@@ -36,7 +36,7 @@ const GoogleAuthComponentInner = () => {
         }
       }
     })();
-  }, [credential, setRefreshToken, api, addAlert]);
+  }, [credential, setApiKey, api, addAlert]);
 
   const login = useGoogleLogin({
     onSuccess: (tokenResponse) => {

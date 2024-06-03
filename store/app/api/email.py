@@ -11,7 +11,7 @@ from email.mime.text import MIMEText
 
 import aiosmtplib
 
-from store.app.api.token import create_token, load_token
+from store.app.api.crypto import decode_jwt, encode_jwt
 from store.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -40,11 +40,11 @@ class OneTimePassPayload:
     def encode(self) -> str:
         expire_minutes = settings.crypto.expire_otp_minutes
         expire_after = datetime.timedelta(minutes=expire_minutes)
-        return create_token({"email": self.email}, expire_after=expire_after)
+        return encode_jwt({"email": self.email}, expire_after=expire_after)
 
     @classmethod
     def decode(cls, payload: str) -> "OneTimePassPayload":
-        data = load_token(payload)
+        data = decode_jwt(payload)
         return cls(email=data["email"])
 
 
@@ -53,7 +53,7 @@ async def send_otp_email(payload: OneTimePassPayload, login_url: str) -> None:
 
     body = textwrap.dedent(
         f"""
-            <h1><code>don't panic</code><br/><code>stay human</code></h1>
+            <h1><code>K-Scale Labs</code></h1>
             <h2><code><a href="{url}">log in</a></code></h2>
             <p>Or copy-paste this link: {url}</p>
         """
@@ -65,7 +65,7 @@ async def send_otp_email(payload: OneTimePassPayload, login_url: str) -> None:
 async def send_delete_email(email: str) -> None:
     body = textwrap.dedent(
         """
-            <h1><code>don't panic</code><br/><code>stay human</code></h1>
+            <h1><code>K-Scale Labs</code></h1>
             <h2><code>your account has been deleted</code></h2>
         """
     )
@@ -76,7 +76,7 @@ async def send_delete_email(email: str) -> None:
 async def send_waitlist_email(email: str) -> None:
     body = textwrap.dedent(
         """
-            <h1><code>don't panic</code><br/><code>stay human</code></h1>
+            <h1><code>K-Scale Labs</code></h1>
             <h2><code>you're on the waitlist!</code></h2>
             <p>Thanks for signing up! We'll let you know when you can log in.</p>
         """

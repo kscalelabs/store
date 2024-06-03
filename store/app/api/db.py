@@ -43,9 +43,9 @@ async def create_tables(crud: Crud | None = None) -> None:
             ],
         )
         await crud._create_dynamodb_table(
-            name="Tokens",
+            name="ApiKeys",
             keys=[
-                ("token_id", "S", "HASH"),
+                ("api_key_hash", "S", "HASH"),
             ],
             gsis=[
                 ("userIdIndex", "user_id", "S", "HASH"),
