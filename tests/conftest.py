@@ -61,7 +61,7 @@ def mock_aws() -> Generator[None, None, None]:
 # mock redis
 @pytest.fixture(autouse=True)
 def mock_redis() -> Generator[fakeredis.FakeRedis, None, None]:
-    fakeredis = fakeredis.FakeRedis()
+    fakeredis.FakeRedis()
     os.environ["ROBOLIST_REDIS_HOST"] = "localhost"
     os.environ["ROBOLIST_REDIS_PASSWORD"] = ""
     os.environ["ROBOLIST_REDIS_PORT"] = "6379"
