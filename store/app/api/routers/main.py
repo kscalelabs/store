@@ -42,6 +42,41 @@ class Robot(BaseModel):
     robot_id: str
 
 
+def verify_table_exists(table_name: str) -> bool:
+    try:
+        table_names = [table.name for table in dynamodb.tables.all()]
+        logger.debug(f"Found tables: {table_names}")
+        return table_name in table_names
+    except Exception as e:
+        logger.error(f"Error checking table existence: {e}")
+        return False
+
+
+@api_router.get("/robots")
+async def list_robots() -> List[Robot]:
+    trace = ""
+    try:
+        if not verify_table_exists("Robots"):
+            raise HTTPException(status_code=404, detail="Table not found")
+
+        table = dynamodb.Table("Robots")
+        response = table.scan()
+
+        trace += "Scanned table: Robots\n"
+        trace += f"ResponseMetadata: {response['ResponseMetadata']}\n"
+        trace += f"Full Response: {response}\n"
+
+        if "Items" in response:
+            robots = response["Items"]
+            return [Robot(**robot) for robot in robots]
+        else:
+            raise HTTPException(status_code=404, detail=f"No robots found. Trace: {trace}")
+
+    except ClientError as e:
+        trace += f"ClientError: {e.response['Error']['Message']}\n"
+        raise HTTPException(status_code=500, detail=f"Internal server error. Trace: {trace}")
+
+
 @api_router.get("/robots/{robot_id}")
 async def get_robot(robot_id: str) -> Robot:
     debug = list(dynamodb.tables.all())
