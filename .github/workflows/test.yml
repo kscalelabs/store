@@ -30,6 +30,22 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
 
+    # Commenting out because PyTest mocks these services.
+    # services:
+    #   dynamodb-local:
+    #     image: amazon/dynamodb-local
+    #     options: >-
+    #       -p 0:8000
+    #       -v /tmp/dynamodb:/data
+    #     ports:
+    #       - 8000
+    #   redis-local:
+    #     image: redis
+    #     options: >-
+    #       -p 0:6379
+    #     ports:
+    #       - 6379
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
