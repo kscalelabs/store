@@ -79,7 +79,6 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
     (config) => {
       if (apiKey !== null) {
         config.headers.Authorization = `Bearer ${apiKey}`;
-        config.headers["Access-Control-Allow-Origin"] = "*";
       }
       return config;
     },
