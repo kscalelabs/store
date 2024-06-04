@@ -46,6 +46,7 @@ jobs:
         working-directory: frontend
         run: |
           echo "REACT_APP_GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env.production
+          echo "REACT_APP_BACKEND_URL=${{ secrets.BACKEND_URL }}" >> .env.production
 
       - name: Build frontend
         run: |
