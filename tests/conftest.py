@@ -44,6 +44,12 @@ def mock_aws() -> Generator[None, None, None]:
         port = server._server.socket.getsockname()[1]
         os.environ["AWS_ENDPOINT_URL_DYNAMODB"] = f"http://127.0.0.1:{port}"
 
+        # Redis env vars
+        os.environ["REDIS_HOST"] = "localhost"
+        os.environ["REDIS_PASSWORD"] = ""
+        os.environ["REDIS_PORT"] = "6379"
+        os.environ["REDIS_DB"] = "0"
+
         with mock_dynamodb():
             yield
 
