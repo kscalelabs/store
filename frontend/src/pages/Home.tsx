@@ -1,7 +1,7 @@
 import { Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
-const RobotDetails = () => {
+const Home = () => {
   const navigate = useNavigate();
 
   return (
@@ -32,4 +32,4 @@ const RobotDetails = () => {
   );
 };
 
-export default RobotDetails;
+export default Home;
