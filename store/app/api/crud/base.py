@@ -6,7 +6,7 @@ from typing import Any, AsyncContextManager, Literal, Self
 
 import aioboto3
 from botocore.exceptions import ClientError
-from redis import Redis
+from redis.asyncio import Redis
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 
 from store.settings import settings

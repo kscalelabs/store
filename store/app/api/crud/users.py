@@ -3,7 +3,6 @@
 import asyncio
 import uuid
 import warnings
-from typing import cast
 
 from boto3.dynamodb.conditions import Key as KeyCondition
 
@@ -38,10 +37,10 @@ class UserCrud(BaseCrud):
 
     async def get_user_id_from_api_key(self, api_key: uuid.UUID) -> uuid.UUID | None:
         api_key_hash = hash_api_key(api_key)
-        user_id = self.kv.get(api_key_hash)
+        user_id = await self.kv.get(api_key_hash)
         if user_id is None:
             return None
-        return uuid.UUID(cast(bytes, user_id).decode("utf-8"))
+        return uuid.UUID(user_id.decode("utf-8"))
 
     async def delete_user(self, user: User) -> None:
         table = await self.db.Table("Users")
@@ -59,14 +58,14 @@ class UserCrud(BaseCrud):
 
     async def add_api_key(self, api_key: uuid.UUID, user_id: uuid.UUID, lifetime: int) -> None:
         row = ApiKey.from_api_key(api_key, user_id, lifetime)
-        self.kv.setex(row.api_key_hash, row.lifetime, row.user_id)
+        await self.kv.setex(row.api_key_hash, row.lifetime, row.user_id)
 
-    def check_api_key(self, api_key: uuid.UUID, user_id: uuid.UUID) -> bool:
-        row = self.kv.get(hash_api_key(api_key))
+    async def check_api_key(self, api_key: uuid.UUID, user_id: uuid.UUID) -> bool:
+        row = await self.kv.get(hash_api_key(api_key))
         return row is not None and row == user_id
 
     async def delete_api_key(self, api_key: uuid.UUID) -> None:
-        self.kv.delete(hash_api_key(api_key))
+        await self.kv.delete(hash_api_key(api_key))
 
 
 async def test_adhoc() -> None:
