@@ -42,6 +42,28 @@ class Robot(BaseModel):
     robot_id: str
 
 
+class PurchaseLink(BaseModel):
+    url: str
+    price: int
+    name: str
+
+
+class UsedBy(BaseModel):
+    name: str
+    id: str
+    stars: int
+
+
+class Part(BaseModel):
+    name: str
+    owner: str
+    description: str
+    images: List[Image]
+    part_id: str
+    used_by: List[UsedBy]
+    purchase_links: List[PurchaseLink]
+
+
 def verify_table_exists(table_name: str) -> bool:
     try:
         table_names = [table.name for table in dynamodb.tables.all()]
@@ -89,11 +111,53 @@ async def get_robot(robot_id: str) -> Robot:
             robot = response["Item"]
             return Robot(**robot)
         else:
+            raise HTTPException(status_code=404, detail="Robot not found")
+    except ClientError as e:
+        raise HTTPException(status_code=500, detail=e.response["Error"]["Message"])
+
+
+@api_router.get("/parts/{part_id}")
+async def get_part(part_id: str) -> Part:
+    debug = list(dynamodb.tables.all())
+    test = ""
+    try:
+        table = dynamodb.Table("Parts")
+        response = table.get_item(Key={"part_id": part_id})
+        # response = table.scan()
+        if "Item" in response:
+            part = response["Item"]
+            return Part(**part)
+        else:
             raise HTTPException(
-                status_code=404, detail=f"Robot not {test} found {response} {table} ooga {robot_id} booga"
+                status_code=404, detail=f"Part not {test} found {response} {table} ooga {part_id} booga"
             )
     except ClientError as e:
         raise HTTPException(status_code=500, detail=e.response["Error"]["Message"])
+
+
+@api_router.get("/parts")
+async def list_parts() -> List[Part]:
+    trace = ""
+    try:
+        if not verify_table_exists("Parts"):
+            raise HTTPException(status_code=404, detail="Table not found")
+
+        table = dynamodb.Table("Parts")
+        response = table.scan()
+
+        trace += "Scanned table: Parts\n"
+        trace += f"ResponseMetadata: {response['ResponseMetadata']}\n"
+        trace += f"Full Response: {response}\n"
+
+        if "Items" in response:
+            parts = response["Items"]
+            return [Part(**part) for part in parts]
+        else:
+            raise HTTPException(status_code=404, detail=f"No parts found. Trace: {trace}")
+
+    except ClientError as e:
+        trace += f"ClientError: {e.response['Error']['Message']}\n"
+        raise HTTPException(status_code=500, detail=f"Internal server error. Trace: {trace}")
 
 
 # Returns a 404 response for all other paths.

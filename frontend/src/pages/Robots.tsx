@@ -1,7 +1,7 @@
+import rob from "hooks/rob";
+import { useEffect, useState } from "react";
 import { Breadcrumb, Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import rob from "hooks/rob";
 
 interface Bom {
   id: string;
@@ -24,16 +24,13 @@ interface Robot {
   images: Image[];
 }
 
-
-interface RobotsResponse {
-  robots: Robot[];
-}
-
+// interface RobotsResponse {
+//   robots: Robot[];
+// }
 
 const Robots = () => {
-  
-const [robotsData, setRobot] = useState<Robot[] | null>(null);
-const [error, setError] = useState<string| null>(null);
+  const [robotsData, setRobot] = useState<Robot[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     const fetch_robots = async () => {
       try {
@@ -43,22 +40,22 @@ const [error, setError] = useState<string| null>(null);
         if (err instanceof Error) {
           setError(err.message);
         } else {
-          setError ("An unexpected error occurred")
+          setError("An unexpected error occurred");
         }
       }
-    }
+    };
     fetch_robots();
   }, []);
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     if (error) {
-      navigate('/404'); // Redirect to a 404 page
+      navigate("/404"); // Redirect to a 404 page
     }
   }, [error, navigate]);
 
   if (!robotsData) {
-    return <p>Loading</p>
+    return <p>Loading</p>;
   }
 
   // const response: RobotsResponse = {
@@ -83,7 +80,6 @@ const [error, setError] = useState<string| null>(null);
   //   }
 
   // };
-
 
   return (
     <>

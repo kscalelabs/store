@@ -1,3 +1,5 @@
+import rob from "hooks/rob";
+import { useEffect, useState } from "react";
 import {
   Breadcrumb,
   Button,
@@ -7,8 +9,6 @@ import {
   Modal,
   Row,
 } from "react-bootstrap";
-import rob from "hooks/rob";
-import { useEffect, useState } from "react";
 import Markdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
@@ -25,7 +25,7 @@ const RobotDetails = () => {
   const [show, setShow] = useState(false);
   const [robot, setRobot] = useState<RobotDetailsResponse | null>(null);
   const [imageIndex, setImageIndex] = useState(0);
-  const [error, setError] = useState<string| null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -39,10 +39,10 @@ const RobotDetails = () => {
         if (err instanceof Error) {
           setError(err.message);
         } else {
-          setError ("An unexpected error occurred")
+          setError("An unexpected error occurred");
         }
       }
-    }
+    };
     fetchRobot();
   }, [id]);
 
@@ -50,12 +50,12 @@ const RobotDetails = () => {
 
   useEffect(() => {
     if (error) {
-      navigate('/404'); // Redirect to a 404 page
+      navigate("/404"); // Redirect to a 404 page
     }
   }, [error, navigate]);
 
   if (!robot) {
-    return <p>Loading</p>
+    return <p>Loading</p>;
   }
   const response: RobotDetailsResponse = {
     name: robot?.name,
@@ -63,8 +63,8 @@ const RobotDetails = () => {
     description: robot?.description,
     images: robot?.images,
     bom: robot?.bom,
-  }
-/*
+  };
+  /*
   // This is a placeholder before the backend is hooked up.
 //   const response: RobotDetailsResponse = {
 //     name: "Stompy",
@@ -121,7 +121,7 @@ const RobotDetails = () => {
 //     ],
 //   };
 */
-  const { name, owner, description, images, bom } = response;
+  const { name, owner, description, images } = response;
 
   return (
     <>
