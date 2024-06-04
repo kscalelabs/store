@@ -8,6 +8,7 @@ from _pytest.python import Function
 from fastapi.testclient import TestClient
 from moto.dynamodb import mock_dynamodb
 from moto.server import ThreadedMotoServer
+import fakeredis
 from pytest_mock.plugin import MockerFixture, MockType
 
 os.environ["ROBOLIST_ENVIRONMENT"] = "local"
@@ -44,12 +45,6 @@ def mock_aws() -> Generator[None, None, None]:
         port = server._server.socket.getsockname()[1]
         os.environ["AWS_ENDPOINT_URL_DYNAMODB"] = f"http://127.0.0.1:{port}"
 
-        # Redis env vars
-        os.environ["ROBOLIST_REDIS_HOST"] = "localhost"
-        os.environ["ROBOLIST_REDIS_PASSWORD"] = ""
-        os.environ["ROBOLIST_REDIS_PORT"] = "6379"
-        os.environ["ROBOLIST_REDIS_DB"] = "0"
-
         with mock_dynamodb():
             yield
 
@@ -62,6 +57,15 @@ def mock_aws() -> Generator[None, None, None]:
                 os.unsetenv(k)
             else:
                 os.environ[k] = v
+
+# mock redis
+@pytest.fixture(autouse=True)
+def mock_redis() -> Generator[fakeredis.FakeRedis, None, None]:
+    fakeredis = fakeredis.FakeRedis()
+    os.environ["ROBOLIST_REDIS_HOST"] = "localhost"
+    os.environ["ROBOLIST_REDIS_PASSWORD"] = ""
+    os.environ["ROBOLIST_REDIS_PORT"] = "6379"
+    os.environ["ROBOLIST_REDIS_DB"] = "0"
 
 
 @pytest.fixture()
