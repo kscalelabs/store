@@ -1,5 +1,6 @@
 import AuthComponent from "components/auth/AuthComponent";
 import { Col, Offcanvas, Row } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 interface Props {
   show: boolean;
@@ -23,7 +24,7 @@ const Sidebar = ({ show, onHide }: Props) => {
           <AuthComponent />
           <Row style={{ marginTop: "auto" }} />
           <Row>
-            <a href="#">About</a>
+            <Link to="/about">About</Link>
           </Row>
           <Row>
             <a href="#">Privacy Policy</a>
