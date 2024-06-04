@@ -26,7 +26,6 @@ def _load_environment_settings() -> EnvironmentSettings:
     config_path = _check_exists(base_dir / f"{environment}.yaml")
     config = OmegaConf.load(config_path)
     config = OmegaConf.merge(OmegaConf.structured(EnvironmentSettings), config)
-    OmegaConf.resolve(config)
     return cast(EnvironmentSettings, config)
 
 

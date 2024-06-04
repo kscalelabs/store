@@ -2,7 +2,15 @@
 
 from dataclasses import dataclass, field
 
-from omegaconf import MISSING
+from omegaconf import II, MISSING
+
+
+@dataclass
+class RedisSettings:
+    host: str = field(default=II("oc.env:ROBOLIST_REDIS_HOST"))
+    password: str = field(default=II("oc.env:ROBOLIST_REDIS_PASSWORD"))
+    port: int = field(default=6379)
+    db: int = field(default=0)
 
 
 @dataclass
@@ -21,11 +29,12 @@ class UserSettings:
 
 @dataclass
 class EmailSettings:
-    host: str = field(default=MISSING)
+    host: str = field(default=II("oc.env:ROBOLIST_SMTP_HOST"))
     port: int = field(default=587)
-    email: str = field(default=MISSING)
-    password: str = field(default=MISSING)
-    name: str = field(default=MISSING)
+    username: str = field(default=II("oc.env:ROBOLIST_SMTP_USERNAME"))
+    password: str = field(default=II("oc.env:ROBOLIST_SMTP_PASSWORD"))
+    sender_email: str = field(default=II("oc.env:ROBOLIST_SMTP_SENDER_EMAIL"))
+    sender_name: str = field(default=II("oc.env:ROBOLIST_SMTP_SENDER_NAME"))
 
 
 @dataclass
@@ -37,6 +46,7 @@ class SiteSettings:
 
 @dataclass
 class EnvironmentSettings:
+    redis: RedisSettings = field(default_factory=RedisSettings)
     user: UserSettings = field(default_factory=UserSettings)
     crypto: CryptoSettings = field(default_factory=CryptoSettings)
     email: EmailSettings = field(default_factory=EmailSettings)

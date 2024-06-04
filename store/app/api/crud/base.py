@@ -5,7 +5,11 @@ import logging
 from typing import Any, AsyncContextManager, Literal, Self
 
 import aioboto3
+from botocore.exceptions import ClientError
+from redis.asyncio import Redis
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
+
+from store.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +19,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         super().__init__()
 
         self.__db: DynamoDBServiceResource | None = None
+        self.__kv: Redis | None = None
 
     @property
     def db(self) -> DynamoDBServiceResource:
@@ -27,6 +32,13 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         db = session.resource("dynamodb")
         db = await db.__aenter__()
         self.__db = db
+
+        self.kv = Redis(
+            host=settings.redis.host,
+            password=settings.redis.password,
+            port=settings.redis.port,
+            db=settings.redis.db,
+        )
         return self
 
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:  # noqa: ANN401
@@ -40,7 +52,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         gsis: list[tuple[str, str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]] = [],
         deletion_protection: bool = False,
     ) -> None:
-        """Creates a table in the Dynamo database.
+        """Creates a table in the Dynamo database if a table of that name does not already exist.
 
         Args:
             name: Name of the table.
@@ -52,23 +64,26 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             deletion_protection: Whether the table is protected from being
                 deleted.
         """
-        logger.info("Creating %s table", name)
-        table = await self.db.create_table(
-            AttributeDefinitions=[
-                {"AttributeName": n, "AttributeType": t}
-                for n, t in itertools.chain(((n, t) for (n, t, _) in keys), ((n, t) for _, n, t, _ in gsis))
-            ],
-            TableName=name,
-            KeySchema=[{"AttributeName": n, "KeyType": t} for n, _, t in keys],
-            GlobalSecondaryIndexes=[
-                {
-                    "IndexName": i,
-                    "KeySchema": [{"AttributeName": n, "KeyType": t}],
-                    "Projection": {"ProjectionType": "ALL"},
-                }
-                for i, n, _, t in gsis
-            ],
-            DeletionProtectionEnabled=deletion_protection,
-            BillingMode="PAY_PER_REQUEST",
-        )
-        await table.wait_until_exists()
+        try:
+            await self.db.meta.client.describe_table(TableName=name)
+        except ClientError:
+            logger.info("Creating %s table", name)
+            table = await self.db.create_table(
+                AttributeDefinitions=[
+                    {"AttributeName": n, "AttributeType": t}
+                    for n, t in itertools.chain(((n, t) for (n, t, _) in keys), ((n, t) for _, n, t, _ in gsis))
+                ],
+                TableName=name,
+                KeySchema=[{"AttributeName": n, "KeyType": t} for n, _, t in keys],
+                GlobalSecondaryIndexes=[
+                    {
+                        "IndexName": i,
+                        "KeySchema": [{"AttributeName": n, "KeyType": t}],
+                        "Projection": {"ProjectionType": "ALL"},
+                    }
+                    for i, n, _, t in gsis
+                ],
+                DeletionProtectionEnabled=deletion_protection,
+                BillingMode="PAY_PER_REQUEST",
+            )
+            await table.wait_until_exists()

@@ -28,9 +28,16 @@ class User(BaseModel):
 
 
 class ApiKey(BaseModel):
+    """Stored in Redis rather than DynamoDB."""
+
     api_key_hash: str  # Primary key
     user_id: str
-    issued: Decimal = field(default_factory=lambda: Decimal(datetime.datetime.now().timestamp()))
+    lifetime: int
+
+    @classmethod
+    def from_api_key(cls, api_key: uuid.UUID, user_id: uuid.UUID, lifetime: int) -> "ApiKey":
+        api_key_hash = hash_api_key(api_key)
+        return cls(api_key_hash=api_key_hash, user_id=str(user_id), lifetime=lifetime)
 
     @classmethod
     def from_api_key(cls, api_key: uuid.UUID, user_id: uuid.UUID) -> "ApiKey":

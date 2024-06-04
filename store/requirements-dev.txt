@@ -8,6 +8,7 @@ ruff
 
 # Testing
 moto[dynamodb]
+fakeredis
 pytest
 pytest-aiohttp
 pytest-aiomoto

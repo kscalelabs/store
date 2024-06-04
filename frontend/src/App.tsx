@@ -1,9 +1,11 @@
 import "bootstrap/dist/css/bootstrap.min.css";
+import Footer from "components/nav/Footer";
 import TopNavbar from "components/nav/TopNavbar";
 import NotFoundRedirect from "components/NotFoundRedirect";
 import { AlertQueue, AlertQueueProvider } from "hooks/alerts";
 import { AuthenticationProvider, OneTimePasswordWrapper } from "hooks/auth";
 import { ThemeProvider } from "hooks/theme";
+import About from "pages/About";
 import Home from "pages/Home";
 import NotFound from "pages/NotFound";
 import PartDetails from "pages/PartDetails";
@@ -27,6 +29,7 @@ const App = () => {
                 <Container className="content">
                   <Routes>
                     <Route path="/" element={<Home />} />
+                    <Route path="/about" element={<About />} />
                     <Route path="/robots/" element={<Robots />} />
                     <Route path="/robot/:id" element={<RobotDetails />} />
                     <Route path="/parts/" element={<Parts />} />
@@ -36,14 +39,7 @@ const App = () => {
                   </Routes>
                 </Container>
 
-                <footer className="fixed-bottom">
-                  {/* Solid background */}
-                  <div className="text-center bg-body-tertiary p-2">
-                    <a href="mailto:support@robolist.xyz">
-                      support@robolist.xyz
-                    </a>
-                  </div>
-                </footer>
+                <Footer />
               </OneTimePasswordWrapper>
             </AlertQueue>
           </AlertQueueProvider>

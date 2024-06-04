@@ -37,13 +37,11 @@ class UserCrud(BaseCrud):
         return user
 
     async def get_user_id_from_api_key(self, api_key: uuid.UUID) -> uuid.UUID | None:
-        table = await self.db.Table("ApiKeys")
         api_key_hash = hash_api_key(api_key)
-        row = await table.get_item(Key={"api_key_hash": api_key_hash})
-        if "Item" not in row:
+        user_id = await self.kv.get(api_key_hash)
+        if user_id is None:
             return None
-        user_id = cast(str, row["Item"]["user_id"])
-        return uuid.UUID(user_id)
+        return uuid.UUID(user_id.decode("utf-8"))
 
     async def delete_user(self, user: User) -> None:
         table = await self.db.Table("Users")
@@ -59,21 +57,16 @@ class UserCrud(BaseCrud):
         table = await self.db.Table("Users")
         return await table.item_count
 
-    async def add_api_key(self, api_key: uuid.UUID, user_id: uuid.UUID) -> None:
-        row = ApiKey.from_api_key(api_key, user_id)
-        table = await self.db.Table("ApiKeys")
-        await table.put_item(Item=row.model_dump())
+    async def add_api_key(self, api_key: uuid.UUID, user_id: uuid.UUID, lifetime: int) -> None:
+        row = ApiKey.from_api_key(api_key, user_id, lifetime)
+        await self.kv.setex(row.api_key_hash, row.lifetime, row.user_id)
 
     async def check_api_key(self, api_key: uuid.UUID, user_id: uuid.UUID) -> bool:
-        table = await self.db.Table("ApiKeys")
-        row = await table.get_item(Key={"api_key_hash": hash_api_key(api_key)})
-        if "Item" not in row:
-            return False
-        return row["Item"]["user_id"] == str(user_id)
+        row = await self.kv.get(hash_api_key(api_key))
+        return row is not None and row == user_id
 
     async def delete_api_key(self, api_key: uuid.UUID) -> None:
-        table = await self.db.Table("ApiKeys")
-        await table.delete_item(Key={"api_key_hash": hash_api_key(api_key)})
+        await self.kv.delete(hash_api_key(api_key))
 
 
 async def test_adhoc() -> None:

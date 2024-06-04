@@ -16,13 +16,13 @@ def test_user_auth_functions(app_client: TestClient, mock_send_email: MockType) 
     login_url = "/"
 
     # Sends the one-time password to the test email.
-    response = app_client.post("/api/users/login", json={"email": test_email, "login_url": login_url})
+    response = app_client.post("/api/users/login", json={"email": test_email, "login_url": login_url, "lifetime": 3600})
     assert response.status_code == 200, response.json()
     assert mock_send_email.call_count == 1
 
     # Uses the one-time pass to get an API key. We need to make a new OTP
     # manually because we can't send emails in unit tests.
-    otp = OneTimePassPayload(email=test_email)
+    otp = OneTimePassPayload(email=test_email, lifetime=3600)
     response = app_client.post("/api/users/otp", json={"payload": otp.encode()})
     assert response.status_code == 200, response.json()
     response_data = response.json()

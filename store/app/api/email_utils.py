@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 async def send_email(subject: str, body: str, to: str) -> None:
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
-    msg["From"] = f"{settings.email.name} <{settings.email.email}>"
+    msg["From"] = f"{settings.email.sender_name} <{settings.email.sender_email}>"
     msg["To"] = to
 
     msg.attach(MIMEText(body, "html"))
@@ -28,24 +28,25 @@ async def send_email(subject: str, body: str, to: str) -> None:
     smtp_client = aiosmtplib.SMTP(hostname=settings.email.host, port=settings.email.port)
 
     await smtp_client.connect()
-    await smtp_client.login(settings.email.email, settings.email.password)
-    await smtp_client.sendmail(settings.email.email, to, msg.as_string())
+    await smtp_client.login(settings.email.username, settings.email.password)
+    await smtp_client.sendmail(settings.email.sender_email, to, msg.as_string())
     await smtp_client.quit()
 
 
 @dataclass
 class OneTimePassPayload:
     email: str
+    lifetime: str
 
     def encode(self) -> str:
         expire_minutes = settings.crypto.expire_otp_minutes
         expire_after = datetime.timedelta(minutes=expire_minutes)
-        return encode_jwt({"email": self.email}, expire_after=expire_after)
+        return encode_jwt({"email": self.email, "lifetime": self.lifetime}, expire_after=expire_after)
 
     @classmethod
     def decode(cls, payload: str) -> "OneTimePassPayload":
         data = decode_jwt(payload)
-        return cls(email=data["email"])
+        return cls(email=data["email"], lifetime=data["lifetime"])
 
 
 async def send_otp_email(payload: OneTimePassPayload, login_url: str) -> None:
