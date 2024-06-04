@@ -24,6 +24,7 @@ class User(BaseModel):
     def to_uuid(self) -> uuid.UUID:
         return uuid.UUID(self.user_id)
 
+
 class ApiKey(BaseModel):
     """Stored in Redis rather than DynamoDB."""
 

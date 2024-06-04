@@ -11,8 +11,6 @@ from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 
 from store.settings import settings
 
-from store.settings import settings
-
 logger = logging.getLogger(__name__)
 
 

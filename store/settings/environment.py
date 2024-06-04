@@ -7,14 +7,6 @@ from omegaconf import II, MISSING
 
 @dataclass
 class RedisSettings:
-    host: str = field(default=MISSING)
-    password: str = field(default=MISSING)
-    port: int = field(default=6379)
-    db: int = field(default=0)
-
-
-@dataclass
-class RedisSettings:
     host: str = field(default=II("oc.env:ROBOLIST_REDIS_HOST"))
     password: str = field(default=II("oc.env:ROBOLIST_REDIS_PASSWORD"))
     port: int = field(default=6379)

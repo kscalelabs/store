@@ -77,7 +77,7 @@ async def login_user_endpoint(data: UserSignup) -> bool:
         True if the email was sent successfully.
     """
     email = validate_email(data.email)
-    payload = OneTimePassPayload(email, lifetime=data.lifetime)
+    payload = OneTimePassPayload(email, lifetime=str(data.lifetime))
     await send_otp_email(payload, data.login_url)
     return True
 
@@ -134,7 +134,7 @@ async def otp_endpoint(
         The API key if the one-time password is valid.
     """
     payload = OneTimePassPayload.decode(data.payload)
-    return await get_login_response(payload.email, payload.lifetime, crud)
+    return await get_login_response(payload.email, int(payload.lifetime), crud)
 
 
 async def get_google_user_info(token: str) -> dict:
@@ -165,7 +165,7 @@ async def google_login_endpoint(
     if idinfo.get("email_verified") is not True:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Google email not verified")
 
-    return await get_login_response(email, crud)
+    return await get_login_response(email, 604800, crud)
 
 
 class UserInfoResponse(BaseModel):
