@@ -58,7 +58,6 @@ def mock_aws() -> Generator[None, None, None]:
             else:
                 os.environ[k] = v
 
-# mock redis
 @pytest.fixture(autouse=True)
 def mock_redis() -> Generator[fakeredis.FakeRedis, None, None]:
     fakeredis.FakeRedis()
