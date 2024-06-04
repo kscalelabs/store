@@ -10,7 +10,17 @@ from fastapi.staticfiles import StaticFiles
 from store.app.api.routers.main import api_router
 from store.settings import settings
 
+
 app = FastAPI()
+
+# Adds CORS middleware.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[settings.site.homepage],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
 
 FRONTEND_DIR = (Path(__file__).parent / "frontend").resolve()
 if not (FRONTEND_BUILD_DIR := FRONTEND_DIR / "build").exists():
@@ -47,13 +57,3 @@ async def redirect_to_index(full_path: str, request: Request) -> Response:
     if full_path in FRONTEND_OTHER_FILES:
         return await StaticFiles(directory=FRONTEND_BUILD_DIR).get_response(full_path, request.scope)
     return await StaticFiles(directory=FRONTEND_BUILD_DIR).get_response("index.html", request.scope)
-
-
-# Adds CORS middleware.
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[settings.site.homepage],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
-)
