@@ -157,6 +157,7 @@ async def google_login_endpoint(
     data: GoogleLogin,
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UserLoginResponse:
+    """Uses Google OAuth to create an API token that lasts for a week (i.e. 604800 seconds)."""
     try:
         idinfo = await get_google_user_info(data.token)
         email = idinfo["email"]
