@@ -6,6 +6,14 @@ from omegaconf import II, MISSING
 
 
 @dataclass
+class RedisSettings:
+    host: str = field(default=II("oc.env:ROBOLIST_REDIS_HOST"))
+    password: str = field(default=II("oc.env:ROBOLIST_REDIS_PASSWORD"))
+    port: int = field(default=6379)
+    db: int = field(default=0)
+
+
+@dataclass
 class CryptoSettings:
     expire_token_minutes: int = field(default=10)
     expire_otp_minutes: int = field(default=10)
@@ -38,6 +46,7 @@ class SiteSettings:
 
 @dataclass
 class EnvironmentSettings:
+    redis: RedisSettings = field(default_factory=RedisSettings)
     user: UserSettings = field(default_factory=UserSettings)
     crypto: CryptoSettings = field(default_factory=CryptoSettings)
     email: EmailSettings = field(default_factory=EmailSettings)

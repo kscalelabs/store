@@ -54,6 +54,7 @@ async def get_api_key(request: Request) -> ApiKeyData:
 class UserSignup(BaseModel):
     email: str
     login_url: str
+    lifetime: int
 
 
 def validate_email(email: str) -> str:
@@ -76,7 +77,7 @@ async def login_user_endpoint(data: UserSignup) -> bool:
         True if the email was sent successfully.
     """
     email = validate_email(data.email)
-    payload = OneTimePassPayload(email)
+    payload = OneTimePassPayload(email, lifetime=str(data.lifetime))
     await send_otp_email(payload, data.login_url)
     return True
 
@@ -89,7 +90,7 @@ class UserLoginResponse(BaseModel):
     api_key: str
 
 
-async def get_login_response(email: str, crud: Crud) -> UserLoginResponse:
+async def get_login_response(email: str, lifetime: int, crud: Crud) -> UserLoginResponse:
     """Takes the user email and returns an API key.
 
     This function gets a user API key for an email which has been validated,
@@ -98,6 +99,7 @@ async def get_login_response(email: str, crud: Crud) -> UserLoginResponse:
     Args:
         email: The validated email of the user.
         crud: The database CRUD object.
+        lifetime: The lifetime (in seconds) of the API key to be returned.
 
     Returns:
         The API key for the user.
@@ -112,7 +114,7 @@ async def get_login_response(email: str, crud: Crud) -> UserLoginResponse:
     # Issue a new API key for the user.
     user_id: uuid.UUID = user_obj.to_uuid()
     api_key: uuid.UUID = get_new_api_key(user_id)
-    await crud.add_api_key(api_key, user_id)
+    await crud.add_api_key(api_key, user_id, lifetime)
 
     return UserLoginResponse(api_key=str(api_key))
 
@@ -132,7 +134,7 @@ async def otp_endpoint(
         The API key if the one-time password is valid.
     """
     payload = OneTimePassPayload.decode(data.payload)
-    return await get_login_response(payload.email, crud)
+    return await get_login_response(payload.email, int(payload.lifetime), crud)
 
 
 async def get_google_user_info(token: str) -> dict:
@@ -155,6 +157,7 @@ async def google_login_endpoint(
     data: GoogleLogin,
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UserLoginResponse:
+    """Uses Google OAuth to create an API token that lasts for a week (i.e. 604800 seconds)."""
     try:
         idinfo = await get_google_user_info(data.token)
         email = idinfo["email"]
@@ -163,7 +166,7 @@ async def google_login_endpoint(
     if idinfo.get("email_verified") is not True:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Google email not verified")
 
-    return await get_login_response(email, crud)
+    return await get_login_response(email, 604800, crud)
 
 
 class UserInfoResponse(BaseModel):
