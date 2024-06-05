@@ -1,4 +1,4 @@
-import rob from "hooks/rob";
+import api from "hooks/api";
 import { useEffect, useState } from "react";
 import {
   Breadcrumb,
@@ -34,7 +34,7 @@ const PartDetails = () => {
   useEffect(() => {
     const fetchPart = async () => {
       try {
-        const partData = await rob.getPartById(id);
+        const partData = await api.getPartById(id);
         setPart(partData);
       } catch (err) {
         if (err instanceof Error) {

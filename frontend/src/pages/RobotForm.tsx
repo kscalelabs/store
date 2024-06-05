@@ -1,4 +1,4 @@
-import rob, { Bom, Image, Robot } from "hooks/rob";
+import api, { Bom, Image, Robot } from "hooks/api";
 import React, { ChangeEvent, FormEvent, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 
@@ -67,7 +67,7 @@ const RobotForm: React.FC = () => {
       images: robot_images,
     };
     try {
-      await rob.addRobot(newFormData);
+      await api.addRobot(newFormData);
       setMessage(`Robot added successfully.`);
     } catch (error) {
       setMessage("Error adding robot ");

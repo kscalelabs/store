@@ -1,4 +1,4 @@
-import rob from "hooks/rob";
+import api from "hooks/api";
 import { useEffect, useState } from "react";
 import {
   Breadcrumb,
@@ -33,7 +33,7 @@ const RobotDetails = () => {
   useEffect(() => {
     const fetchRobot = async () => {
       try {
-        const robotData = await rob.getRobotById(id);
+        const robotData = await api.getRobotById(id);
         setRobot(robotData);
       } catch (err) {
         if (err instanceof Error) {

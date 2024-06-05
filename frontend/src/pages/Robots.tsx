@@ -1,4 +1,4 @@
-import rob from "hooks/rob";
+import api from "hooks/api";
 import { useEffect, useState } from "react";
 import { Breadcrumb, Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
@@ -34,7 +34,7 @@ const Robots = () => {
   useEffect(() => {
     const fetch_robots = async () => {
       try {
-        const robotsQuery = await rob.getRobots();
+        const robotsQuery = await api.getRobots();
         setRobot(robotsQuery);
       } catch (err) {
         if (err instanceof Error) {

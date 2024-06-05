@@ -1,4 +1,4 @@
-import rob from "hooks/rob";
+import api from "hooks/api";
 import { useEffect, useState } from "react";
 import { Breadcrumb, Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
@@ -40,7 +40,7 @@ const Parts = () => {
   useEffect(() => {
     const fetch_parts = async () => {
       try {
-        const partsQuery = await rob.getParts();
+        const partsQuery = await api.getParts();
         setParts(partsQuery);
       } catch (err) {
         if (err instanceof Error) {
