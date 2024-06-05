@@ -1,6 +1,6 @@
 import AuthComponent from "components/auth/AuthComponent";
-import { Button, Col, Offcanvas, Row } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
+import { Col, Offcanvas, Row } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 interface Props {
   show: boolean;
@@ -8,7 +8,6 @@ interface Props {
 }
 
 const Sidebar = ({ show, onHide }: Props) => {
-  const navigate = useNavigate();
   return (
     <Offcanvas show={show} onHide={onHide} placement="end">
       <Offcanvas.Header closeButton>
@@ -23,22 +22,6 @@ const Sidebar = ({ show, onHide }: Props) => {
           }}
         >
           <AuthComponent />
-          <Button
-            variant="success"
-            size="lg"
-            className="mt-3"
-            style={{
-              backgroundColor: "light-green",
-              borderColor: "black",
-              padding: "10px",
-            }}
-            onClick={() => {
-              onHide();
-              navigate("/add_robot");
-            }}
-          >
-            Make a Robot
-          </Button>
           <Row style={{ marginTop: "auto" }} />
           <Row>
             <Link to="/about">About</Link>
