@@ -36,7 +36,7 @@ const App = () => {
                     <Route path="/parts/" element={<Parts />} />
                     <Route path="/part/:id" element={<PartDetails />} />
                     <Route path="/404" element={<NotFound />} />
-                    <Route path="add_robot" element={<RobotForm />} />
+                    <Route path="/add/robot" element={<RobotForm />} />
                     <Route path="*" element={<NotFoundRedirect />} />
                   </Routes>
                 </Container>
