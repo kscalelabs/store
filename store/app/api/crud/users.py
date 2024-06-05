@@ -3,7 +3,6 @@
 import asyncio
 import uuid
 import warnings
-from typing import cast
 
 from boto3.dynamodb.conditions import Key as KeyCondition
 

@@ -64,7 +64,7 @@ const RobotDetails = () => {
     images: robot?.images,
     bom: robot?.bom,
   };
- 
+
   const { name, owner, description, images } = response;
 
   return (

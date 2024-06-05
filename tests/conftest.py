@@ -77,7 +77,7 @@ def app_client() -> Generator[TestClient, None, None]:
 
 @pytest.fixture(autouse=True)
 def mock_send_email(mocker: MockerFixture) -> MockType:
-    mock = mocker.patch("store.app.api.email.send_email")
+    mock = mocker.patch("store.app.api.email_utils.send_email")
     mock.return_value = None
     return mock
 

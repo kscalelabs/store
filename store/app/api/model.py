@@ -5,9 +5,7 @@ methods for converting from our input data into the format the database
 expects (for example, converting a UUID into a string).
 """
 
-import datetime
 import uuid
-from dataclasses import field
 from decimal import Decimal
 
 from pydantic import BaseModel
@@ -38,11 +36,6 @@ class ApiKey(BaseModel):
     def from_api_key(cls, api_key: uuid.UUID, user_id: uuid.UUID, lifetime: int) -> "ApiKey":
         api_key_hash = hash_api_key(api_key)
         return cls(api_key_hash=api_key_hash, user_id=str(user_id), lifetime=lifetime)
-
-    @classmethod
-    def from_api_key(cls, api_key: uuid.UUID, user_id: uuid.UUID) -> "ApiKey":
-        api_key_hash = hash_api_key(api_key)
-        return cls(api_key_hash=api_key_hash, user_id=str(user_id))
 
 
 class PurchaseLink(BaseModel):

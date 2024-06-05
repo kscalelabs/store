@@ -1,18 +1,18 @@
 import axios from "axios";
 
-interface PurchaseLink {
+export interface PurchaseLink {
   url: string;
   price: number;
   name: string;
 }
 
-interface UsedBy {
+export interface UsedBy {
   name: string;
   id: string;
   stars: number;
 }
 
-interface Part {
+export interface Part {
   name: string;
   owner: string;
   description: string;
@@ -21,19 +21,20 @@ interface Part {
   used_by: UsedBy[];
   purchase_links: PurchaseLink[];
 }
-interface Bom {
+
+export interface Bom {
   id: string;
   name: string;
   quantity: number;
   price: number;
 }
 
-interface Image {
+export interface Image {
   caption: string;
   url: string;
 }
 
-interface Robot {
+export interface Robot {
   robot_id: string;
   name: string;
   description: string;
@@ -46,13 +47,13 @@ class rob {
   private api;
 
   constructor(baseURL: string | undefined) {
-    this.api = axios.create({ 
-        baseURL,
+    this.api = axios.create({
+      baseURL,
       headers: {
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
       },
-      withCredentials: true,  // Ensure credentials are sent
-     });
+      withCredentials: true, // Ensure credentials are sent
+    });
   }
   public async getRobots(): Promise<Robot[]> {
     try {
@@ -99,13 +100,15 @@ class rob {
     }
   }
   public async addRobot(robot: Robot): Promise<void> {
-    const s = robot.name
+    const s = robot.name;
     try {
       await this.api.post("/add_robot/", robot);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error adding robot:", error.response?.data);
-        throw new Error(error.response?.data?.detail || "Error adding robot " + s);
+        throw new Error(
+          error.response?.data?.detail || "Error adding robot " + s,
+        );
       } else {
         console.error("Unexpected error:", error);
         throw new Error("Unexpected error");
