@@ -4,6 +4,9 @@ This is the code for our online store. This is a simple store for buying and sel
 
 ## Development
 
+> [!IMPORTANT]
+> You **MUST** use `127.0.0.1:3000` instead of `localhost:3000` when developing the website. This is because those URLs are considered as distinct for the purposes of CORS, and `store/settings/configs/local.yaml` is configured only to support `127.0.0.1:3000`.
+
 To develop the application, start React and FastAPI in separate terminals:
 
 ### React

@@ -1,9 +1,4 @@
 crypto:
   jwt_secret: fakeJwtSecret
-
-email:
-  host: ${oc.env:ROBOLIST_SMTP_HOST}
-  email: ${oc.env:ROBOLIST_SMTP_EMAIL}
-  password: ${oc.env:ROBOLIST_SMTP_PASSWORD}
-  name: ${oc.env:ROBOLIST_SMTP_NAME}
-  
+site:
+  homepage: http://127.0.0.1:3000

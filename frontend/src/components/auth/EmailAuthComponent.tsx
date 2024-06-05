@@ -37,6 +37,8 @@ const EmailAuthComponent = () => {
       await api.post<boolean>("/users/login", {
         email,
         login_url,
+        // 7 days
+        lifetime: 60 * 60 * 24 * 7,
       });
       setIsSuccess(true);
     } catch (error) {
