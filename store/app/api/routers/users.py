@@ -28,8 +28,7 @@ def set_token_cookie(response: Response, token: str, key: str) -> None:
         value=token,
         httponly=True,
         secure=False,
-        # samesite="strict",
-        samesite="none",
+        samesite="lax",
     )
 
 
