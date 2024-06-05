@@ -27,9 +27,6 @@ app.add_middleware(
 )
 app.include_router(api_router, prefix="/api")
 api_router.include_router(users_router, prefix="/users", tags=["users"])
-# dynamodb = boto3.resource("dynamodb", endpoint_url="http://localhost:8000")
-
-dynamodb = boto3.resource("dynamodb")
 
 
 class Bom(BaseModel):
