@@ -8,7 +8,9 @@ from botocore.exceptions import ClientError
 from fastapi import APIRouter, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+
 from store.app.api.routers.users import users_router
+from store.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -18,8 +20,8 @@ api_router = APIRouter()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins
-    # allow_credentials=True,
+    allow_origins=[settings.site.homepage],  # Allow all origins
+    allow_credentials=True,
     allow_methods=["*"],  # Allow all methods
     allow_headers=["*"],  # Allow all headers
 )
