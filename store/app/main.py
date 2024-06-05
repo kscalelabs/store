@@ -10,7 +10,6 @@ from fastapi.staticfiles import StaticFiles
 from store.app.api.routers.main import api_router
 from store.settings import settings
 
-
 app = FastAPI()
 
 # Adds CORS middleware.
