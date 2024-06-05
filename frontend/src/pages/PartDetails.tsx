@@ -1,4 +1,5 @@
-import { useState } from "react";
+import api from "hooks/api";
+import { useEffect, useState } from "react";
 import {
   Breadcrumb,
   Button,
@@ -23,49 +24,50 @@ interface PartDetailsResponse {
 const PartDetails = () => {
   const { id } = useParams();
   const [show, setShow] = useState(false);
+  const [part, setPart] = useState<PartDetailsResponse | null>(null);
   const [imageIndex, setImageIndex] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
-  // This is a placeholder before the backend is hooked up.
-  const response: PartDetailsResponse = {
-    name: "RMD X8",
-    owner: "MyActuator",
-    description: `The RMD X8 is a quasi-direct drive motor from MyActuator.`,
-    images: [
-      {
-        url: "https://media.robolist.xyz/rmd_x8.png",
-        caption: "Actuator 1",
-      },
-      {
-        url: "https://media.robolist.xyz/rmd_x8.png",
-        caption: "Actuator 2",
-      },
-      {
-        url: "https://media.robolist.xyz/rmd_x8.png",
-        caption: "Actuator 3",
-      },
-    ],
-    purchase_links: [
-      {
-        name: "RobotShop",
-        url: "https://www.robotshop.com/products/myactuator-rmd-x8-v3-can-bus-16-helical-mc-x-500-o-brushless-servo-driver",
-        price: 389,
-      },
-    ],
-    used_by: [
-      {
-        name: "Stompy",
-        id: "1234",
-        stars: 5,
-      },
-    ],
-  };
-
-  const { name, owner, description, images } = response;
+  useEffect(() => {
+    const fetchPart = async () => {
+      try {
+        const partData = await api.getPartById(id);
+        setPart(partData);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unexpected error occurred");
+        }
+      }
+    };
+    fetchPart();
+  }, [id]);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (error) {
+      navigate("/404"); // Redirect to a 404 page
+    }
+  }, [error, navigate]);
+
+  if (!part) {
+    return <p>Loading</p>;
+  }
+
+  const response: PartDetailsResponse = {
+    name: part.name,
+    owner: part.owner,
+    description: part.description,
+    images: part.images,
+    purchase_links: part.purchase_links,
+    used_by: part.used_by,
+  };
+  const { name, owner, description, images } = response;
 
   return (
     <>

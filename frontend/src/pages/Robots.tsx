@@ -1,30 +1,38 @@
+import api, { Robot } from "hooks/api";
+import { useEffect, useState } from "react";
 import { Breadcrumb, Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
-interface RobotsResponse {
-  robots: {
-    name: string;
-    owner: string;
-    description: string;
-    id: string;
-    photo?: string;
-  }[];
-}
-
 const Robots = () => {
-  const response: RobotsResponse = {
-    robots: [
-      {
-        name: "Stompy",
-        owner: "K-Scale Labs",
-        description: "An open-source humanoid robot costing less than $10k",
-        id: "1",
-        photo: "https://media.robolist.xyz/stompy.png",
-      },
-    ],
-  };
-
+  const [robotsData, setRobot] = useState<Robot[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    const fetch_robots = async () => {
+      try {
+        const robotsQuery = await api.getRobots();
+        setRobot(robotsQuery);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unexpected error occurred");
+        }
+      }
+    };
+    fetch_robots();
+  }, []);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (error) {
+      console.log(error);
+      navigate("/404"); // Redirect to a 404 page
+    }
+  }, [error, navigate]);
+
+  if (!robotsData) {
+    return <p>Loading</p>;
+  }
 
   return (
     <>
@@ -34,22 +42,22 @@ const Robots = () => {
       </Breadcrumb>
 
       <Row className="mt-5">
-        {response.robots.map(({ name, owner, description, id, photo }, key) => (
-          <Col key={key} md={3} sm={6} xs={12}>
-            <Card onClick={() => navigate(`/robot/${id}`)}>
-              {photo && (
+        {robotsData.map((robot) => (
+          <Col key={robot.robot_id} md={3} sm={6} xs={12}>
+            <Card onClick={() => navigate(`/robot/${robot.robot_id}`)}>
+              {robot.images[0] && (
                 <Card.Img
                   style={{ aspectRatio: "1/1" }}
                   variant="top"
-                  src={photo}
+                  src={robot.images[0].url}
                 />
               )}
               <Card.Body>
-                <Card.Title>{name}</Card.Title>
+                <Card.Title>{robot.name}</Card.Title>
                 <Card.Subtitle className="mb-2 text-muted">
-                  {owner}
+                  {robot.owner}
                 </Card.Subtitle>
-                <Card.Text>{description}</Card.Text>
+                <Card.Text>{robot.description}</Card.Text>
               </Card.Body>
             </Card>
           </Col>

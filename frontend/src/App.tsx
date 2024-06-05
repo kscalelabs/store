@@ -11,6 +11,7 @@ import NotFound from "pages/NotFound";
 import PartDetails from "pages/PartDetails";
 import Parts from "pages/Parts";
 import RobotDetails from "pages/RobotDetails";
+import RobotForm from "pages/RobotForm";
 import Robots from "pages/Robots";
 import { Container } from "react-bootstrap";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
@@ -35,6 +36,7 @@ const App = () => {
                     <Route path="/parts/" element={<Parts />} />
                     <Route path="/part/:id" element={<PartDetails />} />
                     <Route path="/404" element={<NotFound />} />
+                    <Route path="/add/robot" element={<RobotForm />} />
                     <Route path="*" element={<NotFoundRedirect />} />
                   </Routes>
                 </Container>
