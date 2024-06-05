@@ -71,7 +71,7 @@ class Part(BaseModel):
     purchase_links: List[PurchaseLink]
 
 
-@api_router.options("/add_robot/")
+@api_router.options("/add/robot/")
 async def options_add_robot() -> Dict[str, str]:
     return {"message": "Options request allowed"}
 
@@ -146,7 +146,7 @@ async def list_parts(crud: Annotated[Crud, Depends(Crud.get)]) -> List[Part]:
         raise HTTPException(status_code=404, detail=f"No parts found. Trace: {trace}")
 
 
-@api_router.post("/add_robot/")
+@api_router.post("/add/robot/")
 async def add_robot(robot: Robot, crud: Annotated[Crud, Depends(Crud.get)]) -> Dict[str, str]:
     table = await crud.db.Table("Robots")
     await table.put_item(Item=robot.model_dump())
