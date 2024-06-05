@@ -2,31 +2,7 @@ import api from "hooks/api";
 import { useEffect, useState } from "react";
 import { Breadcrumb, Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-
-interface Bom {
-  id: string;
-  name: string;
-  quantity: number;
-  price: number;
-}
-
-interface Image {
-  caption: string;
-  url: string;
-}
-
-interface Robot {
-  robot_id: string;
-  name: string;
-  description: string;
-  owner: string;
-  bom: Bom[];
-  images: Image[];
-}
-
-// interface RobotsResponse {
-//   robots: Robot[];
-// }
+import {Bom, Image, Robot} from "hooks/api";
 
 const Robots = () => {
   const [robotsData, setRobot] = useState<Robot[] | null>(null);
@@ -50,6 +26,7 @@ const Robots = () => {
 
   useEffect(() => {
     if (error) {
+      console.log(error)
       navigate("/404"); // Redirect to a 404 page
     }
   }, [error, navigate]);
@@ -57,29 +34,6 @@ const Robots = () => {
   if (!robotsData) {
     return <p>Loading</p>;
   }
-
-  // const response: RobotsResponse = {
-  //   // robots: [
-  //   //   {
-  //   //     name: "Stoopy",
-  //   //     owner: "K-Scale Labs",
-  //   //     description: "An open-source humanoid robot costing less than $10k",
-  //   //     id: "1",
-  //   //     photo: "https://media.robolist.xyz/stompy.png",
-  //   //   },
-  //   // ]
-  //   robotReturn: []
-  //   for (let i = 0; i < robots.length; i++) {
-  //     robotReturn.push({
-  //       name: robotsData[i].name,
-  //       owner: robots[i].owner,
-  //       description: robots[i].description,
-  //       id: robots[i].id,
-  //       photo: robots[i].photo,
-  //     });
-  //   }
-
-  // };
 
   return (
     <>
@@ -104,8 +58,7 @@ const Robots = () => {
                 <Card.Subtitle className="mb-2 text-muted">
                   {robot.owner}
                 </Card.Subtitle>
-                {/* // <Card.Text>{robot.description}</Card.Text> */}
-                This is a description
+                <Card.Text>{robot.description}</Card.Text>
               </Card.Body>
             </Card>
           </Col>

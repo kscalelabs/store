@@ -90,7 +90,7 @@ async def verify_table_exists(table_name: str, crud: Crud) -> bool:
 @api_router.get("/robots")
 async def list_robots(crud: Annotated[Crud, Depends(Crud.get)]) -> List[Robot]:
     trace = ""
-    if not await verify_table_exists("Robots", crud):
+    if not verify_table_exists("Robots", crud):
         raise HTTPException(status_code=404, detail="Table not found")
 
     table = await crud.db.Table("Robots")
@@ -151,7 +151,6 @@ async def list_parts(crud: Annotated[Crud, Depends(Crud.get)]) -> List[Part]:
 async def add_robot(robot: Robot, crud: Annotated[Crud, Depends(Crud.get)]) -> Dict[str, str]:
     table = await crud.db.Table("Robots")
     robot.robot_id = str(get_new_user_id())
-    print(robot)
     await table.put_item(Item=robot.model_dump())
     return {"message": "Robot added successfully"}
 
