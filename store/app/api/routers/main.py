@@ -7,10 +7,10 @@ from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from store.app.api.crypto import get_new_user_id
 from store.app.api.db import Crud
 from store.app.api.routers.users import users_router
 from store.settings import settings
-from store.app.api.crypto import get_new_user_id
 
 logger = logging.getLogger(__name__)
 

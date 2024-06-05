@@ -1,8 +1,7 @@
-import api from "hooks/api";
+import api, { Robot } from "hooks/api";
 import { useEffect, useState } from "react";
 import { Breadcrumb, Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import {Bom, Image, Robot} from "hooks/api";
 
 const Robots = () => {
   const [robotsData, setRobot] = useState<Robot[] | null>(null);
@@ -26,7 +25,7 @@ const Robots = () => {
 
   useEffect(() => {
     if (error) {
-      console.log(error)
+      console.log(error);
       navigate("/404"); // Redirect to a 404 page
     }
   }, [error, navigate]);
