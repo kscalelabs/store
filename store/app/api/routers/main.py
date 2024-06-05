@@ -114,8 +114,6 @@ async def list_robots() -> List[Robot]:
 
 @api_router.get("/robots/{robot_id}")
 async def get_robot(robot_id: str) -> Robot:
-    debug = list(dynamodb.tables.all())
-    test = ""
     try:
         table = dynamodb.Table("Robots")
         response = table.get_item(Key={"robot_id": robot_id})
@@ -131,8 +129,6 @@ async def get_robot(robot_id: str) -> Robot:
 
 @api_router.get("/parts/{part_id}")
 async def get_part(part_id: str) -> Part:
-    debug = list(dynamodb.tables.all())
-    test = ""
     try:
         table = dynamodb.Table("Parts")
         response = table.get_item(Key={"part_id": part_id})
@@ -141,9 +137,7 @@ async def get_part(part_id: str) -> Part:
             part = response["Item"]
             return Part(**part)
         else:
-            raise HTTPException(
-                status_code=404, detail=f"Part not {test} found {response} {table} ooga {part_id} booga"
-            )
+            raise HTTPException(status_code=404, detail="Part not found")
     except ClientError as e:
         raise HTTPException(status_code=500, detail=e.response["Error"]["Message"])
 

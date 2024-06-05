@@ -64,63 +64,7 @@ const RobotDetails = () => {
     images: robot?.images,
     bom: robot?.bom,
   };
-  /*
-  // This is a placeholder before the backend is hooked up.
-//   const response: RobotDetailsResponse = {
-//     name: "Stompy",
-//     owner: "K-Scale Labs",
-//     description: `Stompy is an open-source humanoid robot that anyone can 3D print.
-
-// ## Purpose
-
-// Stompy is designed to be a versatile platform for research and development in legged robotics.
-
-// ## Links
-
-// - [Wiki Entry](https://humanoids.wiki/w/Stompy)
-
-// ### Full Body Sim Artifacts
-
-// - [URDF (with STLs)](https://media.kscale.dev/stompy/latest_stl_urdf.tar.gz)
-// - [URDF (with OBJs)](https://media.kscale.dev/stompy/latest_obj_urdf.tar.gz)
-// - [MJCF](https://media.kscale.dev/stompy/latest_mjcf.tar.gz)
-
-// ### Single Arm Sim Artifacts
-
-// - [URDF (with STLs)](https://media.kscale.dev/stompy/arm_latest_stl_urdf.tar.gz)
-// - [URDF (with OBJs)](https://media.kscale.dev/stompy/arm_latest_obj_urdf.tar.gz)
-// - [MJCF](https://media.kscale.dev/stompy/arm_latest_mjcf.tar.gz)
-// `,
-//     images: [
-//       {
-//         url: "https://media.robolist.xyz/stompy.png",
-//         caption: "Stompy the robot 1",
-//       },
-//       {
-//         url: "https://media.robolist.xyz/stompy.png",
-//         caption: "Stompy the robot 2",
-//       },
-//       {
-//         url: "https://media.robolist.xyz/stompy.png",
-//         caption: "Stompy the robot 3",
-//       },
-//     ],
-//     bom: [
-//       {
-//         name: "Actuator",
-//         id: "1234",
-//         quantity: 10,
-//         price: 100,
-//       },
-//       {
-//         name: "Sensor",
-//         id: "5678",
-//         quantity: 5,
-//         price: 50,
-//       },
-//     ],
-//   };
-*/
+ 
   const { name, owner, description, images } = response;
 
   return (
