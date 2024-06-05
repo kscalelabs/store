@@ -102,7 +102,7 @@ class api {
   public async addRobot(robot: Robot): Promise<void> {
     const s = robot.name;
     try {
-      await this.api.post("/add_robot/", robot);
+      await this.api.post("/add/robot/", robot);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error adding robot:", error.response?.data);
