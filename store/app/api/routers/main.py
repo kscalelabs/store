@@ -1,14 +1,13 @@
 """Defines the main API endpoint."""
 
 import logging
-from typing import Dict, List
+from typing import Annotated, Dict, List
 
-import boto3
-from botocore.exceptions import ClientError
-from fastapi import APIRouter, FastAPI, HTTPException, status
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from store.app.api.db import Crud
 from store.app.api.routers.users import users_router
 from store.settings import settings
 
@@ -77,9 +76,9 @@ async def options_add_robot() -> Dict[str, str]:
     return {"message": "Options request allowed"}
 
 
-def verify_table_exists(table_name: str) -> bool:
+async def verify_table_exists(table_name: str, crud: Crud) -> bool:
     try:
-        table_names = [table.name for table in dynamodb.tables.all()]
+        table_names = [table.name for table in await crud.db.tables.all()]
         logger.debug(f"Found tables: {table_names}")
         return table_name in table_names
     except Exception as e:
@@ -88,93 +87,70 @@ def verify_table_exists(table_name: str) -> bool:
 
 
 @api_router.get("/robots")
-async def list_robots() -> List[Robot]:
+async def list_robots(crud: Annotated[Crud, Depends(Crud.get)]) -> List[Robot]:
     trace = ""
-    try:
-        if not verify_table_exists("Robots"):
-            raise HTTPException(status_code=404, detail="Table not found")
+    if not await verify_table_exists("Robots", crud):
+        raise HTTPException(status_code=404, detail="Table not found")
 
-        table = dynamodb.Table("Robots")
-        response = table.scan()
+    table = await crud.db.Table("Robots")
+    response = await table.scan()
 
-        trace += "Scanned table: Robots\n"
-        trace += f"ResponseMetadata: {response['ResponseMetadata']}\n"
-        trace += f"Full Response: {response}\n"
+    trace += "Scanned table: Robots\n"
+    trace += f"ResponseMetadata: {response['ResponseMetadata']}\n"
+    trace += f"Full Response: {response}\n"
 
-        if "Items" in response:
-            robots = response["Items"]
-            return [Robot(**robot) for robot in robots]
-        else:
-            raise HTTPException(status_code=404, detail=f"No robots found. Trace: {trace}")
-
-    except ClientError as e:
-        trace += f"ClientError: {e.response['Error']['Message']}\n"
-        raise HTTPException(status_code=500, detail=f"Internal server error. Trace: {trace}")
+    if "Items" in response:
+        robots = response["Items"]
+        return [Robot.model_validate(robot) for robot in robots]
+    else:
+        raise HTTPException(status_code=404, detail=f"No robots found. Trace: {trace}")
 
 
 @api_router.get("/robots/{robot_id}")
-async def get_robot(robot_id: str) -> Robot:
-    try:
-        table = dynamodb.Table("Robots")
-        response = table.get_item(Key={"robot_id": robot_id})
-        # response = table.scan()
-        if "Item" in response:
-            robot = response["Item"]
-            return Robot(**robot)
-        else:
-            raise HTTPException(status_code=404, detail="Robot not found")
-    except ClientError as e:
-        raise HTTPException(status_code=500, detail=e.response["Error"]["Message"])
+async def get_robot(robot_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> Robot:
+    table = await crud.db.Table("Robots")
+    response = await table.get_item(Key={"robot_id": robot_id})
+    if "Item" in response:
+        return Robot.model_validate(response["Item"])
+    else:
+        raise HTTPException(status_code=404, detail="Robot not found")
 
 
 @api_router.get("/parts/{part_id}")
-async def get_part(part_id: str) -> Part:
-    try:
-        table = dynamodb.Table("Parts")
-        response = table.get_item(Key={"part_id": part_id})
-        # response = table.scan()
-        if "Item" in response:
-            part = response["Item"]
-            return Part(**part)
-        else:
-            raise HTTPException(status_code=404, detail="Part not found")
-    except ClientError as e:
-        raise HTTPException(status_code=500, detail=e.response["Error"]["Message"])
+async def get_part(part_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> Part:
+    table = await crud.db.Table("Parts")
+    response = await table.get_item(Key={"part_id": part_id})
+    if "Item" in response:
+        return Part.model_validate(response["Item"])
+    else:
+        raise HTTPException(status_code=404, detail="Part not found")
 
 
 @api_router.get("/parts")
-async def list_parts() -> List[Part]:
+async def list_parts(crud: Annotated[Crud, Depends(Crud.get)]) -> List[Part]:
     trace = ""
-    try:
-        if not verify_table_exists("Parts"):
-            raise HTTPException(status_code=404, detail="Table not found")
+    if not verify_table_exists("Parts", crud):
+        raise HTTPException(status_code=404, detail="Table not found")
 
-        table = dynamodb.Table("Parts")
-        response = table.scan()
+    table = await crud.db.Table("Parts")
+    response = await table.scan()
 
-        trace += "Scanned table: Parts\n"
-        trace += f"ResponseMetadata: {response['ResponseMetadata']}\n"
-        trace += f"Full Response: {response}\n"
+    trace += "Scanned table: Parts\n"
+    trace += f"ResponseMetadata: {response['ResponseMetadata']}\n"
+    trace += f"Full Response: {response}\n"
 
-        if "Items" in response:
-            parts = response["Items"]
-            return [Part(**part) for part in parts]
-        else:
-            raise HTTPException(status_code=404, detail=f"No parts found. Trace: {trace}")
-
-    except ClientError as e:
-        trace += f"ClientError: {e.response['Error']['Message']}\n"
-        raise HTTPException(status_code=500, detail=f"Internal server error. Trace: {trace}")
+    if "Items" in response:
+        parts = response["Items"]
+        return [Part.model_validate(part) for part in parts]
+    else:
+        raise HTTPException(status_code=404, detail=f"No parts found. Trace: {trace}")
 
 
 @api_router.post("/add_robot/")
-async def add_robot(robot: Robot) -> Dict[str, str]:
-    table = dynamodb.Table("Robots")
-    try:
-        table.put_item(Item=robot.dict())
-        return {"message": "Robot added successfully"}
-    except ClientError as e:
-        raise HTTPException(status_code=500, detail=e.response["Error"]["Message"])
+async def add_robot(robot: Robot, crud: Annotated[Crud, Depends(Crud.get)]) -> Dict[str, str]:
+    table = await crud.db.Table("Robots")
+    await table.put_item(Item=robot.model_dump())
+    return {"message": "Robot added successfully"}
 
 
 # Returns a 404 response for all other paths.
