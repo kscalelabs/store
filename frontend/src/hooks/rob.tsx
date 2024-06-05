@@ -46,7 +46,13 @@ class rob {
   private api;
 
   constructor(baseURL: string | undefined) {
-    this.api = axios.create({ baseURL });
+    this.api = axios.create({ 
+        baseURL,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      withCredentials: true,  // Ensure credentials are sent
+     });
   }
   public async getRobots(): Promise<Robot[]> {
     try {
@@ -86,6 +92,20 @@ class rob {
       if (axios.isAxiosError(error)) {
         console.error("Error fetching robot:", error.response?.data);
         throw new Error(error.response?.data?.detail || "Error fetching robot");
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+  public async addRobot(robot: Robot): Promise<void> {
+    const s = robot.name
+    try {
+      await this.api.post("/add_robot/", robot);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error adding robot:", error.response?.data);
+        throw new Error(error.response?.data?.detail || "Error adding robot " + s);
       } else {
         console.error("Unexpected error:", error);
         throw new Error("Unexpected error");

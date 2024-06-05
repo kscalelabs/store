@@ -52,7 +52,7 @@ async def redirect_to_index(full_path: str, request: Request) -> Response:
 # Adds CORS middleware.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.site.homepage, settings.site.api],
+    allow_origins=[settings.site.homepage, settings.site.api, "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
     allow_headers=["*"],

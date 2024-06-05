@@ -1,21 +1,29 @@
 """Defines the main API endpoint."""
 
 import logging
-from typing import List
+from typing import Dict, List
 
 import boto3
 from botocore.exceptions import ClientError
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-
-from store.app.api.routers.users import users_router
 
 logger = logging.getLogger(__name__)
 
+app = FastAPI()
+
 api_router = APIRouter()
+# api_router.include_router(users_router, prefix="/users", tags=["users"])
 
-api_router.include_router(users_router, prefix="/users", tags=["users"])
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins
+    # allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
+)
+app.include_router(api_router, prefix="/api")
 # dynamodb = boto3.resource("dynamodb", endpoint_url="http://localhost:8000")
 
 dynamodb = boto3.resource("dynamodb")
@@ -62,6 +70,11 @@ class Part(BaseModel):
     part_id: str
     used_by: List[UsedBy]
     purchase_links: List[PurchaseLink]
+
+
+@api_router.options("/add_robot/")
+async def options_add_robot() -> Dict[str, str]:
+    return {"message": "Options request allowed"}
 
 
 def verify_table_exists(table_name: str) -> bool:
@@ -158,6 +171,16 @@ async def list_parts() -> List[Part]:
     except ClientError as e:
         trace += f"ClientError: {e.response['Error']['Message']}\n"
         raise HTTPException(status_code=500, detail=f"Internal server error. Trace: {trace}")
+
+
+@api_router.post("/add_robot/")
+async def add_robot(robot: Robot) -> Dict[str, str]:
+    table = dynamodb.Table("Robots")
+    try:
+        table.put_item(Item=robot.dict())
+        return {"message": "Robot added successfully"}
+    except ClientError as e:
+        raise HTTPException(status_code=500, detail=e.response["Error"]["Message"])
 
 
 # Returns a 404 response for all other paths.

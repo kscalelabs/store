@@ -67,42 +67,6 @@ const PartDetails = () => {
     purchase_links: part.purchase_links,
     used_by: part.used_by,
   };
-  /*
-  // This is a placeholder before the backend is hooked up.
-  const response: PartDetailsResponse = {
-    name: "RMD X8",
-    owner: "MyActuator",
-    description: `The RMD X8 is a quasi-direct drive motor from MyActuator.`,
-    images: [
-      { 
-        url: "https://media.robolist.xyz/rmd_x8.png",
-        caption: "Actuator 1",
-      },
-      {
-        url: "https://media.robolist.xyz/rmd_x8.png",
-        caption: "Actuator 2",
-      },
-      {
-        url: "https://media.robolist.xyz/rmd_x8.png",
-        caption: "Actuator 3",
-      },
-    ],
-    purchase_links: [
-      {
-        name: "RobotShop",
-        url: "https://www.robotshop.com/products/myactuator-rmd-x8-v3-can-bus-16-helical-mc-x-500-o-brushless-servo-driver",
-        price: 389,
-      },
-    ],
-    used_by: [
-      {
-        name: "Stompy",
-        id: "1234",
-        stars: 5,
-      },
-    ],
-  };
-*/
   const { name, owner, description, images } = response;
 
   return (
