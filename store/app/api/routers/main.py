@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from store.app.api.db import Crud
 from store.app.api.routers.users import users_router
 from store.settings import settings
+from store.app.api.crypto import get_new_user_id
 
 logger = logging.getLogger(__name__)
 
@@ -149,6 +150,8 @@ async def list_parts(crud: Annotated[Crud, Depends(Crud.get)]) -> List[Part]:
 @api_router.post("/add/robot/")
 async def add_robot(robot: Robot, crud: Annotated[Crud, Depends(Crud.get)]) -> Dict[str, str]:
     table = await crud.db.Table("Robots")
+    robot.robot_id = str(get_new_user_id())
+    print(robot)
     await table.put_item(Item=robot.model_dump())
     return {"message": "Robot added successfully"}
 
