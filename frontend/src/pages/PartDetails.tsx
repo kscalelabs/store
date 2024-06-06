@@ -1,4 +1,5 @@
-import api from "hooks/api";
+import { api, Image } from "hooks/api";
+import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import {
   Breadcrumb,
@@ -10,18 +11,17 @@ import {
   Row,
 } from "react-bootstrap";
 import Markdown from "react-markdown";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface PartDetailsResponse {
   name: string;
-  owner: string;
   description: string;
-  images: { url: string; caption: string }[];
-  purchase_links: { name: string; url: string; price: number }[];
-  used_by: { name: string; id: string; stars: number }[];
+  images: Image[];
 }
 
 const PartDetails = () => {
+  const auth = useAuthentication();
+  const auth_api = new api(auth.api);
   const { id } = useParams();
   const [show, setShow] = useState(false);
   const [part, setPart] = useState<PartDetailsResponse | null>(null);
@@ -34,7 +34,7 @@ const PartDetails = () => {
   useEffect(() => {
     const fetchPart = async () => {
       try {
-        const partData = await api.getPartById(id);
+        const partData = await auth_api.getPartById(id);
         setPart(partData);
       } catch (err) {
         if (err instanceof Error) {
@@ -61,13 +61,10 @@ const PartDetails = () => {
 
   const response: PartDetailsResponse = {
     name: part.name,
-    owner: part.owner,
     description: part.description,
     images: part.images,
-    purchase_links: part.purchase_links,
-    used_by: part.used_by,
   };
-  const { name, owner, description, images } = response;
+  const { name, description, images } = response;
 
   return (
     <>
@@ -86,7 +83,6 @@ const PartDetails = () => {
               <h1>{name}</h1>
               <small className="text-muted">ID: {id}</small>
               <br />
-              <i>{owner}</i>
             </Col>
           </Row>
           <hr />
@@ -107,50 +103,6 @@ const PartDetails = () => {
                 {description}
               </Markdown>
             </Col>
-          </Row>
-
-          <Row className="mt-3">
-            <h4>Purchase</h4>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Price</th>
-                </tr>
-              </thead>
-              <tbody>
-                {response.purchase_links.map((part, key) => (
-                  <tr key={key}>
-                    <td>
-                      <a href={part.url}>{part.name}</a>
-                    </td>
-                    <td>${part.price}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </Row>
-
-          <Row className="mt-3">
-            <h4>Robots</h4>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Stars</th>
-                </tr>
-              </thead>
-              <tbody>
-                {response.used_by.map((part, key) => (
-                  <tr key={key}>
-                    <td>
-                      <Link to={`/robot/${part.id}`}>{part.name}</Link>
-                    </td>
-                    <td>{part.stars}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </Row>
         </Col>
 

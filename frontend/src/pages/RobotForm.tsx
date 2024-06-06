@@ -1,8 +1,11 @@
-import api, { Bom, Image, Robot } from "hooks/api";
+import { api, Bom, Image, Robot } from "hooks/api";
+import { useAuthentication } from "hooks/auth";
 import React, { ChangeEvent, FormEvent, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 
 const RobotForm: React.FC = () => {
+  const auth = useAuthentication();
+  const auth_api = new api(auth.api);
   const [message, setMessage] = useState<string | null>(null);
   const [robot_name, setName] = useState<string>("");
   const [robot_description, setDescription] = useState<string>("");
@@ -34,17 +37,17 @@ const RobotForm: React.FC = () => {
   ) => {
     const { name, value } = e.target;
     const newBom = [...robot_bom];
-    if (name === "quantity" || name === "price") {
-      newBom[index][name as "quantity" | "price"] = Number(value);
+    if (name === "quantity") {
+      newBom[index][name as "quantity"] = Number(value);
     } else {
-      newBom[index][name as "name"] = value;
+      newBom[index][name as "part_id"] = value;
     }
 
     setBom(newBom);
   };
 
   const handleAddBom = () => {
-    setBom([...robot_bom, { id: "", name: "", price: 0, quantity: 0 }]);
+    setBom([...robot_bom, { part_id: "", quantity: 0 }]);
   };
 
   const handleRemoveBom = (index: number) => {
@@ -67,7 +70,7 @@ const RobotForm: React.FC = () => {
       images: robot_images,
     };
     try {
-      await api.addRobot(newFormData);
+      await auth_api.addRobot(newFormData);
       setMessage(`Robot added successfully.`);
     } catch (error) {
       setMessage("Error adding robot ");
@@ -149,9 +152,9 @@ const RobotForm: React.FC = () => {
               <Form.Control
                 className="mb-1"
                 type="text"
-                placeholder="Part Name: "
-                name="name"
-                value={bom.name}
+                placeholder="Part Id: "
+                name="part_id"
+                value={bom.part_id}
                 onChange={(e) => handleBomChange(index, e)}
                 required
               />
@@ -162,16 +165,6 @@ const RobotForm: React.FC = () => {
                 placeholder="Quantity:"
                 name="quantity"
                 value={bom.quantity}
-                onChange={(e) => handleBomChange(index, e)}
-                required
-              />
-              Individual Price:
-              <Form.Control
-                className="mb-1"
-                type="number"
-                placeholder="Price:"
-                name="price"
-                value={bom.price}
                 onChange={(e) => handleBomChange(index, e)}
                 required
               />

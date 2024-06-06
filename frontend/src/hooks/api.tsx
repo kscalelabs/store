@@ -1,32 +1,15 @@
-import axios from "axios";
-
-export interface PurchaseLink {
-  url: string;
-  price: number;
-  name: string;
-}
-
-export interface UsedBy {
-  name: string;
-  id: string;
-  stars: number;
-}
+import axios, { AxiosInstance } from "axios";
 
 export interface Part {
-  name: string;
-  owner: string;
   description: string;
   images: Image[];
   part_id: string;
-  used_by: UsedBy[];
-  purchase_links: PurchaseLink[];
+  name: string;
 }
 
 export interface Bom {
-  id: string;
-  name: string;
+  part_id: string;
   quantity: number;
-  price: number;
 }
 
 export interface Image {
@@ -43,21 +26,15 @@ export interface Robot {
   images: Image[];
 }
 
-class api {
-  private api;
+export class api {
+  public api: AxiosInstance;
 
-  constructor(baseURL: string | undefined) {
-    this.api = axios.create({
-      baseURL,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      withCredentials: true, // Ensure credentials are sent
-    });
+  constructor(api: AxiosInstance) {
+    this.api = api;
   }
   public async getRobots(): Promise<Robot[]> {
     try {
-      const response = await this.api.get("/robots");
+      const response = await this.api.get("/robots/");
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -102,7 +79,7 @@ class api {
   public async addRobot(robot: Robot): Promise<void> {
     const s = robot.name;
     try {
-      await this.api.post("/add/robot/", robot);
+      await this.api.post("/robots/add/", robot);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error adding robot:", error.response?.data);
@@ -130,5 +107,3 @@ class api {
     }
   }
 }
-
-export default new api("http://127.0.0.1:8080/api");

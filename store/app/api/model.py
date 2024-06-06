@@ -6,7 +6,6 @@ expects (for example, converting a UUID into a string).
 """
 
 import uuid
-from decimal import Decimal
 
 from pydantic import BaseModel
 
@@ -38,10 +37,14 @@ class ApiKey(BaseModel):
         return cls(api_key_hash=api_key_hash, user_id=str(user_id), lifetime=lifetime)
 
 
-class PurchaseLink(BaseModel):
-    name: str
+class Bom(BaseModel):
+    part_id: str
+    quantity: int
+
+
+class Image(BaseModel):
+    caption: str
     url: str
-    price: Decimal
 
 
 class Robot(BaseModel):
@@ -49,16 +52,12 @@ class Robot(BaseModel):
     owner: str
     name: str
     description: str
-    price: Decimal
-    part_ids: set[str]
-    purchase_links: set[PurchaseLink]
+    bom: list[Bom]
+    images: list[Image]
 
 
 class Part(BaseModel):
     part_id: str  # Primary key
-    owner: str
     name: str
     description: str
-    price: Decimal
     robot_ids: set[str]
-    purchase_links: set[PurchaseLink]

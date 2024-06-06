@@ -1,4 +1,5 @@
-import api from "hooks/api";
+import { api, Bom } from "hooks/api";
+import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import {
   Breadcrumb,
@@ -17,10 +18,12 @@ interface RobotDetailsResponse {
   owner: string;
   description: string;
   images: { url: string; caption: string }[];
-  bom: { name: string; id: string; quantity: number; price: number }[];
+  bom: Bom[];
 }
 
 const RobotDetails = () => {
+  const auth = useAuthentication();
+  const auth_api = new api(auth.api);
   const { id } = useParams();
   const [show, setShow] = useState(false);
   const [robot, setRobot] = useState<RobotDetailsResponse | null>(null);
@@ -33,7 +36,7 @@ const RobotDetails = () => {
   useEffect(() => {
     const fetchRobot = async () => {
       try {
-        const robotData = await api.getRobotById(id);
+        const robotData = await auth_api.getRobotById(id);
         setRobot(robotData);
       } catch (err) {
         if (err instanceof Error) {
@@ -121,10 +124,9 @@ const RobotDetails = () => {
                 {response.bom.map((part, key) => (
                   <tr key={key}>
                     <td>
-                      <Link to={`/part/${part.id}`}>{part.name}</Link>
+                      <Link to={`/part/${part.part_id}`}>{part.part_id}</Link>
                     </td>
                     <td>{part.quantity}</td>
-                    <td>${part.price}</td>
                   </tr>
                 ))}
               </tbody>

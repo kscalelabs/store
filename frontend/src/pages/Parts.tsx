@@ -1,46 +1,18 @@
-import api from "hooks/api";
+import { api, Part } from "hooks/api";
+import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import { Breadcrumb, Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
-interface Image {
-  caption: string;
-  url: string;
-}
-
-interface PurchaseLink {
-  url: string;
-  price: number;
-  name: string;
-}
-
-interface UsedBy {
-  name: string;
-  id: string;
-  stars: number;
-}
-
-interface Part {
-  name: string;
-  owner: string;
-  description: string;
-  images: Image[];
-  part_id: string;
-  used_by: UsedBy[];
-  purchase_links: PurchaseLink[];
-}
-
-// interface PartsResponse {
-//   parts: Part[];
-// }
-
 const Parts = () => {
+  const auth = useAuthentication();
+  const auth_api = new api(auth.api);
   const [partsData, setParts] = useState<Part[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     const fetch_parts = async () => {
       try {
-        const partsQuery = await api.getParts();
+        const partsQuery = await auth_api.getParts();
         setParts(partsQuery);
       } catch (err) {
         if (err instanceof Error) {
@@ -52,17 +24,6 @@ const Parts = () => {
     };
     fetch_parts();
   }, []);
-  // const response: PartsResponse = {
-  //   parts: [
-  //     {
-  //       name: "RMD X8",
-  //       owner: "MyActuator",
-  //       description: "6:1 reduction ratio motor",
-  //       part_id: "1",
-  //       images: "https://media.robolist.xyz/rmd_x8.png",
-  //     },
-  //   ],
-  // };
 
   const navigate = useNavigate();
 
@@ -97,7 +58,7 @@ const Parts = () => {
               <Card.Body>
                 <Card.Title>{part.name}</Card.Title>
                 <Card.Subtitle className="mb-2 text-muted">
-                  {part.owner}
+                  {part.part_id}
                 </Card.Subtitle>
                 <Card.Text>{part.description}</Card.Text>
               </Card.Body>
