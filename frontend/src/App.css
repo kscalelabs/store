@@ -2,3 +2,10 @@ div.content {
   margin-top: 16px;
   margin-bottom: 56px;
 }
+
+@media (max-width: 768px) {
+  div.row-two {
+    gap: 16px;
+  }
+}
+
