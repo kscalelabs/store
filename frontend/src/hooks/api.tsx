@@ -34,7 +34,7 @@ export class api {
   }
   public async getRobots(): Promise<Robot[]> {
     try {
-      const response = await this.api.get("/robots");
+      const response = await this.api.get("/robots/");
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
