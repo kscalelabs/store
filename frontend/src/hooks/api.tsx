@@ -94,7 +94,7 @@ export class api {
   }
   public async getParts(): Promise<Part[]> {
     try {
-      const response = await this.api.get("/parts");
+      const response = await this.api.get("/parts/");
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
