@@ -60,7 +60,6 @@ async def create_tables(crud: Crud | None = None) -> None:
                 ("part_id", "S", "HASH"),
             ],
             gsis=[
-                ("ownerIndex", "owner", "S", "HASH"),
                 ("nameIndex", "name", "S", "HASH"),
             ],
         )
