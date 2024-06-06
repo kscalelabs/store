@@ -56,7 +56,7 @@ const Parts = () => {
                 />
               )}
               <Card.Body>
-                <Card.Title>{part.name}</Card.Title>
+                <Card.Title>{part.part_name}</Card.Title>
                 <Card.Subtitle className="mb-2 text-muted">
                   {part.part_id}
                 </Card.Subtitle>

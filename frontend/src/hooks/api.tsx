@@ -2,9 +2,10 @@ import axios, { AxiosInstance } from "axios";
 
 export interface Part {
   description: string;
+  owner: string;
   images: Image[];
   part_id: string;
-  name: string;
+  part_name: string;
 }
 
 export interface Bom {
