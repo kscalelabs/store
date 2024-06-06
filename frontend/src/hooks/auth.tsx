@@ -55,7 +55,6 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
   });
 
   useEffect(() => {
-    console.log(apiKey, " api key lol")
     if (apiKey === null) {
       deleteLocalStorageApiKey();
     } else {
