@@ -1,6 +1,6 @@
+import { useAuthentication } from "hooks/auth";
 import { Button, Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { useAuthentication } from "hooks/auth";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -30,25 +30,27 @@ const Home = () => {
           </Card>
         </Col>
       </Row>
-      {isAuthenticated && <Row>
-        <Col sm={12}>
-          <Button
-            variant="success"
-            size="lg"
-            style={{
-              backgroundColor: "light-green",
-              borderColor: "black",
-              padding: "10px",
-              width: "100%",
-            }}
-            onClick={() => {
-              navigate("/add/robot");
-            }}
-          >
-            Make a Robot
-          </Button>
-        </Col>
-      </Row>}
+      {isAuthenticated && (
+        <Row>
+          <Col sm={12}>
+            <Button
+              variant="success"
+              size="lg"
+              style={{
+                backgroundColor: "light-green",
+                borderColor: "black",
+                padding: "10px",
+                width: "100%",
+              }}
+              onClick={() => {
+                navigate("/add/robot");
+              }}
+            >
+              Make a Robot
+            </Button>
+          </Col>
+        </Row>
+      )}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
 
 export interface PurchaseLink {
   url: string;
@@ -43,17 +43,11 @@ export interface Robot {
   images: Image[];
 }
 
-class api {
-  private api;
+export class api {
+  public api: AxiosInstance;
 
-  constructor(baseURL: string | undefined) {
-    this.api = axios.create({
-      baseURL,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      withCredentials: true, // Ensure credentials are sent
-    });
+  constructor(api: AxiosInstance) {
+    this.api = api;
   }
   public async getRobots(): Promise<Robot[]> {
     try {
@@ -130,5 +124,3 @@ class api {
     }
   }
 }
-
-export default new api("http://127.0.0.1:8080/api");

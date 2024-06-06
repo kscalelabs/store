@@ -1,4 +1,5 @@
-import api from "hooks/api";
+import { api } from "hooks/api";
+import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import {
   Breadcrumb,
@@ -21,6 +22,8 @@ interface RobotDetailsResponse {
 }
 
 const RobotDetails = () => {
+  const auth = useAuthentication();
+  const auth_api = new api(auth.api);
   const { id } = useParams();
   const [show, setShow] = useState(false);
   const [robot, setRobot] = useState<RobotDetailsResponse | null>(null);
@@ -33,7 +36,7 @@ const RobotDetails = () => {
   useEffect(() => {
     const fetchRobot = async () => {
       try {
-        const robotData = await api.getRobotById(id);
+        const robotData = await auth_api.getRobotById(id);
         setRobot(robotData);
       } catch (err) {
         if (err instanceof Error) {

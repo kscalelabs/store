@@ -1,7 +1,6 @@
 """Defines the main API endpoint."""
 
 import logging
-import uuid
 from typing import Annotated, Dict, List
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
@@ -10,10 +9,9 @@ from pydantic import BaseModel
 
 from store.app.api.crypto import get_new_user_id
 from store.app.api.db import Crud
-from store.app.api.routers.users import users_router
+from store.app.api.model import Robot
+from store.app.api.routers.users import ApiKeyData, get_api_key, users_router
 from store.settings import settings
-
-from store.app.api.routers.users import ApiKeyData, get_api_key
 
 logger = logging.getLogger(__name__)
 
@@ -43,15 +41,6 @@ class Bom(BaseModel):
 class Image(BaseModel):
     caption: str
     url: str
-
-
-class Robot(BaseModel):
-    name: str
-    owner: str
-    description: str
-    bom: List[Bom]
-    images: List[Image]
-    robot_id: str
 
 
 class PurchaseLink(BaseModel):
@@ -94,7 +83,7 @@ async def verify_table_exists(table_name: str, crud: Crud) -> bool:
 @api_router.get("/robots")
 async def list_robots(crud: Annotated[Crud, Depends(Crud.get)]) -> List[Robot]:
     trace = ""
-    if not verify_table_exists("Robots", crud):
+    if not await verify_table_exists("Robots", crud):
         raise HTTPException(status_code=404, detail="Table not found")
 
     table = await crud.db.Table("Robots")

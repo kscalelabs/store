@@ -1,4 +1,5 @@
-import api from "hooks/api";
+import { api } from "hooks/api";
+import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import {
   Breadcrumb,
@@ -22,6 +23,8 @@ interface PartDetailsResponse {
 }
 
 const PartDetails = () => {
+  const auth = useAuthentication();
+  const auth_api = new api(auth.api);
   const { id } = useParams();
   const [show, setShow] = useState(false);
   const [part, setPart] = useState<PartDetailsResponse | null>(null);
@@ -34,7 +37,7 @@ const PartDetails = () => {
   useEffect(() => {
     const fetchPart = async () => {
       try {
-        const partData = await api.getPartById(id);
+        const partData = await auth_api.getPartById(id);
         setPart(partData);
       } catch (err) {
         if (err instanceof Error) {

@@ -1,4 +1,5 @@
-import api from "hooks/api";
+import {api} from "hooks/api";
+import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import { Breadcrumb, Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
@@ -35,12 +36,14 @@ interface Part {
 // }
 
 const Parts = () => {
+  const auth = useAuthentication();
+  const auth_api = new api(auth.api);
   const [partsData, setParts] = useState<Part[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     const fetch_parts = async () => {
       try {
-        const partsQuery = await api.getParts();
+        const partsQuery = await auth_api.getParts();
         setParts(partsQuery);
       } catch (err) {
         if (err instanceof Error) {

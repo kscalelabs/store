@@ -1,8 +1,11 @@
-import api, { Bom, Image, Robot } from "hooks/api";
+import {api, Bom, Image, Robot } from "hooks/api";
 import React, { ChangeEvent, FormEvent, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
+import { useAuthentication } from "hooks/auth";
 
 const RobotForm: React.FC = () => {
+  const auth = useAuthentication();
+  const auth_api = new api(auth.api);
   const [message, setMessage] = useState<string | null>(null);
   const [robot_name, setName] = useState<string>("");
   const [robot_description, setDescription] = useState<string>("");
@@ -67,7 +70,7 @@ const RobotForm: React.FC = () => {
       images: robot_images,
     };
     try {
-      await api.addRobot(newFormData);
+      await auth_api.addRobot(newFormData);
       setMessage(`Robot added successfully.`);
     } catch (error) {
       setMessage("Error adding robot ");
