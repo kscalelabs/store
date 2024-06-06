@@ -117,7 +117,6 @@ const RobotDetails = () => {
                 <tr>
                   <th>Name</th>
                   <th>Quantity</th>
-                  <th>Price</th>
                 </tr>
               </thead>
               <tbody>
