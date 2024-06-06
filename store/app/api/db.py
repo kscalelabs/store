@@ -6,10 +6,12 @@ from typing import AsyncGenerator, Self
 
 from store.app.api.crud.base import BaseCrud
 from store.app.api.crud.users import UserCrud
+from store.app.api.crud.robots import RobotCrud
 
 
 class Crud(
     UserCrud,
+    RobotCrud,
     BaseCrud,
 ):
     """Composes the various CRUD classes into a single class."""

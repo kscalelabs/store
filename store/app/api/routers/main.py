@@ -1,6 +1,7 @@
 """Defines the main API endpoint."""
 
 import logging
+import uuid
 from typing import Annotated, Dict, List
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
@@ -11,6 +12,8 @@ from store.app.api.crypto import get_new_user_id
 from store.app.api.db import Crud
 from store.app.api.routers.users import users_router
 from store.settings import settings
+
+from store.app.api.routers.users import ApiKeyData, get_api_key
 
 logger = logging.getLogger(__name__)
 
@@ -149,8 +152,12 @@ async def list_parts(crud: Annotated[Crud, Depends(Crud.get)]) -> List[Part]:
 
 
 @api_router.post("/add/robot/")
-async def add_robot(api_key: str, robot: Robot, crud: Annotated[Crud, Depends(Crud.get)]) -> bool:
-    user_id = await crud.get_user_id_from_api_key(api_key)
+async def add_robot(
+    robot: Robot,
+    data: Annotated[ApiKeyData, Depends(get_api_key)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> bool:
+    user_id = await crud.get_user_id_from_api_key(data.api_key)
     if user_id is None:
         raise HTTPException(status_code=401, detail="Must be logged in to add a robot")
     robot.owner = str(user_id)

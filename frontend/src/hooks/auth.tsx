@@ -54,21 +54,24 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
     withCredentials: true,
   });
 
+  if (apiKey !== null) {
+    // Adds the API key to the request header since it is set.
+    api.interceptors.request.use(
+      (config) => {
+        config.headers.Authorization = `Bearer ${apiKey}`;
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      },
+    );
+  }
+
   useEffect(() => {
     if (apiKey === null) {
       deleteLocalStorageApiKey();
     } else {
       setLocalStorageApiKey(apiKey);
-      // Adds the API key to the request header since it is set.
-      api.interceptors.request.use(
-        (config) => {
-          config.headers.Authorization = `Bearer ${apiKey}`;
-          return config;
-        },
-        (error) => {
-          return Promise.reject(error);
-        },
-      );
     }
   }, [apiKey]);
 
