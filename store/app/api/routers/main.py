@@ -5,11 +5,10 @@ from typing import Annotated, Dict, List
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 
 from store.app.api.crypto import get_new_user_id
 from store.app.api.db import Crud
-from store.app.api.model import Robot
+from store.app.api.model import Part, Robot
 from store.app.api.routers.users import ApiKeyData, get_api_key, users_router
 from store.settings import settings
 
@@ -29,40 +28,6 @@ api_router = APIRouter()
 
 app.include_router(api_router, prefix="/api")
 api_router.include_router(users_router, prefix="/users", tags=["users"])
-
-
-class Bom(BaseModel):
-    id: str
-    name: str
-    quantity: int
-    price: int
-
-
-class Image(BaseModel):
-    caption: str
-    url: str
-
-
-class PurchaseLink(BaseModel):
-    url: str
-    price: int
-    name: str
-
-
-class UsedBy(BaseModel):
-    name: str
-    id: str
-    stars: int
-
-
-class Part(BaseModel):
-    name: str
-    owner: str
-    description: str
-    images: List[Image]
-    part_id: str
-    used_by: List[UsedBy]
-    purchase_links: List[PurchaseLink]
 
 
 @api_router.options("/add/robot/")

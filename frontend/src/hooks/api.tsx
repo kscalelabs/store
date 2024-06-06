@@ -1,32 +1,15 @@
 import axios, { AxiosInstance } from "axios";
 
-export interface PurchaseLink {
-  url: string;
-  price: number;
-  name: string;
-}
-
-export interface UsedBy {
-  name: string;
-  id: string;
-  stars: number;
-}
-
 export interface Part {
-  name: string;
-  owner: string;
   description: string;
   images: Image[];
   part_id: string;
-  used_by: UsedBy[];
-  purchase_links: PurchaseLink[];
+  name: string;
 }
 
 export interface Bom {
-  id: string;
-  name: string;
+  part_id: string;
   quantity: number;
-  price: number;
 }
 
 export interface Image {
