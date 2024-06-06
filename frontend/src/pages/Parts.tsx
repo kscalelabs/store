@@ -1,4 +1,4 @@
-import {api} from "hooks/api";
+import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import { Breadcrumb, Card, Col, Row } from "react-bootstrap";
