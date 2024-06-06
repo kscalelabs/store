@@ -58,6 +58,6 @@ class Robot(BaseModel):
 
 class Part(BaseModel):
     part_id: str  # Primary key
-    part_name: str
+    name: str
     description: str
     robot_ids: set[str]
