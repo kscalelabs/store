@@ -21,8 +21,7 @@ class UserCrud(BaseCrud):
         user_dict = await table.get_item(Key={"user_id": str(user_id)})
         if "Item" not in user_dict:
             return None
-        user = User.model_validate(user_dict["Item"])
-        return user
+        return User.model_validate(user_dict["Item"])
 
     async def get_user_from_email(self, email: str) -> User | None:
         table = await self.db.Table("Users")
@@ -32,8 +31,7 @@ class UserCrud(BaseCrud):
             return None
         if len(items) > 1:
             raise ValueError(f"Multiple users found with email {email}")
-        user = User.model_validate(items[0])
-        return user
+        return User.model_validate(items[0])
 
     async def get_user_id_from_api_key(self, api_key: uuid.UUID) -> uuid.UUID | None:
         api_key_hash = hash_api_key(api_key)
@@ -49,8 +47,7 @@ class UserCrud(BaseCrud):
     async def list_users(self) -> list[User]:
         warnings.warn("`list_users` probably shouldn't be called in production", ResourceWarning)
         table = await self.db.Table("Users")
-        users = [User.model_validate(user) for user in await table.scan()]
-        return users
+        return [User.model_validate(user) for user in await table.scan()]
 
     async def get_user_count(self) -> int:
         table = await self.db.Table("Users")
