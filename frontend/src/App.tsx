@@ -32,11 +32,11 @@ const App = () => {
                     <Route path="/" element={<Home />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/robots/" element={<Robots />} />
+                    <Route path="/robots/add" element={<RobotForm />} />
                     <Route path="/robot/:id" element={<RobotDetails />} />
                     <Route path="/parts/" element={<Parts />} />
                     <Route path="/part/:id" element={<PartDetails />} />
                     <Route path="/404" element={<NotFound />} />
-                    <Route path="/add/robot" element={<RobotForm />} />
                     <Route path="*" element={<NotFoundRedirect />} />
                   </Routes>
                 </Container>

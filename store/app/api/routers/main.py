@@ -3,6 +3,7 @@
 from fastapi import APIRouter, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
+from store.app.api.routers.part import parts_router
 from store.app.api.routers.robot import robots_router
 from store.app.api.routers.users import users_router
 from store.settings import settings
@@ -21,7 +22,8 @@ api_router = APIRouter()
 
 app.include_router(api_router, prefix="/api")
 api_router.include_router(users_router, prefix="/users", tags=["users"])
-api_router.include_router(robots_router, tags=["robots"])
+api_router.include_router(robots_router, prefix="/robots", tags=["robots"])
+api_router.include_router(parts_router, prefix="/parts", tags=["parts"])
 
 
 # Returns a 404 response for all other paths.
