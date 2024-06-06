@@ -72,7 +72,7 @@ async def options_add_robot() -> Dict[str, str]:
 
 async def verify_table_exists(table_name: str, crud: Crud) -> bool:
     try:
-        table_names = [table.name for table in await crud.db.tables.all()]
+        table_names = [table.name async for table in crud.db.tables.all()]
         logger.debug(f"Found tables: {table_names}")
         return table_name in table_names
     except Exception as e:

@@ -44,13 +44,18 @@ class PurchaseLink(BaseModel):
     price: Decimal
 
 
+class Bom(BaseModel):
+    id: str
+    quantity: int
+    price: Decimal
+
+
 class Robot(BaseModel):
     robot_id: str  # Primary key
     owner: str
     name: str
     description: str
-    price: Decimal
-    part_ids: set[str]
+    bom: list[Bom]
     purchase_links: set[PurchaseLink]
 
 
