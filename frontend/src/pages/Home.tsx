@@ -43,7 +43,7 @@ const Home = () => {
                 width: "100%",
               }}
               onClick={() => {
-                navigate("/add");
+                navigate("/robots/add");
               }}
             >
               Make a Robot
