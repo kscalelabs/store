@@ -55,10 +55,21 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
   });
 
   useEffect(() => {
+    console.log(apiKey, " api key lol")
     if (apiKey === null) {
       deleteLocalStorageApiKey();
     } else {
       setLocalStorageApiKey(apiKey);
+      // Adds the API key to the request header since it is set.
+      api.interceptors.request.use(
+        (config) => {
+          config.headers.Authorization = `Bearer ${apiKey}`;
+          return config;
+        },
+        (error) => {
+          return Promise.reject(error);
+        },
+      );
     }
   }, [apiKey]);
 
@@ -73,19 +84,6 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
       }
     })();
   }, [navigate]);
-
-  // Adds the API key to the request header, if it is set.
-  api.interceptors.request.use(
-    (config) => {
-      if (apiKey !== null) {
-        config.headers.Authorization = `Bearer ${apiKey}`;
-      }
-      return config;
-    },
-    (error) => {
-      return Promise.reject(error);
-    },
-  );
 
   return (
     <AuthenticationContext.Provider
@@ -117,8 +115,7 @@ interface OneTimePasswordWrapperProps {
 }
 
 interface UserLoginResponse {
-  token: string;
-  token_type: string;
+  api_key: string;
 }
 
 export const OneTimePasswordWrapper = ({
@@ -136,7 +133,7 @@ export const OneTimePasswordWrapper = ({
           const response = await api.post<UserLoginResponse>("/users/otp", {
             payload,
           });
-          setApiKey(response.data.token);
+          setApiKey(response.data.api_key);
           navigate("/");
         } catch (error) {
           // Do nothing

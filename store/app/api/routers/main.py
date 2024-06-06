@@ -16,8 +16,6 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
-api_router = APIRouter()
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.site.homepage],  # Allow all origins
@@ -25,6 +23,9 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods
     allow_headers=["*"],  # Allow all headers
 )
+
+api_router = APIRouter()
+
 app.include_router(api_router, prefix="/api")
 api_router.include_router(users_router, prefix="/users", tags=["users"])
 
@@ -148,11 +149,14 @@ async def list_parts(crud: Annotated[Crud, Depends(Crud.get)]) -> List[Part]:
 
 
 @api_router.post("/add/robot/")
-async def add_robot(robot: Robot, crud: Annotated[Crud, Depends(Crud.get)]) -> Dict[str, str]:
-    table = await crud.db.Table("Robots")
+async def add_robot(api_key: str, robot: Robot, crud: Annotated[Crud, Depends(Crud.get)]) -> bool:
+    user_id = await crud.get_user_id_from_api_key(api_key)
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Must be logged in to add a robot")
+    robot.owner = str(user_id)
     robot.robot_id = str(get_new_user_id())
-    await table.put_item(Item=robot.model_dump())
-    return {"message": "Robot added successfully"}
+    await crud.add_robot(robot)
+    return True
 
 
 # Returns a 404 response for all other paths.
