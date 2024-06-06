@@ -2,9 +2,10 @@ import axios, { AxiosInstance } from "axios";
 
 export interface Part {
   description: string;
+  owner: string;
   images: Image[];
   part_id: string;
-  name: string;
+  part_name: string;
 }
 
 export interface Bom {
@@ -94,7 +95,7 @@ export class api {
   }
   public async getParts(): Promise<Part[]> {
     try {
-      const response = await this.api.get("/parts");
+      const response = await this.api.get("/parts/");
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
