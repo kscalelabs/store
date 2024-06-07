@@ -51,6 +51,27 @@ const Home = () => {
           </Col>
         </Row>
       )}
+      {isAuthenticated && (
+        <Row>
+          <Col sm={12}>
+            <Button
+              variant="success"
+              size="lg"
+              style={{
+                backgroundColor: "light-green",
+                borderColor: "black",
+                padding: "10px",
+                width: "100%",
+              }}
+              onClick={() => {
+                navigate("/parts/add");
+              }}
+            >
+              Make a Part
+            </Button>
+          </Col>
+        </Row>
+      )}
     </div>
   );
 };
