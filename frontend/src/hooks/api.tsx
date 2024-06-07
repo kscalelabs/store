@@ -113,6 +113,22 @@ export class api {
       }
     }
   }
+  public async editRobot(robot: Robot): Promise<void> {
+    const s = robot.name;
+    try {
+      await this.api.post(`robots/edit-robot/${robot.robot_id}/`, robot);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error editing robot:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail || "Error editing robot " + s,
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
   public async getParts(): Promise<Part[]> {
     try {
       const response = await this.api.get("/parts/");

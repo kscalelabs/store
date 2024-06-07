@@ -70,3 +70,19 @@ async def delete_robot(
         raise HTTPException(status_code=403, detail="You do not own this robot")
     await crud.delete_robot(robot_id)
     return True
+
+
+@robots_router.post("/edit-robot/{robot_id}/")
+async def edit_robot(
+    robot_id: str,
+    robot: Robot,
+    data: Annotated[ApiKeyData, Depends(get_api_key)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> bool:
+    user_id = await crud.get_user_id_from_api_key(data.api_key)
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Must be logged in to edit a robot")
+    robot.owner = str(user_id)
+    robot.robot_id = robot_id
+    await crud.update_robot(robot_id, robot)
+    return True

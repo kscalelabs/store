@@ -13,6 +13,7 @@ import PartForm from "pages/PartForm";
 import Parts from "pages/Parts";
 import RobotDetails from "pages/RobotDetails";
 import RobotForm from "pages/RobotForm";
+import EditRobotForm from "pages/EditRobotForm";
 import Robots from "pages/Robots";
 import YourParts from "pages/YourParts";
 import YourRobots from "pages/YourRobots";
@@ -38,6 +39,7 @@ const App = () => {
                     <Route path="/robots/add" element={<RobotForm />} />
                     <Route path="/parts/add" element={<PartForm />} />
                     <Route path="/robot/:id" element={<RobotDetails />} />
+                    <Route path="/edit-robot/:id" element={<EditRobotForm />} />
                     <Route path="/parts/" element={<Parts />} />
                     <Route path="/part/:id" element={<PartDetails />} />
                     <Route path="robots/your" element={<YourRobots />} />
