@@ -54,3 +54,19 @@ async def add_robot(
     robot.robot_id = str(get_new_user_id())
     await crud.add_robot(robot)
     return True
+
+
+@robots_router.delete("/delete/{robot_id}")
+async def delete_robot(
+    robot_id: str,
+    data: Annotated[ApiKeyData, Depends(get_api_key)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> bool:
+    robot = await crud.get_robot(robot_id)
+    if robot is None:
+        raise HTTPException(status_code=404, detail="Robot not found")
+    user_id = await crud.get_user_id_from_api_key(data.api_key)
+    if robot.owner != user_id:
+        raise HTTPException(status_code=401, detail="You do not own this robot")
+    await crud.delete_robot(robot_id)
+    return True
