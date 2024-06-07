@@ -21,6 +21,21 @@ async def list_robots(crud: Annotated[Crud, Depends(Crud.get)]) -> List[Robot]:
     return await crud.list_robots()
 
 
+@robots_router.get("/your/")
+async def list_your_robots(
+    crud: Annotated[Crud, Depends(Crud.get)], data: Annotated[ApiKeyData, Depends(get_api_key)]
+) -> List[Robot]:
+    try:
+        user_id = await crud.get_user_id_from_api_key(data.api_key)
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Must be logged in to view your robots")
+        total = await crud.list_robots()
+        user_robots = [robot for robot in total if str(robot.owner) == str(user_id)]
+        return user_robots
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @robots_router.get("/{robot_id}")
 async def get_robot(robot_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> Robot | None:
     return await crud.get_robot(robot_id)

@@ -4,27 +4,16 @@ import { useEffect, useState } from "react";
 import { Breadcrumb, Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
-const Robots = () => {
+const YourRobots = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const [robotsData, setRobot] = useState<Robot[] | null>(null);
-  const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
-    const fetch_robots = async () => {
+    const fetch_your_robots = async () => {
       try {
-        const robotsQuery = await auth_api.getRobots();
+        const robotsQuery = await auth_api.getYourRobots();
         setRobot(robotsQuery);
-        const ids = new Set<string>();
-        robotsQuery.forEach((robot) => {
-          ids.add(robot.owner);
-        });
-        const idMap = await Promise.all(
-          Array.from(ids).map(async (id) => {
-            return [id, await auth_api.getUserById(id)];
-          }),
-        );
-        setIdMap(new Map(idMap.map(([key, value]) => [key, value])));
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -33,7 +22,7 @@ const Robots = () => {
         }
       }
     };
-    fetch_robots();
+    fetch_your_robots();
   }, []);
   const navigate = useNavigate();
 
@@ -45,14 +34,14 @@ const Robots = () => {
   }, [error, navigate]);
 
   if (!robotsData) {
-    return <p>Loading</p>;
+    return <p>Loading {robotsData} </p>;
   }
 
   return (
     <>
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
-        <Breadcrumb.Item active>Robots</Breadcrumb.Item>
+        <Breadcrumb.Item active>Your Robots</Breadcrumb.Item>
       </Breadcrumb>
 
       <Row className="mt-5">
@@ -69,7 +58,7 @@ const Robots = () => {
               <Card.Body>
                 <Card.Title>{robot.name}</Card.Title>
                 <Card.Subtitle className="mb-2 text-muted">
-                  {idMap.get(robot.owner)}
+                  {robot.owner}
                 </Card.Subtitle>
                 <Card.Text>{robot.description}</Card.Text>
               </Card.Body>
@@ -81,4 +70,4 @@ const Robots = () => {
   );
 };
 
-export default Robots;
+export default YourRobots;

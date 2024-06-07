@@ -25,6 +25,7 @@ const PartDetails = () => {
   const auth_api = new api(auth.api);
   const { id } = useParams();
   const [show, setShow] = useState(false);
+  const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
   const [part, setPart] = useState<PartDetailsResponse | null>(null);
   const [imageIndex, setImageIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +38,8 @@ const PartDetails = () => {
       try {
         const partData = await auth_api.getPartById(id);
         setPart(partData);
+        const ownerEmail = await auth_api.getUserById(partData.owner);
+        setOwnerEmail(ownerEmail);
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -66,7 +69,7 @@ const PartDetails = () => {
     description: part.description,
     images: part.images,
   };
-  const { part_name, owner, description, images } = response;
+  const { part_name, description, images } = response;
 
   return (
     <>
@@ -85,7 +88,7 @@ const PartDetails = () => {
               <h1>{part_name}</h1>
               <small className="text-muted">ID: {id}</small>
               <br />
-              <i>{owner}</i>
+              <a href={"mailto:" + ownerEmail}>{ownerEmail}</a>
             </Col>
           </Row>
           <hr />

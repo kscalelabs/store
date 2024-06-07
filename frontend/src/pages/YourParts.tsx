@@ -1,30 +1,19 @@
-import { api, Robot } from "hooks/api";
+import { api, Part } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import { Breadcrumb, Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
-const Robots = () => {
+const YourParts = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
-  const [robotsData, setRobot] = useState<Robot[] | null>(null);
-  const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
+  const [partsData, setParts] = useState<Part[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
-    const fetch_robots = async () => {
+    const fetch_parts = async () => {
       try {
-        const robotsQuery = await auth_api.getRobots();
-        setRobot(robotsQuery);
-        const ids = new Set<string>();
-        robotsQuery.forEach((robot) => {
-          ids.add(robot.owner);
-        });
-        const idMap = await Promise.all(
-          Array.from(ids).map(async (id) => {
-            return [id, await auth_api.getUserById(id)];
-          }),
-        );
-        setIdMap(new Map(idMap.map(([key, value]) => [key, value])));
+        const partsQuery = await auth_api.getYourParts();
+        setParts(partsQuery);
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -33,18 +22,18 @@ const Robots = () => {
         }
       }
     };
-    fetch_robots();
+    fetch_parts();
   }, []);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     if (error) {
-      console.log(error);
       navigate("/404"); // Redirect to a 404 page
     }
   }, [error, navigate]);
 
-  if (!robotsData) {
+  if (!partsData) {
     return <p>Loading</p>;
   }
 
@@ -52,26 +41,26 @@ const Robots = () => {
     <>
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
-        <Breadcrumb.Item active>Robots</Breadcrumb.Item>
+        <Breadcrumb.Item active>Parts</Breadcrumb.Item>
       </Breadcrumb>
 
       <Row className="mt-5">
-        {robotsData.map((robot) => (
-          <Col key={robot.robot_id} md={3} sm={6} xs={12}>
-            <Card onClick={() => navigate(`/robot/${robot.robot_id}`)}>
-              {robot.images[0] && (
+        {partsData.map((part) => (
+          <Col key={part.part_id} md={3} sm={6} xs={12}>
+            <Card onClick={() => navigate(`/part/${part.part_id}`)}>
+              {part.images[0].url && (
                 <Card.Img
                   style={{ aspectRatio: "1/1" }}
                   variant="top"
-                  src={robot.images[0].url}
+                  src={part.images[0].url}
                 />
               )}
               <Card.Body>
-                <Card.Title>{robot.name}</Card.Title>
+                <Card.Title>{part.part_name}</Card.Title>
                 <Card.Subtitle className="mb-2 text-muted">
-                  {idMap.get(robot.owner)}
+                  {part.part_id}
                 </Card.Subtitle>
-                <Card.Text>{robot.description}</Card.Text>
+                <Card.Text>{part.description}</Card.Text>
               </Card.Body>
             </Card>
           </Col>
@@ -81,4 +70,4 @@ const Robots = () => {
   );
 };
 
-export default Robots;
+export default YourParts;

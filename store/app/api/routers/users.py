@@ -209,3 +209,11 @@ async def logout_user_endpoint(
 ) -> bool:
     await crud.delete_api_key(data.api_key)
     return True
+
+
+@users_router.get("/{user_id}", response_model=UserInfoResponse)
+async def get_user_info_by_id_endpoint(user_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> UserInfoResponse:
+    user_obj = await crud.get_user(uuid.UUID(user_id))
+    if user_obj is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return UserInfoResponse(email=user_obj.email)

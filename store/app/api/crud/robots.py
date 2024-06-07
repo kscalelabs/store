@@ -1,13 +1,21 @@
 """Defines CRUD interface for robot API."""
 
+import logging
+
 from store.app.api.crud.base import BaseCrud
 from store.app.api.model import Part, Robot
+
+logger = logging.getLogger(__name__)
 
 
 class RobotCrud(BaseCrud):
     async def add_robot(self, robot: Robot) -> None:
         table = await self.db.Table("Robots")
         await table.put_item(Item=robot.model_dump())
+
+    async def add_part(self, part: Part) -> None:
+        table = await self.db.Table("Parts")
+        await table.put_item(Item=part.model_dump())
 
     async def list_robots(self) -> list[Robot]:
         table = await self.db.Table("Robots")
