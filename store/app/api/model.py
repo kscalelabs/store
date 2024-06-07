@@ -61,5 +61,4 @@ class Part(BaseModel):
     part_name: str
     owner: str
     description: str
-    robot_ids: set[str]
     images: list[Image]

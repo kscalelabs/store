@@ -9,6 +9,10 @@ class RobotCrud(BaseCrud):
         table = await self.db.Table("Robots")
         await table.put_item(Item=robot.model_dump())
 
+    async def add_part(self, part: Part) -> None:
+        table = await self.db.Table("Parts")
+        await table.put_item(Item=part.model_dump())
+
     async def list_robots(self) -> list[Robot]:
         table = await self.db.Table("Robots")
         return [Robot.model_validate(robot) for robot in (await table.scan())["Items"]]
