@@ -72,6 +72,27 @@ const Home = () => {
           </Col>
         </Row>
       )}
+      {isAuthenticated && (
+        <Row>
+          <Col sm={12}>
+            <Button
+              variant="primary"
+              size="lg"
+              style={{
+                backgroundColor: "light-purple",
+                borderColor: "black",
+                padding: "10px",
+                width: "100%",
+              }}
+              onClick={() => {
+                navigate("/robots/your/");
+              }}
+            >
+              View Your Robots
+            </Button>
+          </Col>
+        </Row>
+      )}
     </div>
   );
 };

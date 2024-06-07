@@ -17,6 +17,7 @@ import { Container } from "react-bootstrap";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import "./App.css";
 import PartForm from "pages/PartForm";
+import YourRobots from "pages/YourRobots";
 
 const App = () => {
   return (
@@ -38,6 +39,7 @@ const App = () => {
                     <Route path="/robot/:id" element={<RobotDetails />} />
                     <Route path="/parts/" element={<Parts />} />
                     <Route path="/part/:id" element={<PartDetails />} />
+                    <Route path="robots/your" element={<YourRobots />} />
                     <Route path="/404" element={<NotFound />} />
                     <Route path="*" element={<NotFoundRedirect />} />
                   </Routes>

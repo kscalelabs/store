@@ -1,7 +1,11 @@
 """Defines CRUD interface for robot API."""
 
+import logging
+
 from store.app.api.crud.base import BaseCrud
 from store.app.api.model import Part, Robot
+
+logger = logging.getLogger(__name__)
 
 
 class RobotCrud(BaseCrud):

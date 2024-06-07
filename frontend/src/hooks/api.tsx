@@ -49,6 +49,22 @@ export class api {
       }
     }
   }
+  public async getYourRobots(): Promise<Robot[]> {
+    try {
+      const response = await this.api.get("/robots/your/");
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error fetching robots:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail || "Error fetching robots",
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
   public async getRobotById(robotId: string | undefined): Promise<Robot> {
     try {
       const response = await this.api.get(`/robots/${robotId}`);
