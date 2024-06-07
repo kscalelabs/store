@@ -28,6 +28,10 @@ class RobotCrud(BaseCrud):
             return None
         return Robot.model_validate(robot_dict["Item"])
 
+    async def delete_robot(self, robot_id: str) -> None:
+        table = await self.db.Table("Robots")
+        await table.delete_item(Key={"robot_id": robot_id})
+
     async def list_parts(self) -> list[Part]:
         table = await self.db.Table("Parts")
         return [Part.model_validate(part) for part in (await table.scan())["Items"]]
