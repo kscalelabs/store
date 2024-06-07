@@ -144,7 +144,7 @@ export const OneTimePasswordWrapper = ({
         }
       }
     })();
-  }, [searchParams]);
+  }, []);
 
   return <>{children}</>;
 };

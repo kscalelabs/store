@@ -19,9 +19,11 @@ const Robots = () => {
         robotsQuery.forEach((robot) => {
           ids.add(robot.owner);
         });
-        const idMap = await Promise.all(Array.from(ids).map(async (id) => {
-          return [id, await auth_api.getUserById(id)];
-        }));
+        const idMap = await Promise.all(
+          Array.from(ids).map(async (id) => {
+            return [id, await auth_api.getUserById(id)];
+          }),
+        );
         setIdMap(new Map(idMap.map(([key, value]) => [key, value])));
       } catch (err) {
         if (err instanceof Error) {

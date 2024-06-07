@@ -8,12 +8,23 @@ const Parts = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const [partsData, setParts] = useState<Part[] | null>(null);
+  const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     const fetch_parts = async () => {
       try {
         const partsQuery = await auth_api.getParts();
         setParts(partsQuery);
+        const ids = new Set<string>();
+        partsQuery.forEach((part) => {
+          ids.add(part.owner);
+        });
+        const idMap = await Promise.all(
+          Array.from(ids).map(async (id) => {
+            return [id, await auth_api.getUserById(id)];
+          }),
+        );
+        setIdMap(new Map(idMap.map(([key, value]) => [key, value])));
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -58,7 +69,7 @@ const Parts = () => {
               <Card.Body>
                 <Card.Title>{part.part_name}</Card.Title>
                 <Card.Subtitle className="mb-2 text-muted">
-                  {part.part_id}
+                  {idMap.get(part.owner)}
                 </Card.Subtitle>
                 <Card.Text>{part.description}</Card.Text>
               </Card.Body>
