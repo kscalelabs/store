@@ -93,6 +93,27 @@ const Home = () => {
           </Col>
         </Row>
       )}
+      {isAuthenticated && (
+        <Row>
+          <Col sm={12}>
+            <Button
+              variant="primary"
+              size="lg"
+              style={{
+                backgroundColor: "dark-purple",
+                borderColor: "black",
+                padding: "10px",
+                width: "100%",
+              }}
+              onClick={() => {
+                navigate("/parts/your/");
+              }}
+            >
+              View Your Parts
+            </Button>
+          </Col>
+        </Row>
+      )}
     </div>
   );
 };

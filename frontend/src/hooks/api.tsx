@@ -123,6 +123,20 @@ export class api {
       }
     }
   }
+  public async getYourParts(): Promise<Part[]> {
+    try {
+      const response = await this.api.get("/parts/your/");
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error fetching parts:", error.response?.data);
+        throw new Error(error.response?.data?.detail || "Error fetching parts");
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
   public async addPart(part: Part): Promise<void> {
   const s = part.part_name;
   try {

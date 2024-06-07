@@ -30,10 +30,6 @@ async def list_your_robots(
         if user_id is None:
             raise HTTPException(status_code=401, detail="Must be logged in to view your robots")
         total = await crud.list_robots()
-        logger.info(f"Total robots: {total}")
-        if (total is None) or (len(total) == 0):
-            return []
-        logger.info(f"Total robots: {total}")
         user_robots = [robot for robot in total if str(robot.owner) == str(user_id)]
         return user_robots
     except Exception as e:
