@@ -1,4 +1,4 @@
-import { api, Bom, Part } from "hooks/api";
+import { api, Bom } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import {

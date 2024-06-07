@@ -1,8 +1,7 @@
-import { api, Bom, Image, Robot } from "hooks/api";
+import { api, Bom, Image, Part, Robot } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import {Part} from "hooks/api";
 
 const RobotForm: React.FC = () => {
   const auth = useAuthentication();
@@ -172,8 +171,14 @@ const RobotForm: React.FC = () => {
                 onChange={(e) => handleBomChange(index, e)}
                 required
               >
-                <option value="" disabled>Select a Part</option>
-                {parts.map((part, index) => <option key={index} value={part.part_id}>{part.part_name}</option>)}
+                <option value="" disabled>
+                  Select a Part
+                </option>
+                {parts.map((part, index) => (
+                  <option key={index} value={part.part_id}>
+                    {part.part_name}
+                  </option>
+                ))}
               </Form.Control>
               Quantity:
               <Form.Control
