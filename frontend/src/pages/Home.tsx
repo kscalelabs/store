@@ -32,7 +32,45 @@ const Home = () => {
       </Row>
       {isAuthenticated && (
         <Row>
-          <Col sm={12}>
+          <Col md={6} sm={12}>
+            <Button
+              variant="primary"
+              size="lg"
+              style={{
+                backgroundColor: "light-purple",
+                borderColor: "black",
+                padding: "10px",
+                width: "100%",
+              }}
+              onClick={() => {
+                navigate("/robots/your/");
+              }}
+            >
+              View Your Robots
+            </Button>
+          </Col>
+          <Col md={6} sm={12}>
+            <Button
+              variant="primary"
+              size="lg"
+              style={{
+                backgroundColor: "dark-purple",
+                borderColor: "black",
+                padding: "10px",
+                width: "100%",
+              }}
+              onClick={() => {
+                navigate("/parts/your/");
+              }}
+            >
+              View Your Parts
+            </Button>
+          </Col>
+        </Row>
+      )}
+      {isAuthenticated && (
+        <Row>
+          <Col md={6} sm={12}>
             <Button
               variant="success"
               size="lg"
@@ -49,11 +87,7 @@ const Home = () => {
               Make a Robot
             </Button>
           </Col>
-        </Row>
-      )}
-      {isAuthenticated && (
-        <Row>
-          <Col sm={12}>
+          <Col md={6} sm={12}>
             <Button
               variant="success"
               size="lg"
