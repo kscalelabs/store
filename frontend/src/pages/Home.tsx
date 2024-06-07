@@ -32,49 +32,7 @@ const Home = () => {
       </Row>
       {isAuthenticated && (
         <Row>
-          <Col sm={12}>
-            <Button
-              variant="success"
-              size="lg"
-              style={{
-                backgroundColor: "light-green",
-                borderColor: "black",
-                padding: "10px",
-                width: "100%",
-              }}
-              onClick={() => {
-                navigate("/robots/add");
-              }}
-            >
-              Make a Robot
-            </Button>
-          </Col>
-        </Row>
-      )}
-      {isAuthenticated && (
-        <Row>
-          <Col sm={12}>
-            <Button
-              variant="success"
-              size="lg"
-              style={{
-                backgroundColor: "light-green",
-                borderColor: "black",
-                padding: "10px",
-                width: "100%",
-              }}
-              onClick={() => {
-                navigate("/parts/add");
-              }}
-            >
-              Make a Part
-            </Button>
-          </Col>
-        </Row>
-      )}
-      {isAuthenticated && (
-        <Row>
-          <Col sm={12}>
+          <Col md={6} sm={12}>
             <Button
               variant="primary"
               size="lg"
@@ -91,11 +49,7 @@ const Home = () => {
               View Your Robots
             </Button>
           </Col>
-        </Row>
-      )}
-      {isAuthenticated && (
-        <Row>
-          <Col sm={12}>
+          <Col md={6} sm={12}>
             <Button
               variant="primary"
               size="lg"
@@ -110,6 +64,44 @@ const Home = () => {
               }}
             >
               View Your Parts
+            </Button>
+          </Col>
+        </Row>
+      )}
+      {isAuthenticated && (
+        <Row>
+          <Col md={6} sm={12}>
+            <Button
+              variant="success"
+              size="lg"
+              style={{
+                backgroundColor: "light-green",
+                borderColor: "black",
+                padding: "10px",
+                width: "100%",
+              }}
+              onClick={() => {
+                navigate("/robots/add");
+              }}
+            >
+              Make a Robot
+            </Button>
+          </Col>
+          <Col md={6} sm={12}>
+            <Button
+              variant="success"
+              size="lg"
+              style={{
+                backgroundColor: "light-green",
+                borderColor: "black",
+                padding: "10px",
+                width: "100%",
+              }}
+              onClick={() => {
+                navigate("/parts/add");
+              }}
+            >
+              Make a Part
             </Button>
           </Col>
         </Row>

@@ -1,4 +1,4 @@
-import { api, Bom, Image, Part } from "hooks/api";
+import { api, Image, Part } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import React, { ChangeEvent, FormEvent, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
