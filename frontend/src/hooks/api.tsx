@@ -33,6 +33,10 @@ export class api {
   constructor(api: AxiosInstance) {
     this.api = api;
   }
+  public async getUserById(userId : string | undefined): Promise<string> {
+    const response = await this.api.get(`/users/${userId}`);
+    return response.data.email;
+  }
   public async getRobots(): Promise<Robot[]> {
     try {
       const response = await this.api.get("/robots/");

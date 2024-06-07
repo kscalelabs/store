@@ -32,6 +32,7 @@ const RobotDetails = () => {
   const auth_api = new api(auth.api);
   const { id } = useParams();
   const [show, setShow] = useState(false);
+  const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
   const [robot, setRobot] = useState<RobotDetailsResponse | null>(null);
   const [parts, setParts] = useState<ExtendedBom[]>([]);
   const [imageIndex, setImageIndex] = useState(0);
@@ -45,6 +46,8 @@ const RobotDetails = () => {
       try {
         const robotData = await auth_api.getRobotById(id);
         setRobot(robotData);
+        const ownerEmail = await auth_api.getUserById(robotData.owner);
+        setOwnerEmail(ownerEmail);
         const parts = robotData.bom.map(async (part) => {
           return {
             part_name: (await auth_api.getPartById(part.part_id)).part_name,
@@ -102,7 +105,7 @@ const RobotDetails = () => {
               <h1>{name}</h1>
               <small className="text-muted">ID: {id}</small>
               <br />
-              <i>{owner}</i>
+              <a href={"mailto:" + ownerEmail}>{ownerEmail}</a>
             </Col>
           </Row>
           <hr />

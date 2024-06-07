@@ -8,12 +8,21 @@ const Robots = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const [robotsData, setRobot] = useState<Robot[] | null>(null);
+  const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     const fetch_robots = async () => {
       try {
         const robotsQuery = await auth_api.getRobots();
         setRobot(robotsQuery);
+        const ids = new Set<string>();
+        robotsQuery.forEach((robot) => {
+          ids.add(robot.owner);
+        });
+        const idMap = await Promise.all(Array.from(ids).map(async (id) => {
+          return [id, await auth_api.getUserById(id)];
+        }));
+        setIdMap(new Map(idMap.map(([key, value]) => [key, value])));
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -58,7 +67,7 @@ const Robots = () => {
               <Card.Body>
                 <Card.Title>{robot.name}</Card.Title>
                 <Card.Subtitle className="mb-2 text-muted">
-                  {robot.owner}
+                  {idMap.get(robot.owner)}
                 </Card.Subtitle>
                 <Card.Text>{robot.description}</Card.Text>
               </Card.Body>
