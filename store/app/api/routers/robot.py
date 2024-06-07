@@ -67,6 +67,6 @@ async def delete_robot(
         raise HTTPException(status_code=404, detail="Robot not found")
     user_id = await crud.get_user_id_from_api_key(data.api_key)
     if robot.owner != user_id:
-        raise HTTPException(status_code=401, detail="You do not own this robot")
+        raise HTTPException(status_code=403, detail="You do not own this robot")
     await crud.delete_robot(robot_id)
     return True
