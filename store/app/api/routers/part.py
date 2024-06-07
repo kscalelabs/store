@@ -54,3 +54,19 @@ async def add_part(
     part.part_id = str(get_new_user_id())
     await crud.add_part(part)
     return True
+
+
+@parts_router.delete("/delete/{part_id}")
+async def delete_part(
+    part_id: str,
+    data: Annotated[ApiKeyData, Depends(get_api_key)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> bool:
+    part = await crud.get_part(part_id)
+    if part is None:
+        raise HTTPException(status_code=404, detail="Part not found")
+    user_id = await crud.get_user_id_from_api_key(data.api_key)
+    if part.owner != user_id:
+        raise HTTPException(status_code=403, detail="You do not own this part")
+    await crud.delete_part(part_id)
+    return True

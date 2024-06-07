@@ -42,3 +42,7 @@ class RobotCrud(BaseCrud):
         if "Item" not in part_dict:
             return None
         return Part.model_validate(part_dict["Item"])
+
+    async def delete_part(self, part_id: str) -> None:
+        table = await self.db.Table("Parts")
+        await table.delete_item(Key={"part_id": part_id})
