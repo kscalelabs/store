@@ -1,6 +1,6 @@
-import { api, Bom, Image, Robot } from "hooks/api";
+import { api, Bom, Image, Part, Robot } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
-import React, { ChangeEvent, FormEvent, useState } from "react";
+import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 
 const RobotForm: React.FC = () => {
@@ -11,6 +11,7 @@ const RobotForm: React.FC = () => {
   const [robot_description, setDescription] = useState<string>("");
   const [robot_bom, setBom] = useState<Bom[]>([]);
   const [robot_images, setImages] = useState<Image[]>([]);
+  const [parts, setParts] = useState<Part[]>([]);
 
   const handleImageChange = (
     index: number,
@@ -65,7 +66,7 @@ const RobotForm: React.FC = () => {
       robot_id: "",
       name: robot_name,
       description: robot_description,
-      owner: "Bob",
+      owner: "",
       bom: robot_bom,
       images: robot_images,
     };
@@ -76,6 +77,18 @@ const RobotForm: React.FC = () => {
       setMessage("Error adding robot ");
     }
   };
+
+  useEffect(() => {
+    const fetchParts = async () => {
+      try {
+        const partsQuery = await auth_api.getParts();
+        setParts(partsQuery);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchParts();
+  }, []);
 
   return (
     <Row>
@@ -148,16 +161,25 @@ const RobotForm: React.FC = () => {
         {robot_bom.map((bom, index) => (
           <Row key={index} className="mb-3">
             <Col md={12}>
-              Part Name:
+              Part:
               <Form.Control
                 className="mb-1"
-                type="text"
+                as="select"
                 placeholder="Part Id: "
                 name="part_id"
                 value={bom.part_id}
                 onChange={(e) => handleBomChange(index, e)}
                 required
-              />
+              >
+                <option value="" disabled>
+                  Select a Part
+                </option>
+                {parts.map((part, index) => (
+                  <option key={index} value={part.part_id}>
+                    {part.part_name}
+                  </option>
+                ))}
+              </Form.Control>
               Quantity:
               <Form.Control
                 className="mb-1"

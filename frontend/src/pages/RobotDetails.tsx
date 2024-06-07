@@ -21,12 +21,19 @@ interface RobotDetailsResponse {
   bom: Bom[];
 }
 
+interface ExtendedBom {
+  part_id: string;
+  quantity: number;
+  part_name: string;
+}
+
 const RobotDetails = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const { id } = useParams();
   const [show, setShow] = useState(false);
   const [robot, setRobot] = useState<RobotDetailsResponse | null>(null);
+  const [parts, setParts] = useState<ExtendedBom[]>([]);
   const [imageIndex, setImageIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,6 +45,14 @@ const RobotDetails = () => {
       try {
         const robotData = await auth_api.getRobotById(id);
         setRobot(robotData);
+        const parts = robotData.bom.map(async (part) => {
+          return {
+            part_name: (await auth_api.getPartById(part.part_id)).part_name,
+            part_id: part.part_id,
+            quantity: part.quantity,
+          };
+        });
+        setParts(await Promise.all(parts));
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -117,14 +132,13 @@ const RobotDetails = () => {
                 <tr>
                   <th>Name</th>
                   <th>Quantity</th>
-                  <th>Price</th>
                 </tr>
               </thead>
               <tbody>
-                {response.bom.map((part, key) => (
+                {parts.map((part, key) => (
                   <tr key={key}>
                     <td>
-                      <Link to={`/part/${part.part_id}`}>{part.part_id}</Link>
+                      <Link to={`/part/${part.part_id}`}>{part.part_name}</Link>
                     </td>
                     <td>{part.quantity}</td>
                   </tr>
