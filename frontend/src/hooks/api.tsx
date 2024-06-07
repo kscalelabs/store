@@ -108,20 +108,22 @@ export class api {
     }
   }
   public async addPart(part: Part): Promise<void> {
-  const s = part.part_name;
-  try {
-    await this.api.post("/parts/add/", part);
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error("Error adding part:" + part.part_name, error.response?.data);
-      throw new Error(
-        error.response?.data?.detail || "Error adding part " + s,
-      );
-    } else {
-      console.error("Unexpected error:", error);
-      throw new Error("Unexpected error");
+    const s = part.part_name;
+    try {
+      await this.api.post("/parts/add/", part);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error(
+          "Error adding part:" + part.part_name,
+          error.response?.data,
+        );
+        throw new Error(
+          error.response?.data?.detail || "Error adding part " + s,
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
     }
   }
 }
-}
-
