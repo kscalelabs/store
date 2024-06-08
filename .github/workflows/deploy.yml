@@ -52,16 +52,17 @@ jobs:
           npm run build
         working-directory: frontend
 
-      - name: Replace S3 contents
-        uses: jakejarvis/s3-sync-action@master
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          args: --delete
-        env:
-          AWS_S3_BUCKET: ${{ secrets.AWS_FRONTEND_S3_BUCKET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          SOURCE_DIR: "frontend/build"
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Replace S3 bucket contents
+        run: |
+          aws s3 rm s3://${{ secrets.S3_BUCKET_NAME }} --recursive
+          aws s3 cp frontend/build s3://${{ secrets.S3_BUCKET_NAME }} --recursive
 
   build-and-deploy-backend:
     runs-on: ubuntu-latest
