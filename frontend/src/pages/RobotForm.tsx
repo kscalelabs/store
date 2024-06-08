@@ -2,6 +2,7 @@ import { api, Bom, Image, Part, Robot } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 const RobotForm: React.FC = () => {
   const auth = useAuthentication();
@@ -55,7 +56,7 @@ const RobotForm: React.FC = () => {
     const newBom = robot_bom.filter((_, i) => i !== index);
     setBom(newBom);
   };
-
+  const navigate = useNavigate();
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (robot_images.length === 0) {
@@ -73,6 +74,7 @@ const RobotForm: React.FC = () => {
     try {
       await auth_api.addRobot(newFormData);
       setMessage(`Robot added successfully.`);
+      navigate(`/robots/your/`);
     } catch (error) {
       setMessage("Error adding robot ");
     }

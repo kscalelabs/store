@@ -57,7 +57,7 @@ const EditRobotForm: React.FC = () => {
     newImages[index][name as keyof Image] = value;
     setImages(newImages);
   };
-
+  const navigate = useNavigate();
   const handleAddImage = () => {
     setImages([...robot_images, { url: "", caption: "" }]);
   };
@@ -107,7 +107,8 @@ const EditRobotForm: React.FC = () => {
     };
     try {
       await auth_api.editRobot(newFormData);
-      setMessage(`Robot added successfully.`);
+      setMessage(`Robot edited successfully.`);
+      navigate(`/robots/your/`);
     } catch (error) {
       setMessage("Error adding robot ");
     }
