@@ -1,4 +1,4 @@
-name: Deploys latest code to Elastic Beanstalk
+name: Deploys latest code
 
 on:
   push:
