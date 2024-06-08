@@ -61,8 +61,8 @@ jobs:
 
       - name: Replace S3 bucket contents
         run: |
-          aws s3 rm s3://${{ secrets.S3_BUCKET_NAME }} --recursive
-          aws s3 cp frontend/build s3://${{ secrets.S3_BUCKET_NAME }} --recursive
+          aws s3 rm s3://${{ secrets.AWS_FRONTEND_S3_BUCKET }} --recursive
+          aws s3 cp frontend/build s3://${{ secrets.AWS_FRONTEND_S3_BUCKET }} --recursive
 
   build-and-deploy-backend:
     runs-on: ubuntu-latest
