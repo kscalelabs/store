@@ -10,10 +10,10 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel
 
-from store.app.api.crypto import get_new_api_key, get_new_user_id
-from store.app.api.db import Crud
-from store.app.api.model import User
-from store.app.api.utils.email import OneTimePassPayload, send_delete_email, send_otp_email
+from store.app.crypto import get_new_api_key, get_new_user_id
+from store.app.db import Crud
+from store.app.model import User
+from store.app.utils.email import OneTimePassPayload, send_delete_email, send_otp_email
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +76,7 @@ async def login_user_endpoint(data: UserSignup) -> bool:
         True if the email was sent successfully.
     """
     email = validate_email(data.email)
-    payload = OneTimePassPayload(email, lifetime=str(data.lifetime))
+    payload = OneTimePassPayload(email, lifetime=data.lifetime)
     await send_otp_email(payload, data.login_url)
     return True
 
@@ -133,7 +133,7 @@ async def otp_endpoint(
         The API key if the one-time password is valid.
     """
     payload = OneTimePassPayload.decode(data.payload)
-    return await get_login_response(payload.email, int(payload.lifetime), crud)
+    return await get_login_response(payload.email, payload.lifetime, crud)
 
 
 async def get_google_user_info(token: str) -> dict:

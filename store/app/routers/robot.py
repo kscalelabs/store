@@ -5,10 +5,10 @@ from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from store.app.api.crypto import get_new_user_id
-from store.app.api.db import Crud
-from store.app.api.model import Robot
-from store.app.api.routers.users import ApiKeyData, get_api_key
+from store.app.crypto import get_new_user_id
+from store.app.db import Crud
+from store.app.model import Robot
+from store.app.routers.users import ApiKeyData, get_api_key
 
 robots_router = APIRouter()
 
