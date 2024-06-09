@@ -36,7 +36,7 @@ async def send_email(subject: str, body: str, to: str) -> None:
 @dataclass
 class OneTimePassPayload:
     email: str
-    lifetime: str
+    lifetime: int
 
     def encode(self) -> str:
         expire_minutes = settings.crypto.expire_otp_minutes

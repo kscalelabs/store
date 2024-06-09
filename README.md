@@ -92,8 +92,7 @@ export ROBOLIST_ENVIRONMENT_SECRETS=.env
 export AWS_DEFAULT_REGION='us-east-1'
 export AWS_ACCESS_KEY_ID=test
 export AWS_SECRET_ACCESS_KEY=test
-export REACT_APP_BACKEND_URL=http://127.0.0.1:8080/api
-export REACT_APP_BACKEND_URL=api/
+export REACT_APP_BACKEND_URL=http://127.0.0.1:8080
 ```
 
 #### Database

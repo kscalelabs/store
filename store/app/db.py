@@ -4,9 +4,9 @@ import asyncio
 import logging
 from typing import AsyncGenerator, Self
 
-from store.app.api.crud.base import BaseCrud
-from store.app.api.crud.robots import RobotCrud
-from store.app.api.crud.users import UserCrud
+from store.app.crud.base import BaseCrud
+from store.app.crud.robots import RobotCrud
+from store.app.crud.users import UserCrud
 
 
 class Crud(
