@@ -66,7 +66,7 @@ def mock_redis(mocker: MockerFixture) -> None:
     os.environ["ROBOLIST_REDIS_PORT"] = "6379"
     os.environ["ROBOLIST_REDIS_DB"] = "0"
     fake_redis = fakeredis.aioredis.FakeRedis()
-    mocker.patch("store.app.api.crud.base.Redis", return_value=fake_redis)
+    mocker.patch("store.app.crud.base.Redis", return_value=fake_redis)
 
 
 @pytest.fixture()
@@ -79,14 +79,14 @@ def app_client() -> Generator[TestClient, None, None]:
 
 @pytest.fixture(autouse=True)
 def mock_send_email(mocker: MockerFixture) -> MockType:
-    mock = mocker.patch("store.app.api.utils.email.send_email")
+    mock = mocker.patch("store.app.utils.email.send_email")
     mock.return_value = None
     return mock
 
 
 @pytest.fixture()
 def authenticated_user(app_client: TestClient) -> tuple[TestClient, str, str]:
-    from store.app.api.utils.email import OneTimePassPayload
+    from store.app.utils.email import OneTimePassPayload
 
     test_email = "test@example.com"
 

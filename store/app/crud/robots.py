@@ -2,8 +2,8 @@
 
 import logging
 
-from store.app.api.crud.base import BaseCrud
-from store.app.api.model import Part, Robot
+from store.app.crud.base import BaseCrud
+from store.app.model import Part, Robot
 
 logger = logging.getLogger(__name__)
 

@@ -67,5 +67,5 @@ async def create_tables(crud: Crud | None = None) -> None:
 
 
 if __name__ == "__main__":
-    # python -m store.app.api.db
+    # python -m store.app.db
     asyncio.run(create_tables())

@@ -11,7 +11,7 @@ from email.mime.text import MIMEText
 
 import aiosmtplib
 
-from store.app.api.crypto import decode_jwt, encode_jwt
+from store.app.crypto import decode_jwt, encode_jwt
 from store.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -97,5 +97,5 @@ def test_email_adhoc() -> None:
 
 
 if __name__ == "__main__":
-    # python -m bot.api.email
+    # python -m store.app.utils.email
     test_email_adhoc()

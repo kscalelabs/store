@@ -6,9 +6,9 @@ import warnings
 
 from boto3.dynamodb.conditions import Key as KeyCondition
 
-from store.app.api.crud.base import BaseCrud
-from store.app.api.crypto import hash_api_key
-from store.app.api.model import ApiKey, User
+from store.app.crud.base import BaseCrud
+from store.app.crypto import hash_api_key
+from store.app.model import ApiKey, User
 
 
 class UserCrud(BaseCrud):
@@ -71,5 +71,5 @@ async def test_adhoc() -> None:
 
 
 if __name__ == "__main__":
-    # python -m store.app.api.crud.users
+    # python -m store.app.crud.users
     asyncio.run(test_adhoc())
