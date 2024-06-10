@@ -1,6 +1,5 @@
-import React from 'react';
-import { useSpring, SpringConfig } from 'react-spring';
-
+import React from "react";
+import { SpringConfig, useSpring } from "react-spring";
 
 interface UseBoopProps {
   x?: number;

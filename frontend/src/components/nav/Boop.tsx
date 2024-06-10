@@ -1,6 +1,6 @@
-import React from 'react';
-import { animated } from 'react-spring';
-import useBoop from 'hooks/useBoop';
+import useBoop from "hooks/useBoop";
+import React from "react";
+import { animated } from "react-spring";
 
 interface BoopProps {
   x?: number;
