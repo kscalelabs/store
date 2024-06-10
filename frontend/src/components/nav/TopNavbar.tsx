@@ -1,9 +1,10 @@
 import Sidebar from "components/nav/Sidebar";
 import { useTheme } from "hooks/theme";
 import { useState } from "react";
-import { Container, Nav, Navbar } from "react-bootstrap";
-import { GearFill, MoonFill, SunFill } from "react-bootstrap-icons";
+import { Container, Nav, Navbar, Button } from "react-bootstrap";
+import { GearFill, MoonFill, SunFill, } from "react-bootstrap-icons";
 import { Link } from "react-router-dom";
+import Boop from "components/nav/Boop";
 
 const TopNavbar = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
@@ -17,14 +18,18 @@ const TopNavbar = () => {
             robolist
           </Navbar.Brand>
           <div className="d-flex gap-3">
+            <Boop timing={100}>
             <Nav.Link
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
             >
               {theme === "dark" ? <MoonFill /> : <SunFill />}
             </Nav.Link>
+            </Boop>
+            <Boop timing = {100}>
             <Nav.Link onClick={() => setShowSidebar(true)}>
               <GearFill />
             </Nav.Link>
+            </Boop>
           </div>
         </Container>
       </Navbar>
