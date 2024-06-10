@@ -3,6 +3,7 @@ import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import { Breadcrumb, Card, Col, Row, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { isFulfilled } from "utils/isfullfiled";
 
 const Robots = () => {
   const auth = useAuthentication();
@@ -19,12 +20,12 @@ const Robots = () => {
         robotsQuery.forEach((robot) => {
           ids.add(robot.owner);
         });
-        const idMap = await Promise.all(
+        const idMap = await Promise.allSettled(
           Array.from(ids).map(async (id) => {
             return [id, await auth_api.getUserById(id)];
           }),
         );
-        setIdMap(new Map(idMap.map(([key, value]) => [key, value])));
+        setIdMap(new Map(idMap.filter(isFulfilled).map((result) => result.value as [string, string])));
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);

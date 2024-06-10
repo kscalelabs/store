@@ -4,6 +4,7 @@ import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import { Breadcrumb, Card, Col, Row, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { isFulfilled } from "utils/isfullfiled";
 
 const Parts = () => {
   const auth = useAuthentication();
@@ -12,13 +13,6 @@ const Parts = () => {
   const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
   const [error, setError] = useState<string | null>(null);
   const { addAlert } = useAlertQueue();
-
-  // Type guard to check if a result is a fulfilled result
-  function isFulfilled<T>(
-    result: PromiseSettledResult<T>,
-  ): result is PromiseFulfilledResult<T> {
-    return result.status === "fulfilled" && result.value != null;
-  }
 
   useEffect(() => {
     const fetch_parts = async () => {
