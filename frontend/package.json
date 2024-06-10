@@ -22,7 +22,7 @@
   },
   "type": "module",
   "scripts": {
-    "start": "react-scripts start",
+    "start": "HOST=127.0.0.1 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
