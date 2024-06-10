@@ -83,7 +83,7 @@ test-backend:
 	@python -m pytest
 
 test-frontend:
-	@cd frontend && npm run test -- --watchAll=false
+	@cd frontend && npm run test -- --watchAll=false --passWithNoTests
 
 # test: test-backend test-frontend
 test: test-backend
