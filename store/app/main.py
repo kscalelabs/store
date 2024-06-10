@@ -29,6 +29,11 @@ async def value_error_exception_handler(request: Request, exc: ValueError) -> JS
     )
 
 
+@app.get("/")
+async def read_root() -> bool:
+    return True
+
+
 app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(robots_router, prefix="/robots", tags=["robots"])
 app.include_router(parts_router, prefix="/parts", tags=["parts"])
