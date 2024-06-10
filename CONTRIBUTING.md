@@ -1,4 +1,8 @@
-# Development
+# Getting Started
+
+To get started, check out the [Project tracker](https://github.com/orgs/kscalelabs/projects/8/views/1).
+
+# Developing
 
 To get started developing:
 
