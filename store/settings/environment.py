@@ -8,7 +8,7 @@ from omegaconf import II, MISSING
 @dataclass
 class RedisSettings:
     host: str = field(default=II("oc.env:ROBOLIST_REDIS_HOST,127.0.0.1"))
-    password: str = field(default=II("oc.env:ROBOLIST_REDIS_PASSWORD,"))
+    password: str = field(default=II("oc.env:ROBOLIST_REDIS_PASSWORD,''"))
     port: int = field(default=6379)
     db: int = field(default=0)
 

@@ -49,7 +49,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         self,
         name: str,
         keys: list[tuple[str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]],
-        gsis: list[tuple[str, str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]] = [],
+        gsis: list[tuple[str, str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]] | None = None,
         deletion_protection: bool = False,
     ) -> None:
         """Creates a table in the Dynamo database if a table of that name does not already exist.
@@ -66,24 +66,54 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         """
         try:
             await self.db.meta.client.describe_table(TableName=name)
+            logger.info("Found existing table %s", name)
         except ClientError:
             logger.info("Creating %s table", name)
-            table = await self.db.create_table(
-                AttributeDefinitions=[
-                    {"AttributeName": n, "AttributeType": t}
-                    for n, t in itertools.chain(((n, t) for (n, t, _) in keys), ((n, t) for _, n, t, _ in gsis))
-                ],
-                TableName=name,
-                KeySchema=[{"AttributeName": n, "KeyType": t} for n, _, t in keys],
-                GlobalSecondaryIndexes=[
-                    {
-                        "IndexName": i,
-                        "KeySchema": [{"AttributeName": n, "KeyType": t}],
-                        "Projection": {"ProjectionType": "ALL"},
-                    }
-                    for i, n, _, t in gsis
-                ],
-                DeletionProtectionEnabled=deletion_protection,
-                BillingMode="PAY_PER_REQUEST",
-            )
+
+            if gsis is None:
+                table = await self.db.create_table(
+                    AttributeDefinitions=[
+                        {"AttributeName": n, "AttributeType": t} for n, t in ((n, t) for (n, t, _) in keys)
+                    ],
+                    TableName=name,
+                    KeySchema=[{"AttributeName": n, "KeyType": t} for n, _, t in keys],
+                    DeletionProtectionEnabled=deletion_protection,
+                    BillingMode="PAY_PER_REQUEST",
+                )
+
+            else:
+                table = await self.db.create_table(
+                    AttributeDefinitions=[
+                        {"AttributeName": n, "AttributeType": t}
+                        for n, t in itertools.chain(((n, t) for (n, t, _) in keys), ((n, t) for _, n, t, _ in gsis))
+                    ],
+                    TableName=name,
+                    KeySchema=[{"AttributeName": n, "KeyType": t} for n, _, t in keys],
+                    GlobalSecondaryIndexes=(
+                        [
+                            {
+                                "IndexName": i,
+                                "KeySchema": [{"AttributeName": n, "KeyType": t}],
+                                "Projection": {"ProjectionType": "ALL"},
+                            }
+                            for i, n, _, t in gsis
+                        ]
+                    ),
+                    DeletionProtectionEnabled=deletion_protection,
+                    BillingMode="PAY_PER_REQUEST",
+                )
+
             await table.wait_until_exists()
+
+    async def _delete_dynamodb_table(self, name: str) -> None:
+        """Deletes a table in the Dynamo database.
+
+        Args:
+            name: Name of the table.
+        """
+        try:
+            table = await self.db.Table(name)
+            await table.delete()
+            logger.info("Deleted table %s", name)
+        except ClientError:
+            logger.info("Table %s does not exist", name)
