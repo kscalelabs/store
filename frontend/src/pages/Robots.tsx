@@ -45,7 +45,7 @@ const Robots = () => {
   }, [error, navigate]);
 
   if (!robotsData) {
-    return <Spinner animation="border" />;;
+    return <Spinner animation="border" />;
   }
 
   return (

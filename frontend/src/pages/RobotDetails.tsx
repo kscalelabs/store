@@ -9,7 +9,7 @@ import {
   Col,
   Modal,
   Row,
-  Spinner, 
+  Spinner,
 } from "react-bootstrap";
 import Markdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";

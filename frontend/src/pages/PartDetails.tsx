@@ -9,7 +9,7 @@ import {
   Col,
   Modal,
   Row,
-  Spinner, 
+  Spinner,
 } from "react-bootstrap";
 import Markdown from "react-markdown";
 import { useNavigate, useParams } from "react-router-dom";
@@ -61,7 +61,7 @@ const PartDetails = () => {
   }, [error, navigate]);
 
   if (!part) {
-    return <Spinner animation="border" />;;
+    return <Spinner animation="border" />;
   }
 
   const response: PartDetailsResponse = {
