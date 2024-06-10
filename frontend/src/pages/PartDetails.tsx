@@ -10,7 +10,6 @@ import {
   Modal,
   Row,
 } from "react-bootstrap";
-import Markdown from "react-markdown";
 import { useNavigate, useParams } from "react-router-dom";
 
 interface PartDetailsResponse {
@@ -93,22 +92,7 @@ const PartDetails = () => {
           </Row>
           <hr />
           <Row>
-            <Col>
-              <Markdown
-                components={{
-                  p: ({ ...props }) => <p {...props} className="mb-3" />,
-                  li: ({ ...props }) => <li {...props} className="mb-1" />,
-                  h1: ({ ...props }) => <h3 {...props} className="mt-1" />,
-                  h2: ({ ...props }) => <h4 {...props} className="mt-1" />,
-                  h3: ({ ...props }) => <h5 {...props} className="mt-1" />,
-                  h4: ({ ...props }) => <h6 {...props} className="mt-1" />,
-                  h5: ({ ...props }) => <h6 {...props} className="mt-1" />,
-                  h6: ({ ...props }) => <h6 {...props} />,
-                }}
-              >
-                {description}
-              </Markdown>
-            </Col>
+            <Col>{description}</Col>
           </Row>
         </Col>
 
