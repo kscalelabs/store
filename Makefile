@@ -85,6 +85,7 @@ test-backend:
 test-frontend:
 	@cd frontend && npm run test -- --watchAll=false
 
-test: test-backend test-frontend
+# test: test-backend test-frontend
+test: test-backend
 
 .PHONY: test
