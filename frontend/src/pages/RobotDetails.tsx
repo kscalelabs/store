@@ -1,3 +1,4 @@
+import { useAlertQueue } from "hooks/alerts";
 import { api, Bom } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
@@ -13,6 +14,7 @@ import {
 } from "react-bootstrap";
 import Markdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { isFulfilled } from "utils/isfullfiled";
 
 interface RobotDetailsResponse {
   name: string;
@@ -29,6 +31,7 @@ interface ExtendedBom {
 }
 
 const RobotDetails = () => {
+  const { addAlert } = useAlertQueue();
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const [userId, setUserId] = useState<string | null>(null);
@@ -61,7 +64,11 @@ const RobotDetails = () => {
             quantity: part.quantity,
           };
         });
-        setParts(await Promise.all(parts));
+        setParts(
+          (await Promise.allSettled(parts))
+            .filter(isFulfilled)
+            .map((result) => result.value as ExtendedBom),
+        );
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -85,9 +92,9 @@ const RobotDetails = () => {
 
   useEffect(() => {
     if (error) {
-      navigate("/404"); // Redirect to a 404 page
+      addAlert(error, "error");
     }
-  }, [error, navigate]);
+  }, [error]);
 
   if (!robot) {
     return <Spinner animation="border" />;

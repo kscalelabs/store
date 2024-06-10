@@ -1,3 +1,4 @@
+import { useAlertQueue } from "hooks/alerts";
 import { api, Image } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
@@ -22,6 +23,7 @@ interface PartDetailsResponse {
 }
 
 const PartDetails = () => {
+  const { addAlert } = useAlertQueue();
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const { id } = useParams();
@@ -56,9 +58,9 @@ const PartDetails = () => {
 
   useEffect(() => {
     if (error) {
-      navigate("/404"); // Redirect to a 404 page
+      addAlert(error, "error");
     }
-  }, [error, navigate]);
+  }, [error]);
 
   if (!part) {
     return <Spinner animation="border" />;
