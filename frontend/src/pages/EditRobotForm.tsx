@@ -6,14 +6,6 @@ import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 
-interface RobotDetailsResponse {
-  name: string;
-  owner: string;
-  description: string;
-  images: { url: string; caption: string }[];
-  bom: Bom[];
-}
-
 const EditRobotForm: React.FC = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
