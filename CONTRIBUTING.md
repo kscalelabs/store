@@ -142,3 +142,13 @@ REACT_APP_GOOGLE_CLIENT_ID=your-client-id
 ```
 
 Additionally, you should set `REACT_APP_BACKEND_URL` to the URL of the FastAPI backend. This should be `http://127.0.0.1:8080` when developing locally.
+
+## Testing
+
+To run the tests, you can use the following commands:
+
+```bash
+make test
+make test-frontend  # Run only the frontend tests
+make test-backend  # Run only the backend tests
+```
