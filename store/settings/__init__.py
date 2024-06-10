@@ -18,15 +18,19 @@ def _check_exists(path: Path) -> Path:
     return path
 
 
-def _load_environment_settings() -> EnvironmentSettings:
-    if "ROBOLIST_ENVIRONMENT_SECRETS" in os.environ:
-        load_dotenv(os.environ["ROBOLIST_ENVIRONMENT_SECRETS"])
-    environment = os.environ["ROBOLIST_ENVIRONMENT"]
+def _load_settings(environment: str) -> EnvironmentSettings:
     base_dir = (Path(__file__).parent / "configs").resolve()
     config_path = _check_exists(base_dir / f"{environment}.yaml")
     config = OmegaConf.load(config_path)
     config = OmegaConf.merge(OmegaConf.structured(EnvironmentSettings), config)
     return cast(EnvironmentSettings, config)
+
+
+def _load_environment_settings() -> EnvironmentSettings:
+    if "ROBOLIST_ENVIRONMENT_SECRETS" in os.environ:
+        load_dotenv(os.environ["ROBOLIST_ENVIRONMENT_SECRETS"])
+    environment = os.environ["ROBOLIST_ENVIRONMENT"]
+    return _load_settings(environment)
 
 
 class _LazyLoadSettings(Generic[T]):
