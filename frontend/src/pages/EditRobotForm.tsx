@@ -1,3 +1,5 @@
+import { humanReadableError } from "constants/backend";
+import { useAlertQueue } from "hooks/alerts";
 import { api, Bom, Image, Part, Robot } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
@@ -15,8 +17,11 @@ interface RobotDetailsResponse {
 const EditRobotForm: React.FC = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
+
+  // Parse the ID from the URL.
   const { id } = useParams();
-  const [robot, setRobot] = useState<RobotDetailsResponse | null>(null);
+
+  // States.
   const [message, setMessage] = useState<string | null>(null);
   const [robot_name, setName] = useState<string>("");
   const [robot_description, setDescription] = useState<string>("");
@@ -24,24 +29,20 @@ const EditRobotForm: React.FC = () => {
   const [robot_images, setImages] = useState<Image[]>([]);
   const [parts, setParts] = useState<Part[]>([]);
   const [robot_id, setRobotId] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
+
+  const { addAlert } = useAlertQueue();
 
   useEffect(() => {
     const fetchRobot = async () => {
       try {
         const robotData = await auth_api.getRobotById(id);
-        setRobot(robotData);
         setName(robotData.name);
         setDescription(robotData.description);
         setBom(robotData.bom);
         setImages(robotData.images);
         setRobotId(robotData.robot_id);
       } catch (err) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("An unexpected error occurred");
-        }
+        addAlert(humanReadableError(err), "error");
       }
     };
     fetchRobot();
