@@ -12,7 +12,6 @@ from store.app.routers.users import ApiKeyData, get_api_key
 
 robots_router = APIRouter()
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -41,6 +40,14 @@ async def get_robot(robot_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> 
     return await crud.get_robot(robot_id)
 
 
+@robots_router.get("/user/")
+async def current_user(
+    crud: Annotated[Crud, Depends(Crud.get)], data: Annotated[ApiKeyData, Depends(get_api_key)]
+) -> str | None:
+    user_id = await crud.get_user_id_from_api_key(data.api_key)
+    return str(user_id)
+
+
 @robots_router.post("/add/")
 async def add_robot(
     robot: Robot,
@@ -56,7 +63,7 @@ async def add_robot(
     return True
 
 
-@robots_router.delete("/delete/{robot_id}")
+@robots_router.delete("/delete/{robot_id}/")
 async def delete_robot(
     robot_id: str,
     data: Annotated[ApiKeyData, Depends(get_api_key)],
@@ -66,7 +73,23 @@ async def delete_robot(
     if robot is None:
         raise HTTPException(status_code=404, detail="Robot not found")
     user_id = await crud.get_user_id_from_api_key(data.api_key)
-    if robot.owner != user_id:
+    if str(robot.owner) != str(user_id):
         raise HTTPException(status_code=403, detail="You do not own this robot")
     await crud.delete_robot(robot_id)
+    return True
+
+
+@robots_router.post("/edit-robot/{robot_id}/")
+async def edit_robot(
+    robot_id: str,
+    robot: Robot,
+    data: Annotated[ApiKeyData, Depends(get_api_key)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> bool:
+    user_id = await crud.get_user_id_from_api_key(data.api_key)
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Must be logged in to edit a robot")
+    robot.owner = str(user_id)
+    robot.robot_id = robot_id
+    await crud.update_robot(robot_id, robot)
     return True

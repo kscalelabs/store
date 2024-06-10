@@ -71,5 +71,10 @@
     "react-router-dom": "^6.23.1",
     "ts-jest": "^29.1.4",
     "typescript-eslint": "*"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "^axios$": "axios/dist/node/axios.cjs"
+    }
   }
 }

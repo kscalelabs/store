@@ -30,6 +30,7 @@ interface ExtendedBom {
 const RobotDetails = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
+  const [userId, setUserId] = useState<string | null>(null);
   const { id } = useParams();
   const [show, setShow] = useState(false);
   const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
@@ -37,9 +38,13 @@ const RobotDetails = () => {
   const [parts, setParts] = useState<ExtendedBom[]>([]);
   const [imageIndex, setImageIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [showDelete, setShowDelete] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+
+  const handleShowDelete = () => setShowDelete(true);
+  const handleCloseDelete = () => setShowDelete(false);
 
   useEffect(() => {
     const fetchRobot = async () => {
@@ -66,6 +71,14 @@ const RobotDetails = () => {
     };
     fetchRobot();
   }, [id]);
+
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const user_id = await auth_api.currentUser();
+      setUserId(user_id);
+    };
+    fetchUserId();
+  }, []);
 
   const navigate = useNavigate();
 
@@ -95,7 +108,7 @@ const RobotDetails = () => {
         <Breadcrumb.Item onClick={() => navigate("/robots/")}>
           Robots
         </Breadcrumb.Item>
-        <Breadcrumb.Item active>{name}</Breadcrumb.Item>
+        <Breadcrumb.Item active>{name} </Breadcrumb.Item>
       </Breadcrumb>
 
       <Row className="mt-3">
@@ -198,7 +211,6 @@ const RobotDetails = () => {
           </Col>
         )}
       </Row>
-
       <Modal
         show={show}
         onHide={handleClose}
@@ -209,7 +221,8 @@ const RobotDetails = () => {
       >
         <Modal.Header closeButton>
           <Modal.Title>
-            {images[imageIndex].caption} ({imageIndex + 1} of {images.length})
+            {images[imageIndex].caption} ({imageIndex + 1} of {images.length}{" "}
+            {userId})
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -242,6 +255,81 @@ const RobotDetails = () => {
           </ButtonGroup>
         </Modal.Footer>
       </Modal>
+      <>
+        {robot.owner === userId && (
+          <>
+            <Row>
+              <Col md={3} sm={12}>
+                <Button
+                  variant="success"
+                  size="lg"
+                  style={{
+                    backgroundColor: "light-green",
+                    borderColor: "black",
+                    padding: "10px",
+                    width: "100%",
+                  }}
+                  onClick={() => {
+                    navigate(`/edit-robot/${id}/`);
+                  }}
+                >
+                  Edit Robot
+                </Button>
+              </Col>
+              <Col md={3} sm={12}>
+                <Button
+                  variant="danger"
+                  size="lg"
+                  style={{
+                    backgroundColor: "light-green",
+                    borderColor: "black",
+                    padding: "10px",
+                    width: "100%",
+                  }}
+                  onClick={() => {
+                    handleShowDelete();
+                  }}
+                >
+                  Delete Robot
+                </Button>
+              </Col>
+            </Row>
+            <Modal
+              show={showDelete}
+              onHide={handleCloseDelete}
+              fullscreen="md-down"
+              centered
+              size="lg"
+              scrollable
+            >
+              <Modal.Header closeButton>
+                <Modal.Title>
+                  Are you sure you want to delete this robot? :{"("}
+                </Modal.Title>
+              </Modal.Header>
+              <Modal.Footer className="d-flex justify-content-start">
+                <Button
+                  variant="danger"
+                  onClick={async () => {
+                    await auth_api.deleteRobot(id);
+                    navigate(`/robots/`);
+                  }}
+                >
+                  Delete Robot
+                </Button>
+                <Button
+                  variant="outline-secondary"
+                  onClick={() => {
+                    handleCloseDelete();
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Modal.Footer>
+            </Modal>
+          </>
+        )}
+      </>
     </>
   );
 };

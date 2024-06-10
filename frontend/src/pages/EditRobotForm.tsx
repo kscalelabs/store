@@ -1,18 +1,44 @@
+import { humanReadableError } from "constants/backend";
+import { useAlertQueue } from "hooks/alerts";
 import { api, Bom, Image, Part, Robot } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-const RobotForm: React.FC = () => {
+const EditRobotForm: React.FC = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
+
+  // Parse the ID from the URL.
+  const { id } = useParams();
+
+  // States.
   const [message, setMessage] = useState<string | null>(null);
   const [robot_name, setName] = useState<string>("");
   const [robot_description, setDescription] = useState<string>("");
   const [robot_bom, setBom] = useState<Bom[]>([]);
   const [robot_images, setImages] = useState<Image[]>([]);
   const [parts, setParts] = useState<Part[]>([]);
+  const [robot_id, setRobotId] = useState<string>("");
+
+  const { addAlert } = useAlertQueue();
+
+  useEffect(() => {
+    const fetchRobot = async () => {
+      try {
+        const robotData = await auth_api.getRobotById(id);
+        setName(robotData.name);
+        setDescription(robotData.description);
+        setBom(robotData.bom);
+        setImages(robotData.images);
+        setRobotId(robotData.robot_id);
+      } catch (err) {
+        addAlert(humanReadableError(err), "error");
+      }
+    };
+    fetchRobot();
+  }, [id]);
 
   const handleImageChange = (
     index: number,
@@ -23,7 +49,7 @@ const RobotForm: React.FC = () => {
     newImages[index][name as keyof Image] = value;
     setImages(newImages);
   };
-
+  const navigate = useNavigate();
   const handleAddImage = () => {
     setImages([...robot_images, { url: "", caption: "" }]);
   };
@@ -56,7 +82,7 @@ const RobotForm: React.FC = () => {
     const newBom = robot_bom.filter((_, i) => i !== index);
     setBom(newBom);
   };
-  const navigate = useNavigate();
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (robot_images.length === 0) {
@@ -64,7 +90,7 @@ const RobotForm: React.FC = () => {
       return;
     }
     const newFormData: Robot = {
-      robot_id: "",
+      robot_id: robot_id,
       name: robot_name,
       description: robot_description,
       owner: "",
@@ -72,8 +98,8 @@ const RobotForm: React.FC = () => {
       images: robot_images,
     };
     try {
-      await auth_api.addRobot(newFormData);
-      setMessage(`Robot added successfully.`);
+      await auth_api.editRobot(newFormData);
+      setMessage(`Robot edited successfully.`);
       navigate(`/robots/your/`);
     } catch (error) {
       setMessage("Error adding robot ");
@@ -94,7 +120,7 @@ const RobotForm: React.FC = () => {
 
   return (
     <Row>
-      <h2>Add a New Robot</h2>
+      <h2>Edit Robot</h2>
       {message && <p>{message}</p>}
       <Form onSubmit={handleSubmit} className="mb-3">
         Name:
@@ -212,11 +238,11 @@ const RobotForm: React.FC = () => {
         </Col>
         Submit:
         <Col md={6}>
-          <Button type="submit">Add Robot!</Button>
+          <Button type="submit">Confirm Changes!</Button>
         </Col>
       </Form>
     </Row>
   );
 };
 
-export default RobotForm;
+export default EditRobotForm;

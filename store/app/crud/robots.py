@@ -1,11 +1,20 @@
 """Defines CRUD interface for robot API."""
 
 import logging
+from typing import List
 
 from store.app.crud.base import BaseCrud
-from store.app.model import Part, Robot
+from store.app.model import Bom, Part, Robot
 
 logger = logging.getLogger(__name__)
+
+
+async def serialize_bom(bom: Bom) -> dict:
+    return {"part_id": {"S": bom.part_id}, "quantity": {"N": str(bom.quantity)}}
+
+
+async def serialize_bom_list(bom_list: List[Bom]) -> List[dict]:
+    return [await serialize_bom(bom) for bom in bom_list]
 
 
 class RobotCrud(BaseCrud):
@@ -28,10 +37,6 @@ class RobotCrud(BaseCrud):
             return None
         return Robot.model_validate(robot_dict["Item"])
 
-    async def delete_robot(self, robot_id: str) -> None:
-        table = await self.db.Table("Robots")
-        await table.delete_item(Key={"robot_id": robot_id})
-
     async def list_parts(self) -> list[Part]:
         table = await self.db.Table("Parts")
         return [Part.model_validate(part) for part in (await table.scan())["Items"]]
@@ -46,3 +51,11 @@ class RobotCrud(BaseCrud):
     async def delete_part(self, part_id: str) -> None:
         table = await self.db.Table("Parts")
         await table.delete_item(Key={"part_id": part_id})
+
+    async def delete_robot(self, robot_id: str) -> None:
+        table = await self.db.Table("Robots")
+        await table.delete_item(Key={"robot_id": robot_id})
+
+    async def update_robot(self, robot_id: str, robot: Robot) -> None:
+        await self.delete_robot(robot_id)
+        await self.add_robot(robot)

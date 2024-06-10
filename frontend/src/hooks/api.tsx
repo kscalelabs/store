@@ -97,6 +97,22 @@ export class api {
       }
     }
   }
+  public async currentUser(): Promise<string> {
+    try {
+      const response = await this.api.get("/robots/user/");
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error fetching current user:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail || "Error fetching current user",
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
   public async addRobot(robot: Robot): Promise<void> {
     const s = robot.name;
     try {
@@ -106,6 +122,38 @@ export class api {
         console.error("Error adding robot:", error.response?.data);
         throw new Error(
           error.response?.data?.detail || "Error adding robot " + s,
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+  public async deleteRobot(id: string | undefined): Promise<void> {
+    const s = id;
+    try {
+      await this.api.delete(`robots/delete/${id}/`);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error deleting robot:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail || "Error deleting robot " + s,
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+  public async editRobot(robot: Robot): Promise<void> {
+    const s = robot.name;
+    try {
+      await this.api.post(`robots/edit-robot/${robot.robot_id}/`, robot);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error editing robot:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail || "Error editing robot " + s,
         );
       } else {
         console.error("Unexpected error:", error);
