@@ -16,9 +16,7 @@ const TopNavbar = () => {
           <Navbar.Brand as={Link} to="/">
             robolist
           </Navbar.Brand>
-          <Navbar.Toggle />
-          <Navbar.Collapse className="justify-content-end">
-            <Nav>
+            <div className="d-flex gap-3">
               <Nav.Link
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               >
@@ -27,8 +25,7 @@ const TopNavbar = () => {
               <Nav.Link onClick={() => setShowSidebar(true)}>
                 <GearFill />
               </Nav.Link>
-            </Nav>
-          </Navbar.Collapse>
+            </div>
         </Container>
       </Navbar>
       <Sidebar show={showSidebar} onHide={() => setShowSidebar(false)} />
