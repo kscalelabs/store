@@ -11,6 +11,7 @@ import {
   Modal,
   Row,
   Spinner,
+  Container,
 } from "react-bootstrap";
 import Markdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -97,7 +98,13 @@ const RobotDetails = () => {
   }, [error]);
 
   if (!robot) {
-    return <Spinner animation="border" />;
+    return <Container fluid className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+      <Row className="w-100">
+        <Col className="d-flex justify-content-center align-items-center">
+          <Spinner animation="border" />
+        </Col>
+      </Row>
+    </Container>;
   }
   const response: RobotDetailsResponse = {
     name: robot?.name,
