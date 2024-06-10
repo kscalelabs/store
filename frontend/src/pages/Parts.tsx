@@ -1,7 +1,7 @@
 import { api, Part } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
-import { Breadcrumb, Card, Col, Row } from "react-bootstrap";
+import { Breadcrumb, Card, Col, Row, Spinner } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
 const Parts = () => {
@@ -45,7 +45,7 @@ const Parts = () => {
   }, [error, navigate]);
 
   if (!partsData) {
-    return <p>Loading</p>;
+    return <Spinner animation="border" />;
   }
 
   return (
