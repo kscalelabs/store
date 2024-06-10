@@ -1,3 +1,4 @@
+import { useAlertQueue } from "hooks/alerts";
 import { api, Part } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
@@ -10,6 +11,15 @@ const Parts = () => {
   const [partsData, setParts] = useState<Part[] | null>(null);
   const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
   const [error, setError] = useState<string | null>(null);
+  const { addAlert } = useAlertQueue();
+
+  // Type guard to check if a result is a fulfilled result
+  function isFulfilled<T>(
+    result: PromiseSettledResult<T>,
+  ): result is PromiseFulfilledResult<T> {
+    return result.status === "fulfilled" && result.value != null;
+  }
+
   useEffect(() => {
     const fetch_parts = async () => {
       try {
@@ -19,12 +29,22 @@ const Parts = () => {
         partsQuery.forEach((part) => {
           ids.add(part.owner);
         });
-        const idMap = await Promise.all(
+        const idMap = await Promise.allSettled(
           Array.from(ids).map(async (id) => {
-            return [id, await auth_api.getUserById(id)];
+            try {
+              return [id, await auth_api.getUserById(id)];
+            } catch (err) {
+              return null;
+            }
           }),
         );
-        setIdMap(new Map(idMap.map(([key, value]) => [key, value])));
+        setIdMap(
+          new Map(
+            idMap
+              .filter(isFulfilled)
+              .map((result) => result.value as [string, string]),
+          ),
+        );
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -40,9 +60,9 @@ const Parts = () => {
 
   useEffect(() => {
     if (error) {
-      navigate("/404"); // Redirect to a 404 page
+      addAlert(error, "error");
     }
-  }, [error, navigate]);
+  }, [error]);
 
   if (!partsData) {
     return <Spinner animation="border" />;
@@ -69,7 +89,7 @@ const Parts = () => {
               <Card.Body>
                 <Card.Title>{part.part_name}</Card.Title>
                 <Card.Subtitle className="mb-2 text-muted">
-                  {idMap.get(part.owner)}
+                  {idMap.get(part.owner) || "Unknown"}
                 </Card.Subtitle>
                 <Card.Text>{part.description}</Card.Text>
               </Card.Body>
