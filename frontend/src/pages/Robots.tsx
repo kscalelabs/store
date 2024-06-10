@@ -25,7 +25,13 @@ const Robots = () => {
             return [id, await auth_api.getUserById(id)];
           }),
         );
-        setIdMap(new Map(idMap.filter(isFulfilled).map((result) => result.value as [string, string])));
+        setIdMap(
+          new Map(
+            idMap
+              .filter(isFulfilled)
+              .map((result) => result.value as [string, string]),
+          ),
+        );
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);

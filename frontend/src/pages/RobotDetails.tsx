@@ -1,3 +1,4 @@
+import { useAlertQueue } from "hooks/alerts";
 import { api, Bom } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
@@ -13,7 +14,6 @@ import {
 } from "react-bootstrap";
 import Markdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useAlertQueue } from "hooks/alerts";
 import { isFulfilled } from "utils/isfullfiled";
 
 interface RobotDetailsResponse {
@@ -64,7 +64,11 @@ const RobotDetails = () => {
             quantity: part.quantity,
           };
         });
-        setParts((await Promise.allSettled(parts)).filter(isFulfilled).map((result) => result.value as ExtendedBom));
+        setParts(
+          (await Promise.allSettled(parts))
+            .filter(isFulfilled)
+            .map((result) => result.value as ExtendedBom),
+        );
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
