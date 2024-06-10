@@ -130,7 +130,7 @@ export class api {
     }
   }
   public async deleteRobot(id: string | undefined): Promise<void> {
-    const s = id
+    const s = id;
     try {
       await this.api.delete(`robots/delete/${id}/`);
     } catch (error) {

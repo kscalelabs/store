@@ -2,7 +2,7 @@ import { api, Bom, Image, Part, Robot } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const RobotForm: React.FC = () => {
   const auth = useAuthentication();

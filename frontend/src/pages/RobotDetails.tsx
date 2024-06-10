@@ -221,7 +221,8 @@ const RobotDetails = () => {
       >
         <Modal.Header closeButton>
           <Modal.Title>
-            {images[imageIndex].caption} ({imageIndex + 1} of {images.length} {userId})
+            {images[imageIndex].caption} ({imageIndex + 1} of {images.length}{" "}
+            {userId})
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -255,79 +256,79 @@ const RobotDetails = () => {
         </Modal.Footer>
       </Modal>
       <>
-      {robot.owner === (userId) && (
-        <>
-      <Row>
-        <Col md={3} sm={12}>
-          <Button
-            variant="success"
-            size="lg"
-            style={{
-              backgroundColor: "light-green",
-              borderColor: "black",
-              padding: "10px",
-              width: "100%",
-            }}
-            onClick={() => {
-              navigate(`/edit-robot/${id}/`);
-            }}
-          >
-            Edit Robot
-          </Button>
-        </Col>
-        <Col md={3} sm={12}>
-          <Button
-            variant="danger"
-            size="lg"
-            style={{
-              backgroundColor: "light-green",
-              borderColor: "black",
-              padding: "10px",
-              width: "100%",
-            }}
-            onClick={() => {
-              handleShowDelete();
-            }}
-          >
-            Delete Robot
-          </Button>
-        </Col>
-      </Row>
-      <Modal
-        show={showDelete}
-        onHide={handleCloseDelete}
-        fullscreen="md-down"
-        centered
-        size="lg"
-        scrollable
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>
-            Are you sure you want to delete this robot? :{"("}
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Footer className = "d-flex justify-content-start">
-            <Button
-              variant="danger"
-              onClick={async () => {
-                await auth_api.deleteRobot(id);
-                navigate(`/robots/`);
-              }}
+        {robot.owner === userId && (
+          <>
+            <Row>
+              <Col md={3} sm={12}>
+                <Button
+                  variant="success"
+                  size="lg"
+                  style={{
+                    backgroundColor: "light-green",
+                    borderColor: "black",
+                    padding: "10px",
+                    width: "100%",
+                  }}
+                  onClick={() => {
+                    navigate(`/edit-robot/${id}/`);
+                  }}
+                >
+                  Edit Robot
+                </Button>
+              </Col>
+              <Col md={3} sm={12}>
+                <Button
+                  variant="danger"
+                  size="lg"
+                  style={{
+                    backgroundColor: "light-green",
+                    borderColor: "black",
+                    padding: "10px",
+                    width: "100%",
+                  }}
+                  onClick={() => {
+                    handleShowDelete();
+                  }}
+                >
+                  Delete Robot
+                </Button>
+              </Col>
+            </Row>
+            <Modal
+              show={showDelete}
+              onHide={handleCloseDelete}
+              fullscreen="md-down"
+              centered
+              size="lg"
+              scrollable
             >
-              Delete Robot
-            </Button>
-            <Button
-              variant="outline-secondary"
-              onClick={() => {
-                handleCloseDelete();
-              }}
-            >
-              Cancel
-            </Button>
-        </Modal.Footer>
-      </Modal>
-      </>
-      )}
+              <Modal.Header closeButton>
+                <Modal.Title>
+                  Are you sure you want to delete this robot? :{"("}
+                </Modal.Title>
+              </Modal.Header>
+              <Modal.Footer className="d-flex justify-content-start">
+                <Button
+                  variant="danger"
+                  onClick={async () => {
+                    await auth_api.deleteRobot(id);
+                    navigate(`/robots/`);
+                  }}
+                >
+                  Delete Robot
+                </Button>
+                <Button
+                  variant="outline-secondary"
+                  onClick={() => {
+                    handleCloseDelete();
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Modal.Footer>
+            </Modal>
+          </>
+        )}
       </>
     </>
   );

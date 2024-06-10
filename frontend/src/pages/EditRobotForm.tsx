@@ -2,15 +2,15 @@ import { api, Bom, Image, Part, Robot } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface RobotDetailsResponse {
-    name: string;
-    owner: string;
-    description: string;
-    images: { url: string; caption: string }[];
-    bom: Bom[];
-  }
+  name: string;
+  owner: string;
+  description: string;
+  images: { url: string; caption: string }[];
+  bom: Bom[];
+}
 
 const EditRobotForm: React.FC = () => {
   const auth = useAuthentication();
@@ -36,7 +36,6 @@ const EditRobotForm: React.FC = () => {
         setBom(robotData.bom);
         setImages(robotData.images);
         setRobotId(robotData.robot_id);
-
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);

@@ -18,7 +18,6 @@ async def serialize_bom_list(bom_list: List[Bom]) -> List[dict]:
 
 
 class RobotCrud(BaseCrud):
-
     async def add_robot(self, robot: Robot) -> None:
         table = await self.db.Table("Robots")
         await table.put_item(Item=robot.model_dump())
