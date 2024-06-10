@@ -97,9 +97,23 @@ async def delete_tables(crud: Crud | None = None) -> None:
         await crud._delete_dynamodb_table("Parts")
 
 
+async def populate_with_dummy_data(crud: Crud | None = None) -> None:
+    """Populates the database with dummy data.
+
+    Args:
+        crud: The top-level CRUD class.
+    """
+    if crud is None:
+        async with Crud() as crud:
+            await populate_with_dummy_data(crud)
+
+    else:
+        raise NotImplementedError("This function is not yet implemented.")
+
+
 async def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("action", choices=["create", "delete"])
+    parser.add_argument("action", choices=["create", "delete", "populate"])
     args = parser.parse_args()
 
     async with Crud() as crud:
@@ -108,6 +122,8 @@ async def main() -> None:
                 await create_tables(crud)
             case "delete":
                 await delete_tables(crud)
+            case "populate":
+                await populate_with_dummy_data(crud)
             case _:
                 raise ValueError(f"Invalid action: {args.action}")
 
