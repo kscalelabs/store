@@ -31,7 +31,7 @@ const Home = () => {
         </Col>
       </Row>
       {isAuthenticated && (
-        <Row>
+        <Row className="row-two">
           <Col md={6} sm={12}>
             <Button
               variant="primary"
@@ -69,7 +69,7 @@ const Home = () => {
         </Row>
       )}
       {isAuthenticated && (
-        <Row>
+        <Row className="row-two">
           <Col md={6} sm={12}>
             <Button
               variant="success"
