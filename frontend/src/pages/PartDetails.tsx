@@ -8,10 +8,10 @@ import {
   ButtonGroup,
   Carousel,
   Col,
+  Container,
   Modal,
   Row,
   Spinner,
-  Container, 
 } from "react-bootstrap";
 import Markdown from "react-markdown";
 import { useNavigate, useParams } from "react-router-dom";
@@ -64,13 +64,19 @@ const PartDetails = () => {
   }, [error]);
 
   if (!part) {
-    return <Container fluid className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-      <Row className="w-100">
-        <Col className="d-flex justify-content-center align-items-center">
-          <Spinner animation="border" />
-        </Col>
-      </Row>
-    </Container>;
+    return (
+      <Container
+        fluid
+        className="d-flex justify-content-center align-items-center"
+        style={{ height: "100vh" }}
+      >
+        <Row className="w-100">
+          <Col className="d-flex justify-content-center align-items-center">
+            <Spinner animation="border" />
+          </Col>
+        </Row>
+      </Container>
+    );
   }
 
   const response: PartDetailsResponse = {

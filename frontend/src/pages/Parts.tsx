@@ -2,7 +2,14 @@ import { useAlertQueue } from "hooks/alerts";
 import { api, Part } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
-import { Breadcrumb, Card, Col, Row, Spinner, Container } from "react-bootstrap";
+import {
+  Breadcrumb,
+  Card,
+  Col,
+  Container,
+  Row,
+  Spinner,
+} from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { isFulfilled } from "utils/isfullfiled";
 
@@ -59,13 +66,19 @@ const Parts = () => {
   }, [error]);
 
   if (!partsData) {
-    return <Container fluid className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-      <Row className="w-100">
-        <Col className="d-flex justify-content-center align-items-center">
-          <Spinner animation="border" />
-        </Col>
-      </Row>
-    </Container>;
+    return (
+      <Container
+        fluid
+        className="d-flex justify-content-center align-items-center"
+        style={{ height: "100vh" }}
+      >
+        <Row className="w-100">
+          <Col className="d-flex justify-content-center align-items-center">
+            <Spinner animation="border" />
+          </Col>
+        </Row>
+      </Container>
+    );
   }
 
   return (
