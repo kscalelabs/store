@@ -16,16 +16,16 @@ const TopNavbar = () => {
           <Navbar.Brand as={Link} to="/">
             robolist
           </Navbar.Brand>
-            <div className="d-flex gap-3">
-              <Nav.Link
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              >
-                {theme === "dark" ? <MoonFill /> : <SunFill />}
-              </Nav.Link>
-              <Nav.Link onClick={() => setShowSidebar(true)}>
-                <GearFill />
-              </Nav.Link>
-            </div>
+          <div className="d-flex gap-3">
+            <Nav.Link
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              {theme === "dark" ? <MoonFill /> : <SunFill />}
+            </Nav.Link>
+            <Nav.Link onClick={() => setShowSidebar(true)}>
+              <GearFill />
+            </Nav.Link>
+          </div>
         </Container>
       </Navbar>
       <Sidebar show={showSidebar} onHide={() => setShowSidebar(false)} />
