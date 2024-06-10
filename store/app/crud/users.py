@@ -4,8 +4,6 @@ import asyncio
 import uuid
 import warnings
 
-from boto3.dynamodb.conditions import Key as KeyCondition
-
 from store.app.crud.base import BaseCrud
 from store.app.crypto import hash_api_key
 from store.app.model import ApiKey, User
@@ -13,6 +11,11 @@ from store.app.model import ApiKey, User
 
 class UserCrud(BaseCrud):
     async def add_user(self, user: User) -> None:
+        # First, add the user email to the UserEmails table.
+        table = await self.db.Table("UserEmails")
+        await table.put_item(Item={"email": user.email, "user_id": user.user_id})
+
+        # Then, add the user object to the Users table.
         table = await self.db.Table("Users")
         await table.put_item(Item=user.model_dump())
 
@@ -24,14 +27,15 @@ class UserCrud(BaseCrud):
         return User.model_validate(user_dict["Item"])
 
     async def get_user_from_email(self, email: str) -> User | None:
-        table = await self.db.Table("Users")
-        user_dict = await table.query(IndexName="emailIndex", KeyConditionExpression=KeyCondition("email").eq(email))
-        items = user_dict["Items"]
-        if len(items) == 0:
+        # First, query the UesrEmails table to get the user_id.
+        table = await self.db.Table("UserEmails")
+        user_dict = await table.get_item(Key={"email": email})
+        if "Item" not in user_dict:
             return None
-        if len(items) > 1:
-            raise ValueError(f"Multiple users found with email {email}")
-        return User.model_validate(items[0])
+        assert isinstance(user_id := user_dict["Item"]["user_id"], str)
+
+        # Then, query the Users table to get the user object.
+        return await self.get_user(uuid.UUID(user_id))
 
     async def get_user_id_from_api_key(self, api_key: uuid.UUID) -> uuid.UUID | None:
         api_key_hash = hash_api_key(api_key)
@@ -41,6 +45,11 @@ class UserCrud(BaseCrud):
         return uuid.UUID(user_id.decode("utf-8"))
 
     async def delete_user(self, user: User) -> None:
+        # First, delete the user email from the UserEmails table.
+        table = await self.db.Table("UserEmails")
+        await table.delete_item(Key={"email": user.email})
+
+        # Then, delete the user object from the Users table.
         table = await self.db.Table("Users")
         await table.delete_item(Key={"user_id": user.user_id})
 

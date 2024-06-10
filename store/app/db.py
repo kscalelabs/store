@@ -1,5 +1,6 @@
 """Defines base tools for interacting with the database."""
 
+import argparse
 import asyncio
 import logging
 from typing import AsyncGenerator, Self
@@ -22,11 +23,12 @@ class Crud(
             yield crud
 
 
-async def create_tables(crud: Crud | None = None) -> None:
+async def create_tables(crud: Crud | None = None, deletion_protection: bool = False) -> None:
     """Initializes all of the database tables.
 
     Args:
         crud: The top-level CRUD class.
+        deletion_protection: Whether to enable deletion protection on the tables.
     """
     logging.basicConfig(level=logging.INFO)
 
@@ -43,6 +45,14 @@ async def create_tables(crud: Crud | None = None) -> None:
             gsis=[
                 ("emailIndex", "email", "S", "HASH"),
             ],
+            deletion_protection=deletion_protection,
+        )
+        await crud._create_dynamodb_table(
+            name="UserEmails",
+            keys=[
+                ("email", "S", "HASH"),
+            ],
+            deletion_protection=deletion_protection,
         )
         await crud._create_dynamodb_table(
             name="Robots",
@@ -53,6 +63,7 @@ async def create_tables(crud: Crud | None = None) -> None:
                 ("ownerIndex", "owner", "S", "HASH"),
                 ("nameIndex", "name", "S", "HASH"),
             ],
+            deletion_protection=deletion_protection,
         )
         await crud._create_dynamodb_table(
             name="Parts",
@@ -63,9 +74,44 @@ async def create_tables(crud: Crud | None = None) -> None:
                 ("ownerIndex", "owner", "S", "HASH"),
                 ("nameIndex", "name", "S", "HASH"),
             ],
+            deletion_protection=deletion_protection,
         )
+
+
+async def delete_tables(crud: Crud | None = None) -> None:
+    """Deletes all of the database tables.
+
+    Args:
+        crud: The top-level CRUD class.
+    """
+    logging.basicConfig(level=logging.INFO)
+
+    if crud is None:
+        async with Crud() as crud:
+            await delete_tables(crud)
+
+    else:
+        await crud._delete_dynamodb_table("Users")
+        await crud._delete_dynamodb_table("UserEmails")
+        await crud._delete_dynamodb_table("Robots")
+        await crud._delete_dynamodb_table("Parts")
+
+
+async def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("action", choices=["create", "delete"])
+    args = parser.parse_args()
+
+    async with Crud() as crud:
+        match args.action:
+            case "create":
+                await create_tables(crud)
+            case "delete":
+                await delete_tables(crud)
+            case _:
+                raise ValueError(f"Invalid action: {args.action}")
 
 
 if __name__ == "__main__":
     # python -m store.app.db
-    asyncio.run(create_tables())
+    asyncio.run(main())
