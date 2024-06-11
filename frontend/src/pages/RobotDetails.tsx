@@ -1,3 +1,4 @@
+import { faAlignRight } from "@fortawesome/free-solid-svg-icons";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Bom } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
