@@ -1,0 +1,14 @@
+/* Styles for theme icons to prevent shaking and add smooth transitions */
+.theme-icon {
+  cursor: pointer;
+  position: relative; /* Keep relative to avoid layout shifts */
+  transition: color 0.2s ease; /* Smooth color transition */
+}
+
+.light-mode-icon {
+  color: #201a42;
+}
+
+.dark-mode-icon {
+  color: #f5f2ef;
+}
