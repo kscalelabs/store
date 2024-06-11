@@ -82,12 +82,22 @@ const RobotDetails = () => {
   }, [id]);
 
   useEffect(() => {
-    const fetchUserId = async () => {
-      const user_id = await auth_api.currentUser();
-      setUserId(user_id);
-    };
-    fetchUserId();
-  }, []);
+    if (auth.isAuthenticated) {
+      try {
+        const fetchUserId = async () => {
+          const user_id = await auth_api.currentUser();
+          setUserId(user_id);
+        };
+        fetchUserId();
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unexpected error occurred");
+        }
+      }
+    }
+  }, [auth.isAuthenticated]);
 
   const navigate = useNavigate();
 
