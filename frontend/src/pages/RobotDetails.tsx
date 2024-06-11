@@ -1,3 +1,4 @@
+import { faAlignRight } from "@fortawesome/free-solid-svg-icons";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Bom } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
@@ -289,8 +290,8 @@ const RobotDetails = () => {
       <>
         {robot.owner === userId && (
           <>
-            <Row>
-              <Col md={3} sm={12}>
+            <Row className = "justify-content-end mt-2">
+              <Col md={3} sm={12} >
                 <Button
                   variant="primary"
                   size="lg"
@@ -335,7 +336,7 @@ const RobotDetails = () => {
             >
               <Modal.Header closeButton>
                 <Modal.Title>
-                  Are you sure you want to delete this robot? :{"("}
+                  Are you sure you want to delete this robot?
                 </Modal.Title>
               </Modal.Header>
               <Modal.Footer className="d-flex justify-content-start">
