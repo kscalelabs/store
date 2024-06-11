@@ -8,3 +8,11 @@ div.content {
     gap: 16px;
   }
 }
+
+body {
+  transition: color 0.3s ease;
+}
+
+body * {
+  transition: inherit;
+}
