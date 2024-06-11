@@ -9,10 +9,7 @@ div.content {
   }
 }
 
+html,
 body {
-  transition: color 0.3s ease;
-}
-
-body * {
-  transition: inherit;
+  transition: color 0.4s ease;
 }
