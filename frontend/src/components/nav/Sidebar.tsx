@@ -1,4 +1,3 @@
-import AuthComponent from "components/auth/AuthComponent";
 import { Col, Offcanvas, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
@@ -21,7 +20,6 @@ const Sidebar = ({ show, onHide }: Props) => {
             height: "100%",
           }}
         >
-          <AuthComponent />
           <Row style={{ marginTop: "auto" }} />
           <Row>
             <Link to="/about">About</Link>

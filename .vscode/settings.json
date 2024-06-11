@@ -53,4 +53,5 @@
       "color": "#00e1ff55"
     }
   ],
+  "editor.formatOnSave": true,
 }

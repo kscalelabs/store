@@ -9,32 +9,34 @@ import uuid
 
 from pydantic import BaseModel
 
-from store.app.crypto import hash_api_key
+from store.app.crypto import hash_password
 
 
 class User(BaseModel):
     user_id: str  # Primary key
+    username: str
     email: str
+    password_hash: str
+    verified: bool
+    admin: bool
 
     @classmethod
-    def from_uuid(cls, user_id: uuid.UUID, email: str) -> "User":
-        return cls(user_id=str(user_id), email=email)
+    def create(cls, email: str, username: str, password: str) -> "User":
+        return cls(
+            user_id=str(uuid.uuid4()),
+            email=email,
+            username=username,
+            password_hash=hash_password(password),
+            verified=False,
+            admin=False,
+        )
 
-    def to_uuid(self) -> uuid.UUID:
-        return uuid.UUID(self.user_id)
 
-
-class ApiKey(BaseModel):
+class SessionToken(BaseModel):
     """Stored in Redis rather than DynamoDB."""
 
-    api_key_hash: str  # Primary key
+    token_hash: str  # Primary key
     user_id: str
-    lifetime: int
-
-    @classmethod
-    def from_api_key(cls, api_key: uuid.UUID, user_id: uuid.UUID, lifetime: int) -> "ApiKey":
-        api_key_hash = hash_api_key(api_key)
-        return cls(api_key_hash=api_key_hash, user_id=str(user_id), lifetime=lifetime)
 
 
 class Bom(BaseModel):
