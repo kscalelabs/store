@@ -29,6 +29,7 @@ async def send_email(subject: str, body: str, to: str) -> None:
     await smtp_client.sendmail(settings.email.sender_email, to, msg.as_string())
     await smtp_client.quit()
 
+
 async def send_verify_email(email: str, token: str) -> None:
     body = textwrap.dedent(
         """

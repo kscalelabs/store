@@ -1,14 +1,13 @@
 """Defines the API endpoint for creating, deleting and updating user information."""
 
 import logging
-import uuid
 from email.utils import parseaddr as parse_email_address
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic.main import BaseModel
 
-from store.app.crypto import hash_password, new_token
+from store.app.crypto import new_token, check_password
 from store.app.db import Crud
 from store.app.model import User
 from store.app.utils.email import send_delete_email, send_verify_email
@@ -41,7 +40,8 @@ async def get_session_token(request: Request) -> str:
     return token
 
 
-class UserLogin(BaseModel):
+class UserRegister(BaseModel):
+    username: str
     email: str
     password: str
 
@@ -55,28 +55,45 @@ def validate_email(email: str) -> str:
 
 
 @users_router.post("/register")
-async def register_user_endpoint(data: UserLogin, crud: Crud) -> bool:
-    """ "Registers a new user with the given email and password."""
+async def register_user_endpoint(
+    data: UserRegister,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> bool:
+    """Registers a new user with the given email and password."""
     email = validate_email(data.email)
     user = await crud.get_user_from_email(email)
     if user is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists")
-    await crud.add_user(User(username="", email=email, password=hash_password(data.password)))
+    user = User.create(username=data.username, email=email, password=data.password)
+    await crud.add_user(user)
     verify_email_token = new_token()
-    await crud.add_verify_email(email, verify_email_token)
+    # Magic number: 7 days
+    await crud.add_verify_email_token(user.user_id, verify_email_token, 60 * 60 * 24 * 7)
     await send_verify_email(email, verify_email_token)
     return True
 
 
 @users_router.get("/verify_email/{token}")
-async def verify_email_user_endpoint(token: str, crud: Crud) -> bool:
+async def verify_email_user_endpoint(
+    token: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> bool:
     """Verifies a user's email address."""
     await crud.check_verify_email_token(token)
     return True
 
 
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+
 @users_router.post("/login")
-async def login_user_endpoint(data: UserLogin, crud: Crud, response: Response) -> bool:
+async def login_user_endpoint(
+    data: UserLogin,
+    crud: Annotated[Crud, Depends(Crud.get)],
+    response: Response,
+) -> bool:
     """Gives the user a session token if they present the correct credentials.
 
     Args:
@@ -87,12 +104,24 @@ async def login_user_endpoint(data: UserLogin, crud: Crud, response: Response) -
     Returns:
         True if the credentials are correct.
     """
-    user = crud.get_user_from_email(data.email)
+    user = await crud.get_user_from_email(data.email)
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-    if hash_password(data.password) != user.password_hash:
+    if not check_password(data.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-    response.set_cookie(key="session_token", value=new_token(), httponly=True, domain=settings.homepage.domain)
+    token = new_token()
+    response.set_cookie(
+        key="session_token",
+        value=token,
+        httponly=True,
+    )
+    response.set_cookie(
+        key="session_token",
+        value=token,
+        httponly=True,
+        domain=settings.site.homepage,
+    )
+    await crud.add_session_token(token, user.user_id, 60 * 60 * 24 * 7)
 
     return True
 
@@ -126,7 +155,7 @@ async def delete_user_endpoint(
     user_obj = await crud.get_user(user_id)
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    await crud.delete_user(user_obj)
+    await crud.delete_user(user_id)
     await send_delete_email(user_obj.email)
     return True
 
@@ -135,14 +164,16 @@ async def delete_user_endpoint(
 async def logout_user_endpoint(
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
+    response: Response,
 ) -> bool:
     await crud.delete_session_token(token)
+    response.delete_cookie("session_token")
     return True
 
 
 @users_router.get("/{user_id}", response_model=UserInfoResponse)
 async def get_user_info_by_id_endpoint(user_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> UserInfoResponse:
-    user_obj = await crud.get_user(uuid.UUID(user_id))
+    user_obj = await crud.get_user(user_id)
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return UserInfoResponse(email=user_obj.email)

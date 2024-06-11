@@ -1,8 +1,6 @@
 """Defines CRUD interface for user API."""
 
 import asyncio
-import hashlib
-import uuid
 import warnings
 
 from boto3.dynamodb.conditions import Key
@@ -18,9 +16,9 @@ class UserCrud(BaseCrud):
         table = await self.db.Table("Users")
         await table.put_item(Item=user.model_dump(), ConditionExpression="attribute_not_exists(user_id)")
 
-    async def get_user(self, user_id: uuid.UUID) -> User | None:
+    async def get_user(self, user_id: str) -> User | None:
         table = await self.db.Table("Users")
-        user_dict = await table.get_item(Key={"user_id": str(user_id)})
+        user_dict = await table.get_item(Key={"user_id": user_id})
         if "Item" not in user_dict:
             return None
         return User.model_validate(user_dict["Item"])
@@ -28,9 +26,8 @@ class UserCrud(BaseCrud):
     async def get_user_from_email(self, email: str) -> User | None:
         table = await self.db.Table("Users")
         user_dict = await table.query(
-            IndexName="EmailIndex",
+            IndexName="emailIndex",
             KeyConditionExpression=Key("email").eq(email),
-            ExpressionAttributeValues={":email": email},
         )
         items = user_dict["Items"]
         if len(items) == 0:
@@ -39,11 +36,11 @@ class UserCrud(BaseCrud):
             raise ValueError(f"Multiple users found with email {email}")
         return User.model_validate(items[0])
 
-    async def get_user_id_from_session_token(self, session_token: str) -> uuid.UUID | None:
-        user_id = await self.session_kv.get(hash(session_token))
+    async def get_user_id_from_session_token(self, session_token: str) -> str | None:
+        user_id = await self.session_kv.get(hash_token(session_token))
         if user_id is None:
             return None
-        return uuid.UUID(user_id.decode("utf-8"))
+        return user_id.decode("utf-8")
 
     async def delete_user(self, user_id: str) -> None:
         # Then, delete the user object from the Users table.
@@ -60,13 +57,13 @@ class UserCrud(BaseCrud):
         return await table.item_count
 
     async def add_session_token(self, token: str, user_id: str, lifetime: int) -> None:
-        await self.session_kv.setex(hashlib.sha3_256(token), lifetime, user_id)
+        await self.session_kv.setex(hash_token(token), lifetime, user_id)
 
     async def delete_session_token(self, token: str) -> None:
         await self.session_kv.delete(hash_token(token))
 
     async def add_verify_email_token(self, token: str, user_id: str, lifetime: int) -> None:
-        await self.verify_email_kv.setex(hashlib.sha3_256(token), lifetime, user_id)
+        await self.verify_email_kv.setex(hash_token(token), lifetime, user_id)
 
     async def delete_verify_email_token(self, token: str) -> None:
         await self.verify_email_kv.delete(hash_token(token))
@@ -75,17 +72,17 @@ class UserCrud(BaseCrud):
         id = await self.verify_email_kv.get(hash_token(token))
         if id is None:
             raise ValueError("Token not found")
-        self.db.Table("Users").update_item(
+        await (await self.db.Table("Users")).update_item(
             Key={"user_id": id},
             UpdateExpression="SET verified = :v",
             ExpressionAttributeValues={":v": True},
         )
-        self.delete_verify_email_token(token)
+        await self.delete_verify_email_token(token)
 
 
 async def test_adhoc() -> None:
     async with UserCrud() as crud:
-        await crud.add_user(User(user_id=str(uuid.uuid4()), email="ben@kscale.dev"))
+        await crud.add_user(User.create(username="ben", email="ben@kscale.dev", password="password"))
 
 
 if __name__ == "__main__":

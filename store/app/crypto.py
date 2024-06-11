@@ -34,6 +34,13 @@ def hash_password(password: str) -> str:
     return PasswordHasher().hash(password)
 
 
+def check_password(password: str, hash: str) -> bool:
+    try:
+        return PasswordHasher().verify(hash, password)
+    except Exception:
+        return False
+
+
 def encode_jwt(data: dict[str, Any], expire_after: datetime.timedelta | None = None) -> str:  # noqa: ANN401
     if expire_after is not None:
         data["exp"] = datetime.datetime.utcnow() + expire_after
