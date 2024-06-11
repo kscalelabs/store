@@ -4,6 +4,7 @@ import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useRef, useState } from "react";
+import { CheckCircle } from "react-bootstrap-icons";
 import {
   Button,
   Col,
@@ -52,12 +53,13 @@ const EmailAuthComponent = () => {
     <Row>
       <Col>
         <Row>
-          <Col>
-            <h3>Success!</h3>
+          <Col style={{display: 'flex', alignItems: 'left'}}>
+            <CheckCircle size={28} color = "green"/>
+            <h3 style={{marginLeft: '10px', marginBottom: '0px'}}>Verification Email Sent!</h3>
           </Col>
         </Row>
-        <Row>
-          <Col>Check your email for a login link.</Col>
+        <Row className = "mb-3" style={{alignItems:'center'}}>
+          <Col style={{alignItems:'center'}}>Check your email for a login link.</Col>
         </Row>
       </Col>
     </Row>
