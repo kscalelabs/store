@@ -24,14 +24,14 @@ const COLORS: { [key in Theme]: ThemeColors } = {
     color: "#201a42",
     buttonBorder: "#0D6EFD",
     buttonHover: "#0D6EFD",
-    text_color: "#f5f2ef"
+    text_color: "#f5f2ef",
   },
   dark: {
     backgroundColor: "#000000",
     color: "#f5f2ef",
     buttonBorder: "#8AB9FE",
     buttonHover: "#0D6EFD",
-    text_color: "#201a42"
+    text_color: "#201a42",
   },
 };
 

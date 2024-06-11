@@ -1,4 +1,3 @@
-import { faAlignRight } from "@fortawesome/free-solid-svg-icons";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Bom } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
@@ -290,8 +289,8 @@ const RobotDetails = () => {
       <>
         {robot.owner === userId && (
           <>
-            <Row className = "justify-content-end mt-2">
-              <Col md={3} sm={12} >
+            <Row className="justify-content-end mt-2">
+              <Col md={3} sm={12}>
                 <Button
                   variant="primary"
                   size="lg"

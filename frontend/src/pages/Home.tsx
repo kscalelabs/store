@@ -1,10 +1,8 @@
 import { useAuthentication } from "hooks/auth";
+import { useTheme } from "hooks/theme";
+import React, { useState } from "react";
 import { Button, Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import { useTheme } from "hooks/theme";
-import {Hammer} from "react-bootstrap-icons"
-import React, { useState } from "react";
-
 
 const Home: React.FC = () => {
   const { theme, colors } = useTheme();
@@ -20,7 +18,6 @@ const Home: React.FC = () => {
 
   const handleMouseEnterL = () => setIsHoveredL(true);
   const handleMouseLeaveL = () => setIsHoveredL(false);
-
 
   return (
     <div className="flex-column pt-5 gap-4" style={{ display: "flex" }}>
@@ -50,7 +47,7 @@ const Home: React.FC = () => {
         <Row className="row-two">
           <Col md={6} sm={12}>
             <Button
-              variant= {theme==="dark"?"outline-light":"outline-dark"}
+              variant={theme === "dark" ? "outline-light" : "outline-dark"}
               size="lg"
               style={{
                 backgroundColor: "light-purple",
@@ -67,7 +64,7 @@ const Home: React.FC = () => {
           </Col>
           <Col md={6} sm={12}>
             <Button
-              variant= {theme==="dark"?"outline-light":"outline-dark"}
+              variant={theme === "dark" ? "outline-light" : "outline-dark"}
               size="lg"
               style={{
                 backgroundColor: "dark-purple",
@@ -91,8 +88,8 @@ const Home: React.FC = () => {
               variant="outline-primary"
               size="lg"
               style={{
-                color: isHoveredR?colors.text_color:colors.buttonBorder,
-                backgroundColor: isHoveredR?colors.buttonBorder:"",
+                color: isHoveredR ? colors.text_color : colors.buttonBorder,
+                backgroundColor: isHoveredR ? colors.buttonBorder : "",
                 borderColor: colors.buttonBorder,
                 padding: "10px",
                 width: "100%",
@@ -103,7 +100,6 @@ const Home: React.FC = () => {
                 navigate("/robots/add");
               }}
             >
-             
               Make a Robot
             </Button>
           </Col>
@@ -112,8 +108,8 @@ const Home: React.FC = () => {
               variant="outline-primary"
               size="lg"
               style={{
-                color: isHoveredL?colors.text_color:colors.buttonBorder,
-                backgroundColor: isHoveredL?colors.buttonBorder:"",
+                color: isHoveredL ? colors.text_color : colors.buttonBorder,
+                backgroundColor: isHoveredL ? colors.buttonBorder : "",
                 borderColor: colors.buttonBorder,
                 padding: "10px",
                 width: "100%",
