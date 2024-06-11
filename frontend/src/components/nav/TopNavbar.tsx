@@ -1,3 +1,4 @@
+import Boop from "components/nav/Boop";
 import Sidebar from "components/nav/Sidebar";
 import { useTheme } from "hooks/theme";
 import { useState } from "react";
@@ -17,14 +18,18 @@ const TopNavbar = () => {
             robolist
           </Navbar.Brand>
           <div className="d-flex gap-3">
-            <Nav.Link
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            >
-              {theme === "dark" ? <MoonFill /> : <SunFill />}
-            </Nav.Link>
-            <Nav.Link onClick={() => setShowSidebar(true)}>
-              <GearFill />
-            </Nav.Link>
+            <Boop timing={100}>
+              <Nav.Link
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              >
+                {theme === "dark" ? <MoonFill /> : <SunFill />}
+              </Nav.Link>
+            </Boop>
+            <Boop timing={100}>
+              <Nav.Link onClick={() => setShowSidebar(true)}>
+                <GearFill />
+              </Nav.Link>
+            </Boop>
           </div>
         </Container>
       </Navbar>
