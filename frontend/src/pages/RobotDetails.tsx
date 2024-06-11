@@ -292,11 +292,11 @@ const RobotDetails = () => {
             <Row>
               <Col md={3} sm={12}>
                 <Button
-                  variant="success"
+                  variant="primary"
                   size="lg"
                   style={{
                     backgroundColor: "light-green",
-                    borderColor: "black",
+                    borderColor: "",
                     padding: "10px",
                     width: "100%",
                   }}
@@ -313,7 +313,7 @@ const RobotDetails = () => {
                   size="lg"
                   style={{
                     backgroundColor: "light-green",
-                    borderColor: "black",
+                    borderColor: "",
                     padding: "10px",
                     width: "100%",
                   }}

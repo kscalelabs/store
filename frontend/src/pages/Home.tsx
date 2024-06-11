@@ -1,8 +1,11 @@
 import { useAuthentication } from "hooks/auth";
 import { Button, Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "hooks/theme";
+
 
 const Home = () => {
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthentication();
 
@@ -17,7 +20,7 @@ const Home = () => {
           <Card onClick={() => navigate(`/robots`)}>
             <Card.Body>
               <Card.Title>Robots</Card.Title>
-              <Card.Text>Buy and sell robot</Card.Text>
+              <Card.Text>Buy and sell robots</Card.Text>
             </Card.Body>
           </Card>
         </Col>
@@ -34,11 +37,11 @@ const Home = () => {
         <Row className="row-two">
           <Col md={6} sm={12}>
             <Button
-              variant="primary"
+              variant="outline-dark"
               size="lg"
               style={{
                 backgroundColor: "light-purple",
-                borderColor: "black",
+                borderColor: "secondary",
                 padding: "10px",
                 width: "100%",
               }}
@@ -51,11 +54,11 @@ const Home = () => {
           </Col>
           <Col md={6} sm={12}>
             <Button
-              variant="primary"
+              variant="secondary"
               size="lg"
               style={{
                 backgroundColor: "dark-purple",
-                borderColor: "black",
+                borderColor: "secondary",
                 padding: "10px",
                 width: "100%",
               }}
@@ -72,11 +75,11 @@ const Home = () => {
         <Row className="row-two">
           <Col md={6} sm={12}>
             <Button
-              variant="success"
+              variant="primary"
               size="lg"
               style={{
                 backgroundColor: "light-green",
-                borderColor: "black",
+                borderColor: "secondary",
                 padding: "10px",
                 width: "100%",
               }}
@@ -89,11 +92,11 @@ const Home = () => {
           </Col>
           <Col md={6} sm={12}>
             <Button
-              variant="success"
+              variant= {theme==="dark"?"outline-light":"outline-dark"}
               size="lg"
               style={{
                 backgroundColor: "light-green",
-                borderColor: "black",
+                borderColor: "secondary",
                 padding: "10px",
                 width: "100%",
               }}
