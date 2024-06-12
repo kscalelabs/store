@@ -6,6 +6,7 @@ import { AlertQueue, AlertQueueProvider } from "hooks/alerts";
 import { AuthenticationProvider, OneTimePasswordWrapper } from "hooks/auth";
 import { ThemeProvider } from "hooks/theme";
 import About from "pages/About";
+import EditPartForm from "pages/EditPartForm";
 import EditRobotForm from "pages/EditRobotForm";
 import Home from "pages/Home";
 import NotFound from "pages/NotFound";
@@ -39,6 +40,7 @@ const App = () => {
                     <Route path="/robots/add" element={<RobotForm />} />
                     <Route path="/parts/add" element={<PartForm />} />
                     <Route path="/robot/:id" element={<RobotDetails />} />
+                    <Route path="/edit-part/:id" element={<EditPartForm />} />
                     <Route path="/edit-robot/:id" element={<EditRobotForm />} />
                     <Route path="/parts/" element={<Parts />} />
                     <Route path="/part/:id" element={<PartDetails />} />
