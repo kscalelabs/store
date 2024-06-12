@@ -4,9 +4,8 @@ import hashlib
 import secrets
 import string
 import uuid
-from typing import Any
-from argon2 import PasswordHasher
 
+from argon2 import PasswordHasher
 
 
 def get_new_user_id() -> uuid.UUID:

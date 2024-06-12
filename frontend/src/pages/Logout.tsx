@@ -9,13 +9,13 @@ const Logout = () => {
   const auth_api = new api(auth.api);
   useEffect(() => {
     (async () => {
-    deleteLocalStorageAuth();
-    try {
-    await auth_api.logout();
-  } catch (err) {
-    console.error(err);
-  }
-    navigate("/");
+      deleteLocalStorageAuth();
+      try {
+        await auth_api.logout();
+      } catch (err) {
+        console.error(err);
+      }
+      navigate("/");
     })();
   }, [auth_api, navigate]);
   return <></>;

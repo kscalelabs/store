@@ -12,18 +12,18 @@ const VerifyEmail = () => {
   useEffect(() => {
     (async () => {
       if (needToSend) {
-      setNeedToSend(false);
-      if (token !== undefined) {
-        try {
-          await auth_api.verify_email(token);
-          setMessage("Successfully verified email.");
-        } catch (error) {
-          setMessage("Verification token invalid.");
+        setNeedToSend(false);
+        if (token !== undefined) {
+          try {
+            await auth_api.verify_email(token);
+            setMessage("Successfully verified email.");
+          } catch (error) {
+            setMessage("Verification token invalid.");
+          }
+        } else {
+          setMessage("No token provided");
         }
-      } else {
-        setMessage("No token provided");
       }
-    }
     })();
   }, [auth_api]);
   return (
