@@ -34,11 +34,14 @@ const TopNavbar = () => {
               </>
             )}
             {isAuthenticated && (
-              <Boop timing={100}>
-                <Nav.Link onClick={() => setShowSidebar(true)}>
-                  <GearFill />
-                </Nav.Link>
-              </Boop>
+              <>
+                <Boop timing={100}>
+                  <Nav.Link onClick={() => setShowSidebar(true)}>
+                    <GearFill />
+                  </Nav.Link>
+                </Boop>
+                <Nav.Link href="/logout">Log Out</Nav.Link>
+              </>
             )}
           </div>
         </Container>
