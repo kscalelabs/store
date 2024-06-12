@@ -18,6 +18,7 @@ import Register from "pages/Register";
 import RobotDetails from "pages/RobotDetails";
 import RobotForm from "pages/RobotForm";
 import Robots from "pages/Robots";
+import VerifyEmail from "pages/VerifyEmail";
 import YourParts from "pages/YourParts";
 import YourRobots from "pages/YourRobots";
 import { Container } from "react-bootstrap";
@@ -39,6 +40,10 @@ const App = () => {
                   <Route path="/about" element={<About />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
+                  <Route
+                    path="/verify-email/:token"
+                    element={<VerifyEmail />}
+                  />
                   <Route path="/logout" element={<Logout />} />
                   <Route path="/robots/" element={<Robots />} />
                   <Route path="/robots/add" element={<RobotForm />} />

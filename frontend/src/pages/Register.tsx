@@ -59,7 +59,7 @@ const Register = () => {
           value={username}
           required
         />
-        Description:
+        Password:
         <Form.Control
           id="password"
           className="mb-3"

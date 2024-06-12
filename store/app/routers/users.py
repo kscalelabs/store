@@ -83,12 +83,12 @@ async def register_user_endpoint(
     await crud.add_user(user)
     verify_email_token = new_token()
     # Magic number: 7 days
-    await crud.add_verify_email_token(user.user_id, verify_email_token, 60 * 60 * 24 * 7)
+    await crud.add_verify_email_token(verify_email_token, user.user_id, 60 * 60 * 24 * 7)
     await send_verify_email(email, verify_email_token)
     return True
 
 
-@users_router.post("/verify_email/{token}")
+@users_router.post("/verify-email/{token}")
 async def verify_email_user_endpoint(
     token: str,
     crud: Annotated[Crud, Depends(Crud.get)],

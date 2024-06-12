@@ -1,16 +1,12 @@
 """Defines crypto functions."""
 
-import datetime
 import hashlib
 import secrets
 import string
 import uuid
 from typing import Any
-
-import jwt
 from argon2 import PasswordHasher
 
-from store.settings import settings
 
 
 def get_new_user_id() -> uuid.UUID:
@@ -39,13 +35,3 @@ def check_password(password: str, hash: str) -> bool:
         return PasswordHasher().verify(hash, password)
     except Exception:
         return False
-
-
-def encode_jwt(data: dict[str, Any], expire_after: datetime.timedelta | None = None) -> str:  # noqa: ANN401
-    if expire_after is not None:
-        data["exp"] = datetime.datetime.utcnow() + expire_after
-    return jwt.encode(data, settings.crypto.jwt_secret, algorithm=settings.crypto.algorithm)
-
-
-def decode_jwt(token: str) -> dict[str, Any]:  # noqa: ANN401
-    return jwt.decode(token, settings.crypto.jwt_secret, algorithms=[settings.crypto.algorithm])

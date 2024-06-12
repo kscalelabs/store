@@ -32,10 +32,10 @@ async def send_email(subject: str, body: str, to: str) -> None:
 
 async def send_verify_email(email: str, token: str) -> None:
     body = textwrap.dedent(
-        """
+        f"""
             <h1><code>K-Scale Labs</code></h1>
             <h2><code>verify your email</code></h2>
-            <p>Click <a href="{settings.site.homepage}/verify_email/{token}">here</a> to verify your email.</p>
+            <p>Click <a href="{settings.site.homepage}/verify-email/{token}">here</a> to verify your email.</p>
         """
     )
 

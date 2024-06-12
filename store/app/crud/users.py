@@ -65,6 +65,7 @@ class UserCrud(BaseCrud):
         await self.session_kv.delete(hash_token(token))
 
     async def add_verify_email_token(self, token: str, user_id: str, lifetime: int) -> None:
+        print("IUNSERTING TOKEN", token)
         await self.verify_email_kv.setex(hash_token(token), lifetime, user_id)
 
     async def delete_verify_email_token(self, token: str) -> None:
@@ -75,9 +76,8 @@ class UserCrud(BaseCrud):
         if id is None:
             raise ValueError("Token not found")
         await (await self.db.Table("Users")).update_item(
-            Key={"user_id": id},
-            UpdateExpression="SET verified = :v",
-            ExpressionAttributeValues={":v": True},
+            Key={"user_id": id.decode("utf-8")},
+            AttributeUpdates={"verified": {"Value": True, "Action": "PUT"}},
         )
         await self.delete_verify_email_token(token)
 

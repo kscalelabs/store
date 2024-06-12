@@ -8,9 +8,15 @@ const Logout = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   useEffect(() => {
+    (async () => {
     deleteLocalStorageAuth();
-    auth_api.logout();
+    try {
+    await auth_api.logout();
+  } catch (err) {
+    console.error(err);
+  }
     navigate("/");
+    })();
   }, [auth_api, navigate]);
   return <></>;
 };

@@ -55,6 +55,23 @@ export class api {
     }
   }
 
+  public async verify_email(code: string): Promise<void> {
+    try {
+      await this.api.post("/users/verify-email/" + code);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error verifying email:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail ||
+            "Error verifying email with code " + code,
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+
   public async login(email: string, password: string): Promise<void> {
     try {
       await this.api.post("/users/login/", { email, password });
@@ -72,7 +89,17 @@ export class api {
     }
   }
   public async logout(): Promise<void> {
-    await this.api.delete("/users/logout/");
+    try {
+      await this.api.delete("/users/logout/");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error logging out:", error.response?.data);
+        throw new Error(error.response?.data?.detail || "Error logging out");
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
   }
   public async getUserById(userId: string | undefined): Promise<string> {
     const response = await this.api.get(`/users/${userId}`);
