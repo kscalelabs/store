@@ -150,9 +150,9 @@ const RobotForm: React.FC<RobotFormProps> = ({
         {robot_images.map((image, index) => (
           <Row key={index} className="mb-3">
             <Col md={12}>
-              <label htmlFor={"url-" + { index }}>URL</label>
+              <label htmlFor={"url-" +  index }>URL</label>
               <Form.Control
-                id={"url-" + { index }}
+                id={"url-" +  index }
                 className="mb-1"
                 type="text"
                 name="url"
@@ -160,9 +160,9 @@ const RobotForm: React.FC<RobotFormProps> = ({
                 onChange={(e) => handleImageChange(index, e)}
                 required
               />
-              <label htmlFor={"caption-" + { index }}>Caption</label>
+              <label htmlFor={"caption-" +  index }>Caption</label>
               <Form.Control
-                id={"caption-" + { index }}
+                id={"caption-" +  index }
                 className="mb-1"
                 type="text"
                 name="caption"
@@ -191,11 +191,11 @@ const RobotForm: React.FC<RobotFormProps> = ({
         {robot_bom.map((bom, index) => (
           <Row key={index} className="mb-3">
             <Col md={12}>
-              Part
+              <label htmlFor={"part-" + index}>Part</label>
               <Form.Control
+              id={"part-" + index}
                 className="mb-1"
                 as="select"
-                placeholder="Part Id"
                 name="part_id"
                 value={bom.part_id}
                 onChange={(e) => handleBomChange(index, e)}
@@ -210,11 +210,11 @@ const RobotForm: React.FC<RobotFormProps> = ({
                   </option>
                 ))}
               </Form.Control>
-              Quantity
+              <label htmlFor={"quantity-" + index}>Quantity</label>
               <Form.Control
+              id={"quantity-" + index}
                 className="mb-1"
                 type="number"
-                placeholder="Quantity"
                 name="quantity"
                 value={bom.quantity}
                 onChange={(e) => handleBomChange(index, e)}
