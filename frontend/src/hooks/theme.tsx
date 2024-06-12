@@ -13,16 +13,25 @@ const THEME_KEY = "__THEME";
 interface ThemeColors {
   backgroundColor: string;
   color: string;
+  buttonBorder: string;
+  buttonHover: string;
+  text_color: string;
 }
 
 const COLORS: { [key in Theme]: ThemeColors } = {
   light: {
     backgroundColor: "#ffffff",
     color: "#201a42",
+    buttonBorder: "#0D6EFD",
+    buttonHover: "#0D6EFD",
+    text_color: "#f5f2ef",
   },
   dark: {
     backgroundColor: "#000000",
     color: "#f5f2ef",
+    buttonBorder: "#8AB9FE",
+    buttonHover: "#0D6EFD",
+    text_color: "#201a42",
   },
 };
 
@@ -66,7 +75,7 @@ export const ThemeProvider = (props: ThemeProviderProps) => {
     document.body.classList.toggle("light-mode", theme === "light");
     document.body.style.backgroundColor = COLORS[theme].backgroundColor;
     document.body.style.color = COLORS[theme].color;
-  }, [theme]);
+  }, [theme, COLORS]);
 
   return (
     <ThemeContext.Provider
