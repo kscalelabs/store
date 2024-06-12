@@ -83,22 +83,3 @@ def mock_send_email(mocker: MockerFixture) -> MockType:
     mock = mocker.patch("store.app.utils.email.send_email")
     mock.return_value = None
     return mock
-
-
-@pytest.fixture()
-def authenticated_user(app_client: TestClient) -> tuple[TestClient, str, str]:
-    from store.app.utils.email import OneTimePassPayload
-
-    test_email = "test@example.com"
-
-    # Logs the user in using the OTP.
-    otp = OneTimePassPayload(email=test_email, lifetime=3600)
-    response = app_client.post("/users/otp", json={"payload": otp.encode()})
-    assert response.status_code == 200, response.json()
-
-    # Gets a session token.
-    response = app_client.post("/users/refresh")
-    data = response.json()
-    assert response.status_code == 200, data
-
-    return app_client, test_email, data["token"]
