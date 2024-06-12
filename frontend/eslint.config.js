@@ -22,6 +22,7 @@ export default [
     rules: {
       ...pluginReactConfig.rules,
       "react/react-in-jsx-scope": "off",
+      "react/prop-types": "off",
     },
   }),
 ];
