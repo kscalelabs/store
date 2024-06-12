@@ -1,6 +1,6 @@
 import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
-import { setLocalStorageAuth, useAuthentication } from "hooks/auth";
+import { useAuthentication } from "hooks/auth";
 import { FormEvent, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
@@ -20,7 +20,6 @@ const Register = () => {
     event.preventDefault();
     try {
       await auth_api.register(email, username, password);
-      setLocalStorageAuth(email);
       navigate("/");
     } catch (err) {
       if (err instanceof Error) {
