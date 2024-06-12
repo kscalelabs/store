@@ -98,7 +98,7 @@ const PartForm: React.FC<PartFormProps> = ({
             </Col>
             <Col md={12}>
               <Button
-                className="mb-3"
+                className="mt-2 mb-2"
                 variant="danger"
                 onClick={() => handleRemoveImage(index)}
               >
@@ -107,12 +107,12 @@ const PartForm: React.FC<PartFormProps> = ({
             </Col>
           </Row>
         ))}
-        <Col md={6}>
+        <Col md={12}>
           <Button className="mb-3" variant="secondary" onClick={handleAddImage}>
             Add Image
           </Button>
         </Col>
-        <Col md={6}>
+        <Col md={12}>
           <Button type="submit">Submit</Button>
         </Col>
       </Form>

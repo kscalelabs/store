@@ -173,7 +173,7 @@ const RobotForm: React.FC<RobotFormProps> = ({
             </Col>
             <Col md={12}>
               <Button
-                className="mb-3"
+                className="mb-2 mt-2"
                 variant="danger"
                 onClick={() => handleRemoveImage(index)}
               >
@@ -182,7 +182,7 @@ const RobotForm: React.FC<RobotFormProps> = ({
             </Col>
           </Row>
         ))}
-        <Col md={6}>
+        <Col>
           <Button className="mb-3" variant="secondary" onClick={handleAddImage}>
             Add Image
           </Button>
@@ -190,7 +190,7 @@ const RobotForm: React.FC<RobotFormProps> = ({
         <h2>Bill of Materials</h2>
         {robot_bom.map((bom, index) => (
           <Row key={index} className="mb-3">
-            <Col md={12}>
+            <Col>
               <label htmlFor={"part-" + index}>Part</label>
               <Form.Control
                 id={"part-" + index}
@@ -223,8 +223,7 @@ const RobotForm: React.FC<RobotFormProps> = ({
             </Col>
             <Col md={12}>
               <Button
-                className="mb-3"
-                size="sm"
+                className="mb-2 mt-2"
                 variant="danger"
                 onClick={() => handleRemoveBom(index)}
               >
@@ -233,12 +232,12 @@ const RobotForm: React.FC<RobotFormProps> = ({
             </Col>
           </Row>
         ))}
-        <Col md={6}>
+        <Col>
           <Button className="mb-3" variant="secondary" onClick={handleAddBom}>
             Add Part
           </Button>
         </Col>
-        <Col md={6}>
+        <Col>
           <Button type="submit">Submit</Button>
         </Col>
       </Form>
