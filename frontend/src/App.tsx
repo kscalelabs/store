@@ -6,7 +6,6 @@ import { AlertQueue, AlertQueueProvider } from "hooks/alerts";
 import { AuthenticationProvider } from "hooks/auth";
 import { ThemeProvider } from "hooks/theme";
 import About from "pages/About";
-import EditPartForm from "pages/EditPartForm";
 import EditRobotForm from "pages/EditRobotForm";
 import Home from "pages/Home";
 import Login from "pages/Login";

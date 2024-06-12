@@ -42,9 +42,10 @@ async def get_part(part_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> Pa
 
 @parts_router.get("/user/")
 async def current_user(
-    crud: Annotated[Crud, Depends(Crud.get)], data: Annotated[ApiKeyData, Depends(get_api_key)]
+    crud: Annotated[Crud, Depends(Crud.get)],
+    token: Annotated[str, Depends(get_session_token)],
 ) -> str | None:
-    user_id = await crud.get_user_id_from_api_key(data.api_key)
+    user_id = await crud.get_user_id_from_session_token(token)
     return str(user_id)
 
 
