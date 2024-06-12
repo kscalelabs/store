@@ -73,7 +73,7 @@ async def register_user_endpoint(
     return True
 
 
-@users_router.get("/verify_email/{token}")
+@users_router.post("/verify_email/{token}")
 async def verify_email_user_endpoint(
     token: str,
     crud: Annotated[Crud, Depends(Crud.get)],
