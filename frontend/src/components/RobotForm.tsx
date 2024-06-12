@@ -1,22 +1,48 @@
-import { api, Bom, Image, Part, Robot } from "hooks/api";
-import { useAuthentication } from "hooks/auth";
-import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { Bom, Image, Part } from "hooks/api";
+import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
 
-const RobotForm: React.FC = () => {
-  const auth = useAuthentication();
-  const auth_api = new api(auth.api);
-  const [message, setMessage] = useState<string | null>(null);
-  const [robot_name, setName] = useState<string>("");
-  const [robot_height, setHeight] = useState<string>("");
-  const [robot_weight, setWeight] = useState<string>("");
-  const [robot_degrees_of_freedom, setDof] = useState<string>("");
-  const [robot_description, setDescription] = useState<string>("");
-  const [robot_bom, setBom] = useState<Bom[]>([]);
-  const [robot_images, setImages] = useState<Image[]>([]);
-  const [parts, setParts] = useState<Part[]>([]);
+interface RobotFormProps {
+  title: string;
+  message: string;
+  robot_name: string;
+  setName: Dispatch<SetStateAction<string>>;
+  robot_height: string;
+  setHeight: Dispatch<SetStateAction<string>>;
+  robot_weight: string;
+  setWeight: Dispatch<SetStateAction<string>>;
+  robot_degrees_of_freedom: string;
+  setDof: Dispatch<SetStateAction<string>>;
+  robot_description: string;
+  setDescription: Dispatch<SetStateAction<string>>;
+  robot_bom: Bom[];
+  setBom: Dispatch<SetStateAction<Bom[]>>;
+  parts: Part[];
+  handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  robot_images: Image[];
+  setImages: Dispatch<SetStateAction<Image[]>>;
+}
 
+const RobotForm: React.FC<RobotFormProps> = ({
+  title,
+  message,
+  robot_name,
+  setName,
+  robot_height,
+  setHeight,
+  robot_weight,
+  setWeight,
+  robot_degrees_of_freedom,
+  setDof,
+  robot_description,
+  setDescription,
+  robot_bom,
+  setBom,
+  parts,
+  handleSubmit,
+  robot_images,
+  setImages,
+}) => {
   const handleImageChange = (
     index: number,
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -59,119 +85,86 @@ const RobotForm: React.FC = () => {
     const newBom = robot_bom.filter((_, i) => i !== index);
     setBom(newBom);
   };
-  const navigate = useNavigate();
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (robot_images.length === 0) {
-      setMessage("Please upload at least one image.");
-      return;
-    }
-    const newFormData: Robot = {
-      robot_id: "",
-      name: robot_name,
-      description: robot_description,
-      owner: "",
-      bom: robot_bom,
-      images: robot_images,
-      height: robot_height,
-      weight: robot_weight,
-      degrees_of_freedom: robot_degrees_of_freedom,
-    };
-    try {
-      await auth_api.addRobot(newFormData);
-      setMessage(`Robot added successfully.`);
-      navigate(`/robots/your/`);
-    } catch (error) {
-      setMessage("Error adding robot ");
-    }
-  };
-
-  useEffect(() => {
-    const fetchParts = async () => {
-      try {
-        const partsQuery = await auth_api.getParts();
-        setParts(partsQuery);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchParts();
-  }, []);
 
   return (
-    <Row>
-      <h2>Add a New Robot</h2>
+    <>
+      <h1>{title}</h1>
       {message && <p>{message}</p>}
       <Form onSubmit={handleSubmit} className="mb-3">
-        Name:
+        <label htmlFor="name">Name</label>
         <Form.Control
+          id="name"
           className="mb-3"
           type="text"
-          placeholder="Robot Name:"
           onChange={(e) => {
             setName(e.target.value);
           }}
           value={robot_name}
           required
         />
-        Height:
+        <label htmlFor="height">Height</label>
         <Form.Control
+          id="height"
           className="mb-3"
           type="text"
-          placeholder="(Optional) Robot Height:"
+          placeholder="Optional"
           onChange={(e) => {
             setHeight(e.target.value);
           }}
           value={robot_height}
         />
-        Weight:
+        <label htmlFor="weight">Weight</label>
         <Form.Control
+          id="weight"
           className="mb-3"
           type="text"
-          placeholder="(Optional) Robot Weight:"
+          placeholder="Optional"
           onChange={(e) => {
             setWeight(e.target.value);
           }}
           value={robot_weight}
         />
-        Total Degrees of Freedom:
+        <label htmlFor="dof">Total Degrees of Freedom</label>
         <Form.Control
+          id="dof"
           className="mb-3"
           type="text"
-          placeholder="(Optional) Robot Total Degrees of Freedom:"
+          placeholder="Optional"
           onChange={(e) => {
             setDof(e.target.value);
           }}
           value={robot_degrees_of_freedom}
         />
-        Description:
+        <label htmlFor="desc">Description</label>
         <Form.Control
+          id="desc"
           className="mb-3"
-          type="text"
-          placeholder="Robot Description:"
+          as="textarea"
           onChange={(e) => {
             setDescription(e.target.value);
           }}
           value={robot_description}
           required
         />
-        Images:
+        <h2>Images</h2>
         {robot_images.map((image, index) => (
           <Row key={index} className="mb-3">
             <Col md={12}>
+              <label htmlFor={"url-" + index}>URL</label>
               <Form.Control
+                id={"url-" + index}
                 className="mb-1"
                 type="text"
-                placeholder="Image URL"
                 name="url"
                 value={image.url}
                 onChange={(e) => handleImageChange(index, e)}
                 required
               />
+              <label htmlFor={"caption-" + index}>Caption</label>
               <Form.Control
+                id={"caption-" + index}
                 className="mb-1"
                 type="text"
-                placeholder="Image Caption"
                 name="caption"
                 value={image.caption}
                 onChange={(e) => handleImageChange(index, e)}
@@ -180,8 +173,7 @@ const RobotForm: React.FC = () => {
             </Col>
             <Col md={12}>
               <Button
-                className="mb-3"
-                size="sm"
+                className="mb-2 mt-2"
                 variant="danger"
                 onClick={() => handleRemoveImage(index)}
               >
@@ -190,20 +182,20 @@ const RobotForm: React.FC = () => {
             </Col>
           </Row>
         ))}
-        <Col md={6}>
-          <Button className="mb-3" variant="primary" onClick={handleAddImage}>
+        <Col>
+          <Button className="mb-3" variant="secondary" onClick={handleAddImage}>
             Add Image
           </Button>
         </Col>
-        Bill of Materials:
+        <h2>Bill of Materials</h2>
         {robot_bom.map((bom, index) => (
           <Row key={index} className="mb-3">
-            <Col md={12}>
-              Part:
+            <Col>
+              <label htmlFor={"part-" + index}>Part</label>
               <Form.Control
+                id={"part-" + index}
                 className="mb-1"
                 as="select"
-                placeholder="Part Id: "
                 name="part_id"
                 value={bom.part_id}
                 onChange={(e) => handleBomChange(index, e)}
@@ -218,11 +210,11 @@ const RobotForm: React.FC = () => {
                   </option>
                 ))}
               </Form.Control>
-              Quantity:
+              <label htmlFor={"quantity-" + index}>Quantity</label>
               <Form.Control
+                id={"quantity-" + index}
                 className="mb-1"
                 type="number"
-                placeholder="Quantity:"
                 name="quantity"
                 value={bom.quantity}
                 onChange={(e) => handleBomChange(index, e)}
@@ -231,8 +223,7 @@ const RobotForm: React.FC = () => {
             </Col>
             <Col md={12}>
               <Button
-                className="mb-3"
-                size="sm"
+                className="mb-2 mt-2"
                 variant="danger"
                 onClick={() => handleRemoveBom(index)}
               >
@@ -241,17 +232,16 @@ const RobotForm: React.FC = () => {
             </Col>
           </Row>
         ))}
-        <Col md={6}>
-          <Button className="mb-3" variant="primary" onClick={handleAddBom}>
+        <Col>
+          <Button className="mb-3" variant="secondary" onClick={handleAddBom}>
             Add Part
           </Button>
         </Col>
-        Submit:
-        <Col md={6}>
-          <Button type="submit">Add Robot!</Button>
+        <Col>
+          <Button type="submit">Submit</Button>
         </Col>
       </Form>
-    </Row>
+    </>
   );
 };
 

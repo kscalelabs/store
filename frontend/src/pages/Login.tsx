@@ -28,7 +28,7 @@ const Login = () => {
     <div>
       <h1>Login</h1>
       <Form onSubmit={handleSubmit}>
-        <label htmlFor="email">Email:</label>
+        <label htmlFor="email">Email</label>
         <Form.Control
           id="email"
           className="mb-3"
@@ -40,7 +40,7 @@ const Login = () => {
           value={email}
           required
         />
-        Description:
+        <label htmlFor="password">Password</label>
         <Form.Control
           id="password"
           className="mb-3"
