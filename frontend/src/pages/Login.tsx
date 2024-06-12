@@ -31,6 +31,7 @@ const Login = () => {
         <label htmlFor="email">Email:</label>
         <Form.Control
           id="email"
+          autoComplete="username"
           className="mb-3"
           type="text"
           placeholder="Email"
@@ -43,6 +44,7 @@ const Login = () => {
         Description:
         <Form.Control
           id="password"
+          autoComplete="password"
           className="mb-3"
           type="password"
           placeholder="Password"

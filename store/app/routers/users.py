@@ -143,6 +143,7 @@ async def login_user_endpoint(
 
 class UserInfoResponse(BaseModel):
     email: str
+    username: str
 
 
 @users_router.get("/me", response_model=UserInfoResponse)
@@ -156,7 +157,7 @@ async def get_user_info_endpoint(
     user_obj = await crud.get_user(user_id)
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return UserInfoResponse(email=user_obj.email)
+    return UserInfoResponse(email=user_obj.email, username=user_obj.username)
 
 
 @users_router.delete("/me")
@@ -191,4 +192,4 @@ async def get_user_info_by_id_endpoint(user_id: str, crud: Annotated[Crud, Depen
     user_obj = await crud.get_user(user_id)
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return UserInfoResponse(email=user_obj.email)
+    return UserInfoResponse(email=user_obj.email, username=user_obj.username)
