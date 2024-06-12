@@ -40,7 +40,7 @@ const Login = () => {
           value={email}
           required
         />
-        Description:
+        <label htmlFor="password">Password:</label>
         <Form.Control
           id="password"
           className="mb-3"
