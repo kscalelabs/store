@@ -23,6 +23,9 @@ interface RobotDetailsResponse {
   description: string;
   images: { url: string; caption: string }[];
   bom: Bom[];
+  height: string;
+  weight: string;
+  degrees_of_freedom: string;
 }
 
 interface ExtendedBom {
@@ -127,6 +130,9 @@ const RobotDetails = () => {
     description: robot?.description,
     images: robot?.images,
     bom: robot?.bom,
+    height: robot?.height,
+    weight: robot?.weight,
+    degrees_of_freedom: robot?.degrees_of_freedom,
   };
 
   const { name, description, images } = response;
@@ -151,6 +157,16 @@ const RobotDetails = () => {
               <a href={"mailto:" + ownerEmail}>{ownerEmail}</a>
             </Col>
           </Row>
+          {(response.height && (response.height!=="") ||
+            response.weight && (response.weight!=="") ||
+            response.degrees_of_freedom && (response.degrees_of_freedom!=="")) && (
+              <>
+            <hr />
+            {response.height !== "" && <p className = "text-muted"><strong>Height:</strong> {response.height}</p>}
+            {response.weight !== "" && <p className = "text-muted"><strong>Weight: </strong>{response.weight}</p>}
+            {response.degrees_of_freedom !== "" && <p className = "text-muted"><strong>Total Degrees of Freedom:</strong> {response.degrees_of_freedom}</p>}
+            </>
+          )}
           <hr />
           <Row>
             <Col>
@@ -170,7 +186,7 @@ const RobotDetails = () => {
               </Markdown>
             </Col>
           </Row>
-
+          
           <Row className="mt-3">
             <h4>Bill of Materials</h4>
             <table className="table">
