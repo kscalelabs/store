@@ -14,7 +14,7 @@ class UserCrud(BaseCrud):
     async def add_user(self, user: User) -> None:
         # Then, add the user object to the Users table.
         table = await self.db.Table("Users")
-        await table.put_item(Item=user.model_dump(), ConditionExpression="attribute_not_exists(user_id)")
+        await table.put_item(Item=user.model_dump(), ConditionExpression="attribute_not_exists(email) AND attribute_not_exists(username)")
 
     async def get_user(self, user_id: str) -> User | None:
         table = await self.db.Table("Users")
