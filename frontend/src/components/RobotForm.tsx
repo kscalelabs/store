@@ -3,7 +3,7 @@ import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 
 interface RobotFormProps {
-    title: string;
+  title: string;
   message: string;
   robot_name: string;
   setName: Dispatch<SetStateAction<string>>;
@@ -150,9 +150,9 @@ const RobotForm: React.FC<RobotFormProps> = ({
         {robot_images.map((image, index) => (
           <Row key={index} className="mb-3">
             <Col md={12}>
-              <label htmlFor={"url-" +  index }>URL</label>
+              <label htmlFor={"url-" + index}>URL</label>
               <Form.Control
-                id={"url-" +  index }
+                id={"url-" + index}
                 className="mb-1"
                 type="text"
                 name="url"
@@ -160,9 +160,9 @@ const RobotForm: React.FC<RobotFormProps> = ({
                 onChange={(e) => handleImageChange(index, e)}
                 required
               />
-              <label htmlFor={"caption-" +  index }>Caption</label>
+              <label htmlFor={"caption-" + index}>Caption</label>
               <Form.Control
-                id={"caption-" +  index }
+                id={"caption-" + index}
                 className="mb-1"
                 type="text"
                 name="caption"
@@ -193,7 +193,7 @@ const RobotForm: React.FC<RobotFormProps> = ({
             <Col md={12}>
               <label htmlFor={"part-" + index}>Part</label>
               <Form.Control
-              id={"part-" + index}
+                id={"part-" + index}
                 className="mb-1"
                 as="select"
                 name="part_id"
@@ -212,7 +212,7 @@ const RobotForm: React.FC<RobotFormProps> = ({
               </Form.Control>
               <label htmlFor={"quantity-" + index}>Quantity</label>
               <Form.Control
-              id={"quantity-" + index}
+                id={"quantity-" + index}
                 className="mb-1"
                 type="number"
                 name="quantity"

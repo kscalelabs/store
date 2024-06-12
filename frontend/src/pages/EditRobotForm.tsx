@@ -1,9 +1,9 @@
+import RobotForm from "components/RobotForm";
 import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Bom, Image, Part, Robot } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import React, { FormEvent, useEffect, useState } from "react";
-import RobotForm from "components/RobotForm";
 import { useNavigate, useParams } from "react-router-dom";
 
 const EditRobotForm: React.FC = () => {
