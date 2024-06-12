@@ -147,7 +147,7 @@ const RobotForm: React.FC = () => {
         Description:
         <Form.Control
           className="mb-3"
-          type="text"
+          as="textarea"
           placeholder="Robot Description:"
           onChange={(e) => {
             setDescription(e.target.value);

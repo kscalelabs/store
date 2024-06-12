@@ -72,7 +72,7 @@ const PartForm: React.FC = () => {
         Description:
         <Form.Control
           className="mb-3"
-          type="text"
+          as="textarea"
           placeholder="Part Description:"
           onChange={(e) => {
             setDescription(e.target.value);
