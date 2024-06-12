@@ -5,6 +5,7 @@ from email.utils import parseaddr as parse_email_address
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel
 
 from store.app.crypto import check_password, new_token
@@ -33,6 +34,20 @@ def set_token_cookie(response: Response, token: str, key: str) -> None:
 async def get_session_token(request: Request) -> str:
     token = request.cookies.get("session_token")
     if not token:
+        authorization = request.headers.get("Authorization") or request.headers.get("authorization")
+        if authorization:
+            scheme, credentials = get_authorization_scheme_param(authorization)
+            if not (scheme and credentials):
+                raise HTTPException(
+                    status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                    detail="Authorization header is invalid",
+                )
+            if scheme.lower() != TOKEN_TYPE.lower():
+                raise HTTPException(
+                    status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                    detail="Authorization scheme is invalid",
+                )
+            return credentials
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",

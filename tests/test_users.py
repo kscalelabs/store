@@ -40,6 +40,11 @@ def test_user_auth_functions(app_client: TestClient, mock_send_email: MockType) 
     assert response.status_code == 200, response.json()
     assert response.json()["email"] == test_email
 
+    # Use the Authorization header instead of the cookie.
+    response = app_client.get("/users/me", cookies={"session_token": ""}, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200, response.json()
+    assert response.json()["email"] == test_email
+
     # Log the user out, which deletes the session token.
     response = app_client.delete("/users/logout")
     assert response.status_code == 200, response.json()
