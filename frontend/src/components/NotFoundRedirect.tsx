@@ -1,12 +1,7 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import NotFound from "pages/NotFound";
 
 const NotFoundRedirect = () => {
-  const navigate = useNavigate();
-  useEffect(() => {
-    navigate("/404", { replace: true });
-  }, [navigate]);
-  return null;
+  return <NotFound />;
 };
 
 export default NotFoundRedirect;
