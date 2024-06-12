@@ -19,7 +19,6 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         super().__init__()
 
         self.__db: DynamoDBServiceResource | None = None
-        self.__kv: Redis | None = None
 
     @property
     def db(self) -> DynamoDBServiceResource:
