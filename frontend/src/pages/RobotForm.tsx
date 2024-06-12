@@ -114,7 +114,7 @@ const RobotForm: React.FC = () => {
           value={robot_name}
           required
         />
-         Height:
+        Height:
         <Form.Control
           className="mb-3"
           type="text"

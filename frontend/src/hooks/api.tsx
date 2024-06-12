@@ -13,7 +13,6 @@ export interface Bom {
   quantity: number;
 }
 
-
 export interface Image {
   caption: string;
   url: string;
