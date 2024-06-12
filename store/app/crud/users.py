@@ -65,7 +65,6 @@ class UserCrud(BaseCrud):
         await self.session_kv.delete(hash_token(token))
 
     async def add_verify_email_token(self, token: str, user_id: str, lifetime: int) -> None:
-        print("IUNSERTING TOKEN", token)
         await self.verify_email_kv.setex(hash_token(token), lifetime, user_id)
 
     async def delete_verify_email_token(self, token: str) -> None:
