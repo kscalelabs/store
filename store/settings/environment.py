@@ -10,7 +10,8 @@ class RedisSettings:
     host: str = field(default=II("oc.env:ROBOLIST_REDIS_HOST,127.0.0.1"))
     password: str = field(default=II("oc.env:ROBOLIST_REDIS_PASSWORD,''"))
     port: int = field(default=6379)
-    db: int = field(default=0)
+    session_db: int = field(default=0)
+    verify_email_db: int = field(default=1)
 
 
 @dataclass

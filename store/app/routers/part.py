@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from store.app.crypto import get_new_user_id
 from store.app.db import Crud
 from store.app.model import Part
-from store.app.routers.users import ApiKeyData, get_api_key
+from store.app.routers.users import get_session_token
 
 parts_router = APIRouter()
 
@@ -22,10 +22,10 @@ async def list_parts(crud: Annotated[Crud, Depends(Crud.get)]) -> List[Part]:
 
 @parts_router.get("/your/")
 async def list_your_parts(
-    crud: Annotated[Crud, Depends(Crud.get)], data: Annotated[ApiKeyData, Depends(get_api_key)]
+    crud: Annotated[Crud, Depends(Crud.get)], token: Annotated[str, Depends(get_session_token)]
 ) -> List[Part]:
     try:
-        user_id = await crud.get_user_id_from_api_key(data.api_key)
+        user_id = await crud.get_user_id_from_session_token(token)
         if user_id is None:
             raise HTTPException(status_code=401, detail="Must be logged in to view your parts")
         total = await crud.list_parts()
@@ -42,19 +42,20 @@ async def get_part(part_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> Pa
 
 @parts_router.get("/user/")
 async def current_user(
-    crud: Annotated[Crud, Depends(Crud.get)], data: Annotated[ApiKeyData, Depends(get_api_key)]
+    crud: Annotated[Crud, Depends(Crud.get)],
+    token: Annotated[str, Depends(get_session_token)],
 ) -> str | None:
-    user_id = await crud.get_user_id_from_api_key(data.api_key)
+    user_id = await crud.get_user_id_from_session_token(token)
     return str(user_id)
 
 
 @parts_router.post("/add/")
 async def add_part(
     part: Part,
-    data: Annotated[ApiKeyData, Depends(get_api_key)],
+    token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    user_id = await crud.get_user_id_from_api_key(data.api_key)
+    user_id = await crud.get_user_id_from_session_token(token)
     if user_id is None:
         raise HTTPException(status_code=401, detail="Must be logged in to add a part")
     part.owner = str(user_id)
@@ -66,14 +67,14 @@ async def add_part(
 @parts_router.delete("/delete/{part_id}")
 async def delete_part(
     part_id: str,
-    data: Annotated[ApiKeyData, Depends(get_api_key)],
+    token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
     part = await crud.get_part(part_id)
     if part is None:
         raise HTTPException(status_code=404, detail="Part not found")
-    user_id = await crud.get_user_id_from_api_key(data.api_key)
-    if str(part.owner) != str(user_id):
+    user_id = await crud.get_user_id_from_session_token(token)
+    if part.owner != user_id:
         raise HTTPException(status_code=403, detail="You do not own this part")
     await crud.delete_part(part_id)
     return True
@@ -83,10 +84,10 @@ async def delete_part(
 async def edit_part(
     part_id: str,
     part: Part,
-    data: Annotated[ApiKeyData, Depends(get_api_key)],
+    token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    user_id = await crud.get_user_id_from_api_key(data.api_key)
+    user_id = await crud.get_user_id_from_session_token(token)
     if user_id is None:
         raise HTTPException(status_code=401, detail="Must be logged in to edit a part")
     part.owner = str(user_id)

@@ -1,33 +1,36 @@
 """Defines crypto functions."""
 
-import datetime
 import hashlib
+import secrets
+import string
 import uuid
-from typing import Any
 
-import jwt
-
-from store.settings import settings
-
-
-def hash_api_key(api_key: uuid.UUID) -> str:
-    return hashlib.sha256(api_key.bytes).hexdigest()
+from argon2 import PasswordHasher
 
 
 def get_new_user_id() -> uuid.UUID:
     return uuid.uuid4()
 
 
-def get_new_api_key(user_id: uuid.UUID) -> uuid.UUID:
-    user_id_hash = hashlib.sha1(user_id.bytes).digest()
-    return uuid.UUID(bytes=user_id_hash[:16], version=5)
+def new_token(length: int = 64) -> str:
+    """Generates a cryptographically secure random 64 character alphanumeric token."""
+    return "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(length))
 
 
-def encode_jwt(data: dict[str, Any], expire_after: datetime.timedelta | None = None) -> str:  # noqa: ANN401
-    if expire_after is not None:
-        data["exp"] = datetime.datetime.utcnow() + expire_after
-    return jwt.encode(data, settings.crypto.jwt_secret, algorithm=settings.crypto.algorithm)
+def hash_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
 
 
-def decode_jwt(token: str) -> dict[str, Any]:  # noqa: ANN401
-    return jwt.decode(token, settings.crypto.jwt_secret, algorithms=[settings.crypto.algorithm])
+def check_hash(token: str, hash: str) -> bool:
+    return hashlib.sha256(token.encode()).hexdigest() == hash
+
+
+def hash_password(password: str) -> str:
+    return PasswordHasher().hash(password)
+
+
+def check_password(password: str, hash: str) -> bool:
+    try:
+        return PasswordHasher().verify(hash, password)
+    except Exception:
+        return False

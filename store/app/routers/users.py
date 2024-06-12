@@ -1,19 +1,18 @@
 """Defines the API endpoint for creating, deleting and updating user information."""
 
 import logging
-import uuid
 from email.utils import parseaddr as parse_email_address
 from typing import Annotated
 
-import aiohttp
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel
 
-from store.app.crypto import get_new_api_key, get_new_user_id
+from store.app.crypto import check_password, new_token
 from store.app.db import Crud
 from store.app.model import User
-from store.app.utils.email import OneTimePassPayload, send_delete_email, send_otp_email
+from store.app.utils.email import send_delete_email, send_verify_email
+from store.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -32,28 +31,34 @@ def set_token_cookie(response: Response, token: str, key: str) -> None:
     )
 
 
-class ApiKeyData(BaseModel):
-    api_key: uuid.UUID
+async def get_session_token(request: Request) -> str:
+    token = request.cookies.get("session_token")
+    if not token:
+        authorization = request.headers.get("Authorization") or request.headers.get("authorization")
+        if authorization:
+            scheme, credentials = get_authorization_scheme_param(authorization)
+            if not (scheme and credentials):
+                raise HTTPException(
+                    status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                    detail="Authorization header is invalid",
+                )
+            if scheme.lower() != TOKEN_TYPE.lower():
+                raise HTTPException(
+                    status_code=status.HTTP_406_NOT_ACCEPTABLE,
+                    detail="Authorization scheme is invalid",
+                )
+            return credentials
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+    return token
 
 
-async def get_api_key(request: Request) -> ApiKeyData:
-    # Tries Authorization header.
-    authorization = request.headers.get("Authorization") or request.headers.get("authorization")
-    if authorization:
-        scheme, credentials = get_authorization_scheme_param(authorization)
-        if not (scheme and credentials):
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
-        if scheme.lower() != TOKEN_TYPE.lower():
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
-        return ApiKeyData(api_key=uuid.UUID(credentials))
-
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
-
-
-class UserSignup(BaseModel):
+class UserRegister(BaseModel):
+    username: str
     email: str
-    login_url: str
-    lifetime: int
+    password: str
 
 
 def validate_email(email: str) -> str:
@@ -64,108 +69,76 @@ def validate_email(email: str) -> str:
     return email
 
 
-@users_router.post("/login")
-async def login_user_endpoint(data: UserSignup) -> bool:
-    """Takes the user email and sends them a one-time login password.
-
-    Args:
-        data: The payload with the user email and the login URL to redirect to
-            when the user logs in.
-
-    Returns:
-        True if the email was sent successfully.
-    """
+@users_router.post("/register")
+async def register_user_endpoint(
+    data: UserRegister,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> bool:
+    """Registers a new user with the given email and password."""
     email = validate_email(data.email)
-    payload = OneTimePassPayload(email, lifetime=data.lifetime)
-    await send_otp_email(payload, data.login_url)
+    user = await crud.get_user_from_email(email)
+    if user is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists")
+    user = User.create(username=data.username, email=email, password=data.password)
+    await crud.add_user(user)
+    verify_email_token = new_token()
+    # Magic number: 7 days
+    await crud.add_verify_email_token(verify_email_token, user.user_id, 60 * 60 * 24 * 7)
+    await send_verify_email(email, verify_email_token)
     return True
 
 
-class OneTimePass(BaseModel):
-    payload: str
+@users_router.post("/verify-email/{token}")
+async def verify_email_user_endpoint(
+    token: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> bool:
+    """Verifies a user's email address."""
+    await crud.check_verify_email_token(token)
+    return True
 
 
-class UserLoginResponse(BaseModel):
-    api_key: str
+class UserLogin(BaseModel):
+    email: str
+    password: str
 
 
-async def get_login_response(email: str, lifetime: int, crud: Crud) -> UserLoginResponse:
-    """Takes the user email and returns an API key.
-
-    This function gets a user API key for an email which has been validated,
-    either through an OTP or through Google OAuth.
+@users_router.post("/login")
+async def login_user_endpoint(
+    data: UserLogin,
+    crud: Annotated[Crud, Depends(Crud.get)],
+    response: Response,
+) -> bool:
+    """Gives the user a session token if they present the correct credentials.
 
     Args:
-        email: The validated email of the user.
-        crud: The database CRUD object.
-        lifetime: The lifetime (in seconds) of the API key to be returned.
+        data: User email and password.
+        crud: The CRUD object.
+        response: The response object.
 
     Returns:
-        The API key for the user.
+        True if the credentials are correct.
     """
-    # If the user doesn't exist, then create a new user.
-    user_obj = await crud.get_user_from_email(email)
-    if user_obj is None:
-        await crud.add_user(User(user_id=str(get_new_user_id()), email=email))
-        if (user_obj := await crud.get_user_from_email(email)) is None:
-            raise RuntimeError("Failed to add user to the database")
+    user = await crud.get_user_from_email(data.email)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+    if not check_password(data.password, user.password_hash):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+    token = new_token()
+    response.set_cookie(
+        key="session_token",
+        value=token,
+        httponly=True,
+    )
+    response.set_cookie(
+        key="session_token",
+        value=token,
+        httponly=True,
+        domain=settings.site.homepage,
+    )
+    await crud.add_session_token(token, user.user_id, 60 * 60 * 24 * 7)
 
-    # Issue a new API key for the user.
-    user_id: uuid.UUID = user_obj.to_uuid()
-    api_key: uuid.UUID = get_new_api_key(user_id)
-    await crud.add_api_key(api_key, user_id, lifetime)
-
-    return UserLoginResponse(api_key=str(api_key))
-
-
-@users_router.post("/otp", response_model=UserLoginResponse)
-async def otp_endpoint(
-    data: OneTimePass,
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> UserLoginResponse:
-    """Takes the one-time password and returns an API key.
-
-    Args:
-        data: The one-time password payload.
-        crud: The database CRUD object.
-
-    Returns:
-        The API key if the one-time password is valid.
-    """
-    payload = OneTimePassPayload.decode(data.payload)
-    return await get_login_response(payload.email, payload.lifetime, crud)
-
-
-async def get_google_user_info(token: str) -> dict:
-    async with aiohttp.ClientSession() as session:
-        response = await session.get(
-            "https://www.googleapis.com/oauth2/v3/userinfo",
-            params={"access_token": token},
-        )
-        if response.status != 200:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Google token")
-        return await response.json()
-
-
-class GoogleLogin(BaseModel):
-    token: str  # This is the token that Google gives us for authenticated users.
-
-
-@users_router.post("/google")
-async def google_login_endpoint(
-    data: GoogleLogin,
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> UserLoginResponse:
-    """Uses Google OAuth to create an API token that lasts for a week (i.e. 604800 seconds)."""
-    try:
-        idinfo = await get_google_user_info(data.token)
-        email = idinfo["email"]
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Google token")
-    if idinfo.get("email_verified") is not True:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Google email not verified")
-
-    return await get_login_response(email, 604800, crud)
+    return True
 
 
 class UserInfoResponse(BaseModel):
@@ -174,10 +147,10 @@ class UserInfoResponse(BaseModel):
 
 @users_router.get("/me", response_model=UserInfoResponse)
 async def get_user_info_endpoint(
-    data: Annotated[ApiKeyData, Depends(get_api_key)],
+    token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UserInfoResponse:
-    user_id = await crud.get_user_id_from_api_key(data.api_key)
+    user_id = await crud.get_user_id_from_session_token(token)
     if user_id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     user_obj = await crud.get_user(user_id)
@@ -188,32 +161,34 @@ async def get_user_info_endpoint(
 
 @users_router.delete("/me")
 async def delete_user_endpoint(
-    data: Annotated[ApiKeyData, Depends(get_api_key)],
+    token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    user_id = await crud.get_user_id_from_api_key(data.api_key)
+    user_id = await crud.get_user_id_from_session_token(token)
     if user_id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     user_obj = await crud.get_user(user_id)
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    await crud.delete_user(user_obj)
+    await crud.delete_user(user_id)
     await send_delete_email(user_obj.email)
     return True
 
 
 @users_router.delete("/logout")
 async def logout_user_endpoint(
-    data: Annotated[ApiKeyData, Depends(get_api_key)],
+    token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
+    response: Response,
 ) -> bool:
-    await crud.delete_api_key(data.api_key)
+    await crud.delete_session_token(token)
+    response.delete_cookie("session_token")
     return True
 
 
 @users_router.get("/{user_id}", response_model=UserInfoResponse)
 async def get_user_info_by_id_endpoint(user_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> UserInfoResponse:
-    user_obj = await crud.get_user(uuid.UUID(user_id))
+    user_obj = await crud.get_user(user_id)
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return UserInfoResponse(email=user_obj.email)

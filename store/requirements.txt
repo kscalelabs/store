@@ -9,6 +9,9 @@ pydantic
 aioboto3
 redis
 
+# Crypto dependencies
+argon2-cffi
+
 # FastAPI dependencies.
 aiohttp
 aiosmtplib

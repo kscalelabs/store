@@ -63,8 +63,6 @@ def mock_aws() -> Generator[None, None, None]:
 def mock_redis(mocker: MockerFixture) -> None:
     os.environ["ROBOLIST_REDIS_HOST"] = "localhost"
     os.environ["ROBOLIST_REDIS_PASSWORD"] = ""
-    os.environ["ROBOLIST_REDIS_PORT"] = "6379"
-    os.environ["ROBOLIST_REDIS_DB"] = "0"
     fake_redis = fakeredis.aioredis.FakeRedis()
     mocker.patch("store.app.crud.base.Redis", return_value=fake_redis)
 
@@ -82,22 +80,3 @@ def mock_send_email(mocker: MockerFixture) -> MockType:
     mock = mocker.patch("store.app.utils.email.send_email")
     mock.return_value = None
     return mock
-
-
-@pytest.fixture()
-def authenticated_user(app_client: TestClient) -> tuple[TestClient, str, str]:
-    from store.app.utils.email import OneTimePassPayload
-
-    test_email = "test@example.com"
-
-    # Logs the user in using the OTP.
-    otp = OneTimePassPayload(email=test_email, lifetime=3600)
-    response = app_client.post("/users/otp", json={"payload": otp.encode()})
-    assert response.status_code == 200, response.json()
-
-    # Gets a session token.
-    response = app_client.post("/users/refresh")
-    data = response.json()
-    assert response.status_code == 200, data
-
-    return app_client, test_email, data["token"]

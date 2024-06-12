@@ -2,16 +2,13 @@
 
 import argparse
 import asyncio
-import datetime
 import logging
 import textwrap
-from dataclasses import dataclass
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 import aiosmtplib
 
-from store.app.crypto import decode_jwt, encode_jwt
 from store.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -33,34 +30,16 @@ async def send_email(subject: str, body: str, to: str) -> None:
     await smtp_client.quit()
 
 
-@dataclass
-class OneTimePassPayload:
-    email: str
-    lifetime: int
-
-    def encode(self) -> str:
-        expire_minutes = settings.crypto.expire_otp_minutes
-        expire_after = datetime.timedelta(minutes=expire_minutes)
-        return encode_jwt({"email": self.email, "lifetime": self.lifetime}, expire_after=expire_after)
-
-    @classmethod
-    def decode(cls, payload: str) -> "OneTimePassPayload":
-        data = decode_jwt(payload)
-        return cls(email=data["email"], lifetime=data["lifetime"])
-
-
-async def send_otp_email(payload: OneTimePassPayload, login_url: str) -> None:
-    url = f"{login_url}?otp={payload.encode()}"
-
+async def send_verify_email(email: str, token: str) -> None:
     body = textwrap.dedent(
         f"""
             <h1><code>K-Scale Labs</code></h1>
-            <h2><code><a href="{url}">log in</a></code></h2>
-            <p>Or copy-paste this link: {url}</p>
+            <h2><code>verify your email</code></h2>
+            <p>Click <a href="{settings.site.homepage}/verify-email/{token}">here</a> to verify your email.</p>
         """
     )
 
-    await send_email(subject="One-Time Password", body=body, to=payload.email)
+    await send_email(subject="Verify Email", body=body, to=email)
 
 
 async def send_delete_email(email: str) -> None:

@@ -44,13 +44,7 @@ async def create_tables(crud: Crud | None = None, deletion_protection: bool = Fa
             ],
             gsis=[
                 ("emailIndex", "email", "S", "HASH"),
-            ],
-            deletion_protection=deletion_protection,
-        )
-        await crud._create_dynamodb_table(
-            name="UserEmails",
-            keys=[
-                ("email", "S", "HASH"),
+                ("usernameIndex", "username", "S", "HASH"),
             ],
             deletion_protection=deletion_protection,
         )

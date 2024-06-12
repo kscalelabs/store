@@ -6,62 +6,67 @@ from fastapi.testclient import TestClient
 from pytest_mock.plugin import MockType
 
 from store.app.db import create_tables
-from store.app.utils.email import OneTimePassPayload
 
 
 def test_user_auth_functions(app_client: TestClient, mock_send_email: MockType) -> None:
     asyncio.run(create_tables())
 
+    test_username = "test"
     test_email = "test@example.com"
-    login_url = "/"
+    test_password = "test password"
 
-    # Sends the one-time password to the test email.
-    response = app_client.post("/users/login", json={"email": test_email, "login_url": login_url, "lifetime": 3600})
-    assert response.status_code == 200, response.json()
+    # Register.
+    response = app_client.post("/users/register", json={"username": test_username, "email": test_email, "password": test_password})
+    assert response.status_code == 200
     assert mock_send_email.call_count == 1
 
-    # Uses the one-time pass to get an API key. We need to make a new OTP
-    # manually because we can't send emails in unit tests.
-    otp = OneTimePassPayload(email=test_email, lifetime=3600)
-    response = app_client.post("/users/otp", json={"payload": otp.encode()})
-    assert response.status_code == 200, response.json()
-    response_data = response.json()
-    api_key = response_data["api_key"]
-
-    # Checks that without the API key we get a 401 response.
+    # Checks that without the session token we get a 401 response.
     response = app_client.get("/users/me")
     assert response.status_code == 401, response.json()
     assert response.json()["detail"] == "Not authenticated"
 
-    # Checks that with the API key we get a 200 response.
-    response = app_client.get("/users/me", headers={"Authorization": f"Bearer {api_key}"})
-    assert response.status_code == 200, response.json()
-    assert response.json()["email"] == test_email
-
-    # Checks that we can't log the user out without the API key.
+    # Checks that we can't log the user out without the session token.
     response = app_client.delete("/users/logout")
     assert response.status_code == 401, response.json()
 
-    # Log the user out, which deletes the API key.
-    response = app_client.delete("/users/logout", headers={"Authorization": f"Bearer {api_key}"})
+    # Log in.
+    response = app_client.post("/users/login", json={"email": test_email, "password": test_password})
+    assert response.status_code == 200
+    assert "session_token" in response.cookies
+    token = response.cookies["session_token"]
+
+    # Checks that with the session token we get a 200 response.
+    response = app_client.get("/users/me")
+    assert response.status_code == 200, response.json()
+    assert response.json()["email"] == test_email
+
+    # Use the Authorization header instead of the cookie.
+    response = app_client.get("/users/me", cookies={"session_token": ""}, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200, response.json()
+    assert response.json()["email"] == test_email
+
+    # Log the user out, which deletes the session token.
+    response = app_client.delete("/users/logout")
     assert response.status_code == 200, response.json()
     assert response.json() is True
 
-    # Checks that we can no longer use that API key to get the user's info.
-    response = app_client.get("/users/me", headers={"Authorization": f"Bearer {api_key}"})
-    assert response.status_code == 404, response.json()
-    assert response.json()["detail"] == "User not found"
+    # Checks that we can no longer use that session token to get the user's info.
+    response = app_client.get("/users/me")
+    assert response.status_code == 401, response.json()
+    assert response.json()["detail"] == "Not authenticated"
 
-    # Log the user back in, getting new API key.
-    response = app_client.post("/users/otp", json={"payload": otp.encode()})
-    assert response.status_code == 200, response.json()
+    # Log the user back in, getting new session token.
+    response = app_client.post("/users/login", json={"email": test_email, "password": test_password})
+    assert response.status_code == 200
+    assert "session_token" in response.cookies
+    token = response.cookies["session_token"]
 
-    # Delete the user using the new API key.
-    response = app_client.delete("/users/me", headers={"Authorization": f"Bearer {api_key}"})
+    # Delete the user using the new session token.
+    response = app_client.delete("/users/me")
     assert response.status_code == 200, response.json()
     assert response.json() is True
 
     # Tries deleting the user again, which should fail.
-    response = app_client.delete("/users/me", headers={"Authorization": f"Bearer {api_key}"})
+    response = app_client.delete("/users/me")
     assert response.status_code == 404, response.json()
     assert response.json()["detail"] == "User not found"
