@@ -16,6 +16,7 @@ import RobotDetails from "pages/RobotDetails";
 import RobotForm from "pages/RobotForm";
 import Robots from "pages/Robots";
 import YourParts from "pages/YourParts";
+import EditPartForm from "pages/EditPartForm";
 import YourRobots from "pages/YourRobots";
 import { Container } from "react-bootstrap";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
@@ -39,6 +40,7 @@ const App = () => {
                     <Route path="/robots/add" element={<RobotForm />} />
                     <Route path="/parts/add" element={<PartForm />} />
                     <Route path="/robot/:id" element={<RobotDetails />} />
+                    <Route path="/edit-part/:id" element={<EditPartForm />} />
                     <Route path="/edit-robot/:id" element={<EditRobotForm />} />
                     <Route path="/parts/" element={<Parts />} />
                     <Route path="/part/:id" element={<PartDetails />} />

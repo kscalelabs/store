@@ -80,7 +80,6 @@ const RobotDetails = () => {
     };
     fetchRobot();
   }, [id]);
-
   useEffect(() => {
     if (auth.isAuthenticated) {
       try {
@@ -343,7 +342,7 @@ const RobotDetails = () => {
                   variant="danger"
                   onClick={async () => {
                     await auth_api.deleteRobot(id);
-                    navigate(`/robots/`);
+                    navigate(`/robots/your/`);
                   }}
                 >
                   Delete Robot

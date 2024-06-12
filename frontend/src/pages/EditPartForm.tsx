@@ -1,61 +1,86 @@
-import { api, Image, Part } from "hooks/api";
+import { humanReadableError } from "constants/backend";
+import { useAlertQueue } from "hooks/alerts";
+import { api, Bom, Image, Part, Robot } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
-import React, { ChangeEvent, FormEvent, useState } from "react";
+import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-const PartForm: React.FC = () => {
+const EditPartForm: React.FC = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
+
+  // Parse the ID from the URL.
+  const { id } = useParams();
+
+  // States.
   const [message, setMessage] = useState<string | null>(null);
-  const [part_name, setName] = useState<string>("");
-  const [part_description, setDescription] = useState<string>("");
-  const [part_images, setImages] = useState<Image[]>([]);
+  const [Part_name, setName] = useState<string>("");
+  const [Part_description, setDescription] = useState<string>("");
+  const [Part_images, setImages] = useState<Image[]>([]);
+  const [Part_id, setPartId] = useState<string>("");
+
+  const { addAlert } = useAlertQueue();
+
+  useEffect(() => {
+    const fetchPart = async () => {
+      try {
+        const PartData = await auth_api.getPartById(id);
+        setName(PartData.part_name);
+        setDescription(PartData.description);
+        setImages(PartData.images);
+        setPartId(PartData.part_id);
+      } catch (err) {
+        addAlert(humanReadableError(err), "error");
+      }
+    };
+    fetchPart();
+  }, [id]);
 
   const handleImageChange = (
     index: number,
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    const newImages = [...part_images];
+    const newImages = [...Part_images];
     newImages[index][name as keyof Image] = value;
     setImages(newImages);
   };
-
+  const navigate = useNavigate();
   const handleAddImage = () => {
-    setImages([...part_images, { url: "", caption: "" }]);
+    setImages([...Part_images, { url: "", caption: "" }]);
   };
 
   const handleRemoveImage = (index: number) => {
-    const newImages = part_images.filter((_, i) => i !== index);
+    const newImages = Part_images.filter((_, i) => i !== index);
     setImages(newImages);
   };
-  const navigate = useNavigate();
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (part_images.length === 0) {
+    if (Part_images.length === 0) {
       setMessage("Please upload at least one image.");
       return;
     }
     const newFormData: Part = {
-      part_id: "",
-      part_name: part_name,
-      description: part_description,
-      owner: "Bob",
-      images: part_images,
+      part_id: Part_id,
+      part_name: Part_name,
+      description: Part_description,
+      owner: "",
+      images: Part_images,
     };
     try {
-      await auth_api.addPart(newFormData);
-      setMessage(`Part added successfully.`);
-      navigate("/parts/your/");
+      await auth_api.editPart(newFormData);
+      setMessage(`Part edited successfully.`);
+      navigate(`/parts/your/`);
     } catch (error) {
-      setMessage("Error adding Part ");
+      setMessage("Error adding part ");
     }
   };
 
   return (
     <Row>
-      <h2>Add a New Part</h2>
+      <h2>Edit Part</h2>
       {message && <p>{message}</p>}
       <Form onSubmit={handleSubmit} className="mb-3">
         Name:
@@ -66,7 +91,7 @@ const PartForm: React.FC = () => {
           onChange={(e) => {
             setName(e.target.value);
           }}
-          value={part_name}
+          value={Part_name}
           required
         />
         Description:
@@ -77,11 +102,11 @@ const PartForm: React.FC = () => {
           onChange={(e) => {
             setDescription(e.target.value);
           }}
-          value={part_description}
+          value={Part_description}
           required
         />
         Images:
-        {part_images.map((image, index) => (
+        {Part_images.map((image, index) => (
           <Row key={index} className="mb-3">
             <Col md={12}>
               <Form.Control
@@ -122,11 +147,11 @@ const PartForm: React.FC = () => {
         </Col>
         Submit:
         <Col md={6}>
-          <Button type="submit">Add Part!</Button>
+          <Button type="submit">Confirm Changes!</Button>
         </Col>
       </Form>
     </Row>
   );
 };
 
-export default PartForm;
+export default EditPartForm;

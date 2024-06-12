@@ -63,6 +63,24 @@ const PartDetails = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (auth.isAuthenticated) {
+      try {
+        const fetchUserId = async () => {
+          const user_id = await auth_api.currentUser();
+          setUserId(user_id);
+        };
+        fetchUserId();
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unexpected error occurred");
+        }
+      }
+    }
+  }, [auth.isAuthenticated]);
+
+  useEffect(() => {
     if (error) {
       addAlert(error, "error");
     }
@@ -225,8 +243,7 @@ const PartDetails = () => {
         </Modal.Footer>
       </Modal>
       <>
-        {/* {part.owner === userId && ( */}
-        {part.owner === part.owner && (
+        {part.owner === userId && (
           <>
             <Row className="justify-content-end mt-2">
               <Col md={3} sm={12}>
@@ -243,7 +260,7 @@ const PartDetails = () => {
                     navigate(`/edit-part/${id}/`);
                   }}
                 >
-                  Edit Robot
+                  Edit Part
                 </Button>
               </Col>
               <Col md={3} sm={12}>
@@ -281,8 +298,8 @@ const PartDetails = () => {
                 <Button
                   variant="danger"
                   onClick={async () => {
-                    // await auth_api.deletePart(id);
-                    navigate(`/parts/`);
+                    await auth_api.deletePart(id);
+                    navigate(`/parts/your/`);
                   }}
                 >
                   Delete Part

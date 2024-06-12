@@ -56,6 +56,10 @@ class RobotCrud(BaseCrud):
         table = await self.db.Table("Robots")
         await table.delete_item(Key={"robot_id": robot_id})
 
+    async def update_part(self, part_id: str, part: Part) -> None:
+        await self.delete_part(part_id)
+        await self.add_part(part)
+
     async def update_robot(self, robot_id: str, robot: Robot) -> None:
         await self.delete_robot(robot_id)
         await self.add_robot(robot)

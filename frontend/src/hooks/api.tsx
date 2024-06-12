@@ -208,4 +208,36 @@ export class api {
       }
     }
   }
+  public async deletePart(id: string | undefined): Promise<void> {
+    const s = id;
+    try {
+      await this.api.delete(`parts/delete/${id}/`);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error deleting part:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail || "Error deleting part " + s,
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+  public async editPart(part: Part): Promise<void> {
+    const s = part.part_name;
+    try {
+      await this.api.post(`parts/edit-part/${part.part_id}/`, part);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error editing part:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail || "Error editing part " + s,
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
 }

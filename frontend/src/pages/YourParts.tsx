@@ -60,7 +60,7 @@ const YourParts = () => {
     <>
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
-        <Breadcrumb.Item active>Parts</Breadcrumb.Item>
+        <Breadcrumb.Item active>Your Parts</Breadcrumb.Item>
       </Breadcrumb>
 
       <Row className="mt-5">
