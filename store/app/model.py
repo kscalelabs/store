@@ -6,6 +6,7 @@ expects (for example, converting a UUID into a string).
 """
 
 import uuid
+from typing import Optional
 
 from pydantic import BaseModel
 
@@ -54,6 +55,9 @@ class Robot(BaseModel):
     description: str
     bom: list[Bom]
     images: list[Image]
+    height: Optional[str] = ""
+    weight: Optional[str] = ""
+    degrees_of_freedom: Optional[str] = ""
 
 
 class Part(BaseModel):

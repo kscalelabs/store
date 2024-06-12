@@ -25,6 +25,9 @@ export interface Robot {
   owner: string;
   bom: Bom[];
   images: Image[];
+  height: string;
+  weight: string;
+  degrees_of_freedom: string;
 }
 
 export class api {
