@@ -11,5 +11,20 @@ div.content {
 
 html,
 body {
-  transition: color 0.4s ease;
+  transition: color 0.1s ease;
 }
+
+/* .custom-button {
+  color: var(--button-color);
+  background-color: var(--button-bg-color);
+  border-color: var(--button-border-color);
+  padding: 10px;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.custom-button:hover {
+  color: var(--button-hover-color);
+  background-color: var(--button-hover-bg-color);
+  border-color: var(--button-hover-border-color);
+} */

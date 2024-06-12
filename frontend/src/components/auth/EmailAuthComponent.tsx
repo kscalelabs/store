@@ -13,6 +13,7 @@ import {
   Row,
   Tooltip,
 } from "react-bootstrap";
+import { CheckCircle } from "react-bootstrap-icons";
 
 const isValidEmail = (email: string) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -52,12 +53,17 @@ const EmailAuthComponent = () => {
     <Row>
       <Col>
         <Row>
-          <Col>
-            <h3>Success!</h3>
+          <Col style={{ display: "flex", alignItems: "left" }}>
+            <CheckCircle size={28} color="green" />
+            <h3 style={{ marginLeft: "10px", marginBottom: "0px" }}>
+              Verification Email Sent!
+            </h3>
           </Col>
         </Row>
-        <Row>
-          <Col>Check your email for a login link.</Col>
+        <Row className="mb-3" style={{ alignItems: "center" }}>
+          <Col style={{ alignItems: "center" }}>
+            Check your email for a login link.
+          </Col>
         </Row>
       </Col>
     </Row>

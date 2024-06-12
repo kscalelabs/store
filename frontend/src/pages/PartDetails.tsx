@@ -27,15 +27,20 @@ const PartDetails = () => {
   const { addAlert } = useAlertQueue();
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
+  const [userId, setUserId] = useState<string | null>(null);
   const { id } = useParams();
   const [show, setShow] = useState(false);
   const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
   const [part, setPart] = useState<PartDetailsResponse | null>(null);
   const [imageIndex, setImageIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [showDelete, setShowDelete] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
+
+  const handleShowDelete = () => setShowDelete(true);
+  const handleCloseDelete = () => setShowDelete(false);
 
   useEffect(() => {
     const fetchPart = async () => {
@@ -56,6 +61,24 @@ const PartDetails = () => {
   }, [id]);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (auth.isAuthenticated) {
+      try {
+        const fetchUserId = async () => {
+          const user_id = await auth_api.currentUser();
+          setUserId(user_id);
+        };
+        fetchUserId();
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unexpected error occurred");
+        }
+      }
+    }
+  }, [auth.isAuthenticated]);
 
   useEffect(() => {
     if (error) {
@@ -219,6 +242,81 @@ const PartDetails = () => {
           </ButtonGroup>
         </Modal.Footer>
       </Modal>
+      <>
+        {part.owner === userId && (
+          <>
+            <Row className="justify-content-end mt-2">
+              <Col md={3} sm={12}>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  style={{
+                    backgroundColor: "light-green",
+                    borderColor: "",
+                    padding: "10px",
+                    width: "100%",
+                  }}
+                  onClick={() => {
+                    navigate(`/edit-part/${id}/`);
+                  }}
+                >
+                  Edit Part
+                </Button>
+              </Col>
+              <Col md={3} sm={12}>
+                <Button
+                  variant="danger"
+                  size="lg"
+                  style={{
+                    backgroundColor: "light-green",
+                    borderColor: "",
+                    padding: "10px",
+                    width: "100%",
+                  }}
+                  onClick={() => {
+                    handleShowDelete();
+                  }}
+                >
+                  Delete Part
+                </Button>
+              </Col>
+            </Row>
+            <Modal
+              show={showDelete}
+              onHide={handleCloseDelete}
+              fullscreen="md-down"
+              centered
+              size="lg"
+              scrollable
+            >
+              <Modal.Header closeButton>
+                <Modal.Title>
+                  Are you sure you want to delete this part?
+                </Modal.Title>
+              </Modal.Header>
+              <Modal.Footer className="d-flex justify-content-start">
+                <Button
+                  variant="danger"
+                  onClick={async () => {
+                    await auth_api.deletePart(id);
+                    navigate(`/parts/your/`);
+                  }}
+                >
+                  Delete Part
+                </Button>
+                <Button
+                  variant="outline-secondary"
+                  onClick={() => {
+                    handleCloseDelete();
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Modal.Footer>
+            </Modal>
+          </>
+        )}
+      </>
     </>
   );
 };

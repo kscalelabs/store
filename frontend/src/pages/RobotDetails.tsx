@@ -80,7 +80,6 @@ const RobotDetails = () => {
     };
     fetchRobot();
   }, [id]);
-
   useEffect(() => {
     if (auth.isAuthenticated) {
       try {
@@ -289,14 +288,14 @@ const RobotDetails = () => {
       <>
         {robot.owner === userId && (
           <>
-            <Row>
+            <Row className="justify-content-end mt-2">
               <Col md={3} sm={12}>
                 <Button
-                  variant="success"
+                  variant="primary"
                   size="lg"
                   style={{
                     backgroundColor: "light-green",
-                    borderColor: "black",
+                    borderColor: "",
                     padding: "10px",
                     width: "100%",
                   }}
@@ -313,7 +312,7 @@ const RobotDetails = () => {
                   size="lg"
                   style={{
                     backgroundColor: "light-green",
-                    borderColor: "black",
+                    borderColor: "",
                     padding: "10px",
                     width: "100%",
                   }}
@@ -335,7 +334,7 @@ const RobotDetails = () => {
             >
               <Modal.Header closeButton>
                 <Modal.Title>
-                  Are you sure you want to delete this robot? :{"("}
+                  Are you sure you want to delete this robot?
                 </Modal.Title>
               </Modal.Header>
               <Modal.Footer className="d-flex justify-content-start">
@@ -343,7 +342,7 @@ const RobotDetails = () => {
                   variant="danger"
                   onClick={async () => {
                     await auth_api.deleteRobot(id);
-                    navigate(`/robots/`);
+                    navigate(`/robots/your/`);
                   }}
                 >
                   Delete Robot
