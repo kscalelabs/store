@@ -33,13 +33,6 @@ class User(BaseModel):
         )
 
 
-class SessionToken(BaseModel):
-    """Stored in Redis rather than DynamoDB."""
-
-    token_hash: str  # Primary key
-    user_id: str
-
-
 class Bom(BaseModel):
     part_id: str
     quantity: int
