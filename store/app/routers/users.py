@@ -7,7 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic.main import BaseModel
 
-from store.app.crypto import new_token, check_password
+from store.app.crypto import check_password, new_token
 from store.app.db import Crud
 from store.app.model import User
 from store.app.utils.email import send_delete_email, send_verify_email
