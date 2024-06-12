@@ -27,13 +27,7 @@ const TopNavbar = () => {
                 {theme === "dark" ? <MoonFill /> : <SunFill />}
               </Nav.Link>
             </Boop>
-            {!isAuthenticated && (
-              <>
-                <Nav.Link href="/login">Login</Nav.Link>
-                <Nav.Link href="/register">Register</Nav.Link>
-              </>
-            )}
-            {isAuthenticated && (
+            {isAuthenticated ? (
               <>
                 <Boop timing={100}>
                   <Nav.Link onClick={() => setShowSidebar(true)}>
@@ -41,6 +35,11 @@ const TopNavbar = () => {
                   </Nav.Link>
                 </Boop>
                 <Nav.Link href="/logout">Log Out</Nav.Link>
+              </>
+            ) : (
+              <>
+                <Nav.Link href="/login">Login</Nav.Link>
+                <Nav.Link href="/register">Register</Nav.Link>
               </>
             )}
           </div>

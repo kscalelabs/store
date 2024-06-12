@@ -33,6 +33,47 @@ export class api {
   constructor(api: AxiosInstance) {
     this.api = api;
   }
+
+  public async register(
+    email: string,
+    username: string,
+    password: string,
+  ): Promise<void> {
+    try {
+      await this.api.post("/users/register/", { email, username, password });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error registering:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail ||
+            "Error registering with email " + email,
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+
+  public async login(email: string, password: string): Promise<void> {
+    try {
+      await this.api.post("/users/login/", { email, password });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error logging in:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail ||
+            "Error logging in with email " + email,
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+  public async logout(): Promise<void> {
+    await this.api.delete("/users/logout/");
+  }
   public async getUserById(userId: string | undefined): Promise<string> {
     const response = await this.api.get(`/users/${userId}`);
     return response.data.email;
