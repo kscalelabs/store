@@ -63,9 +63,6 @@ def mock_aws() -> Generator[None, None, None]:
 def mock_redis(mocker: MockerFixture) -> None:
     os.environ["ROBOLIST_REDIS_HOST"] = "localhost"
     os.environ["ROBOLIST_REDIS_PASSWORD"] = ""
-    os.environ["ROBOLIST_REDIS_PORT"] = "6379"
-    os.environ["ROBOLIST_REDIS_SESSION_DB"] = "0"
-    os.environ["ROBOLIST_REDIS_VERIFY_EMAIL_DB"] = "1"
     fake_redis = fakeredis.aioredis.FakeRedis()
     mocker.patch("store.app.crud.base.Redis", return_value=fake_redis)
 
