@@ -87,7 +87,7 @@ const RobotForm: React.FC<RobotFormProps> = ({
   };
 
   return (
-    <Row>
+    <>
       <h1>{title}</h1>
       {message && <p>{message}</p>}
       <Form onSubmit={handleSubmit} className="mb-3">
@@ -242,7 +242,7 @@ const RobotForm: React.FC<RobotFormProps> = ({
           <Button type="submit">Submit</Button>
         </Col>
       </Form>
-    </Row>
+    </>
   );
 };
 
