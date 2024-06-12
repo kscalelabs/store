@@ -10,13 +10,13 @@ import EditRobotForm from "pages/EditRobotForm";
 import Home from "pages/Home";
 import Login from "pages/Login";
 import Logout from "pages/Logout";
+import NewRobot from "pages/NewRobot";
 import NotFound from "pages/NotFound";
 import PartDetails from "pages/PartDetails";
 import PartForm from "pages/PartForm";
 import Parts from "pages/Parts";
 import Register from "pages/Register";
 import RobotDetails from "pages/RobotDetails";
-import RobotForm from "pages/RobotForm";
 import Robots from "pages/Robots";
 import VerifyEmail from "pages/VerifyEmail";
 import YourParts from "pages/YourParts";
@@ -46,7 +46,7 @@ const App = () => {
                   />
                   <Route path="/logout" element={<Logout />} />
                   <Route path="/robots/" element={<Robots />} />
-                  <Route path="/robots/add" element={<RobotForm />} />
+                  <Route path="/robots/add" element={<NewRobot />} />
                   <Route path="/parts/add" element={<PartForm />} />
                   <Route path="/robot/:id" element={<RobotDetails />} />
                   <Route path="/edit-robot/:id" element={<EditRobotForm />} />
