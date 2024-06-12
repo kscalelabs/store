@@ -243,16 +243,7 @@ const PartDetails = () => {
         </Modal.Footer>
       </Modal>
       <>
-<<<<<<< HEAD
-<<<<<<< HEAD
         {part.owner === userId && (
-=======
-        {/* {part.owner === userId && ( */}
-        {part.owner === part.owner && (
->>>>>>> 7300cc8 (adding edit/delete parts buttons)
-=======
-        {part.owner === userId && (
->>>>>>> e2e2da6 (edit and delete parts features + minor fixes)
           <>
             <Row className="justify-content-end mt-2">
               <Col md={3} sm={12}>
@@ -269,15 +260,7 @@ const PartDetails = () => {
                     navigate(`/edit-part/${id}/`);
                   }}
                 >
-<<<<<<< HEAD
-<<<<<<< HEAD
                   Edit Part
-=======
-                  Edit Robot
->>>>>>> 7300cc8 (adding edit/delete parts buttons)
-=======
-                  Edit Part
->>>>>>> e2e2da6 (edit and delete parts features + minor fixes)
                 </Button>
               </Col>
               <Col md={3} sm={12}>
@@ -315,18 +298,8 @@ const PartDetails = () => {
                 <Button
                   variant="danger"
                   onClick={async () => {
-<<<<<<< HEAD
-<<<<<<< HEAD
                     await auth_api.deletePart(id);
                     navigate(`/parts/your/`);
-=======
-                    // await auth_api.deletePart(id);
-                    navigate(`/parts/`);
->>>>>>> 7300cc8 (adding edit/delete parts buttons)
-=======
-                    await auth_api.deletePart(id);
-                    navigate(`/parts/your/`);
->>>>>>> e2e2da6 (edit and delete parts features + minor fixes)
                   }}
                 >
                   Delete Part
