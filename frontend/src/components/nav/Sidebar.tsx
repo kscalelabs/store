@@ -1,3 +1,4 @@
+import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { FormEvent, useEffect, useState } from "react";
@@ -10,6 +11,8 @@ interface Props {
 }
 
 const Sidebar = ({ show, onHide }: Props) => {
+  const { addAlert } = useAlertQueue();
+
   const [needToCall, setNeedToCall] = useState<boolean>(true);
   const [email, setEmail] = useState<string>("");
   const [verified, setVerified] = useState<boolean>(false);
@@ -27,7 +30,14 @@ const Sidebar = ({ show, onHide }: Props) => {
     try {
       await auth_api.send_verify_email();
     } catch (error) {
-      console.error(error);
+      if (error instanceof Error) {
+        addAlert(error.message, "error");
+      } else {
+        addAlert(
+          "Unexpected error when trying to send verification email",
+          "error",
+        );
+      }
     }
   };
 
@@ -37,7 +47,11 @@ const Sidebar = ({ show, onHide }: Props) => {
       await auth_api.send_change_email(newEmail);
       setChangeEmailSuccess(true);
     } catch (error) {
-      console.error(error);
+      if (error instanceof Error) {
+        addAlert(error.message, "error");
+      } else {
+        addAlert("Unexpected error when trying to change email", "error");
+      }
     }
   };
 
@@ -47,7 +61,11 @@ const Sidebar = ({ show, onHide }: Props) => {
       await auth_api.change_password(oldPassword, newPassword);
       setChangePasswordSuccess(true);
     } catch (error) {
-      console.error(error);
+      if (error instanceof Error) {
+        addAlert(error.message, "error");
+      } else {
+        addAlert("Unexpected error when trying to change password", "error");
+      }
     }
   };
 
