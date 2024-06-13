@@ -24,6 +24,3 @@ out*/
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
-
-# Environment Variable Files
-env.sh
