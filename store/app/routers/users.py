@@ -108,6 +108,16 @@ async def send_verify_email_endpoint(
     return True
 
 
+@users_router.post("/verify-email/{token}")
+async def verify_email_user_endpoint(
+    token: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> bool:
+    """Verifies a user's email address."""
+    await crud.check_verify_email_token(token)
+    return True
+
+
 class UserForgotPassword(BaseModel):
     email: str
 
@@ -141,16 +151,6 @@ async def reset_password_user_endpoint(
 ) -> bool:
     """Resets a user's password."""
     await crud.use_reset_password_token(token, data.password)
-    return True
-
-
-@users_router.post("/verify-email/{token}")
-async def verify_email_user_endpoint(
-    token: str,
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    """Verifies a user's email address."""
-    await crud.check_verify_email_token(token)
     return True
 
 
