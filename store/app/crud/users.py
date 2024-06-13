@@ -1,6 +1,7 @@
 """Defines CRUD interface for user API."""
 
 import asyncio
+import json
 import warnings
 
 from boto3.dynamodb.conditions import Key
@@ -95,6 +96,25 @@ class UserCrud(BaseCrud):
             AttributeUpdates={"password_hash": {"Value": hash_password(new_password), "Action": "PUT"}},
         )
         await self.delete_reset_password_token(token)
+
+    async def add_change_email_token(self, token: str, user_id: str, new_email: str, lifetime: int) -> None:
+        await self.change_email_kv.setex(
+            hash_token(token), lifetime, json.dumps({"user_id": user_id, "new_email": new_email})
+        )
+
+    async def use_change_email_token(self, token: str) -> None:
+        data = await self.change_email_kv.get(hash_token(token))
+        if data is None:
+            raise ValueError("Provided token is invalid")
+        data = json.loads(data)
+        await (await self.db.Table("Users")).update_item(
+            Key={"user_id": data["user_id"]},
+            AttributeUpdates={
+                "email": {"Value": data["new_email"], "Action": "PUT"},
+                "verified": {"Value": True, "Action": "PUT"},
+            },
+        )
+        await self.change_email_kv.delete(hash_token(token))
 
 
 async def test_adhoc() -> None:

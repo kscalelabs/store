@@ -6,6 +6,7 @@ import { AlertQueue, AlertQueueProvider } from "hooks/alerts";
 import { AuthenticationProvider } from "hooks/auth";
 import { ThemeProvider } from "hooks/theme";
 import About from "pages/About";
+import ChangeEmail from "pages/ChangeEmail";
 import EditRobotForm from "pages/EditRobotForm";
 import Forgot from "pages/Forgot";
 import Home from "pages/Home";
@@ -51,6 +52,10 @@ const App = () => {
                   <Route
                     path="/reset-password/:token"
                     element={<ResetPassword />}
+                  />
+                  <Route
+                    path="/change-email/:token"
+                    element={<ChangeEmail />}
                   />
                   <Route path="/robots/" element={<Robots />} />
                   <Route path="/robots/add" element={<NewRobot />} />
