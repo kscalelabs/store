@@ -132,6 +132,38 @@ export class api {
     }
   }
 
+  public async forgot(email: string): Promise<void> {
+    try {
+      await this.api.post("/users/forgot-password/", { email });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error sending forgot password:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail || "Error sending forgot password",
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+
+  public async reset_password(token: string, password: string): Promise<void> {
+    try {
+      await this.api.post("/users/reset-password/" + token, { password });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error resetting password:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail || "Error resetting password",
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+
   public async me(): Promise<MeResponse> {
     try {
       const res = await this.api.get("/users/me/");

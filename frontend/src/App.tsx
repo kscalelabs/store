@@ -7,6 +7,7 @@ import { AuthenticationProvider } from "hooks/auth";
 import { ThemeProvider } from "hooks/theme";
 import About from "pages/About";
 import EditRobotForm from "pages/EditRobotForm";
+import Forgot from "pages/Forgot";
 import Home from "pages/Home";
 import Login from "pages/Login";
 import Logout from "pages/Logout";
@@ -16,6 +17,7 @@ import NotFound from "pages/NotFound";
 import PartDetails from "pages/PartDetails";
 import Parts from "pages/Parts";
 import Register from "pages/Register";
+import ResetPassword from "pages/ResetPassword";
 import RobotDetails from "pages/RobotDetails";
 import Robots from "pages/Robots";
 import VerifyEmail from "pages/VerifyEmail";
@@ -45,6 +47,11 @@ const App = () => {
                     element={<VerifyEmail />}
                   />
                   <Route path="/logout" element={<Logout />} />
+                  <Route path="/forgot" element={<Forgot />} />
+                  <Route
+                    path="/reset-password/:token"
+                    element={<ResetPassword />}
+                  />
                   <Route path="/robots/" element={<Robots />} />
                   <Route path="/robots/add" element={<NewRobot />} />
                   <Route path="/parts/add" element={<NewPart />} />

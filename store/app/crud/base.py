@@ -46,6 +46,13 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             db=settings.redis.verify_email_db,
         )
 
+        self.reset_password_kv = Redis(
+            host=settings.redis.host,
+            password=settings.redis.password,
+            port=settings.redis.port,
+            db=settings.redis.reset_password_db,
+        )
+
         return self
 
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:  # noqa: ANN401
