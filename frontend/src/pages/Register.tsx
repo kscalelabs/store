@@ -37,6 +37,7 @@ const Register = () => {
         <label htmlFor="email">Email</label>
         <Form.Control
           id="email"
+          autoComplete="email"
           className="mb-3"
           type="text"
           onChange={(e) => {
@@ -48,6 +49,7 @@ const Register = () => {
         <label htmlFor="username">Username</label>
         <Form.Control
           id="username"
+          autoComplete="username"
           className="mb-3"
           type="text"
           onChange={(e) => {
@@ -59,6 +61,7 @@ const Register = () => {
         <label htmlFor="password">Password</label>
         <Form.Control
           id="password"
+          autoComplete="new-password"
           className="mb-3"
           type="password"
           onChange={(e) => {
