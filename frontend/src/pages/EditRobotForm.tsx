@@ -1,3 +1,4 @@
+import ImageUploadComponent from "components/files/UploadImage";
 import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Bom, Image, Part, Robot } from "hooks/api";
@@ -55,6 +56,13 @@ const EditRobotForm: React.FC = () => {
     newImages[index][name as keyof Image] = value;
     setImages(newImages);
   };
+
+  const handleImageUploadSuccess = (url: string, index: number) => {
+    const newImages = [...robot_images];
+    newImages[index].url = url;
+    setImages(newImages);
+  };
+
   const navigate = useNavigate();
   const handleAddImage = () => {
     setImages([...robot_images, { url: "", caption: "" }]);
@@ -184,11 +192,11 @@ const EditRobotForm: React.FC = () => {
           value={robot_description}
           required
         />
-        Images:
+        <Form.Label>Images</Form.Label>
         {robot_images.map((image, index) => (
           <Row key={index} className="mb-3">
             <Col md={12}>
-              <Form.Control
+              {/* <Form.Control
                 className="mb-1"
                 type="text"
                 placeholder="Image URL"
@@ -196,7 +204,11 @@ const EditRobotForm: React.FC = () => {
                 value={image.url}
                 onChange={(e) => handleImageChange(index, e)}
                 required
+              /> */}
+              <ImageUploadComponent
+                onUploadSuccess={(url) => handleImageUploadSuccess(url, index)}
               />
+              Current Image is {image.url}
               <Form.Control
                 className="mb-1"
                 type="text"
