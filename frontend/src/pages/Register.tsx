@@ -32,38 +32,35 @@ const Register = () => {
 
   return (
     <div>
-      <h1>Register</h1>
+      <h1 className="mb-4">Register</h1>
       <Form onSubmit={handleSubmit}>
-        <label htmlFor="email">Email:</label>
+        <label htmlFor="email">Email</label>
         <Form.Control
           id="email"
           className="mb-3"
           type="text"
-          placeholder="Email"
           onChange={(e) => {
             setEmail(e.target.value);
           }}
           value={email}
           required
         />
-        <label htmlFor="username">Username:</label>
+        <label htmlFor="username">Username</label>
         <Form.Control
           id="username"
           className="mb-3"
           type="text"
-          placeholder="Username"
           onChange={(e) => {
             setUsername(e.target.value);
           }}
           value={username}
           required
         />
-        Password:
+        <label htmlFor="password">Password</label>
         <Form.Control
           id="password"
           className="mb-3"
           type="password"
-          placeholder="Password"
           onChange={(e) => {
             setPassword(e.target.value);
           }}

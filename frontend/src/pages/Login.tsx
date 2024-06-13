@@ -26,14 +26,13 @@ const Login = () => {
 
   return (
     <div>
-      <h1>Login</h1>
+      <h1 className="mb-4">Login</h1>
       <Form onSubmit={handleSubmit}>
         <label htmlFor="email">Email</label>
         <Form.Control
           id="email"
           className="mb-3"
           type="text"
-          placeholder="Email"
           onChange={(e) => {
             setEmail(e.target.value);
           }}
@@ -45,7 +44,6 @@ const Login = () => {
           id="password"
           className="mb-3"
           type="password"
-          placeholder="Password"
           onChange={(e) => {
             setPassword(e.target.value);
           }}
