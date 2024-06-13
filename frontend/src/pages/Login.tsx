@@ -1,3 +1,4 @@
+import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
 import { setLocalStorageAuth, useAuthentication } from "hooks/auth";
 import { FormEvent, useState } from "react";
@@ -7,6 +8,8 @@ import { Link, useNavigate } from "react-router-dom";
 const Login = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
+
+  const { addAlert } = useAlertQueue();
 
   const navigate = useNavigate();
 
@@ -20,7 +23,11 @@ const Login = () => {
       setLocalStorageAuth(email);
       navigate("/");
     } catch (err) {
-      console.error(err);
+      if (err instanceof Error) {
+        addAlert(err.message, "error");
+      } else {
+        addAlert("Unexpected error when trying to log in", "error");
+      }
     }
   };
 
