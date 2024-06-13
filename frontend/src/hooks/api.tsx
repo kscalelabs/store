@@ -102,6 +102,39 @@ export class api {
     }
   }
 
+  public async change_email(code: string): Promise<void> {
+    try {
+      await this.api.post("/users/change-email/" + code);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error changing email:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail ||
+            "Error changing email with code " + code,
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+
+  public async send_change_email(new_email: string): Promise<void> {
+    try {
+      await this.api.post("/users/change-email", { new_email });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error sending change email:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail || "Error sending change email",
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+
   public async login(email: string, password: string): Promise<void> {
     try {
       await this.api.post("/users/login/", { email, password });

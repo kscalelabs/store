@@ -13,6 +13,7 @@ class RedisSettings:
     session_db: int = field(default=0)
     verify_email_db: int = field(default=1)
     reset_password_db: int = field(default=2)
+    change_email_db: int = field(default=3)
 
 
 @dataclass

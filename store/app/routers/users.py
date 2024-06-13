@@ -11,7 +11,7 @@ from pydantic.main import BaseModel
 from store.app.crypto import check_password, new_token
 from store.app.db import Crud
 from store.app.model import User
-from store.app.utils.email import send_delete_email, send_reset_password_email, send_verify_email
+from store.app.utils.email import send_change_email, send_delete_email, send_reset_password_email, send_verify_email
 from store.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -108,6 +108,16 @@ async def send_verify_email_endpoint(
     return True
 
 
+@users_router.post("/verify-email/{token}")
+async def verify_email_user_endpoint(
+    token: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> bool:
+    """Verifies a user's email address."""
+    await crud.check_verify_email_token(token)
+    return True
+
+
 class UserForgotPassword(BaseModel):
     email: str
 
@@ -144,13 +154,37 @@ async def reset_password_user_endpoint(
     return True
 
 
-@users_router.post("/verify-email/{token}")
-async def verify_email_user_endpoint(
+class NewEmail(BaseModel):
+    new_email: str
+
+
+@users_router.post("/change-email")
+async def send_change_email_user_endpoint(
+    data: NewEmail,
+    crud: Annotated[Crud, Depends(Crud.get)],
+    token: Annotated[str, Depends(get_session_token)],
+) -> bool:
+    user_id = await crud.get_user_id_from_session_token(token)
+    if user_id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    user = await crud.get_user(user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    change_email_token = new_token()
+    """Sends a verification email to the new email address."""
+    # Magic number: 1 hour
+    await crud.add_change_email_token(change_email_token, user.user_id, data.new_email, 60 * 60)
+    await send_change_email(data.new_email, change_email_token)
+    return True
+
+
+@users_router.post("/change-email/{token}")
+async def change_email_user_endpoint(
     token: str,
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    """Verifies a user's email address."""
-    await crud.check_verify_email_token(token)
+    """Changes the user's email address."""
+    await crud.use_change_email_token(token)
     return True
 
 
