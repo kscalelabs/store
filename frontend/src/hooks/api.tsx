@@ -183,7 +183,7 @@ export class api {
 
   public async getUserById(userId: string | undefined): Promise<string> {
     const response = await this.api.get(`/users/${userId}`);
-    return response.data.email;
+    return response.data.username;
   }
   public async getRobots(): Promise<Robot[]> {
     try {
