@@ -6,7 +6,7 @@ import warnings
 from boto3.dynamodb.conditions import Key
 
 from store.app.crud.base import BaseCrud
-from store.app.crypto import hash_token
+from store.app.crypto import hash_password, hash_token
 from store.app.model import User
 
 
@@ -65,7 +65,6 @@ class UserCrud(BaseCrud):
         await self.session_kv.delete(hash_token(token))
 
     async def add_verify_email_token(self, token: str, user_id: str, lifetime: int) -> None:
-        print("IUNSERTING TOKEN", token)
         await self.verify_email_kv.setex(hash_token(token), lifetime, user_id)
 
     async def delete_verify_email_token(self, token: str) -> None:
@@ -74,12 +73,28 @@ class UserCrud(BaseCrud):
     async def check_verify_email_token(self, token: str) -> None:
         id = await self.verify_email_kv.get(hash_token(token))
         if id is None:
-            raise ValueError("Token not found")
+            raise ValueError("Provided token is invalid")
         await (await self.db.Table("Users")).update_item(
             Key={"user_id": id.decode("utf-8")},
             AttributeUpdates={"verified": {"Value": True, "Action": "PUT"}},
         )
         await self.delete_verify_email_token(token)
+
+    async def add_reset_password_token(self, token: str, user_id: str, lifetime: int) -> None:
+        await self.reset_password_kv.setex(hash_token(token), lifetime, user_id)
+
+    async def delete_reset_password_token(self, token: str) -> None:
+        await self.reset_password_kv.delete(hash_token(token))
+
+    async def use_reset_password_token(self, token: str, new_password: str) -> None:
+        id = await self.reset_password_kv.get(hash_token(token))
+        if id is None:
+            raise ValueError("Provided token is invalid")
+        await (await self.db.Table("Users")).update_item(
+            Key={"user_id": id.decode("utf-8")},
+            AttributeUpdates={"password_hash": {"Value": hash_password(new_password), "Action": "PUT"}},
+        )
+        await self.delete_reset_password_token(token)
 
 
 async def test_adhoc() -> None:

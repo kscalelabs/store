@@ -19,7 +19,6 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         super().__init__()
 
         self.__db: DynamoDBServiceResource | None = None
-        self.__kv: Redis | None = None
 
     @property
     def db(self) -> DynamoDBServiceResource:
@@ -45,6 +44,13 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             password=settings.redis.password,
             port=settings.redis.port,
             db=settings.redis.verify_email_db,
+        )
+
+        self.reset_password_kv = Redis(
+            host=settings.redis.host,
+            password=settings.redis.password,
+            port=settings.redis.port,
+            db=settings.redis.reset_password_db,
         )
 
         return self

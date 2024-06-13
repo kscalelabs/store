@@ -42,6 +42,18 @@ async def send_verify_email(email: str, token: str) -> None:
     await send_email(subject="Verify Email", body=body, to=email)
 
 
+async def send_reset_password_email(email: str, token: str) -> None:
+    body = textwrap.dedent(
+        f"""
+            <h1><code>K-Scale Labs</code></h1>
+            <h2><code>reset your password</code></h2>
+            <p>Click <a href="{settings.site.homepage}/reset-password/{token}">here</a> to reset your password.</p>
+        """
+    )
+
+    await send_email(subject="Reset Password", body=body, to=email)
+
+
 async def send_delete_email(email: str) -> None:
     body = textwrap.dedent(
         """

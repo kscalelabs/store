@@ -2,7 +2,7 @@ import { api } from "hooks/api";
 import { setLocalStorageAuth, useAuthentication } from "hooks/auth";
 import { FormEvent, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const auth = useAuthentication();
@@ -50,6 +50,9 @@ const Login = () => {
           value={password}
           required
         />
+        <div className="mb-4">
+          <Link to="/forgot">Forgot your password?</Link>
+        </div>
         <Button type="submit">Login</Button>
       </Form>
     </div>
