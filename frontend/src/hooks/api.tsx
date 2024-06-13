@@ -30,6 +30,14 @@ export interface Robot {
   degrees_of_freedom: string;
 }
 
+interface MeResponse {
+  user_id: string;
+  email: string;
+  username: string;
+  verified: boolean;
+  admin: boolean;
+}
+
 export class api {
   public api: AxiosInstance;
 
@@ -75,6 +83,25 @@ export class api {
     }
   }
 
+  public async send_verify_email(): Promise<void> {
+    try {
+      await this.api.post("/users/send-verify-email");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error(
+          "Error sending verification email:",
+          error.response?.data,
+        );
+        throw new Error(
+          error.response?.data?.detail || "Error sending verification email",
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+
   public async login(email: string, password: string): Promise<void> {
     try {
       await this.api.post("/users/login/", { email, password });
@@ -104,6 +131,24 @@ export class api {
       }
     }
   }
+
+  public async me(): Promise<MeResponse> {
+    try {
+      const res = await this.api.get("/users/me/");
+      return res.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error fetching current user:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail || "Error fetching current user",
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+
   public async getUserById(userId: string | undefined): Promise<string> {
     const response = await this.api.get(`/users/${userId}`);
     return response.data.email;

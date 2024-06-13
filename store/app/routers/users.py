@@ -88,6 +88,26 @@ async def register_user_endpoint(
     return True
 
 
+@users_router.post("/send-verify-email")
+async def send_verify_email_endpoint(
+    token: Annotated[str, Depends(get_session_token)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> bool:
+    user_id = await crud.get_user_id_from_session_token(token)
+    if user_id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    user_obj = await crud.get_user(user_id)
+    if user_obj is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    verify_email_token = new_token()
+    # Magic number: 7 days
+    if user_obj.verified:
+        return True
+    await crud.add_verify_email_token(verify_email_token, user_id, 60 * 60 * 24 * 7)
+    await send_verify_email(user_obj.email, verify_email_token)
+    return True
+
+
 @users_router.post("/verify-email/{token}")
 async def verify_email_user_endpoint(
     token: str,
@@ -143,6 +163,10 @@ async def login_user_endpoint(
 
 class UserInfoResponse(BaseModel):
     email: str
+    username: str
+    user_id: str
+    verified: bool
+    admin: bool
 
 
 @users_router.get("/me", response_model=UserInfoResponse)
@@ -156,7 +180,13 @@ async def get_user_info_endpoint(
     user_obj = await crud.get_user(user_id)
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return UserInfoResponse(email=user_obj.email)
+    return UserInfoResponse(
+        email=user_obj.email,
+        username=user_obj.username,
+        user_id=user_obj.user_id,
+        verified=user_obj.verified,
+        admin=user_obj.admin,
+    )
 
 
 @users_router.delete("/me")
@@ -191,4 +221,10 @@ async def get_user_info_by_id_endpoint(user_id: str, crud: Annotated[Crud, Depen
     user_obj = await crud.get_user(user_id)
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return UserInfoResponse(email=user_obj.email)
+    return UserInfoResponse(
+        email=user_obj.email,
+        username=user_obj.username,
+        user_id=user_obj.user_id,
+        verified=user_obj.verified,
+        admin=user_obj.admin,
+    )
