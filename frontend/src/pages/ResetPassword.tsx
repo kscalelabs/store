@@ -44,7 +44,7 @@ const ResetPassword = () => {
             id="new-password"
             autoComplete="new-password"
             className="mb-3"
-            type="text"
+            type="password"
             onChange={(e) => {
               setPassword(e.target.value);
             }}

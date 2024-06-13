@@ -135,6 +135,28 @@ export class api {
     }
   }
 
+  public async change_password(
+    old_password: string,
+    new_password: string,
+  ): Promise<void> {
+    try {
+      await this.api.post("/users/change-password", {
+        old_password,
+        new_password,
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error changing password:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail || "Error changing password",
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+
   public async login(email: string, password: string): Promise<void> {
     try {
       await this.api.post("/users/login/", { email, password });
