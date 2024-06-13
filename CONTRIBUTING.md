@@ -14,6 +14,9 @@ To get started developing:
 6. Serve the FastAPI application
 7. Serve the React frontend
 
+> [!IMPORTANT]
+> You **MUST** access the locally run website through `127.0.0.1:3000` and **NOT** `localhost:3000`. This is because the CORS policy is configured to only allow requests from the exact domain `127.0.0.1:3000`.
+
 ## Database
 
 ### DynamoDB
