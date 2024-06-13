@@ -17,6 +17,11 @@ const Sidebar = ({ show, onHide }: Props) => {
   const auth_api = new api(auth.api);
 
   const [newEmail, setNewEmail] = useState<string>("");
+  const [changeEmailSuccess, setChangeEmailSuccess] = useState<boolean>(false);
+  const [oldPassword, setOldPassword] = useState<string>("");
+  const [newPassword, setNewPassword] = useState<string>("");
+  const [changePasswordSuccess, setChangePasswordSuccess] =
+    useState<boolean>(false);
 
   const sendVerifyEmail = async () => {
     try {
@@ -30,6 +35,17 @@ const Sidebar = ({ show, onHide }: Props) => {
     event.preventDefault();
     try {
       await auth_api.send_change_email(newEmail);
+      setChangeEmailSuccess(true);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const changePassword = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    try {
+      await auth_api.change_password(oldPassword, newPassword);
+      setChangePasswordSuccess(true);
     } catch (error) {
       console.error(error);
     }
@@ -74,21 +90,61 @@ const Sidebar = ({ show, onHide }: Props) => {
                 </a>
               </p>
             )}
-            <Form onSubmit={sendChangeEmail}>
-              <label htmlFor="new-email">New email</label>
-              <Form.Control
-                id="new-email"
-                autoComplete="email"
-                className="mb-3"
-                type="text"
-                onChange={(e) => {
-                  setNewEmail(e.target.value);
-                }}
-                value={newEmail}
-                required
-              />
-              <Button type="submit">Change Email</Button>
-            </Form>
+            {changeEmailSuccess ? (
+              <p>An email has been sent to your new email address.</p>
+            ) : (
+              <Form onSubmit={sendChangeEmail}>
+                <label htmlFor="new-email">New email</label>
+                <Form.Control
+                  id="new-email"
+                  autoComplete="email"
+                  className="mb-3"
+                  type="text"
+                  onChange={(e) => {
+                    setNewEmail(e.target.value);
+                  }}
+                  value={newEmail}
+                  required
+                />
+                <Button type="submit">Change Email</Button>
+              </Form>
+            )}
+          </Row>
+          <Row>
+            <p>
+              <strong>Change Password</strong>
+            </p>
+            {changePasswordSuccess ? (
+              <p>Your password has been changed.</p>
+            ) : (
+              <Form onSubmit={changePassword}>
+                <label htmlFor="old-password">Old password</label>
+                <Form.Control
+                  id="old-password"
+                  autoComplete="current-password"
+                  className="mb-3"
+                  type="password"
+                  onChange={(e) => {
+                    setOldPassword(e.target.value);
+                  }}
+                  value={oldPassword}
+                  required
+                />
+                <label htmlFor="new-password">New password</label>
+                <Form.Control
+                  id="new-password"
+                  autoComplete="new-password"
+                  className="mb-3"
+                  type="password"
+                  onChange={(e) => {
+                    setNewPassword(e.target.value);
+                  }}
+                  value={newPassword}
+                  required
+                />
+                <Button type="submit">Change Password</Button>
+              </Form>
+            )}
           </Row>
           <Row style={{ marginTop: "auto" }} />
           <Row>

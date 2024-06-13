@@ -188,6 +188,30 @@ async def change_email_user_endpoint(
     return True
 
 
+class ChangePassword(BaseModel):
+    old_password: str
+    new_password: str
+
+
+@users_router.post("/change-password")
+async def change_password_user_endpoint(
+    data: ChangePassword,
+    token: Annotated[str, Depends(get_session_token)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> bool:
+    """Changes the user's password."""
+    user_id = await crud.get_user_id_from_session_token(token)
+    if user_id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    user = await crud.get_user(user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if not check_password(data.old_password, user.password_hash):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
+    await crud.change_password(user_id, data.new_password)
+    return True
+
+
 class UserLogin(BaseModel):
     email: str
     password: str

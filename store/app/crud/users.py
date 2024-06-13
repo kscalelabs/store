@@ -81,6 +81,12 @@ class UserCrud(BaseCrud):
         )
         await self.delete_verify_email_token(token)
 
+    async def change_password(self, user_id: str, new_password: str) -> None:
+        await (await self.db.Table("Users")).update_item(
+            Key={"user_id": user_id},
+            AttributeUpdates={"password_hash": {"Value": hash_password(new_password), "Action": "PUT"}},
+        )
+
     async def add_reset_password_token(self, token: str, user_id: str, lifetime: int) -> None:
         await self.reset_password_kv.setex(hash_token(token), lifetime, user_id)
 
@@ -91,10 +97,7 @@ class UserCrud(BaseCrud):
         id = await self.reset_password_kv.get(hash_token(token))
         if id is None:
             raise ValueError("Provided token is invalid")
-        await (await self.db.Table("Users")).update_item(
-            Key={"user_id": id.decode("utf-8")},
-            AttributeUpdates={"password_hash": {"Value": hash_password(new_password), "Action": "PUT"}},
-        )
+        await self.change_password(id, new_password)
         await self.delete_reset_password_token(token)
 
     async def add_change_email_token(self, token: str, user_id: str, new_email: str, lifetime: int) -> None:
