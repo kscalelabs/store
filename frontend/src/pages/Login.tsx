@@ -31,6 +31,7 @@ const Login = () => {
         <label htmlFor="email">Email</label>
         <Form.Control
           id="email"
+          autoComplete="username"
           className="mb-3"
           type="text"
           onChange={(e) => {
@@ -42,6 +43,7 @@ const Login = () => {
         <label htmlFor="password">Password</label>
         <Form.Control
           id="password"
+          autoComplete="current-password"
           className="mb-3"
           type="password"
           onChange={(e) => {
