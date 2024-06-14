@@ -84,7 +84,7 @@ const Robots = () => {
 
       <Row className="mt-5">
         {robotsData.map((robot) => (
-          <Col key={robot.robot_id} md={3} sm={6} xs={12}>
+          <Col key={robot.robot_id} lg={2} md={4} sm={6} xs={12}>
             <Card onClick={() => navigate(`/robot/${robot.robot_id}`)}>
               {robot.images[0] && (
                 <div

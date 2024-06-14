@@ -18,7 +18,7 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
     const [fileError, setFileError] = useState<string | null>(null);
     const auth = useAuthentication();
     const auth_api = new api(auth.api);
-    const MAX_FILE_SIZE = 1 * 1024 * 1024;
+    const MAX_FILE_SIZE = 2 * 1024 * 1024;
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files) {
             const file = event.target.files[0];
@@ -30,7 +30,7 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
                     );
                 } else {
                     const options = {
-                        maxSizeMB: .01, // Maximum size in MB
+                        maxSizeMB: .2, // Maximum size in MB
                         maxWidthOrHeight: 800, // Maximum width or height in pixels
                         useWebWorker: true, // Use multi-threading for compression
                     };
