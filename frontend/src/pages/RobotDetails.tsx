@@ -1,3 +1,4 @@
+import ImageComponent from "components/files/ViewImage";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Bom } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
@@ -161,27 +162,27 @@ const RobotDetails = () => {
             (response.weight && response.weight !== "") ||
             (response.degrees_of_freedom &&
               response.degrees_of_freedom !== "")) && (
-            <>
-              <hr />
-              {response.height !== "" && (
-                <p className="text-muted">
-                  <strong>Height:</strong> {response.height}
-                </p>
-              )}
-              {response.weight !== "" && (
-                <p className="text-muted">
-                  <strong>Weight: </strong>
-                  {response.weight}
-                </p>
-              )}
-              {response.degrees_of_freedom !== "" && (
-                <p className="text-muted">
-                  <strong>Total Degrees of Freedom:</strong>{" "}
-                  {response.degrees_of_freedom}
-                </p>
-              )}
-            </>
-          )}
+              <>
+                <hr />
+                {response.height !== "" && (
+                  <p className="text-muted">
+                    <strong>Height:</strong> {response.height}
+                  </p>
+                )}
+                {response.weight !== "" && (
+                  <p className="text-muted">
+                    <strong>Weight: </strong>
+                    {response.weight}
+                  </p>
+                )}
+                {response.degrees_of_freedom !== "" && (
+                  <p className="text-muted">
+                    <strong>Total Degrees of Freedom:</strong>{" "}
+                    {response.degrees_of_freedom}
+                  </p>
+                )}
+              </>
+            )}
           <hr />
           <Row>
             <Col>
@@ -232,6 +233,10 @@ const RobotDetails = () => {
               data-bs-theme="dark"
               style={{ border: "1px solid #ccc" }}
               interval={null}
+              onClick={() => {
+                setImageIndex(0);
+                handleShow();
+              }}
             >
               {images.map((image, key) => (
                 <Carousel.Item key={key}>
@@ -241,18 +246,23 @@ const RobotDetails = () => {
                       alignItems: "center",
                       justifyContent: "center",
                       overflow: "hidden",
+                      width: '100%', // Adjust this to set the desired width
+                      paddingTop: '0%', // This maintains the aspect ratio of the container as a square
+                      position: 'relative' as 'relative',
                     }}
                   >
-                    <img
+                    <ImageComponent imageId={images[key].url} />
+                    {/* <img
                       className="d-block rounded-lg"
                       style={{ width: "100%", aspectRatio: "1/1" }}
                       src={image.url}
+
                       alt={image.caption}
                       onClick={() => {
                         setImageIndex(key);
                         handleShow();
                       }}
-                    />
+                    /> */}
                   </div>
                   <Carousel.Caption
                     style={{
@@ -283,16 +293,26 @@ const RobotDetails = () => {
         <Modal.Header closeButton>
           <Modal.Title>
             {images[imageIndex].caption} ({imageIndex + 1} of {images.length}{" "}
-            {userId})
+            {userId}{images[imageIndex].url})
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <img
+          <div style={{
+            display: "flex", justifyContent: "center",
+            alignItems: "center",
+            overflow: "hidden",
+            width: '100%', // Adjust this to set the desired width
+            paddingTop: '0%', // This maintains the aspect ratio of the container as a square
+            position: 'relative',
+          }}>
+
+            {/* <img
               style={{ width: "95%", aspectRatio: "1/1" }}
-              src={images[imageIndex].url}
+              //src={images[imageIndex].url}
+              src={"/Users/is2ac/Github/kscale/store/store/app/routers/robot1.png"}
               alt={images[imageIndex].caption}
-            />
+            /> */}
+            <ImageComponent imageId={images[imageIndex].url} />
           </div>
         </Modal.Body>
         <Modal.Footer>
