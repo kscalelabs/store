@@ -5,7 +5,7 @@ from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from store.app.crypto import get_new_user_id
+from store.app.crypto import new_uuid
 from store.app.db import Crud
 from store.app.model import Part
 from store.app.routers.users import get_session_token
@@ -59,7 +59,7 @@ async def add_part(
     if user_id is None:
         raise HTTPException(status_code=401, detail="Must be logged in to add a part")
     part.owner = str(user_id)
-    part.part_id = str(get_new_user_id())
+    part.part_id = str(new_uuid())
     await crud.add_part(part)
     return True
 
@@ -92,5 +92,5 @@ async def edit_part(
         raise HTTPException(status_code=401, detail="Must be logged in to edit a part")
     part.owner = str(user_id)
     part.part_id = part_id
-    await crud.update_part(part_id, part)
+    await crud.update_part(part)
     return True

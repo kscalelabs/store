@@ -1,3 +1,4 @@
+import ImageComponent from "components/files/ViewImage";
 import { api, Robot } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
@@ -66,14 +67,20 @@ const YourRobots = () => {
 
       <Row className="mt-5">
         {robotsData.map((robot) => (
-          <Col key={robot.robot_id} md={3} sm={6} xs={12}>
+          <Col key={robot.robot_id} lg={2} md={4} sm={6} xs={12}>
             <Card onClick={() => navigate(`/robot/${robot.robot_id}`)}>
               {robot.images[0] && (
-                <Card.Img
-                  style={{ aspectRatio: "1/1" }}
-                  variant="top"
-                  src={robot.images[0].url}
-                />
+                <div
+                  style={{
+                    aspectRatio: "1/1",
+                    width: "100%",
+                    overflow: "hidden",
+                    borderTopLeftRadius: ".25rem",
+                    borderTopRightRadius: ".25rem",
+                  }}
+                >
+                  <ImageComponent imageId={"mini" + robot.images[0].url} />
+                </div>
               )}
               <Card.Body>
                 <Card.Title>{robot.name}</Card.Title>

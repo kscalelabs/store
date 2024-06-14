@@ -8,7 +8,7 @@ import uuid
 from argon2 import PasswordHasher
 
 
-def get_new_user_id() -> uuid.UUID:
+def new_uuid() -> uuid.UUID:
     return uuid.uuid4()
 
 

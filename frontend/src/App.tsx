@@ -21,6 +21,7 @@ import Register from "pages/Register";
 import ResetPassword from "pages/ResetPassword";
 import RobotDetails from "pages/RobotDetails";
 import Robots from "pages/Robots";
+import TestImages from "pages/TestImages";
 import VerifyEmail from "pages/VerifyEmail";
 import YourParts from "pages/YourParts";
 import YourRobots from "pages/YourRobots";
@@ -62,6 +63,7 @@ const App = () => {
                   <Route path="/parts/add" element={<NewPart />} />
                   <Route path="/robot/:id" element={<RobotDetails />} />
                   <Route path="/edit-robot/:id" element={<EditRobotForm />} />
+                  <Route path="/test-images" element={<TestImages />} />
                   <Route path="/parts/" element={<Parts />} />
                   <Route path="/part/:id" element={<PartDetails />} />
                   <Route path="robots/your" element={<YourRobots />} />

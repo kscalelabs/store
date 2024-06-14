@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from store.app.routers.image import image_router
 from store.app.routers.part import parts_router
 from store.app.routers.robot import robots_router
 from store.app.routers.users import users_router
@@ -37,3 +38,4 @@ async def read_root() -> bool:
 app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(robots_router, prefix="/robots", tags=["robots"])
 app.include_router(parts_router, prefix="/parts", tags=["parts"])
+app.include_router(image_router, prefix="/image", tags=["image"])

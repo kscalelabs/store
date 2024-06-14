@@ -1,3 +1,4 @@
+import ImageComponent from "components/files/ViewImage";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Bom } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
@@ -41,7 +42,7 @@ const RobotDetails = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const { id } = useParams();
   const [show, setShow] = useState(false);
-  const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
+  const [ownerUsername, setOwnerUsername] = useState<string | null>(null);
   const [robot, setRobot] = useState<RobotDetailsResponse | null>(null);
   const [parts, setParts] = useState<ExtendedBom[]>([]);
   const [imageIndex, setImageIndex] = useState(0);
@@ -59,8 +60,8 @@ const RobotDetails = () => {
       try {
         const robotData = await auth_api.getRobotById(id);
         setRobot(robotData);
-        const ownerEmail = await auth_api.getUserById(robotData.owner);
-        setOwnerEmail(ownerEmail);
+        const ownerUsername = await auth_api.getUserById(robotData.owner);
+        setOwnerUsername(ownerUsername);
         const parts = robotData.bom.map(async (part) => {
           return {
             part_name: (await auth_api.getPartById(part.part_id)).part_name,
@@ -154,7 +155,7 @@ const RobotDetails = () => {
               <h1>{name}</h1>
               <small className="text-muted">ID: {id}</small>
               <br />
-              <a href={"mailto:" + ownerEmail}>{ownerEmail}</a>
+              <em>{ownerUsername}</em>
             </Col>
           </Row>
           {((response.height && response.height !== "") ||
@@ -236,6 +237,10 @@ const RobotDetails = () => {
               data-bs-theme="dark"
               style={{ border: "1px solid #ccc" }}
               interval={null}
+              onClick={() => {
+                setImageIndex(0);
+                handleShow();
+              }}
             >
               {images.map((image, key) => (
                 <Carousel.Item key={key}>
@@ -245,18 +250,12 @@ const RobotDetails = () => {
                       alignItems: "center",
                       justifyContent: "center",
                       overflow: "hidden",
+                      width: "100%", // Adjust this to set the desired width
+                      paddingTop: "0%", // This maintains the aspect ratio of the container as a square
+                      position: "relative" as const,
                     }}
                   >
-                    <img
-                      className="d-block rounded-lg"
-                      style={{ width: "100%", aspectRatio: "1/1" }}
-                      src={image.url}
-                      alt={image.caption}
-                      onClick={() => {
-                        setImageIndex(key);
-                        handleShow();
-                      }}
-                    />
+                    <ImageComponent imageId={images[key].url} />
                   </div>
                   <Carousel.Caption
                     style={{
@@ -287,16 +286,22 @@ const RobotDetails = () => {
         <Modal.Header closeButton>
           <Modal.Title>
             {images[imageIndex].caption} ({imageIndex + 1} of {images.length}{" "}
-            {userId})
+            {userId}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <img
-              style={{ width: "95%", aspectRatio: "1/1" }}
-              src={images[imageIndex].url}
-              alt={images[imageIndex].caption}
-            />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              overflow: "hidden",
+              width: "100%", // Adjust this to set the desired width
+              paddingTop: "0%", // This maintains the aspect ratio of the container as a square
+              position: "relative",
+            }}
+          >
+            <ImageComponent imageId={images[imageIndex].url} />
           </div>
         </Modal.Body>
         <Modal.Footer>

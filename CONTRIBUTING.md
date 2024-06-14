@@ -19,13 +19,13 @@ To get started developing:
 
 ## Database
 
-### DynamoDB
+### DynamoDB/S3
 
-When developing locally, use the `amazon/dynamodb-local` Docker image to run a local instance of DynamoDB:
+When developing locally, install the `aws` CLI and use the `localstack/localstack` Docker image to run a local instance of AWS:
 
 ```bash
-docker pull amazon/dynamodb-local  # If you haven't already
-docker run --name store-db -d -p 8000:8000 amazon/dynamodb-local  # Start the container in the background
+docker pull localstack/localstack # If you haven't already
+docker run --name store-db -d -p 4566:4566 localstack/localstack # Start the container in the background
 ```
 
 Then, if you need to kill the database, you can run:
@@ -41,6 +41,12 @@ Initialize the test databases by running the creation script:
 python -m store.app.db create
 ```
 
+And initialize the image bucket:
+
+```
+aws s3api create-bucket --bucket images
+```
+
 #### Admin Panel
 
 DynamoDB Admin is a GUI that allows you to visually see your tables and their entries. To install, run
@@ -52,7 +58,7 @@ npm i -g dynamodb-admin
 To run, **source the same environment variables that you use for FastAPI** and then run
 
 ```bash
-dynamodb-admin
+DYNAMO_ENDPOINT=http://127.0.0.1:4566 dynamodb-admin
 ```
 
 ### Redis
@@ -105,7 +111,8 @@ export ROBOLIST_ENVIRONMENT=local
 export AWS_DEFAULT_REGION='us-east-1'
 export AWS_ACCESS_KEY_ID=idk
 export AWS_SECRET_ACCESS_KEY=idk
-export AWS_ENDPOINT_URL_DYNAMODB=http://127.0.0.1:8000
+export AWS_ENDPOINT_URL_DYNAMODB=http://127.0.0.1:4566
+export AWS_ENDPOINT_URL_S3=http://127.0.0.1:4566
 export REACT_APP_BACKEND_URL=http://127.0.0.1:8080
 export ROBOLIST_SMTP_HOST=smtp.gmail.com
 export ROBOLIST_SMTP_SENDER_EMAIL=
@@ -145,7 +152,7 @@ To run code formatting:
 npm run format
 ```
 
-### Environment Variables
+### Google Client ID
 
 You will need to set `REACT_APP_GOOGLE_CLIENT_ID`. To do this, first create a Google client id (see [this LogRocket post](https://blog.logrocket.com/guide-adding-google-login-react-app/)). Then create a `.env.local` file in the `frontend` directory and add the following line:
 

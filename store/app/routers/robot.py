@@ -5,7 +5,7 @@ from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from store.app.crypto import get_new_user_id
+from store.app.crypto import new_uuid
 from store.app.db import Crud
 from store.app.model import Robot
 from store.app.routers.users import get_session_token
@@ -58,7 +58,7 @@ async def add_robot(
     if user_id is None:
         raise HTTPException(status_code=401, detail="Must be logged in to add a robot")
     robot.owner = str(user_id)
-    robot.robot_id = str(get_new_user_id())
+    robot.robot_id = str(new_uuid())
     await crud.add_robot(robot)
     return True
 
@@ -91,5 +91,5 @@ async def edit_robot(
         raise HTTPException(status_code=401, detail="Must be logged in to edit a robot")
     robot.owner = str(user_id)
     robot.robot_id = robot_id
-    await crud.update_robot(robot_id, robot)
+    await crud.update_robot(robot)
     return True

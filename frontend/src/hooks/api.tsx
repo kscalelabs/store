@@ -443,4 +443,43 @@ export class api {
       }
     }
   }
+  public async getImage(imageId: string): Promise<Blob> {
+    try {
+      const response = await this.api.get(`/image/${imageId}/`, {
+        responseType: "blob",
+      });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error fetching image:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail || "Error fetching image " + imageId,
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+  public async uploadImage(formData: FormData): Promise<string> {
+    try {
+      const res = await this.api.post("/image/upload/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return res.data.id;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error uploading image:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail + "gmama" + formData ||
+            "Error uploading image",
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
 }
