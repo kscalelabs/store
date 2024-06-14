@@ -96,20 +96,25 @@ fastapi dev 'store/app/main.py' --port 8080  # On port 8080 to avoid conflicts w
 
 ### Configuration
 
-Settings for the app backend live in the `store/settings/` directory. You can use the following environment variables:
-
-- `ROBOLIST_ENVIRONMENT_SECRETS` should be the path to a local `.env` file containing any environment secrets
-- `ROBOLIST_ENVIRONMENT` is the stem of one of the config files in the `store/settings/configs/` directory. When developing locally this should usually just be `local`
+Settings for the app backend live in the `store/settings/` directory. To configure which set of settings you are using, set `ROBOLIST_ENVIRONMENT`. It is the stem of one of the config files in the `store/settings/configs/` directory. When developing locally this should usually just be `local`
 
 To locally develop, setting the following environment variables will work (presuming you have set everything else up):
 
 ```
 export ROBOLIST_ENVIRONMENT=local
-export ROBOLIST_ENVIRONMENT_SECRETS=.env
 export AWS_DEFAULT_REGION='us-east-1'
-export AWS_ACCESS_KEY_ID=test
-export AWS_SECRET_ACCESS_KEY=test
+export AWS_ACCESS_KEY_ID=idk
+export AWS_SECRET_ACCESS_KEY=idk
+export AWS_ENDPOINT_URL_DYNAMODB=http://127.0.0.1:8000
 export REACT_APP_BACKEND_URL=http://127.0.0.1:8080
+export ROBOLIST_SMTP_HOST=smtp.gmail.com
+export ROBOLIST_SMTP_SENDER_EMAIL=
+export ROBOLIST_SMTP_PASSWORD=
+export ROBOLIST_SMTP_NAME=
+export ROBOLIST_SMTP_SENDER_NAME=
+export ROBOLIST_SMTP_USERNAME=
+export ROBOLIST_REDIS_HOST=
+export ROBOLIST_REDIS_PASSWORD=
 ```
 
 ## React

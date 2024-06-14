@@ -27,8 +27,6 @@ def _load_settings(environment: str) -> EnvironmentSettings:
 
 
 def _load_environment_settings() -> EnvironmentSettings:
-    if "ROBOLIST_ENVIRONMENT_SECRETS" in os.environ:
-        load_dotenv(os.environ["ROBOLIST_ENVIRONMENT_SECRETS"])
     environment = os.environ["ROBOLIST_ENVIRONMENT"]
     return _load_settings(environment)
 
