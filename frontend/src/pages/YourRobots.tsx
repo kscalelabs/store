@@ -84,9 +84,6 @@ const YourRobots = () => {
               )}
               <Card.Body>
                 <Card.Title>{robot.name}</Card.Title>
-                <Card.Subtitle className="mb-2 text-muted">
-                  {robot.owner}
-                </Card.Subtitle>
                 <Card.Text>{robot.description}</Card.Text>
               </Card.Body>
             </Card>
