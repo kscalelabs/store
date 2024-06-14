@@ -204,24 +204,28 @@ const RobotDetails = () => {
 
           <Row className="mt-3">
             <h4>Bill of Materials</h4>
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Quantity</th>
-                </tr>
-              </thead>
-              <tbody>
-                {parts.map((part, key) => (
-                  <tr key={key}>
-                    <td>
-                      <Link to={`/part/${part.part_id}`}>{part.part_name}</Link>
-                    </td>
-                    <td>{part.quantity}</td>
+            <Col>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Quantity</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {parts.map((part, key) => (
+                    <tr key={key}>
+                      <td>
+                        <Link to={`/part/${part.part_id}`}>
+                          {part.part_name}
+                        </Link>
+                      </td>
+                      <td>{part.quantity}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </Col>
           </Row>
         </Col>
 
