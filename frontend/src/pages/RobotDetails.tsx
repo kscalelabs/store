@@ -42,7 +42,7 @@ const RobotDetails = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const { id } = useParams();
   const [show, setShow] = useState(false);
-  const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
+  const [ownerUsername, setOwnerUsername] = useState<string | null>(null);
   const [robot, setRobot] = useState<RobotDetailsResponse | null>(null);
   const [parts, setParts] = useState<ExtendedBom[]>([]);
   const [imageIndex, setImageIndex] = useState(0);
@@ -60,8 +60,8 @@ const RobotDetails = () => {
       try {
         const robotData = await auth_api.getRobotById(id);
         setRobot(robotData);
-        const ownerEmail = await auth_api.getUserById(robotData.owner);
-        setOwnerEmail(ownerEmail);
+        const ownerUsername = await auth_api.getUserById(robotData.owner);
+        setOwnerUsername(ownerUsername);
         const parts = robotData.bom.map(async (part) => {
           return {
             part_name: (await auth_api.getPartById(part.part_id)).part_name,
@@ -155,34 +155,34 @@ const RobotDetails = () => {
               <h1>{name}</h1>
               <small className="text-muted">ID: {id}</small>
               <br />
-              <a href={"mailto:" + ownerEmail}>{ownerEmail}</a>
+              <em>{ownerUsername}</em>
             </Col>
           </Row>
           {((response.height && response.height !== "") ||
             (response.weight && response.weight !== "") ||
             (response.degrees_of_freedom &&
               response.degrees_of_freedom !== "")) && (
-              <>
-                <hr />
-                {response.height !== "" && (
-                  <p className="text-muted">
-                    <strong>Height:</strong> {response.height}
-                  </p>
-                )}
-                {response.weight !== "" && (
-                  <p className="text-muted">
-                    <strong>Weight: </strong>
-                    {response.weight}
-                  </p>
-                )}
-                {response.degrees_of_freedom !== "" && (
-                  <p className="text-muted">
-                    <strong>Total Degrees of Freedom:</strong>{" "}
-                    {response.degrees_of_freedom}
-                  </p>
-                )}
-              </>
-            )}
+            <>
+              <hr />
+              {response.height !== "" && (
+                <p className="text-muted">
+                  <strong>Height:</strong> {response.height}
+                </p>
+              )}
+              {response.weight !== "" && (
+                <p className="text-muted">
+                  <strong>Weight: </strong>
+                  {response.weight}
+                </p>
+              )}
+              {response.degrees_of_freedom !== "" && (
+                <p className="text-muted">
+                  <strong>Total Degrees of Freedom:</strong>{" "}
+                  {response.degrees_of_freedom}
+                </p>
+              )}
+            </>
+          )}
           <hr />
           <Row>
             <Col>
@@ -256,17 +256,6 @@ const RobotDetails = () => {
                     }}
                   >
                     <ImageComponent imageId={images[key].url} />
-                    {/* <img
-                      className="d-block rounded-lg"
-                      style={{ width: "100%", aspectRatio: "1/1" }}
-                      src={image.url}
-
-                      alt={image.caption}
-                      onClick={() => {
-                        setImageIndex(key);
-                        handleShow();
-                      }}
-                    /> */}
                   </div>
                   <Carousel.Caption
                     style={{
@@ -298,8 +287,6 @@ const RobotDetails = () => {
           <Modal.Title>
             {images[imageIndex].caption} ({imageIndex + 1} of {images.length}{" "}
             {userId}
-            {/* {images[imageIndex].url} */}
-            )
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -314,12 +301,6 @@ const RobotDetails = () => {
               position: "relative",
             }}
           >
-            {/* <img
-              style={{ width: "95%", aspectRatio: "1/1" }}
-              //src={images[imageIndex].url}
-              src={"/Users/is2ac/Github/kscale/store/store/app/routers/robot1.png"}
-              alt={images[imageIndex].caption}
-            /> */}
             <ImageComponent imageId={images[imageIndex].url} />
           </div>
         </Modal.Body>

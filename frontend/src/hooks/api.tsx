@@ -445,7 +445,7 @@ export class api {
   }
   public async getImage(imageId: string): Promise<Blob> {
     try {
-      const response = await this.api.get(`robots/image/${imageId}/`, {
+      const response = await this.api.get(`/image/${imageId}/`, {
         responseType: "blob",
       });
       return response.data;
@@ -461,20 +461,14 @@ export class api {
       }
     }
   }
-  public async uploadImage(
-    formData: FormData,
-    image_id: string,
-  ): Promise<void> {
+  public async uploadImage(formData: FormData): Promise<string> {
     try {
-      await this.api.post(
-        `/robots/upload-image/?image_id=${encodeURIComponent(image_id)}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+      const res = await this.api.post("/image/upload/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
         },
-      );
+      });
+      return res.data.id;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error uploading image:", error.response?.data);

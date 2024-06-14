@@ -54,4 +54,3 @@ class EnvironmentSettings:
     email: EmailSettings = field(default_factory=EmailSettings)
     site: SiteSettings = field(default_factory=SiteSettings)
     debug: bool = field(default=False)
-    image_dir: str = field(default=II("oc.env:HOME"))

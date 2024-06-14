@@ -99,13 +99,6 @@ const Robots = () => {
                   <ImageComponent imageId={"mini" + robot.images[0].url} />
                 </div>
               )}
-              {/* {robot.images[0] && (
-                <Card.Img
-                  style={{ aspectRatio: "1/1" }}
-                  variant="top"
-                  src={robot.images[0].url}
-                />
-              )} */}
               <Card.Body>
                 <Card.Title>{robot.name}</Card.Title>
                 <Card.Subtitle className="mb-2 text-muted">

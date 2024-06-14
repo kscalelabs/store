@@ -3,6 +3,9 @@
 import logging
 from typing import List
 
+from fastapi import UploadFile
+from fastapi.responses import StreamingResponse
+
 from store.app.crud.base import BaseCrud
 from store.app.model import Bom, Part, Robot
 
@@ -56,10 +59,18 @@ class RobotCrud(BaseCrud):
         table = await self.db.Table("Robots")
         await table.delete_item(Key={"robot_id": robot_id})
 
-    async def update_part(self, part_id: str, part: Part) -> None:
-        await self.delete_part(part_id)
+    async def update_part(self, part: Part) -> None:
+        await self.delete_part(part.part_id)
         await self.add_part(part)
 
-    async def update_robot(self, robot_id: str, robot: Robot) -> None:
-        await self.delete_robot(robot_id)
+    async def update_robot(self, robot: Robot) -> None:
+        await self.delete_robot(robot.robot_id)
         await self.add_robot(robot)
+
+    async def get_image(self, url: str) -> StreamingResponse:
+        s3_object = await (await (await self.s3.Bucket("images")).Object(url)).get()
+        file_stream = s3_object["Body"]
+        return StreamingResponse(content=file_stream, media_type="image/png")
+
+    async def upload_image(self, file: UploadFile) -> None:
+        await (await self.s3.Bucket("images")).upload_fileobj(file.file, file.filename or "")

@@ -8,6 +8,7 @@ import aioboto3
 from botocore.exceptions import ClientError
 from redis.asyncio import Redis
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
+from types_aiobotocore_s3.service_resource import S3ServiceResource
 
 from store.settings import settings
 
@@ -26,11 +27,21 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             raise RuntimeError("Must call __aenter__ first!")
         return self.__db
 
+    @property
+    def s3(self) -> S3ServiceResource:
+        if self.__s3 is None:
+            raise RuntimeError("Must call __aenter__ first!")
+        return self.__s3
+
     async def __aenter__(self) -> Self:
         session = aioboto3.Session()
         db = session.resource("dynamodb")
         db = await db.__aenter__()
         self.__db = db
+
+        s3 = session.resource("s3")
+        s3 = await s3.__aenter__()
+        self.__s3 = s3
 
         self.session_kv = Redis(
             host=settings.redis.host,
@@ -65,6 +76,8 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:  # noqa: ANN401
         if self.__db is not None:
             await self.__db.__aexit__(exc_type, exc_val, exc_tb)
+        # if self.__s3 is not None:
+        #     await self.__s3.__aexit__(exc_type, exc_val, exc_tb)
 
     async def _create_dynamodb_table(
         self,

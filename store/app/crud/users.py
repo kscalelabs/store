@@ -97,7 +97,7 @@ class UserCrud(BaseCrud):
         id = await self.reset_password_kv.get(hash_token(token))
         if id is None:
             raise ValueError("Provided token is invalid")
-        await self.change_password(id, new_password)
+        await self.change_password(id.decode("utf-8"), new_password)
         await self.delete_reset_password_token(token)
 
     async def add_change_email_token(self, token: str, user_id: str, new_email: str, lifetime: int) -> None:
