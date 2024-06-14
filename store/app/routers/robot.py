@@ -1,6 +1,7 @@
 """Defines all robot related API endpoints."""
 
 import logging
+import os
 from typing import Annotated, List
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
@@ -10,9 +11,9 @@ from store.app.crypto import get_new_user_id
 from store.app.db import Crud
 from store.app.model import Robot
 from store.app.routers.users import get_session_token
+from store.settings import settings
 
 robots_router = APIRouter()
-import os
 
 logger = logging.getLogger(__name__)
 
@@ -99,9 +100,8 @@ async def edit_robot(
 
 @robots_router.get("/image/{image_id}/")
 async def get_image(image_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> StreamingResponse:
-    local = True
     # if local:
-    image_path = f"/Users/is2ac/Github/kscale/store/store/app/routers/{image_id}.png"
+    image_path = os.path.join(settings.image_dir, f"{image_id}.png")
     print(image_path)
     if not os.path.exists(image_path):
         raise HTTPException(status_code=404, detail=f"Image not found {image_path}")
@@ -110,16 +110,13 @@ async def get_image(image_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> 
     # return await crud.get_image_from_s3(image_id)
 
 
-UPLOAD_DIRECTORY = "/Users/is2ac/Github/kscale/store/store/app/routers/"
-
-
 @robots_router.post("/upload-image/")
 async def upload_image(image_id: str = Query(...), file: UploadFile = File(...)) -> JSONResponse:
     try:
         if not file.filename:
             raise HTTPException(status_code=400, detail="Invalid file name")
         file.filename = image_id
-        file_location = os.path.join(UPLOAD_DIRECTORY, file.filename)
+        file_location = os.path.join(settings.image_dir, file.filename)
         with open(file_location, "wb") as buffer:
             buffer.write(await file.read())
         return JSONResponse(status_code=200, content={"info": f"File '{file.filename}' uploaded successfully"})

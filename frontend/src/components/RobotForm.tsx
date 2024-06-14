@@ -1,6 +1,7 @@
 import { Bom, Image, Part } from "hooks/api";
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
+import ImageUploadComponent from "./files/UploadImage";
 
 interface RobotFormProps {
   title: string;
@@ -55,6 +56,12 @@ const RobotForm: React.FC<RobotFormProps> = ({
 
   const handleAddImage = () => {
     setImages([...robot_images, { url: "", caption: "" }]);
+  };
+
+  const handleImageUploadSuccess = (url: string, index: number) => {
+    const newImages = [...robot_images];
+    newImages[index].url = url;
+    setImages(newImages);
   };
 
   const handleRemoveImage = (index: number) => {
@@ -150,15 +157,8 @@ const RobotForm: React.FC<RobotFormProps> = ({
         {robot_images.map((image, index) => (
           <Row key={index} className="mb-3">
             <Col md={12}>
-              <label htmlFor={"url-" + index}>URL</label>
-              <Form.Control
-                id={"url-" + index}
-                className="mb-1"
-                type="text"
-                name="url"
-                value={image.url}
-                onChange={(e) => handleImageChange(index, e)}
-                required
+              <ImageUploadComponent
+                onUploadSuccess={(url) => handleImageUploadSuccess(url, index)}
               />
               <label htmlFor={"caption-" + index}>Caption</label>
               <Form.Control

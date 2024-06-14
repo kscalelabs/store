@@ -73,15 +73,14 @@ const YourRobots = () => {
                 <div
                   style={{
                     aspectRatio: "1/1",
-                    width: '100%',
-                    overflow: 'hidden',
-                    borderTopLeftRadius: '.25rem',
-                    borderTopRightRadius: '.25rem'
+                    width: "100%",
+                    overflow: "hidden",
+                    borderTopLeftRadius: ".25rem",
+                    borderTopRightRadius: ".25rem",
                   }}
                 >
                   <ImageComponent imageId={robot.images[0].url} />
                 </div>
-
               )}
               <Card.Body>
                 <Card.Title>{robot.name}</Card.Title>

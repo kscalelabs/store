@@ -1,4 +1,3 @@
-import { upload } from "@testing-library/user-event/dist/upload";
 import axios, { AxiosInstance } from "axios";
 
 export interface Part {
@@ -58,7 +57,7 @@ export class api {
         console.error("Error registering:", error.response?.data);
         throw new Error(
           error.response?.data?.detail ||
-          "Error registering with email " + email,
+            "Error registering with email " + email,
         );
       } else {
         console.error("Unexpected error:", error);
@@ -75,7 +74,7 @@ export class api {
         console.error("Error verifying email:", error.response?.data);
         throw new Error(
           error.response?.data?.detail ||
-          "Error verifying email with code " + code,
+            "Error verifying email with code " + code,
         );
       } else {
         console.error("Unexpected error:", error);
@@ -166,7 +165,7 @@ export class api {
         console.error("Error logging in:", error.response?.data);
         throw new Error(
           error.response?.data?.detail ||
-          "Error logging in with email " + email,
+            "Error logging in with email " + email,
         );
       } else {
         console.error("Unexpected error:", error);
@@ -462,18 +461,26 @@ export class api {
       }
     }
   }
-  public async uploadImage(formData: FormData, image_id: string): Promise<void> {
+  public async uploadImage(
+    formData: FormData,
+    image_id: string,
+  ): Promise<void> {
     try {
-      await this.api.post(`/robots/upload-image/?image_id=${encodeURIComponent(image_id)}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      await this.api.post(
+        `/robots/upload-image/?image_id=${encodeURIComponent(image_id)}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error uploading image:", error.response?.data);
         throw new Error(
-          error.response?.data?.detail + "gmama" + formData || "Error uploading image",
+          error.response?.data?.detail + "gmama" + formData ||
+            "Error uploading image",
         );
       } else {
         console.error("Unexpected error:", error);
@@ -482,5 +489,3 @@ export class api {
     }
   }
 }
-
-
