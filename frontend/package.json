@@ -9,6 +9,7 @@
     "@types/node": "^16.18.97",
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.3.0",
+    "browser-image-compression": "^2.0.2",
     "holderjs": "^2.9.9",
     "nth-check": ">=2.0.1",
     "postcss": ">=8.4.31",

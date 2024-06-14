@@ -96,7 +96,7 @@ const Robots = () => {
                     borderTopRightRadius: ".25rem",
                   }}
                 >
-                  <ImageComponent imageId={robot.images[0].url} />
+                  <ImageComponent imageId={"mini" + robot.images[0].url} />
                 </div>
               )}
               {/* {robot.images[0] && (

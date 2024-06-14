@@ -162,27 +162,27 @@ const RobotDetails = () => {
             (response.weight && response.weight !== "") ||
             (response.degrees_of_freedom &&
               response.degrees_of_freedom !== "")) && (
-            <>
-              <hr />
-              {response.height !== "" && (
-                <p className="text-muted">
-                  <strong>Height:</strong> {response.height}
-                </p>
-              )}
-              {response.weight !== "" && (
-                <p className="text-muted">
-                  <strong>Weight: </strong>
-                  {response.weight}
-                </p>
-              )}
-              {response.degrees_of_freedom !== "" && (
-                <p className="text-muted">
-                  <strong>Total Degrees of Freedom:</strong>{" "}
-                  {response.degrees_of_freedom}
-                </p>
-              )}
-            </>
-          )}
+              <>
+                <hr />
+                {response.height !== "" && (
+                  <p className="text-muted">
+                    <strong>Height:</strong> {response.height}
+                  </p>
+                )}
+                {response.weight !== "" && (
+                  <p className="text-muted">
+                    <strong>Weight: </strong>
+                    {response.weight}
+                  </p>
+                )}
+                {response.degrees_of_freedom !== "" && (
+                  <p className="text-muted">
+                    <strong>Total Degrees of Freedom:</strong>{" "}
+                    {response.degrees_of_freedom}
+                  </p>
+                )}
+              </>
+            )}
           <hr />
           <Row>
             <Col>
@@ -294,7 +294,8 @@ const RobotDetails = () => {
           <Modal.Title>
             {images[imageIndex].caption} ({imageIndex + 1} of {images.length}{" "}
             {userId}
-            {images[imageIndex].url})
+            {/* {images[imageIndex].url} */}
+            )
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
