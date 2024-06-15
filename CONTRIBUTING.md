@@ -25,7 +25,7 @@ When developing locally, install the `aws` CLI and use the `localstack/localstac
 
 ```bash
 docker pull localstack/localstack # If you haven't already
-docker run --name store-db -d -p 4566:4566 localstack/localstack # Start the container in the background
+docker run -d --rm -it -p 4566:4566 -p 4510-4559:4510-4559 localstack/localstack
 ```
 
 Then, if you need to kill the database, you can run:
@@ -109,8 +109,8 @@ To locally develop, setting the following environment variables will work (presu
 ```
 export ROBOLIST_ENVIRONMENT=local
 export AWS_DEFAULT_REGION='us-east-1'
-export AWS_ACCESS_KEY_ID=idk
-export AWS_SECRET_ACCESS_KEY=idk
+export AWS_ACCESS_KEY_ID=test
+export AWS_SECRET_ACCESS_KEY=test
 export AWS_ENDPOINT_URL_DYNAMODB=http://127.0.0.1:4566
 export AWS_ENDPOINT_URL_S3=http://127.0.0.1:4566
 export REACT_APP_BACKEND_URL=http://127.0.0.1:8080
