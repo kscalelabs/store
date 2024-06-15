@@ -37,7 +37,7 @@ const Register = () => {
         <label htmlFor="email">Email</label>
         <Form.Control
           id="email"
-          autoComplete="email"
+          autoComplete="username"
           className="mb-3"
           type="text"
           onChange={(e) => {
@@ -49,7 +49,7 @@ const Register = () => {
         <label htmlFor="username">Username</label>
         <Form.Control
           id="username"
-          autoComplete="username"
+          autoComplete="on"
           className="mb-3"
           type="text"
           onChange={(e) => {
