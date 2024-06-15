@@ -25,7 +25,7 @@ When developing locally, install the `aws` CLI and use the `localstack/localstac
 
 ```bash
 docker pull localstack/localstack # If you haven't already
-docker run -d --rm -it -p 4566:4566 -p 4510-4559:4510-4559 localstack/localstack
+docker run -d --name localstack -p 4566:4566 -p 4571:4571 localstack/localstack
 ```
 
 Then, if you need to kill the database, you can run:
