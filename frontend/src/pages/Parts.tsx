@@ -104,9 +104,7 @@ const Parts = () => {
                 <Card.Subtitle className="mb-2 text-muted">
                   {idMap.get(part.owner) || "Unknown"}
                 </Card.Subtitle>
-                <Card.Text className="text-truncate-3">
-                  {part.description}
-                </Card.Text>
+                <Card.Text>{part.description}</Card.Text>
               </Card.Body>
             </Card>
           </Col>
