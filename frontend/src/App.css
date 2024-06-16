@@ -12,6 +12,7 @@ div.content {
 html,
 body {
   transition: color 0.1s ease;
+  word-wrap: break-word;
 }
 
 form {
@@ -24,4 +25,14 @@ form textarea {
 
 form button {
   width: 100%;
+}
+
+p.card-text {
+  flex-grow: 1;
+  max-height: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 3;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
 }
