@@ -97,7 +97,9 @@ const Robots = () => {
                 <Card.Subtitle className="mb-2 text-muted">
                   {idMap.get(robot.owner)}
                 </Card.Subtitle>
-                <Card.Text>{robot.description}</Card.Text>
+                <Card.Text className="text-truncate-3">
+                  {robot.description}
+                </Card.Text>
               </Card.Body>
             </Card>
           </Col>
