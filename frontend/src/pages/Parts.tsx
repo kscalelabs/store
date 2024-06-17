@@ -31,7 +31,8 @@ const Parts = () => {
         partsQuery.forEach((part) => {
           ids.add(part.owner);
         });
-        setIdMap(await auth_api.getUserBatch(Array.from(ids)));
+        if (ids.size > 0)
+          setIdMap(await auth_api.getUserBatch(Array.from(ids)));
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);

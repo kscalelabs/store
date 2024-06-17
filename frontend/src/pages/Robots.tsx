@@ -29,7 +29,8 @@ const Robots = () => {
         robotsQuery.forEach((robot) => {
           ids.add(robot.owner);
         });
-        setIdMap(await auth_api.getUserBatch(Array.from(ids)));
+        if (ids.size > 0)
+          setIdMap(await auth_api.getUserBatch(Array.from(ids)));
       } catch (err) {
         if (err instanceof Error) {
           addAlert(err.message, "error");
