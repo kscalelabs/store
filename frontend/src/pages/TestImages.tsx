@@ -8,6 +8,7 @@ const App: React.FC = () => {
             <ImageComponent imageId="robot2" />
             <ImageComponent imageId="robot3" /> */}
       {/* <ImageUploadComponent /> */}
+      <URDFComponent />
     </div>
   );
 };
