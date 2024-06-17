@@ -34,12 +34,18 @@ const TopNavbar = () => {
                     <GearFill />
                   </Nav.Link>
                 </Boop>
-                <Nav.Link href="/logout">Log Out</Nav.Link>
+                <Nav.Link as={Link} to="/logout">
+                  Log Out
+                </Nav.Link>
               </>
             ) : (
               <>
-                <Nav.Link href="/login">Login</Nav.Link>
-                <Nav.Link href="/register">Register</Nav.Link>
+                <Nav.Link as={Link} to="/login">
+                  Login
+                </Nav.Link>
+                <Nav.Link as={Link} to="/register">
+                  Register
+                </Nav.Link>
               </>
             )}
           </div>
