@@ -37,38 +37,40 @@ async def create_tables(crud: Crud | None = None, deletion_protection: bool = Fa
             await create_tables(crud)
 
     else:
-        await crud._create_dynamodb_table(
-            name="Users",
-            keys=[
-                ("user_id", "S", "HASH"),
-            ],
-            gsis=[
-                ("emailIndex", "email", "S", "HASH"),
-                ("usernameIndex", "username", "S", "HASH"),
-            ],
-            deletion_protection=deletion_protection,
-        )
-        await crud._create_dynamodb_table(
-            name="Robots",
-            keys=[
-                ("robot_id", "S", "HASH"),
-            ],
-            gsis=[
-                ("ownerIndex", "owner", "S", "HASH"),
-                ("nameIndex", "name", "S", "HASH"),
-            ],
-            deletion_protection=deletion_protection,
-        )
-        await crud._create_dynamodb_table(
-            name="Parts",
-            keys=[
-                ("part_id", "S", "HASH"),
-            ],
-            gsis=[
-                ("ownerIndex", "owner", "S", "HASH"),
-                ("nameIndex", "name", "S", "HASH"),
-            ],
-            deletion_protection=deletion_protection,
+        await asyncio.gather(
+            crud._create_dynamodb_table(
+                name="Users",
+                keys=[
+                    ("user_id", "S", "HASH"),
+                ],
+                gsis=[
+                    ("emailIndex", "email", "S", "HASH"),
+                    ("usernameIndex", "username", "S", "HASH"),
+                ],
+                deletion_protection=deletion_protection,
+            ),
+            crud._create_dynamodb_table(
+                name="Robots",
+                keys=[
+                    ("robot_id", "S", "HASH"),
+                ],
+                gsis=[
+                    ("ownerIndex", "owner", "S", "HASH"),
+                    ("nameIndex", "name", "S", "HASH"),
+                ],
+                deletion_protection=deletion_protection,
+            ),
+            crud._create_dynamodb_table(
+                name="Parts",
+                keys=[
+                    ("part_id", "S", "HASH"),
+                ],
+                gsis=[
+                    ("ownerIndex", "owner", "S", "HASH"),
+                    ("nameIndex", "name", "S", "HASH"),
+                ],
+                deletion_protection=deletion_protection,
+            ),
         )
 
 
@@ -85,10 +87,11 @@ async def delete_tables(crud: Crud | None = None) -> None:
             await delete_tables(crud)
 
     else:
-        await crud._delete_dynamodb_table("Users")
-        await crud._delete_dynamodb_table("UserEmails")
-        await crud._delete_dynamodb_table("Robots")
-        await crud._delete_dynamodb_table("Parts")
+        await asyncio.gather(
+            crud._delete_dynamodb_table("Users"),
+            crud._delete_dynamodb_table("Robots"),
+            crud._delete_dynamodb_table("Parts"),
+        )
 
 
 async def populate_with_dummy_data(crud: Crud | None = None) -> None:
