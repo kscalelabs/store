@@ -12,7 +12,6 @@ import {
 } from "react-bootstrap";
 import Markdown from "react-markdown";
 import { useNavigate } from "react-router-dom";
-import { isFulfilled } from "utils/isfullfiled";
 
 const Robots = () => {
   const auth = useAuthentication();
@@ -29,18 +28,7 @@ const Robots = () => {
         robotsQuery.forEach((robot) => {
           ids.add(robot.owner);
         });
-        const idMap = await Promise.allSettled(
-          Array.from(ids).map(async (id) => {
-            return [id, await auth_api.getUserById(id)];
-          }),
-        );
-        setIdMap(
-          new Map(
-            idMap
-              .filter(isFulfilled)
-              .map((result) => result.value as [string, string]),
-          ),
-        );
+        setIdMap(await auth_api.getUserBatch(Array.from(ids)));
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);

@@ -240,6 +240,7 @@ export class api {
     const response = await this.api.get(`/users/${userId}`);
     return response.data.username;
   }
+
   public async getRobots(): Promise<Robot[]> {
     try {
       const response = await this.api.get("/robots/");
@@ -256,6 +257,20 @@ export class api {
       }
     }
   }
+
+  public async getUserBatch(userIds: string[]): Promise<Map<string, string>> {
+    const params = new URLSearchParams();
+    userIds.forEach((id) => params.append("user_ids", id));
+    const response = await this.api.get("/users/batch/", {
+      params,
+    });
+    const map = new Map();
+    for (const index in response.data) {
+      map.set(response.data[index].user_id, response.data[index].username);
+    }
+    return map;
+  }
+
   public async getYourRobots(): Promise<Robot[]> {
     try {
       const response = await this.api.get("/robots/your/");
