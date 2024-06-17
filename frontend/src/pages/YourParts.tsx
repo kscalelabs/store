@@ -84,9 +84,6 @@ const YourParts = () => {
               )}
               <Card.Body>
                 <Card.Title>{part.part_name}</Card.Title>
-                <Card.Subtitle className="mb-2 text-muted">
-                  {part.part_id}
-                </Card.Subtitle>
                 <Card.Text>
                   <Markdown
                     components={{
