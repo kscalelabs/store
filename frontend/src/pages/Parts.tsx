@@ -56,10 +56,9 @@ const Parts = () => {
     return (
       <Container
         fluid
-        className="d-flex justify-content-center align-items-center"
-        style={{ height: "100vh" }}
+        className="d-flex justify-content-center align-items-center mt-5"
       >
-        <Row className="w-100">
+        <Row className="w-0">
           <Col className="d-flex justify-content-center align-items-center">
             <Spinner animation="border" />
           </Col>
