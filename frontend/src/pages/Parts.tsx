@@ -1,3 +1,4 @@
+import ImageComponent from "components/files/ViewImage";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Part } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
@@ -92,12 +93,18 @@ const Parts = () => {
         {partsData.map((part) => (
           <Col key={part.part_id} md={3} sm={6} xs={12}>
             <Card onClick={() => navigate(`/part/${part.part_id}`)}>
-              {part.images[0].url && (
-                <Card.Img
-                  style={{ aspectRatio: "1/1" }}
-                  variant="top"
-                  src={part.images[0].url}
-                />
+              {part.images[0] && (
+                <div
+                  style={{
+                    aspectRatio: "1/1",
+                    width: "100%",
+                    overflow: "hidden",
+                    borderTopLeftRadius: ".25rem",
+                    borderTopRightRadius: ".25rem",
+                  }}
+                >
+                  <ImageComponent imageId={"mini" + part.images[0].url} />
+                </div>
               )}
               <Card.Body>
                 <Card.Title>{part.part_name}</Card.Title>
