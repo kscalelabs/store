@@ -1,4 +1,5 @@
 import ImageComponent from "components/files/ViewImage";
+import { useAlertQueue } from "hooks/alerts";
 import { api, Part } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
@@ -17,7 +18,7 @@ const YourParts = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const [partsData, setParts] = useState<Part[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { addAlert } = useAlertQueue();
   useEffect(() => {
     const fetch_parts = async () => {
       try {
@@ -25,9 +26,9 @@ const YourParts = () => {
         setParts(partsQuery);
       } catch (err) {
         if (err instanceof Error) {
-          setError(err.message);
+          addAlert(err.message, "error");
         } else {
-          setError("An unexpected error occurred");
+          addAlert("An unexpected error occurred", "error");
         }
       }
     };
@@ -35,12 +36,6 @@ const YourParts = () => {
   }, []);
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (error) {
-      navigate("/404"); // Redirect to a 404 page
-    }
-  }, [error, navigate]);
 
   if (!partsData) {
     return (
