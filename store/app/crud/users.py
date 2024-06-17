@@ -27,11 +27,14 @@ class UserCrud(BaseCrud):
         return User.model_validate(user_dict["Item"])
 
     async def get_user_batch(self, user_ids: list[str]) -> list[User]:
-        keys = [{"user_id": user_id} for user_id in user_ids]
-        return [
-            User.model_validate(user)
-            for user in (await self.db.batch_get_item(RequestItems={"Users": {"Keys": keys}}))["Responses"]["Users"]
-        ]
+        users: list[User] = []
+        chunk_size = 100
+        for i in range(0, len(user_ids), chunk_size):
+            chunk = user_ids[i : i + chunk_size]
+            keys = [{"user_id": user_id} for user_id in chunk]
+            response = await self.db.batch_get_item(RequestItems={"Users": {"Keys": keys}})
+            users.extend(User.model_validate(user) for user in response["Responses"]["Users"])
+        return users
 
     async def get_user_from_email(self, email: str) -> User | None:
         table = await self.db.Table("Users")
