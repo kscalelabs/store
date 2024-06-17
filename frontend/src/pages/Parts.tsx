@@ -11,6 +11,7 @@ import {
   Row,
   Spinner,
 } from "react-bootstrap";
+import Markdown from "react-markdown";
 import { useNavigate } from "react-router-dom";
 import { isFulfilled } from "utils/isfullfiled";
 
@@ -111,7 +112,22 @@ const Parts = () => {
                 <Card.Subtitle className="mb-2 text-muted">
                   {idMap.get(part.owner) || "Unknown"}
                 </Card.Subtitle>
-                <Card.Text>{part.description}</Card.Text>
+                <Card.Text>
+                  <Markdown
+                    components={{
+                      p: ({ ...props }) => <p {...props} />,
+                      li: ({ ...props }) => <li {...props} />,
+                      h1: ({ ...props }) => <h3 {...props} className="h6" />,
+                      h2: ({ ...props }) => <h4 {...props} className="h6" />,
+                      h3: ({ ...props }) => <h5 {...props} className="h6" />,
+                      h4: ({ ...props }) => <h6 {...props} className="h6" />,
+                      h5: ({ ...props }) => <h6 {...props} className="h6" />,
+                      h6: ({ ...props }) => <h6 {...props} className="h6" />,
+                    }}
+                  >
+                    {part.description}
+                  </Markdown>
+                </Card.Text>
               </Card.Body>
             </Card>
           </Col>
