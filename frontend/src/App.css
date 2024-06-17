@@ -27,6 +27,10 @@ form button {
   width: 100%;
 }
 
+div.card {
+  height: 100%;
+}
+
 p.card-text {
   flex-grow: 1;
   max-height: 100%;

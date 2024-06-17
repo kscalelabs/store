@@ -4,7 +4,7 @@ import logging
 from email.utils import parseaddr as parse_email_address
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel
 
@@ -310,15 +310,34 @@ async def logout_user_endpoint(
     return True
 
 
-@users_router.get("/{user_id}", response_model=UserInfoResponse)
-async def get_user_info_by_id_endpoint(user_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> UserInfoResponse:
+class PublicUserInfoResponse(BaseModel):
+    username: str
+    user_id: str
+
+
+@users_router.get("/batch", response_model=list[PublicUserInfoResponse])
+async def get_users_batch_endpoint(
+    crud: Annotated[Crud, Depends(Crud.get)],
+    user_ids: list[str] = Query(...),
+) -> list[PublicUserInfoResponse]:
+    user_objs = await crud.get_user_batch(user_ids)
+    return [
+        PublicUserInfoResponse(
+            username=user_obj.username,
+            user_id=user_obj.user_id,
+        )
+        for user_obj in user_objs
+    ]
+
+
+@users_router.get("/{user_id}", response_model=PublicUserInfoResponse)
+async def get_user_info_by_id_endpoint(
+    user_id: str, crud: Annotated[Crud, Depends(Crud.get)]
+) -> PublicUserInfoResponse:
     user_obj = await crud.get_user(user_id)
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return UserInfoResponse(
-        email=user_obj.email,
+    return PublicUserInfoResponse(
         username=user_obj.username,
         user_id=user_obj.user_id,
-        verified=user_obj.verified,
-        admin=user_obj.admin,
     )

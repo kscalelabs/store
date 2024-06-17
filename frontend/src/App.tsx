@@ -7,6 +7,7 @@ import { AuthenticationProvider } from "hooks/auth";
 import { ThemeProvider } from "hooks/theme";
 import About from "pages/About";
 import ChangeEmail from "pages/ChangeEmail";
+import EditPartForm from "pages/EditPartForm";
 import EditRobotForm from "pages/EditRobotForm";
 import Forgot from "pages/Forgot";
 import Home from "pages/Home";
@@ -66,6 +67,7 @@ const App = () => {
                   <Route path="/test-images" element={<TestImages />} />
                   <Route path="/parts/" element={<Parts />} />
                   <Route path="/part/:id" element={<PartDetails />} />
+                  <Route path="/edit-part/:id" element={<EditPartForm />} />
                   <Route path="robots/your" element={<YourRobots />} />
                   <Route path="/parts/your" element={<YourParts />} />
                   <Route path="/404" element={<NotFound />} />
