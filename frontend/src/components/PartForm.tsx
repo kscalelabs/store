@@ -1,6 +1,7 @@
 import { Image } from "hooks/api";
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
+import ImageUploadComponent from "./files/UploadImage";
 
 interface PartFormProps {
   title: string;
@@ -44,6 +45,12 @@ const PartForm: React.FC<PartFormProps> = ({
     setImages(newImages);
   };
 
+  const handleImageUploadSuccess = (url: string, index: number) => {
+    const newImages = [...part_images];
+    newImages[index].url = url;
+    setImages(newImages);
+  };
+
   return (
     <>
       <h1>{title}</h1>
@@ -75,15 +82,8 @@ const PartForm: React.FC<PartFormProps> = ({
         {part_images.map((image, index) => (
           <Row key={index} className="mb-3">
             <Col md={12}>
-              <label htmlFor={"url-" + index}>URL</label>
-              <Form.Control
-                id={"url-" + index}
-                className="mb-1"
-                type="text"
-                name="url"
-                value={image.url}
-                onChange={(e) => handleImageChange(index, e)}
-                required
+              <ImageUploadComponent
+                onUploadSuccess={(url) => handleImageUploadSuccess(url, index)}
               />
               <label htmlFor={"caption-" + index}>Caption</label>
               <Form.Control
@@ -98,7 +98,7 @@ const PartForm: React.FC<PartFormProps> = ({
             </Col>
             <Col md={12}>
               <Button
-                className="mt-2 mb-2"
+                className="mb-2 mt-2"
                 variant="danger"
                 onClick={() => handleRemoveImage(index)}
               >
@@ -107,7 +107,7 @@ const PartForm: React.FC<PartFormProps> = ({
             </Col>
           </Row>
         ))}
-        <Col md={12}>
+        <Col>
           <Button className="mb-3" variant="secondary" onClick={handleAddImage}>
             Add Image
           </Button>
