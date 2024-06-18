@@ -40,3 +40,37 @@ p.card-text {
   display: -webkit-box;
   -webkit-box-orient: vertical;
 }
+
+.btn-primary {
+  background-color: white;
+  color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+body.dark-mode .btn-primary {
+  background-color: black;
+  color: #8ab9fe;
+  border-color: #8ab9fe;
+}
+
+body.dark-mode .btn-primary:hover {
+  background-color: #8ab9fe;
+  color: #201a42;
+}
+
+.btn-danger {
+  background-color: white;
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+body.dark-mode .btn-danger {
+  background-color: black;
+  color: #f0cbce;
+  border-color: #f0cbce;
+}
+
+body.dark-mode .btn-danger:hover {
+  background-color: #f0cbce;
+  color: #201a42;
+}

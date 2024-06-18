@@ -1,23 +1,13 @@
 import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
-import React, { useState } from "react";
+import React from "react";
 import { Button, Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
 const Home: React.FC = () => {
-  const { theme, colors } = useTheme();
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthentication();
-
-  const [isHoveredR, setIsHoveredR] = useState(false);
-
-  const handleMouseEnterR = () => setIsHoveredR(true);
-  const handleMouseLeaveR = () => setIsHoveredR(false);
-
-  const [isHoveredL, setIsHoveredL] = useState(false);
-
-  const handleMouseEnterL = () => setIsHoveredL(true);
-  const handleMouseLeaveL = () => setIsHoveredL(false);
 
   return (
     <div className="flex-column pt-5 gap-4" style={{ display: "flex" }}>
@@ -51,9 +41,6 @@ const Home: React.FC = () => {
                 variant={theme === "dark" ? "outline-light" : "outline-dark"}
                 size="lg"
                 style={{
-                  backgroundColor: "light-purple",
-                  borderColor: "secondary",
-                  padding: "10px",
                   width: "100%",
                 }}
                 onClick={() => {
@@ -68,9 +55,6 @@ const Home: React.FC = () => {
                 variant={theme === "dark" ? "outline-light" : "outline-dark"}
                 size="lg"
                 style={{
-                  backgroundColor: "dark-purple",
-                  borderColor: "secondary",
-                  padding: "10px",
                   width: "100%",
                 }}
                 onClick={() => {
@@ -87,14 +71,8 @@ const Home: React.FC = () => {
                 variant="outline-primary"
                 size="lg"
                 style={{
-                  color: isHoveredR ? colors.text_color : colors.buttonBorder,
-                  backgroundColor: isHoveredR ? colors.buttonBorder : "",
-                  borderColor: colors.buttonBorder,
-                  padding: "10px",
                   width: "100%",
                 }}
-                onMouseEnter={handleMouseEnterR}
-                onMouseLeave={handleMouseLeaveR}
                 onClick={() => {
                   navigate("/robots/add");
                 }}
@@ -107,14 +85,8 @@ const Home: React.FC = () => {
                 variant="outline-primary"
                 size="lg"
                 style={{
-                  color: isHoveredL ? colors.text_color : colors.buttonBorder,
-                  backgroundColor: isHoveredL ? colors.buttonBorder : "",
-                  borderColor: colors.buttonBorder,
-                  padding: "10px",
                   width: "100%",
                 }}
-                onMouseEnter={handleMouseEnterL}
-                onMouseLeave={handleMouseLeaveL}
                 onClick={() => {
                   navigate("/parts/add");
                 }}
