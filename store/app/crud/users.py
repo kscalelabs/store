@@ -19,7 +19,7 @@ class UserCrud(BaseCrud):
         super().__init__()
 
         self.__session_kv: Redis | None = None
-        self.__verify_email_kv: Redis | None = None
+        self.__register_kv: Redis | None = None
         self.__reset_password_kv: Redis | None = None
         self.__change_email_kv: Redis | None = None
 
@@ -44,7 +44,7 @@ class UserCrud(BaseCrud):
             ),
         )
 
-        self.__session_kv, self.__verify_email_kv, self.__reset_password_kv, self.__change_email_kv = sessions
+        self.__session_kv, self.__register_kv, self.__reset_password_kv, self.__change_email_kv = sessions
 
         return self
 
@@ -56,7 +56,7 @@ class UserCrud(BaseCrud):
                     kv.__aexit__(exc_type, exc_val, exc_tb)
                     for kv in (
                         self.session_kv,
-                        self.verify_email_kv,
+                        self.register_kv,
                         self.reset_password_kv,
                         self.change_email_kv,
                     )
@@ -71,10 +71,10 @@ class UserCrud(BaseCrud):
         return self.__session_kv
 
     @property
-    def verify_email_kv(self) -> Redis:
-        if self.__verify_email_kv is None:
+    def register_kv(self) -> Redis:
+        if self.__register_kv is None:
             raise RuntimeError("Must call __aenter__ first!")
-        return self.__verify_email_kv
+        return self.__register_kv
 
     @property
     def reset_password_kv(self) -> Redis:
@@ -151,21 +151,17 @@ class UserCrud(BaseCrud):
     async def delete_session_token(self, token: str) -> None:
         await self.session_kv.delete(hash_token(token))
 
-    async def add_verify_email_token(self, token: str, user_id: str, lifetime: int) -> None:
-        await self.verify_email_kv.setex(hash_token(token), lifetime, user_id)
+    async def add_register_token(self, token: str, user_id: str, lifetime: int) -> None:
+        await self.register_kv.setex(hash_token(token), lifetime, user_id)
 
-    async def delete_verify_email_token(self, token: str) -> None:
-        await self.verify_email_kv.delete(hash_token(token))
+    async def delete_register_token(self, token: str) -> None:
+        await self.register_kv.delete(hash_token(token))
 
-    async def check_verify_email_token(self, token: str) -> None:
-        id = await self.verify_email_kv.get(hash_token(token))
-        if id is None:
+    async def check_register_token(self, token: str) -> str:
+        email = await self.register_kv.get(hash_token(token))
+        if email is None:
             raise ValueError("Provided token is invalid")
-        await (await self.db.Table("Users")).update_item(
-            Key={"user_id": id.decode("utf-8")},
-            AttributeUpdates={"verified": {"Value": True, "Action": "PUT"}},
-        )
-        await self.delete_verify_email_token(token)
+        return email.decode("utf-8")
 
     async def change_password(self, user_id: str, new_password: str) -> None:
         await (await self.db.Table("Users")).update_item(
@@ -200,7 +196,6 @@ class UserCrud(BaseCrud):
             Key={"user_id": data["user_id"]},
             AttributeUpdates={
                 "email": {"Value": data["new_email"], "Action": "PUT"},
-                "verified": {"Value": True, "Action": "PUT"},
             },
         )
         await self.change_email_kv.delete(hash_token(token))

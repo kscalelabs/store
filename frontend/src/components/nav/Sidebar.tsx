@@ -15,7 +15,6 @@ const Sidebar = ({ show, onHide }: Props) => {
 
   const [needToCall, setNeedToCall] = useState<boolean>(true);
   const [email, setEmail] = useState<string>("");
-  const [verified, setVerified] = useState<boolean>(false);
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
 
@@ -25,21 +24,6 @@ const Sidebar = ({ show, onHide }: Props) => {
   const [newPassword, setNewPassword] = useState<string>("");
   const [changePasswordSuccess, setChangePasswordSuccess] =
     useState<boolean>(false);
-
-  const sendVerifyEmail = async () => {
-    try {
-      await auth_api.send_verify_email();
-    } catch (error) {
-      if (error instanceof Error) {
-        addAlert(error.message, "error");
-      } else {
-        addAlert(
-          "Unexpected error when trying to send verification email",
-          "error",
-        );
-      }
-    }
-  };
 
   const sendChangeEmail = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -75,7 +59,6 @@ const Sidebar = ({ show, onHide }: Props) => {
         setNeedToCall(false);
         try {
           const res = await auth_api.me();
-          setVerified(res.verified);
           setEmail(res.email);
         } catch (error) {
           console.error(error);
@@ -101,13 +84,6 @@ const Sidebar = ({ show, onHide }: Props) => {
               <strong>Change Email</strong>
             </p>
             <p>Current email: {email}</p>
-            {!verified && (
-              <p>
-                <a href="#" onClick={sendVerifyEmail}>
-                  Resend verification email
-                </a>
-              </p>
-            )}
             {changeEmailSuccess ? (
               <p>An email has been sent to your new email address.</p>
             ) : (

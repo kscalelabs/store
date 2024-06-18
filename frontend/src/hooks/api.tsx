@@ -34,7 +34,6 @@ interface MeResponse {
   user_id: string;
   email: string;
   username: string;
-  verified: boolean;
   admin: boolean;
 }
 
@@ -45,55 +44,58 @@ export class api {
     this.api = api;
   }
 
+  public async send_register_email(email: string): Promise<void> {
+    try {
+      await this.api.post("/users/send-register-email", { email });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error(
+          "Error sending registration email:",
+          error.response?.data,
+        );
+        throw new Error(
+          error.response?.data?.detail || "Error sending verification email",
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+
+  public async get_registration_email(token: string): Promise<string> {
+    try {
+      const res = await this.api.get("/users/registration-email/" + token);
+      return res.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error(
+          "Error fetching registration email:",
+          error.response?.data,
+        );
+        throw new Error(
+          error.response?.data?.detail || "Error fetching registration email",
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+
   public async register(
-    email: string,
+    token: string,
     username: string,
     password: string,
   ): Promise<void> {
     try {
-      await this.api.post("/users/register/", { email, username, password });
+      await this.api.post("/users/register/", { token, username, password });
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error registering:", error.response?.data);
         throw new Error(
           error.response?.data?.detail ||
-            "Error registering with email " + email,
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
-  public async verify_email(code: string): Promise<void> {
-    try {
-      await this.api.post("/users/verify-email/" + code);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error verifying email:", error.response?.data);
-        throw new Error(
-          error.response?.data?.detail ||
-            "Error verifying email with code " + code,
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
-  public async send_verify_email(): Promise<void> {
-    try {
-      await this.api.post("/users/send-verify-email");
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error(
-          "Error sending verification email:",
-          error.response?.data,
-        );
-        throw new Error(
-          error.response?.data?.detail || "Error sending verification email",
+            "Error registering with token " + token,
         );
       } else {
         console.error("Unexpected error:", error);

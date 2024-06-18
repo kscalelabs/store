@@ -11,7 +11,7 @@ from pydantic.main import BaseModel
 from store.app.crypto import check_password, new_token
 from store.app.db import Crud
 from store.app.model import User
-from store.app.utils.email import send_change_email, send_delete_email, send_reset_password_email, send_verify_email
+from store.app.utils.email import send_change_email, send_delete_email, send_register_email, send_reset_password_email
 
 logger = logging.getLogger(__name__)
 
@@ -54,12 +54,6 @@ async def get_session_token(request: Request) -> str:
     return token
 
 
-class UserRegister(BaseModel):
-    username: str
-    email: str
-    password: str
-
-
 def validate_email(email: str) -> str:
     try:
         email = parse_email_address(email)[1]
@@ -68,52 +62,51 @@ def validate_email(email: str) -> str:
     return email
 
 
+class SendRegister(BaseModel):
+    email: str
+
+
+@users_router.post("/send-register-email")
+async def send_register_email_endpoint(
+    data: SendRegister,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> bool:
+    """Sends a verification email to the new email address."""
+    email = validate_email(data.email)
+    verify_email_token = new_token()
+    # Magic number: 7 days
+    await crud.add_register_token(verify_email_token, email, 60 * 60 * 24 * 7)
+    await send_register_email(email, verify_email_token)
+    return True
+
+
+@users_router.get("/registration-email/{token}")
+async def get_registration_email_endpoint(
+    token: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> str:
+    """Gets the email address associated with a registration token."""
+    return await crud.check_register_token(token)
+
+
+class UserRegister(BaseModel):
+    token: str
+    username: str
+    password: str
+
+
 @users_router.post("/register")
 async def register_user_endpoint(
     data: UserRegister,
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
     """Registers a new user with the given email and password."""
-    email = validate_email(data.email)
+    email = await crud.check_register_token(data.token)
     user = await crud.get_user_from_email(email)
     if user is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists")
     user = User.create(username=data.username, email=email, password=data.password)
     await crud.add_user(user)
-    verify_email_token = new_token()
-    # Magic number: 7 days
-    await crud.add_verify_email_token(verify_email_token, user.user_id, 60 * 60 * 24 * 7)
-    await send_verify_email(email, verify_email_token)
-    return True
-
-
-@users_router.post("/send-verify-email")
-async def send_verify_email_endpoint(
-    token: Annotated[str, Depends(get_session_token)],
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    user_id = await crud.get_user_id_from_session_token(token)
-    if user_id is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    user_obj = await crud.get_user(user_id)
-    if user_obj is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    verify_email_token = new_token()
-    # Magic number: 7 days
-    if user_obj.verified:
-        return True
-    await crud.add_verify_email_token(verify_email_token, user_id, 60 * 60 * 24 * 7)
-    await send_verify_email(user_obj.email, verify_email_token)
-    return True
-
-
-@users_router.post("/verify-email/{token}")
-async def verify_email_user_endpoint(
-    token: str,
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    """Verifies a user's email address."""
-    await crud.check_verify_email_token(token)
     return True
 
 
@@ -252,7 +245,6 @@ class UserInfoResponse(BaseModel):
     email: str
     username: str
     user_id: str
-    verified: bool
     admin: bool
 
 
@@ -271,7 +263,6 @@ async def get_user_info_endpoint(
         email=user_obj.email,
         username=user_obj.username,
         user_id=user_obj.user_id,
-        verified=user_obj.verified,
         admin=user_obj.admin,
     )
 
