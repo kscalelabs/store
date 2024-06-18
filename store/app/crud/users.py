@@ -151,8 +151,8 @@ class UserCrud(BaseCrud):
     async def delete_session_token(self, token: str) -> None:
         await self.session_kv.delete(hash_token(token))
 
-    async def add_register_token(self, token: str, user_id: str, lifetime: int) -> None:
-        await self.register_kv.setex(hash_token(token), lifetime, user_id)
+    async def add_register_token(self, token: str, email: str, lifetime: int) -> None:
+        await self.register_kv.setex(hash_token(token), lifetime, email)
 
     async def delete_register_token(self, token: str) -> None:
         await self.register_kv.delete(hash_token(token))
