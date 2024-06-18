@@ -1,9 +1,11 @@
 import { Bom, Image, Part } from "hooks/api";
+import { Theme } from "hooks/theme";
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import ImageUploadComponent from "./files/UploadImage";
 
 interface RobotFormProps {
+  theme: Theme;
   title: string;
   message: string;
   robot_name: string;
@@ -25,6 +27,7 @@ interface RobotFormProps {
 }
 
 const RobotForm: React.FC<RobotFormProps> = ({
+  theme,
   title,
   message,
   robot_name,
@@ -183,7 +186,11 @@ const RobotForm: React.FC<RobotFormProps> = ({
           </Row>
         ))}
         <Col>
-          <Button className="mb-3" variant="secondary" onClick={handleAddImage}>
+          <Button
+            className="mb-3"
+            variant={theme === "dark" ? "outline-light" : "outline-dark"}
+            onClick={handleAddImage}
+          >
             Add Image
           </Button>
         </Col>
@@ -233,7 +240,11 @@ const RobotForm: React.FC<RobotFormProps> = ({
           </Row>
         ))}
         <Col>
-          <Button className="mb-3" variant="secondary" onClick={handleAddBom}>
+          <Button
+            className="mb-3"
+            variant={theme === "dark" ? "outline-light" : "outline-dark"}
+            onClick={handleAddBom}
+          >
             Add Part
           </Button>
         </Col>

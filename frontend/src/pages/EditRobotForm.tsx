@@ -3,10 +3,12 @@ import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Bom, Image, Part, Robot } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
+import { useTheme } from "hooks/theme";
 import React, { FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 const EditRobotForm: React.FC = () => {
+  const { theme } = useTheme();
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
 
@@ -88,6 +90,7 @@ const EditRobotForm: React.FC = () => {
 
   return (
     <RobotForm
+      theme={theme}
       title="Edit Robot"
       robot_name={robot_name}
       setName={setName}
