@@ -68,7 +68,7 @@ const Home: React.FC = () => {
           <Row className="row-two">
             <Col md={6} sm={12}>
               <Button
-                variant="outline-primary"
+                variant="primary"
                 size="lg"
                 style={{
                   width: "100%",
@@ -82,7 +82,7 @@ const Home: React.FC = () => {
             </Col>
             <Col md={6} sm={12}>
               <Button
-                variant="outline-primary"
+                variant="primary"
                 size="lg"
                 style={{
                   width: "100%",
