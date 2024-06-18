@@ -12,6 +12,12 @@ from store.app.routers.image import image_router
 from store.app.routers.part import parts_router
 from store.app.routers.robot import robots_router
 from store.app.routers.users import users_router
+from store.settings import settings
+
+LOCALHOST_URLS = [
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+]
 
 
 @asynccontextmanager
@@ -29,7 +35,7 @@ app = FastAPI(lifespan=lifespan)
 # Adds CORS middleware.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins={settings.site.homepage, *LOCALHOST_URLS},
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
