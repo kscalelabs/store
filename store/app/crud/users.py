@@ -30,7 +30,7 @@ class UserCrud(BaseCrud):
                 *(
                     Redis(
                         host=settings.redis.host,
-                        password=None if len(settings.redis.password) else settings.redis.password,
+                        password=settings.redis.password if settings.redis.password else None,
                         port=settings.redis.port,
                         db=db,
                     ).__aenter__()
