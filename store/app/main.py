@@ -1,5 +1,6 @@
 """Defines the main entrypoint for the FastAPI app."""
 
+import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -23,6 +24,7 @@ LOCALHOST_URLS = [
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Initializes the app and creates the database tables."""
+    logging.getLogger("aiobotocore").setLevel(logging.CRITICAL)
     await create_tables()
     try:
         yield
