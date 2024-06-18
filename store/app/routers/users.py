@@ -12,7 +12,6 @@ from store.app.crypto import check_password, new_token
 from store.app.db import Crud
 from store.app.model import User
 from store.app.utils.email import send_change_email, send_delete_email, send_reset_password_email, send_verify_email
-from store.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -243,12 +242,6 @@ async def login_user_endpoint(
         key="session_token",
         value=token,
         httponly=True,
-    )
-    response.set_cookie(
-        key="session_token",
-        value=token,
-        httponly=True,
-        domain=settings.site.homepage,
     )
     await crud.add_session_token(token, user.user_id, 60 * 60 * 24 * 7)
 
