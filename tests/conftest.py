@@ -64,7 +64,7 @@ def mock_redis(mocker: MockerFixture) -> None:
     os.environ["ROBOLIST_REDIS_HOST"] = "localhost"
     os.environ["ROBOLIST_REDIS_PASSWORD"] = ""
     fake_redis = fakeredis.aioredis.FakeRedis()
-    mocker.patch("store.app.crud.base.Redis", return_value=fake_redis)
+    mocker.patch("store.app.crud.users.Redis", return_value=fake_redis)
 
 
 @pytest.fixture()

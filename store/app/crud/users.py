@@ -3,15 +3,91 @@
 import asyncio
 import json
 import warnings
+from typing import Any, Self
 
 from boto3.dynamodb.conditions import Key
+from redis.asyncio import Redis
 
 from store.app.crud.base import BaseCrud
 from store.app.crypto import hash_password, hash_token
 from store.app.model import User
+from store.settings import settings
 
 
 class UserCrud(BaseCrud):
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.__session_kv: Redis | None = None
+        self.__verify_email_kv: Redis | None = None
+        self.__reset_password_kv: Redis | None = None
+        self.__change_email_kv: Redis | None = None
+
+    async def __aenter__(self) -> Self:
+        self, sessions = await asyncio.gather(
+            super().__aenter__(),
+            asyncio.gather(
+                *(
+                    Redis(
+                        host=settings.redis.host,
+                        password=None if len(settings.redis.password) else settings.redis.password,
+                        port=settings.redis.port,
+                        db=db,
+                    ).__aenter__()
+                    for db in (
+                        settings.redis.session_db,
+                        settings.redis.verify_email_db,
+                        settings.redis.reset_password_db,
+                        settings.redis.change_email_db,
+                    )
+                )
+            ),
+        )
+
+        self.__session_kv, self.__verify_email_kv, self.__reset_password_kv, self.__change_email_kv = sessions
+
+        return self
+
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:  # noqa: ANN401
+        await asyncio.gather(
+            super().__aexit__(exc_type, exc_val, exc_tb),
+            asyncio.gather(
+                *(
+                    kv.__aexit__(exc_type, exc_val, exc_tb)
+                    for kv in (
+                        self.session_kv,
+                        self.verify_email_kv,
+                        self.reset_password_kv,
+                        self.change_email_kv,
+                    )
+                )
+            ),
+        )
+
+    @property
+    def session_kv(self) -> Redis:
+        if self.__session_kv is None:
+            raise RuntimeError("Must call __aenter__ first!")
+        return self.__session_kv
+
+    @property
+    def verify_email_kv(self) -> Redis:
+        if self.__verify_email_kv is None:
+            raise RuntimeError("Must call __aenter__ first!")
+        return self.__verify_email_kv
+
+    @property
+    def reset_password_kv(self) -> Redis:
+        if self.__reset_password_kv is None:
+            raise RuntimeError("Must call __aenter__ first!")
+        return self.__reset_password_kv
+
+    @property
+    def change_email_kv(self) -> Redis:
+        if self.__change_email_kv is None:
+            raise RuntimeError("Must call __aenter__ first!")
+        return self.__change_email_kv
+
     async def add_user(self, user: User) -> None:
         # Then, add the user object to the Users table.
         table = await self.db.Table("Users")
