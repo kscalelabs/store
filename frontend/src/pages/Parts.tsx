@@ -13,7 +13,6 @@ import {
 } from "react-bootstrap";
 import Markdown from "react-markdown";
 import { useNavigate } from "react-router-dom";
-import { isFulfilled } from "utils/isfullfiled";
 
 const Parts = () => {
   const auth = useAuthentication();
@@ -32,22 +31,8 @@ const Parts = () => {
         partsQuery.forEach((part) => {
           ids.add(part.owner);
         });
-        const idMap = await Promise.allSettled(
-          Array.from(ids).map(async (id) => {
-            try {
-              return [id, await auth_api.getUserById(id)];
-            } catch (err) {
-              return null;
-            }
-          }),
-        );
-        setIdMap(
-          new Map(
-            idMap
-              .filter(isFulfilled)
-              .map((result) => result.value as [string, string]),
-          ),
-        );
+        if (ids.size > 0)
+          setIdMap(await auth_api.getUserBatch(Array.from(ids)));
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -71,10 +56,9 @@ const Parts = () => {
     return (
       <Container
         fluid
-        className="d-flex justify-content-center align-items-center"
-        style={{ height: "100vh" }}
+        className="d-flex justify-content-center align-items-center mt-5"
       >
-        <Row className="w-100">
+        <Row className="w-0">
           <Col className="d-flex justify-content-center align-items-center">
             <Spinner animation="border" />
           </Col>

@@ -6,7 +6,7 @@ import {
   useState,
 } from "react";
 
-type Theme = "light" | "dark";
+export type Theme = "light" | "dark";
 
 const THEME_KEY = "__THEME";
 

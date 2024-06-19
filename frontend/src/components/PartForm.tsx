@@ -1,9 +1,11 @@
 import { Image } from "hooks/api";
+import { Theme } from "hooks/theme";
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import ImageUploadComponent from "./files/UploadImage";
 
 interface PartFormProps {
+  theme: Theme;
   title: string;
   message: string;
   part_name: string;
@@ -16,6 +18,7 @@ interface PartFormProps {
 }
 
 const PartForm: React.FC<PartFormProps> = ({
+  theme,
   title,
   message,
   part_name,
@@ -108,7 +111,11 @@ const PartForm: React.FC<PartFormProps> = ({
           </Row>
         ))}
         <Col>
-          <Button className="mb-3" variant="secondary" onClick={handleAddImage}>
+          <Button
+            className="mb-3"
+            variant={theme === "dark" ? "outline-light" : "outline-dark"}
+            onClick={handleAddImage}
+          >
             Add Image
           </Button>
         </Col>

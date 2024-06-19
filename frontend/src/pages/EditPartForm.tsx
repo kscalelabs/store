@@ -3,10 +3,12 @@ import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Image, Part } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
+import { useTheme } from "hooks/theme";
 import React, { FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 const EditPartForm: React.FC = () => {
+  const { theme } = useTheme();
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
 
@@ -62,6 +64,7 @@ const EditPartForm: React.FC = () => {
 
   return (
     <PartForm
+      theme={theme}
       title="Edit Part"
       message={message}
       part_name={Part_name}

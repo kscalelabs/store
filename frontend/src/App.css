@@ -11,7 +11,6 @@ div.content {
 
 html,
 body {
-  transition: color 0.1s ease;
   word-wrap: break-word;
 }
 
@@ -27,6 +26,10 @@ form button {
   width: 100%;
 }
 
+div.card {
+  height: 100%;
+}
+
 p.card-text {
   flex-grow: 1;
   max-height: 100%;
@@ -35,4 +38,48 @@ p.card-text {
   -webkit-line-clamp: 3;
   display: -webkit-box;
   -webkit-box-orient: vertical;
+}
+
+.btn-primary {
+  background-color: white;
+  color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+  background-color: #0d6efd;
+  color: white;
+}
+
+body.dark-mode .btn-primary {
+  background-color: black;
+  color: #8ab9fe;
+  border-color: #8ab9fe;
+}
+
+body.dark-mode .btn-primary:hover {
+  background-color: #8ab9fe;
+  color: #201a42;
+}
+
+.btn-danger {
+  background-color: white;
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-danger:hover {
+  background-color: #dc3545;
+  color: white;
+}
+
+body.dark-mode .btn-danger {
+  background-color: black;
+  color: #f0cbce;
+  border-color: #f0cbce;
+}
+
+body.dark-mode .btn-danger:hover {
+  background-color: #f0cbce;
+  color: #201a42;
 }

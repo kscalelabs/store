@@ -1,4 +1,5 @@
 import ImageComponent from "components/files/ViewImage";
+import { useAlertQueue } from "hooks/alerts";
 import { api, Robot } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
@@ -12,14 +13,13 @@ import {
 } from "react-bootstrap";
 import Markdown from "react-markdown";
 import { useNavigate } from "react-router-dom";
-import { isFulfilled } from "utils/isfullfiled";
 
 const Robots = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const [robotsData, setRobot] = useState<Robot[] | null>(null);
   const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
-  const [error, setError] = useState<string | null>(null);
+  const { addAlert } = useAlertQueue();
   useEffect(() => {
     const fetch_robots = async () => {
       try {
@@ -29,23 +29,13 @@ const Robots = () => {
         robotsQuery.forEach((robot) => {
           ids.add(robot.owner);
         });
-        const idMap = await Promise.allSettled(
-          Array.from(ids).map(async (id) => {
-            return [id, await auth_api.getUserById(id)];
-          }),
-        );
-        setIdMap(
-          new Map(
-            idMap
-              .filter(isFulfilled)
-              .map((result) => result.value as [string, string]),
-          ),
-        );
+        if (ids.size > 0)
+          setIdMap(await auth_api.getUserBatch(Array.from(ids)));
       } catch (err) {
         if (err instanceof Error) {
-          setError(err.message);
+          addAlert(err.message, "error");
         } else {
-          setError("An unexpected error occurred");
+          addAlert("An unexpected error occurred", "error");
         }
       }
     };
@@ -53,19 +43,11 @@ const Robots = () => {
   }, []);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (error) {
-      console.log(error);
-      navigate("/404"); // Redirect to a 404 page
-    }
-  }, [error, navigate]);
-
   if (!robotsData) {
     return (
       <Container
         fluid
-        className="d-flex justify-content-center align-items-center"
-        style={{ height: "100vh" }}
+        className="d-flex justify-content-center align-items-center mt-5"
       >
         <Row className="w-100">
           <Col className="d-flex justify-content-center align-items-center">

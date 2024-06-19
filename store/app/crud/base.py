@@ -6,11 +6,8 @@ from typing import Any, AsyncContextManager, Literal, Self
 
 import aioboto3
 from botocore.exceptions import ClientError
-from redis.asyncio import Redis
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 from types_aiobotocore_s3.service_resource import S3ServiceResource
-
-from store.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -43,41 +40,13 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         s3 = await s3.__aenter__()
         self.__s3 = s3
 
-        self.session_kv = Redis(
-            host=settings.redis.host,
-            password=settings.redis.password,
-            port=settings.redis.port,
-            db=settings.redis.session_db,
-        )
-
-        self.verify_email_kv = Redis(
-            host=settings.redis.host,
-            password=settings.redis.password,
-            port=settings.redis.port,
-            db=settings.redis.verify_email_db,
-        )
-
-        self.reset_password_kv = Redis(
-            host=settings.redis.host,
-            password=settings.redis.password,
-            port=settings.redis.port,
-            db=settings.redis.reset_password_db,
-        )
-
-        self.change_email_kv = Redis(
-            host=settings.redis.host,
-            password=settings.redis.password,
-            port=settings.redis.port,
-            db=settings.redis.change_email_db,
-        )
-
         return self
 
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:  # noqa: ANN401
         if self.__db is not None:
             await self.__db.__aexit__(exc_type, exc_val, exc_tb)
-        # if self.__s3 is not None:
-        #     await self.__s3.__aexit__(exc_type, exc_val, exc_tb)
+        if self.__s3 is not None:
+            await self.__s3.__aexit__(exc_type, exc_val, exc_tb)
 
     async def _create_dynamodb_table(
         self,

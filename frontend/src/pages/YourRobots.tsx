@@ -1,4 +1,5 @@
 import ImageComponent from "components/files/ViewImage";
+import { useAlertQueue } from "hooks/alerts";
 import { api, Robot } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
@@ -17,7 +18,7 @@ const YourRobots = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const [robotsData, setRobot] = useState<Robot[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { addAlert } = useAlertQueue();
 
   useEffect(() => {
     const fetch_your_robots = async () => {
@@ -26,9 +27,9 @@ const YourRobots = () => {
         setRobot(robotsQuery);
       } catch (err) {
         if (err instanceof Error) {
-          setError(err.message);
+          addAlert(err.message, "error");
         } else {
-          setError("An unexpected error occurred");
+          addAlert("An unexpected error occurred", "error");
         }
       }
     };
@@ -36,19 +37,11 @@ const YourRobots = () => {
   }, []);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (error) {
-      console.log(error);
-      navigate("/404"); // Redirect to a 404 page
-    }
-  }, [error, navigate]);
-
   if (!robotsData) {
     return (
       <Container
         fluid
-        className="d-flex justify-content-center align-items-center"
-        style={{ height: "100vh" }}
+        className="d-flex justify-content-center align-items-center mt-5"
       >
         <Row className="w-100">
           <Col className="d-flex justify-content-center align-items-center">

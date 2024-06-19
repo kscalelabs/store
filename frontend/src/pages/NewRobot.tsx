@@ -1,10 +1,12 @@
 import RobotForm from "components/RobotForm";
 import { api, Bom, Image, Part, Robot } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
+import { useTheme } from "hooks/theme";
 import React, { FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const NewRobot: React.FC = () => {
+  const { theme } = useTheme();
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const [message, setMessage] = useState<string>("");
@@ -58,6 +60,7 @@ const NewRobot: React.FC = () => {
 
   return (
     <RobotForm
+      theme={theme}
       title="Add a New Robot"
       robot_name={robot_name}
       setName={setName}

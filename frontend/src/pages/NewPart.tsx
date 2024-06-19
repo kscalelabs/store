@@ -1,10 +1,12 @@
 import PartForm from "components/PartForm";
 import { api, Image, Part } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
+import { useTheme } from "hooks/theme";
 import React, { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const NewPart: React.FC = () => {
+  const { theme } = useTheme();
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const [message, setMessage] = useState<string>("");
@@ -37,6 +39,7 @@ const NewPart: React.FC = () => {
 
   return (
     <PartForm
+      theme={theme}
       title="Add a New Part"
       message={message}
       part_name={part_name}
