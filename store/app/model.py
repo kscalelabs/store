@@ -18,7 +18,6 @@ class User(BaseModel):
     username: str
     email: str
     password_hash: str
-    verified: bool
     admin: bool
 
     @classmethod
@@ -28,7 +27,6 @@ class User(BaseModel):
             email=email,
             username=username,
             password_hash=hash_password(password),
-            verified=False,
             admin=False,
         )
 
