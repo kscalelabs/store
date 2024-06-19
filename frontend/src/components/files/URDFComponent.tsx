@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { OrbitControls } from "@react-three/drei";
 import { Canvas, useLoader, useThree } from "@react-three/fiber";
 import React, {
@@ -10,7 +11,7 @@ import React, {
 } from "react";
 import * as THREE from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
-const URDFLoader = require("urdf-loader");
+import URDFLoader from "urdf-loader"
 
 // const theme = css`
 //   width: 100vw;

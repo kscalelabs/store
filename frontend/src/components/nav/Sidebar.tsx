@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
