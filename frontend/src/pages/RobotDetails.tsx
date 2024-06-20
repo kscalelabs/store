@@ -142,7 +142,7 @@ const RobotDetails = () => {
     <>
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
-        <Breadcrumb.Item onClick={() => navigate("/robots/")}>
+        <Breadcrumb.Item onClick={() => navigate("/robots/1")}>
           Robots
         </Breadcrumb.Item>
         <Breadcrumb.Item active>{name} </Breadcrumb.Item>
