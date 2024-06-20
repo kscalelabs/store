@@ -14,7 +14,7 @@ import {
   Tooltip,
 } from "react-bootstrap";
 import { CheckCircle } from "react-bootstrap-icons";
-
+import TCButton from "components/files/TCButton";
 const isValidEmail = (email: string) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
@@ -79,7 +79,7 @@ const EmailAuthComponent = () => {
           value={email}
           disabled={isDisabled}
         />
-        <Button
+        <TCButton
           variant="primary"
           type="submit"
           disabled={isDisabled || email.length === 0 || !isValidEmail(email)}
@@ -87,7 +87,7 @@ const EmailAuthComponent = () => {
         >
           Sign In
           <FontAwesomeIcon icon={faEnvelope} style={{ marginLeft: 15 }} />
-        </Button>
+        </TCButton>
         <Overlay
           placement="bottom-end"
           show={email !== null && email.length > 3 && !isValidEmail(email)}

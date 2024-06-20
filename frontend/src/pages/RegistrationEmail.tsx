@@ -3,6 +3,7 @@ import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { FormEvent, useState } from "react";
 import { Button, Col, Container, Form, Row, Spinner } from "react-bootstrap";
+import TCButton from "components/files/TCButton";
 
 const RegistrationEmail = () => {
   const auth = useAuthentication();
@@ -69,7 +70,7 @@ const RegistrationEmail = () => {
           value={email}
           required
         />
-        <Button type="submit">Send Code</Button>
+        <TCButton type="submit">Send Code</TCButton>
       </Form>
     </div>
   );

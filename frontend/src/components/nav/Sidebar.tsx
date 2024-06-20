@@ -1,10 +1,11 @@
-// @ts-nocheck
+
 import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { FormEvent, useEffect, useState } from "react";
 import { Button, Col, Form, Offcanvas, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
+import TCButton from "components/files/TCButton";
 
 interface Props {
   show: boolean;
@@ -101,7 +102,7 @@ const Sidebar = ({ show, onHide }: Props) => {
                   value={newEmail}
                   required
                 />
-                <Button type="submit">Change Email</Button>
+                <TCButton type="submit">Change Email</TCButton>
               </Form>
             )}
           </Row>
@@ -137,7 +138,7 @@ const Sidebar = ({ show, onHide }: Props) => {
                   value={newPassword}
                   required
                 />
-                <Button type="submit">Change Password</Button>
+                <TCButton type="submit">Change Password</TCButton>
               </Form>
             )}
           </Row>

@@ -2,6 +2,7 @@ import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { FormEvent, useState } from "react";
 import { Button, Form } from "react-bootstrap";
+import TCButton from "components/files/TCButton";
 
 const Forgot = () => {
   const auth = useAuthentication();
@@ -41,9 +42,9 @@ const Forgot = () => {
             value={email}
             required
           />
-          <Button className="mt-2" type="submit">
+          <TCButton className="mt-2" type="submit">
             Send
-          </Button>
+          </TCButton>
         </Form>
       )}
     </div>

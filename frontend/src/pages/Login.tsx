@@ -4,6 +4,7 @@ import { setLocalStorageAuth, useAuthentication } from "hooks/auth";
 import { FormEvent, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
+import TCButton from "components/files/TCButton";
 
 const Login = () => {
   const auth = useAuthentication();
@@ -62,7 +63,7 @@ const Login = () => {
         <div className="mb-4">
           <Link to="/forgot">Forgot your password?</Link>
         </div>
-        <Button type="submit">Login</Button>
+        <TCButton type="submit">Login</TCButton>
       </Form>
     </div>
   );

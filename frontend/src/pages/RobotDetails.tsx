@@ -3,9 +3,9 @@ import { useAlertQueue } from "hooks/alerts";
 import { api, Bom } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
+import { URDFComponent } from "components/files/URDFLoader";
 import {
   Breadcrumb,
-  Button,
   ButtonGroup,
   Carousel,
   Col,
@@ -17,6 +17,7 @@ import {
 import Markdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { isFulfilled } from "utils/isfullfiled";
+import TCButton from "components/files/TCButton";
 
 interface RobotDetailsResponse {
   name: string;
@@ -162,27 +163,27 @@ const RobotDetails = () => {
             (response.weight && response.weight !== "") ||
             (response.degrees_of_freedom &&
               response.degrees_of_freedom !== "")) && (
-            <>
-              <hr />
-              {response.height !== "" && (
-                <p className="text-muted">
-                  <strong>Height:</strong> {response.height}
-                </p>
-              )}
-              {response.weight !== "" && (
-                <p className="text-muted">
-                  <strong>Weight: </strong>
-                  {response.weight}
-                </p>
-              )}
-              {response.degrees_of_freedom !== "" && (
-                <p className="text-muted">
-                  <strong>Total Degrees of Freedom:</strong>{" "}
-                  {response.degrees_of_freedom}
-                </p>
-              )}
-            </>
-          )}
+              <>
+                <hr />
+                {response.height !== "" && (
+                  <p className="text-muted">
+                    <strong>Height:</strong> {response.height}
+                  </p>
+                )}
+                {response.weight !== "" && (
+                  <p className="text-muted">
+                    <strong>Weight: </strong>
+                    {response.weight}
+                  </p>
+                )}
+                {response.degrees_of_freedom !== "" && (
+                  <p className="text-muted">
+                    <strong>Total Degrees of Freedom:</strong>{" "}
+                    {response.degrees_of_freedom}
+                  </p>
+                )}
+              </>
+            )}
           <hr />
           <Row>
             <Col>
@@ -229,52 +230,56 @@ const RobotDetails = () => {
             </Col>
           </Row>
         </Col>
+        <Col lg={6} md={12} className="d-flex align-content-end">
+          <URDFComponent />
+        </Col>
 
-        {images && (
-          <Col lg={6} md={12}>
-            <Carousel
-              indicators
-              data-bs-theme="dark"
-              style={{ border: "1px solid #ccc" }}
-              interval={null}
-              onClick={() => {
-                setImageIndex(0);
-                handleShow();
-              }}
-            >
-              {images.map((image, key) => (
-                <Carousel.Item key={key}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      overflow: "hidden",
-                      width: "100%", // Adjust this to set the desired width
-                      paddingTop: "0%", // This maintains the aspect ratio of the container as a square
-                      position: "relative" as const,
-                    }}
-                  >
-                    <ImageComponent imageId={images[key].url} />
-                  </div>
-                  <Carousel.Caption
-                    style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.5)",
-                      color: "black",
-                      padding: "0.1rem",
-                      // Put the caption at the top
-                      top: 10,
-                      bottom: "unset",
-                    }}
-                  >
-                    {image.caption}
-                  </Carousel.Caption>
-                </Carousel.Item>
-              ))}
-            </Carousel>
-          </Col>
-        )}
-      </Row>
+      </Row >
+      {/* Images */}
+      {images && (
+        <Col lg={6} md={12}>
+          <Carousel
+            indicators
+            data-bs-theme="dark"
+            style={{ border: "1px solid #ccc" }}
+            interval={null}
+            onClick={() => {
+              setImageIndex(0);
+              handleShow();
+            }}
+          >
+            {images.map((image, key) => (
+              <Carousel.Item key={key}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    width: "100%", // Adjust this to set the desired width
+                    paddingTop: "0%", // This maintains the aspect ratio of the container as a square
+                    position: "relative" as const,
+                  }}
+                >
+                  <ImageComponent imageId={images[key].url} />
+                </div>
+                <Carousel.Caption
+                  style={{
+                    backgroundColor: "rgba(255, 255, 255, 0.5)",
+                    color: "black",
+                    padding: "0.1rem",
+                    // Put the caption at the top
+                    top: 10,
+                    bottom: "unset",
+                  }}
+                >
+                  {image.caption}
+                </Carousel.Caption>
+              </Carousel.Item>
+            ))}
+          </Carousel>
+        </Col>
+      )}
       <Modal
         show={show}
         onHide={handleClose}
@@ -306,22 +311,22 @@ const RobotDetails = () => {
         </Modal.Body>
         <Modal.Footer>
           <ButtonGroup>
-            <Button
+            <TCButton
               variant="primary"
               onClick={() => {
                 setImageIndex((imageIndex - 1 + images.length) % images.length);
               }}
             >
               Previous
-            </Button>
-            <Button
+            </TCButton>
+            <TCButton
               variant="primary"
               onClick={() => {
                 setImageIndex((imageIndex + 1) % images.length);
               }}
             >
               Next
-            </Button>
+            </TCButton>
           </ButtonGroup>
         </Modal.Footer>
       </Modal>
@@ -330,7 +335,7 @@ const RobotDetails = () => {
           <>
             <Row className="justify-content-end mt-2">
               <Col md={3} sm={12}>
-                <Button
+                <TCButton
                   variant="primary"
                   size="lg"
                   style={{
@@ -344,10 +349,10 @@ const RobotDetails = () => {
                   }}
                 >
                   Edit Robot
-                </Button>
+                </TCButton>
               </Col>
               <Col md={3} sm={12}>
-                <Button
+                <TCButton
                   variant="danger"
                   size="lg"
                   style={{
@@ -361,7 +366,7 @@ const RobotDetails = () => {
                   }}
                 >
                   Delete Robot
-                </Button>
+                </TCButton>
               </Col>
             </Row>
             <Modal
@@ -378,7 +383,7 @@ const RobotDetails = () => {
                 </Modal.Title>
               </Modal.Header>
               <Modal.Footer className="d-flex justify-content-start">
-                <Button
+                <TCButton
                   variant="danger"
                   onClick={async () => {
                     await auth_api.deleteRobot(id);
@@ -386,15 +391,15 @@ const RobotDetails = () => {
                   }}
                 >
                   Delete Robot
-                </Button>
-                <Button
+                </TCButton>
+                <TCButton
                   variant="outline-secondary"
                   onClick={() => {
                     handleCloseDelete();
                   }}
                 >
                   Cancel
-                </Button>
+                </TCButton>
               </Modal.Footer>
             </Modal>
           </>

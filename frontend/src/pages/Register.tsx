@@ -4,6 +4,7 @@ import { useAuthentication } from "hooks/auth";
 import { FormEvent, useEffect, useState } from "react";
 import { Button, Col, Container, Form, Row, Spinner } from "react-bootstrap";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import TCButton from "components/files/TCButton";
 
 const Register = () => {
   const auth = useAuthentication();
@@ -97,7 +98,7 @@ const Register = () => {
               value={password}
               required
             />
-            <Button type="submit">Register</Button>
+            <TCButton type="submit">Register</TCButton>
           </Form>
         </>
       ) : (

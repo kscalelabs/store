@@ -3,6 +3,7 @@ import { Theme } from "hooks/theme";
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { Button, Col, Form, Row } from "react-bootstrap";
 import ImageUploadComponent from "./files/UploadImage";
+import TCButton from "components/files/TCButton";
 
 interface RobotFormProps {
   theme: Theme;
@@ -175,24 +176,24 @@ const RobotForm: React.FC<RobotFormProps> = ({
               />
             </Col>
             <Col md={12}>
-              <Button
+              <TCButton
                 className="mb-2 mt-2"
                 variant="danger"
                 onClick={() => handleRemoveImage(index)}
               >
                 Remove
-              </Button>
+              </TCButton>
             </Col>
           </Row>
         ))}
         <Col>
-          <Button
+          <TCButton
             className="mb-3"
             variant={theme === "dark" ? "outline-light" : "outline-dark"}
             onClick={handleAddImage}
           >
             Add Image
-          </Button>
+          </TCButton>
         </Col>
         <h2>Bill of Materials</h2>
         {robot_bom.map((bom, index) => (
@@ -229,27 +230,27 @@ const RobotForm: React.FC<RobotFormProps> = ({
               />
             </Col>
             <Col md={12}>
-              <Button
+              <TCButton
                 className="mb-2 mt-2"
                 variant="danger"
                 onClick={() => handleRemoveBom(index)}
               >
                 Remove
-              </Button>
+              </TCButton>
             </Col>
           </Row>
         ))}
         <Col>
-          <Button
+          <TCButton
             className="mb-3"
             variant={theme === "dark" ? "outline-light" : "outline-dark"}
             onClick={handleAddBom}
           >
             Add Part
-          </Button>
+          </TCButton>
         </Col>
         <Col>
-          <Button type="submit">Submit</Button>
+          <TCButton type="submit">Submit</TCButton>
         </Col>
       </Form>
     </>

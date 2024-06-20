@@ -13,12 +13,6 @@ import * as THREE from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import URDFLoader from "urdf-loader"
 
-// const theme = css`
-//   width: 100vw;
-//   height: 100vh;
-//   background-color: #272727;
-// `;
-
 const mouse = new THREE.Vector2();
 const raycaster = new THREE.Raycaster();
 
@@ -180,9 +174,13 @@ export const URDFComponent = () => {
   const modelPath =
     urlParams.get("filepath") ||
     "https://raw.githubusercontent.com/vrtnis/robot-web-viewer/main/public/urdf/robot.urdf";
-
+  const containerStyle = {
+    width: '100vw',
+    height: '100vh',
+    backgroundColor: '#272727'
+  }
   return (
-    <div>
+    <div style={containerStyle}>
       <Canvas camera={{ position: [0, 5, 10] }}>
         <hemisphereLight
           color={"#455A64"}

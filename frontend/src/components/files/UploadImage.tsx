@@ -3,6 +3,7 @@ import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import React, { useState } from "react";
 import { Alert, Button, Col, Form } from "react-bootstrap";
+import TCButton from "components/files/TCButton";
 
 interface ImageUploadProps {
   onUploadSuccess: (url: string) => void;
@@ -82,9 +83,9 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
           <Form.Control type="file" onChange={handleFileChange} accept=".png" />
         </Form.Group>
         {fileError && <Alert variant="danger">{fileError}</Alert>}
-        <Button onClick={handleUpload} disabled={!selectedFile}>
+        <TCButton onClick={handleUpload} disabled={!selectedFile}>
           Upload
-        </Button>
+        </TCButton>
         {uploadStatus && (
           <Alert
             variant={

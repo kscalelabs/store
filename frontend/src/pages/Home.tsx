@@ -3,6 +3,7 @@ import { useTheme } from "hooks/theme";
 import React from "react";
 import { Button, Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import TCButton from "components/files/TCButton";
 
 const Home: React.FC = () => {
   const { theme } = useTheme();
@@ -37,7 +38,7 @@ const Home: React.FC = () => {
         <>
           <Row className="row-two">
             <Col md={6} sm={12}>
-              <Button
+              <TCButton
                 variant={theme === "dark" ? "outline-light" : "outline-dark"}
                 size="lg"
                 style={{
@@ -48,10 +49,10 @@ const Home: React.FC = () => {
                 }}
               >
                 View Your Robots
-              </Button>
+              </TCButton>
             </Col>
             <Col md={6} sm={12}>
-              <Button
+              <TCButton
                 variant={theme === "dark" ? "outline-light" : "outline-dark"}
                 size="lg"
                 style={{
@@ -62,12 +63,12 @@ const Home: React.FC = () => {
                 }}
               >
                 View Your Parts
-              </Button>
+              </TCButton>
             </Col>
           </Row>
           <Row className="row-two">
             <Col md={6} sm={12}>
-              <Button
+              <TCButton
                 variant="primary"
                 size="lg"
                 style={{
@@ -78,10 +79,10 @@ const Home: React.FC = () => {
                 }}
               >
                 Make a Robot
-              </Button>
+              </TCButton>
             </Col>
             <Col md={6} sm={12}>
-              <Button
+              <TCButton
                 variant="primary"
                 size="lg"
                 style={{
@@ -92,7 +93,7 @@ const Home: React.FC = () => {
                 }}
               >
                 Make a Part
-              </Button>
+              </TCButton>
             </Col>
           </Row>
         </>

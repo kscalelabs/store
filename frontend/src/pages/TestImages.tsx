@@ -1,5 +1,5 @@
 import React from "react";
-import { URDFComponent } from "components/files/URDFComponent";
+import { URDFComponent } from "components/files/URDFLoader";
 
 const App: React.FC = () => {
   return (

@@ -15,6 +15,7 @@ import {
 } from "react-bootstrap";
 import Markdown from "react-markdown";
 import { useNavigate, useParams } from "react-router-dom";
+import TCButton from "components/files/TCButton";
 
 interface PartDetailsResponse {
   part_name: string;
@@ -223,22 +224,22 @@ const PartDetails = () => {
         </Modal.Body>
         <Modal.Footer>
           <ButtonGroup>
-            <Button
+            <TCButton
               variant="primary"
               onClick={() => {
                 setImageIndex((imageIndex - 1 + images.length) % images.length);
               }}
             >
               Previous
-            </Button>
-            <Button
+            </TCButton>
+            <TCButton
               variant="primary"
               onClick={() => {
                 setImageIndex((imageIndex + 1) % images.length);
               }}
             >
               Next
-            </Button>
+            </TCButton>
           </ButtonGroup>
         </Modal.Footer>
       </Modal>
@@ -247,7 +248,7 @@ const PartDetails = () => {
           <>
             <Row className="justify-content-end mt-2">
               <Col md={3} sm={12}>
-                <Button
+                <TCButton
                   variant="primary"
                   size="lg"
                   style={{
@@ -261,10 +262,10 @@ const PartDetails = () => {
                   }}
                 >
                   Edit Part
-                </Button>
+                </TCButton>
               </Col>
               <Col md={3} sm={12}>
-                <Button
+                <TCButton
                   variant="danger"
                   size="lg"
                   style={{
@@ -278,7 +279,7 @@ const PartDetails = () => {
                   }}
                 >
                   Delete Part
-                </Button>
+                </TCButton>
               </Col>
             </Row>
             <Modal
@@ -295,7 +296,7 @@ const PartDetails = () => {
                 </Modal.Title>
               </Modal.Header>
               <Modal.Footer className="d-flex justify-content-start">
-                <Button
+                <TCButton
                   variant="danger"
                   onClick={async () => {
                     await auth_api.deletePart(id);
@@ -303,15 +304,15 @@ const PartDetails = () => {
                   }}
                 >
                   Delete Part
-                </Button>
-                <Button
+                </TCButton>
+                <TCButton
                   variant="outline-secondary"
                   onClick={() => {
                     handleCloseDelete();
                   }}
                 >
                   Cancel
-                </Button>
+                </TCButton>
               </Modal.Footer>
             </Modal>
           </>
