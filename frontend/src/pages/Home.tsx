@@ -17,7 +17,7 @@ const Home: React.FC = () => {
       </Row>
       <Row className="row-two">
         <Col md={6} sm={12}>
-          <Card onClick={() => navigate(`/robots`)}>
+          <Card onClick={() => navigate(`/robots/1`)}>
             <Card.Body>
               <Card.Title>Browse Robots</Card.Title>
               <Card.Text>Buy and sell robots</Card.Text>

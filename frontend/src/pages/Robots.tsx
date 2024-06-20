@@ -12,21 +12,36 @@ import {
   Spinner,
 } from "react-bootstrap";
 import Markdown from "react-markdown";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 const Robots = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const [robotsData, setRobot] = useState<Robot[] | null>(null);
+  const [moreRobots, setMoreRobots] = useState<boolean>(false);
   const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
   const { addAlert } = useAlertQueue();
+  const { page } = useParams();
+
+  const pageNumber = parseInt(page || "", 10);
+  if (isNaN(pageNumber) || pageNumber < 0) {
+    return (
+      <>
+        <h1>Robots</h1>
+        <p>Invalid page number in URL.</p>
+      </>
+    );
+  }
+
   useEffect(() => {
     const fetch_robots = async () => {
       try {
-        const robotsQuery = await auth_api.getRobots();
-        setRobot(robotsQuery);
+        const robotsQuery = await auth_api.getRobots(pageNumber);
+        setMoreRobots(robotsQuery[1]);
+        const robots = robotsQuery[0];
+        setRobot(robots);
         const ids = new Set<string>();
-        robotsQuery.forEach((robot) => {
+        robots.forEach((robot) => {
           ids.add(robot.owner);
         });
         if (ids.size > 0)
@@ -108,6 +123,10 @@ const Robots = () => {
           </Col>
         ))}
       </Row>
+      {(pageNumber > 1 || moreRobots) && <Row className="mt-3">
+        {pageNumber > 1 && <Col><Link to={"/robots/" + (pageNumber - 1)}>Previous Page</Link></Col>}
+        {moreRobots && <Col className="text-end"><Link to={"/robots/" + (pageNumber + 1)}>Next Page</Link></Col>}
+      </Row>}
     </>
   );
 };

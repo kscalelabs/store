@@ -16,8 +16,16 @@ logger = logging.getLogger(__name__)
 
 
 @robots_router.get("/")
-async def list_robots(crud: Annotated[Crud, Depends(Crud.get)]) -> List[Robot]:
-    return await crud.list_robots()
+async def list_robots(
+    crud: Annotated[Crud, Depends(Crud.get)], page: int = Query(description="Page number for pagination")
+) -> tuple[List[Robot], bool]:
+    """Lists the robots in the database.
+
+    The function is paginated. The page size is 18.
+
+    Returns the robots on the page and a boolean indicating if there are more pages.
+    """
+    return await crud.list_robots(page)
 
 
 @robots_router.get("/your/")

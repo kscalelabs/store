@@ -29,9 +29,13 @@ class RobotCrud(BaseCrud):
         table = await self.db.Table("Parts")
         await table.put_item(Item=part.model_dump())
 
-    async def list_robots(self) -> list[Robot]:
+    async def list_robots(self, page: int = 1, items_per_page: int = 18) -> tuple[list[Robot], bool]:
         table = await self.db.Table("Robots")
-        return [Robot.model_validate(robot) for robot in (await table.scan())["Items"]]
+        response = await table.scan()
+        return [
+            Robot.model_validate(item)
+            for item in response["Items"][(page - 1) * items_per_page : page * items_per_page]
+        ], page * items_per_page < response["Count"]
 
     async def get_robot(self, robot_id: str) -> Robot | None:
         table = await self.db.Table("Robots")

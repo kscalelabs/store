@@ -56,7 +56,7 @@ const App = () => {
                     path="/change-email/:token"
                     element={<ChangeEmail />}
                   />
-                  <Route path="/robots/" element={<Robots />} />
+                  <Route path="/robots/:page" element={<Robots />} />
                   <Route path="/robots/add" element={<NewRobot />} />
                   <Route path="/parts/add" element={<NewPart />} />
                   <Route path="/robot/:id" element={<RobotDetails />} />
