@@ -1,13 +1,16 @@
 """Defines all robot related API endpoints."""
 
 import logging
-from typing import Annotated, List
+import time
+from typing import Annotated, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 
+from store.app.crud.robots import EditRobot
 from store.app.crypto import new_uuid
 from store.app.db import Crud
-from store.app.model import Robot
+from store.app.model import Bom, Image, Robot
 from store.app.routers.users import get_session_token
 
 robots_router = APIRouter()
@@ -56,18 +59,40 @@ async def current_user(
     return str(user_id)
 
 
+class NewRobot(BaseModel):
+    name: str
+    description: str
+    bom: List[Bom]
+    images: List[Image]
+    height: Optional[str]
+    weight: Optional[str]
+    degrees_of_freedom: Optional[str]
+
+
 @robots_router.post("/add/")
 async def add_robot(
-    robot: Robot,
+    new_robot: NewRobot,
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
     user_id = await crud.get_user_id_from_session_token(token)
     if user_id is None:
         raise HTTPException(status_code=401, detail="Must be logged in to add a robot")
-    robot.owner = str(user_id)
-    robot.robot_id = str(new_uuid())
-    await crud.add_robot(robot)
+
+    await crud.add_robot(
+        Robot(
+            name=new_robot.name,
+            description=new_robot.description,
+            bom=new_robot.bom,
+            images=new_robot.images,
+            height=new_robot.height,
+            weight=new_robot.weight,
+            degrees_of_freedom=new_robot.degrees_of_freedom,
+            owner=str(user_id),
+            robot_id=str(new_uuid()),
+            timestamp=int(time.time()),
+        )
+    )
     return True
 
 
@@ -87,17 +112,15 @@ async def delete_robot(
     return True
 
 
-@robots_router.post("/edit-robot/{robot_id}/")
+@robots_router.post("/edit-robot/{id}/")
 async def edit_robot(
-    robot_id: str,
-    robot: Robot,
+    id: str,
+    robot: EditRobot,
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
     user_id = await crud.get_user_id_from_session_token(token)
     if user_id is None:
         raise HTTPException(status_code=401, detail="Must be logged in to edit a robot")
-    robot.owner = str(user_id)
-    robot.robot_id = robot_id
-    await crud.update_robot(robot)
+    await crud.update_robot(id, robot)
     return True
