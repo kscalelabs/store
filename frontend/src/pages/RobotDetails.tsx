@@ -217,9 +217,7 @@ const RobotDetails = () => {
                   {parts.map((part, key) => (
                     <tr key={key}>
                       <td>
-                        <Link to={`/part/${part.part_id}`}>
-                          {part.name}
-                        </Link>
+                        <Link to={`/part/${part.part_id}`}>{part.name}</Link>
                       </td>
                       <td>{part.quantity}</td>
                     </tr>

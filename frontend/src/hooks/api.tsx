@@ -433,10 +433,7 @@ export class api {
       await this.api.post("/parts/add/", part);
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        console.error(
-          "Error adding part:" + part.name,
-          error.response?.data,
-        );
+        console.error("Error adding part:" + part.name, error.response?.data);
         throw new Error(
           error.response?.data?.detail || "Error adding part " + s,
         );

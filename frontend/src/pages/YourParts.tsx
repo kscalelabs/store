@@ -12,14 +12,14 @@ import {
   Spinner,
 } from "react-bootstrap";
 import Markdown from "react-markdown";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 const YourParts = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const [partsData, setParts] = useState<Part[] | null>(null);
   const { addAlert } = useAlertQueue();
-  const {page} = useParams();
+  const { page } = useParams();
   const [moreParts, setMoreParts] = useState<boolean>(false);
 
   const pageNumber = parseInt(page || "", 10);
