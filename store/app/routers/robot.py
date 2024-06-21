@@ -20,7 +20,8 @@ logger = logging.getLogger(__name__)
 
 @robots_router.get("/")
 async def list_robots(
-    crud: Annotated[Crud, Depends(Crud.get)], page: int = Query(description="Page number for pagination"),
+    crud: Annotated[Crud, Depends(Crud.get)],
+    page: int = Query(description="Page number for pagination"),
 ) -> tuple[List[Robot], bool]:
     """Lists the robots in the database.
 
@@ -38,7 +39,6 @@ async def list_your_robots(
     page: int = Query(description="Page number for pagination"),
 ) -> tuple[List[Robot], bool]:
     """Lists the robots that you own."""
-
     user_id = await crud.get_user_id_from_session_token(token)
     if user_id is None:
         raise HTTPException(status_code=401, detail="Must be logged in to view your parts")

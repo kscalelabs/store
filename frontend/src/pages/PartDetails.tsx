@@ -115,7 +115,7 @@ const PartDetails = () => {
     <>
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
-        <Breadcrumb.Item onClick={() => navigate("/parts/")}>
+        <Breadcrumb.Item onClick={() => navigate("/parts/1")}>
           Parts
         </Breadcrumb.Item>
         <Breadcrumb.Item active>{part_name}</Breadcrumb.Item>
@@ -287,7 +287,7 @@ const PartDetails = () => {
                   variant="danger"
                   onClick={async () => {
                     await auth_api.deletePart(id);
-                    navigate(`/parts/your/`);
+                    navigate(`/parts/your/1`);
                   }}
                 >
                   Delete Part

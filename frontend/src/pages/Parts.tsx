@@ -12,45 +12,52 @@ import {
   Spinner,
 } from "react-bootstrap";
 import Markdown from "react-markdown";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 const Parts = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const [partsData, setParts] = useState<Part[] | null>(null);
+  const [moreParts, setMoreParts] = useState<boolean>(false);
   const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
-  const [error, setError] = useState<string | null>(null);
   const { addAlert } = useAlertQueue();
+  const { page } = useParams();
+
+  const pageNumber = parseInt(page || "", 10);
+  if (isNaN(pageNumber) || pageNumber < 0) {
+    return (
+      <>
+        <h1>Parts</h1>
+        <p>Invalid page number in URL.</p>
+      </>
+    );
+  }
 
   useEffect(() => {
-    const fetch_parts = async () => {
+    const fetch_robots = async () => {
       try {
-        const partsQuery = await auth_api.getParts();
-        setParts(partsQuery);
+        const partsQuery = await auth_api.getParts(pageNumber);
+        setMoreParts(partsQuery[1]);
+        const parts = partsQuery[0];
+        setParts(parts);
         const ids = new Set<string>();
-        partsQuery.forEach((part) => {
+        parts.forEach((part) => {
           ids.add(part.owner);
         });
         if (ids.size > 0)
           setIdMap(await auth_api.getUserBatch(Array.from(ids)));
       } catch (err) {
         if (err instanceof Error) {
-          setError(err.message);
+          addAlert(err.message, "error");
         } else {
-          setError("An unexpected error occurred");
+          addAlert("An unexpected error occurred", "error");
         }
       }
     };
-    fetch_parts();
-  }, []);
+    fetch_robots();
+  }, [pageNumber]);
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (error) {
-      addAlert(error, "error");
-    }
-  }, [error]);
 
   if (!partsData) {
     return (
@@ -117,6 +124,20 @@ const Parts = () => {
           </Col>
         ))}
       </Row>
+      {(pageNumber > 1 || moreParts) && (
+        <Row className="mt-3">
+          {pageNumber > 1 && (
+            <Col>
+              <Link to={"/parts/" + (pageNumber - 1)}>Previous Page</Link>
+            </Col>
+          )}
+          {moreParts && (
+            <Col className="text-end">
+              <Link to={"/parts/" + (pageNumber + 1)}>Next Page</Link>
+            </Col>
+          )}
+        </Row>
+      )}
     </>
   );
 };

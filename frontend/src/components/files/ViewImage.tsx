@@ -1,5 +1,5 @@
-import React from "react";
 import { BACKEND_URL } from "constants/backend";
+import React from "react";
 
 interface ImageProps {
   imageId: string;

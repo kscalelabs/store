@@ -12,18 +12,32 @@ import {
   Spinner,
 } from "react-bootstrap";
 import Markdown from "react-markdown";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 
 const YourParts = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const [partsData, setParts] = useState<Part[] | null>(null);
   const { addAlert } = useAlertQueue();
+  const {page} = useParams();
+  const [moreParts, setMoreParts] = useState<boolean>(false);
+
+  const pageNumber = parseInt(page || "", 10);
+  if (isNaN(pageNumber) || pageNumber < 0) {
+    return (
+      <>
+        <h1>Robots</h1>
+        <p>Invalid page number in URL.</p>
+      </>
+    );
+  }
+
   useEffect(() => {
     const fetch_parts = async () => {
       try {
-        const partsQuery = await auth_api.getYourParts();
-        setParts(partsQuery);
+        const partsQuery = await auth_api.getYourParts(pageNumber);
+        setParts(partsQuery[0]);
+        setMoreParts(partsQuery[1]);
       } catch (err) {
         if (err instanceof Error) {
           addAlert(err.message, "error");
@@ -99,6 +113,20 @@ const YourParts = () => {
           </Col>
         ))}
       </Row>
+      {(pageNumber > 1 || moreParts) && (
+        <Row className="mt-3">
+          {pageNumber > 1 && (
+            <Col>
+              <Link to={"/parts/your/" + (pageNumber - 1)}>Previous Page</Link>
+            </Col>
+          )}
+          {moreParts && (
+            <Col className="text-end">
+              <Link to={"/parts/your/" + (pageNumber + 1)}>Next Page</Link>
+            </Col>
+          )}
+        </Row>
+      )}
     </>
   );
 };

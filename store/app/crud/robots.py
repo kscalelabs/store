@@ -1,18 +1,23 @@
 """Defines CRUD interface for robot API."""
 
 import logging
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
+from boto3.dynamodb.conditions import Key
 from fastapi import UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from boto3.dynamodb.conditions import Key
-
 
 from store.app.crud.base import BaseCrud
 from store.app.model import Bom, Image, Part, Robot
 
 logger = logging.getLogger(__name__)
+
+
+class EditPart(BaseModel):
+    name: str
+    description: str
+    images: List[Image]
 
 
 class EditRobot(BaseModel):
@@ -41,6 +46,10 @@ def serialize_image_list(image_list: List[Image]) -> List[dict]:
     return [serialize_image(image) for image in image_list]
 
 
+def get_timestamp(item: Dict[str, Any]) -> int:
+    return item["timestamp"]
+
+
 class RobotCrud(BaseCrud):
     async def add_robot(self, robot: Robot) -> None:
         table = await self.db.Table("Robots")
@@ -54,19 +63,17 @@ class RobotCrud(BaseCrud):
         table = await self.db.Table("Robots")
         response = await table.scan()
         # This is O(n log n). Look into better ways to architect the schema.
-        sorted_items = sorted(response["Items"], key=lambda x: x["timestamp"], reverse=True)
+        sorted_items = sorted(response["Items"], key=get_timestamp, reverse=True)
         return [
-            Robot.model_validate(item)
-            for item in sorted_items[(page - 1) * items_per_page : page * items_per_page]
+            Robot.model_validate(item) for item in sorted_items[(page - 1) * items_per_page : page * items_per_page]
         ], page * items_per_page < response["Count"]
 
     async def list_your_robots(self, user_id: str, page: int = 1, items_per_page: int = 18) -> tuple[list[Robot], bool]:
         table = await self.db.Table("Robots")
         response = await table.query(IndexName="ownerIndex", KeyConditionExpression=Key("owner").eq(user_id))
-        sorted_items = sorted(response["Items"], key=lambda x: x["timestamp"], reverse=True)
+        sorted_items = sorted(response["Items"], key=get_timestamp, reverse=True)
         return [
-            Robot.model_validate(item)
-            for item in sorted_items[(page - 1) * items_per_page : page * items_per_page]
+            Robot.model_validate(item) for item in sorted_items[(page - 1) * items_per_page : page * items_per_page]
         ], page * items_per_page < response["Count"]
 
     async def get_robot(self, robot_id: str) -> Robot | None:
@@ -76,9 +83,27 @@ class RobotCrud(BaseCrud):
             return None
         return Robot.model_validate(robot_dict["Item"])
 
-    async def list_parts(self) -> list[Part]:
+    async def list_parts(self, page: int = 1, items_per_page: int = 18) -> tuple[list[Part], bool]:
         table = await self.db.Table("Parts")
-        return [Part.model_validate(part) for part in (await table.scan())["Items"]]
+        response = await table.scan()
+        # This is O(n log n). Look into better ways to architect the schema.
+        sorted_items = sorted(response["Items"], key=get_timestamp, reverse=True)
+        return [
+            Part.model_validate(item) for item in sorted_items[(page - 1) * items_per_page : page * items_per_page]
+        ], page * items_per_page < response["Count"]
+
+    async def dump_parts(self) -> list[Part]:
+        table = await self.db.Table("Parts")
+        response = await table.scan()
+        return [Part.model_validate(item) for item in response["Items"]]
+
+    async def list_your_parts(self, user_id: str, page: int = 1, items_per_page: int = 18) -> tuple[list[Part], bool]:
+        table = await self.db.Table("Parts")
+        response = await table.query(IndexName="ownerIndex", KeyConditionExpression=Key("owner").eq(user_id))
+        sorted_items = sorted(response["Items"], key=get_timestamp, reverse=True)
+        return [
+            Part.model_validate(item) for item in sorted_items[(page - 1) * items_per_page : page * items_per_page]
+        ], page * items_per_page < response["Count"]
 
     async def get_part(self, part_id: str) -> Part | None:
         table = await self.db.Table("Parts")
@@ -95,9 +120,31 @@ class RobotCrud(BaseCrud):
         table = await self.db.Table("Robots")
         await table.delete_item(Key={"robot_id": robot_id})
 
-    async def update_part(self, part: Part) -> None:
-        await self.delete_part(part.part_id)
-        await self.add_part(part)
+    async def update_part(self, id: str, part: EditPart) -> None:
+        table = await self.db.Table("Parts")
+        update_expression = "SET #name = :name, \
+            #description = :description, \
+            #images = :images, "
+
+        expression_attribute_names = {
+            "#name": "name",
+            "#description": "description",
+            "#images": "images",
+        }
+
+        expression_attribute_values = {
+            ":name": part.name,
+            ":description": part.description,
+            ":images": serialize_image_list(part.images),
+        }
+
+        await table.update_item(
+            Key={"part_id": id},
+            UpdateExpression=update_expression[:-2],
+            ExpressionAttributeValues=expression_attribute_values,
+            ExpressionAttributeNames=expression_attribute_names,
+            ReturnValues="NONE",
+        )
 
     async def update_robot(self, id: str, robot: EditRobot) -> None:
         table = await self.db.Table("Robots")

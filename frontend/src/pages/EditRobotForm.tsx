@@ -79,7 +79,7 @@ const EditRobotForm: React.FC = () => {
   useEffect(() => {
     const fetchParts = async () => {
       try {
-        const partsQuery = await auth_api.getParts();
+        const partsQuery = await auth_api.dumpParts();
         setParts(partsQuery);
       } catch (err) {
         console.error(err);

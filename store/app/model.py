@@ -60,3 +60,4 @@ class Part(BaseModel):
     owner: str
     description: str
     images: list[Image]
+    timestamp: int

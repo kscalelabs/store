@@ -383,9 +383,10 @@ export class api {
       }
     }
   }
-  public async getParts(): Promise<Part[]> {
+
+  public async dumpParts(): Promise<Part[]> {
     try {
-      const response = await this.api.get("/parts/");
+      const response = await this.api.get("/parts/dump/");
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -397,9 +398,24 @@ export class api {
       }
     }
   }
-  public async getYourParts(): Promise<Part[]> {
+
+  public async getParts(page: number): Promise<[Part[], boolean]> {
     try {
-      const response = await this.api.get("/parts/your/");
+      const response = await this.api.get("/parts/", { params: { page } });
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error fetching parts:", error.response?.data);
+        throw new Error(error.response?.data?.detail || "Error fetching parts");
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+  public async getYourParts(page: number): Promise<[Part[], boolean]> {
+    try {
+      const response = await this.api.get("/parts/your/", { params: { page } });
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {

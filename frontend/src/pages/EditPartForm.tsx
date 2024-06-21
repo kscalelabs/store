@@ -56,7 +56,7 @@ const EditPartForm: React.FC = () => {
     try {
       await auth_api.editPart(newFormData);
       setMessage(`Part edited successfully.`);
-      navigate(`/parts/your/`);
+      navigate(`/parts/your/1`);
     } catch (error) {
       setMessage("Error adding part ");
     }
