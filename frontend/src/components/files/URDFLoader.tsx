@@ -3,37 +3,12 @@ import { OrbitControls } from "@react-three/drei";
 import { Canvas, useLoader, useThree } from "@react-three/fiber";
 import React, {
   Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
   useRef,
-  useState,
 } from "react";
 import * as THREE from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
-import URDFLoader from "urdf-loader"
+import URDFLoader from "urdf-loader";
 
-const mouse = new THREE.Vector2();
-const raycaster = new THREE.Raycaster();
-
-const toMouseCoord = (el: HTMLElement, e: MouseEvent, v: THREE.Vector2) => {
-  v.x = ((e.pageX - el.offsetLeft) / el.offsetWidth) * 2 - 1;
-  v.y = -((e.pageY - el.offsetTop) / el.offsetHeight) * 2 + 1;
-};
-
-const getCollisions = (
-  camera: THREE.Camera,
-  robot: THREE.Object3D | null,
-  mouse: THREE.Vector2,
-) => {
-  if (!robot) return [];
-  raycaster.setFromCamera(mouse, camera);
-  const meshes: THREE.Mesh[] = [];
-  robot.traverse((c: any) => {
-    if (c instanceof THREE.Mesh) meshes.push(c);
-  });
-  return raycaster.intersectObjects(meshes);
-};
 
 const isJoint = (j: any) => j.isURDFJoint && j.jointType !== "fixed";
 
@@ -51,111 +26,36 @@ interface LoadModelProps {
 }
 
 const LoadModel: React.FC<LoadModelProps> = ({ filepath }) => {
-  const [hovered, setHovered] = useState<THREE.Object3D | null>(null);
-  const { camera, gl } = useThree();
   const ref = useRef<THREE.Object3D | null>(null);
 
-  const robot = useLoader(URDFLoader, filepath) as THREE.Group;
-
-  // Configure loader
-  useEffect(() => {
-    const configureLoader = (loader: any) => {
-      loader.loadMeshFunc = (
-        path: string,
-        manager: THREE.LoadingManager,
-        done: (mesh: THREE.Object3D | null, err?: Error | undefined) => void,
-      ) => {
-        new STLLoader(manager).load(
-          path,
-          (result) => {
-            const material = new THREE.MeshPhongMaterial();
-            const mesh = new THREE.Mesh(result, material);
-            done(mesh);
-          },
-          undefined,
-          (err) => done(null, err as Error | undefined),
-        );
-      };
-      loader.fetchOptions = {
-        headers: { Accept: "application/vnd.github.v3.raw" },
-      };
+  const robot = useLoader(URDFLoader, filepath, (loader) => {
+    // Configure loader
+    loader.loadMeshFunc = (
+      path: string,
+      manager: THREE.LoadingManager,
+      done: (mesh: THREE.Object3D | null, err?: Error | undefined) => void,
+    ) => {
+      new STLLoader(manager).load(
+        path,
+        (result) => {
+          const material = new THREE.MeshPhongMaterial();
+          const mesh = new THREE.Mesh(result, material);
+          done(mesh);
+        },
+        undefined,
+        (err) => done(null, err as Error | undefined),
+      );
     };
-
-    if (robot) {
-      configureLoader(robot);
-    }
-  }, [robot]);
-
-  const highlightMaterial = useMemo(
-    () =>
-      new THREE.MeshPhongMaterial({
-        shininess: 10,
-        color: "#FFFFFF",
-        emissive: "#FFFFFF",
-        emissiveIntensity: 0.25,
-      }),
-    [],
-  );
-
-  const highlightLinkGeometry = useCallback(
-    (m: THREE.Object3D | null, revert: boolean) => {
-      if (!m) return;
-      const traverse = (c: THREE.Object3D) => {
-        if (c instanceof THREE.Mesh) {
-          if (revert) {
-            c.material = (c as any).__origMaterial;
-            delete (c as any).__origMaterial;
-          } else {
-            (c as any).__origMaterial = c.material;
-            c.material = highlightMaterial;
-          }
-        }
-        if (c === m || !isJoint(c)) {
-          for (let i = 0; i < c.children.length; i++) {
-            traverse(c.children[i]);
-          }
-        }
-      };
-      traverse(m);
-    },
-    [highlightMaterial],
-  );
-
-  const onMouseMove = useCallback(
-    (event: MouseEvent) => {
-      try {
-        if (!robot) return;
-
-        toMouseCoord(gl.domElement, event, mouse);
-        const collision = getCollisions(camera, robot, mouse).shift() || null;
-        if (collision) {
-          const joint = findNearestJoint(collision.object);
-          if (joint !== hovered) {
-            if (hovered) {
-              highlightLinkGeometry(hovered, true);
-              setHovered(null);
-            }
-            if (joint) {
-              highlightLinkGeometry(joint, false);
-              setHovered(joint);
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Error during onMouseMove:", error);
-      }
-    },
-    [camera, gl, hovered, robot, highlightLinkGeometry],
-  );
-
-  useEffect(() => {
-    if (gl && gl.domElement) {
-      gl.domElement.addEventListener("mousemove", onMouseMove);
-      return () => {
-        gl.domElement.removeEventListener("mousemove", onMouseMove);
-      };
-    }
-  }, [gl, onMouseMove]);
+    loader.fetchOptions = {
+      headers: { Accept: "application/vnd.github.v3.raw" },
+    };
+    loader.packages = {
+      "atlas_description": "https://raw.githubusercontent.com/openai/roboschool/1.0.49/roboschool/models_robot/atlas_description",
+      "r2_description": "https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description",
+      "urdf": "https://raw.githubusercontent.com/adubredu/DigitRobot.jl/main/urdf",
+      "multisense_sl_description": "https://raw.githubusercontent.com/openai/roboschool/1.0.49/roboschool/models_robot/multisense_sl_description",
+    };
+  }) as THREE.Group;
 
   return (
     <mesh
@@ -173,7 +73,9 @@ export const URDFComponent = () => {
   const urlParams = new URLSearchParams(window.location.search);
   const modelPath =
     urlParams.get("filepath") ||
-    "https://raw.githubusercontent.com/vrtnis/robot-web-viewer/main/public/urdf/robot.urdf";
+    "https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2c1.urdf";
+  // "https://raw.githubusercontent.com/adubredu/DigitRobot.jl/main/urdf/digit_model.urdf";
+  // "https://raw.githubusercontent.com/openai/roboschool/1.0.49/roboschool/models_robot/atlas_description/urdf/atlas_v4_with_multisense.urdf";
   const containerStyle = {
     width: '100vw',
     height: '100vh',
@@ -182,6 +84,7 @@ export const URDFComponent = () => {
   return (
     <div style={containerStyle}>
       <Canvas camera={{ position: [0, 5, 10] }}>
+        <ambientLight intensity={0.5} />
         <hemisphereLight
           color={"#455A64"}
           groundColor={"#000"}
