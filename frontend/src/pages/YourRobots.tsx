@@ -117,12 +117,12 @@ const YourRobots = () => {
         <Row className="mt-3">
           {pageNumber > 1 && (
             <Col>
-              <Link to={"/robots/" + (pageNumber - 1)}>Previous Page</Link>
+              <Link to={"/robots/your/" + (pageNumber - 1)}>Previous Page</Link>
             </Col>
           )}
           {moreRobots && (
             <Col className="text-end">
-              <Link to={"/robots/" + (pageNumber + 1)}>Next Page</Link>
+              <Link to={"/robots/your/" + (pageNumber + 1)}>Next Page</Link>
             </Col>
           )}
         </Row>
