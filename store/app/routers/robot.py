@@ -25,7 +25,7 @@ async def list_robots(
 ) -> tuple[List[Robot], bool]:
     """Lists the robots in the database.
 
-    The function is paginated. The page size is 18.
+    The function is paginated. The page size is 12.
 
     Returns the robots on the page and a boolean indicating if there are more pages.
     """

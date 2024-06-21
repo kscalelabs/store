@@ -151,10 +151,85 @@ const PartDetails = () => {
               </Markdown>
             </Col>
           </Row>
+          {part.owner === userId && (
+            <>
+              <Row className="mt-2 row-two">
+                <Col md={6} sm={12}>
+                  <TCButton
+                    variant="primary"
+                    size="lg"
+                    style={{
+                      backgroundColor: "light-green",
+                      borderColor: "",
+                      padding: "10px",
+                      width: "100%",
+                    }}
+                    onClick={() => {
+                      navigate(`/edit-part/${id}/`);
+                    }}
+                  >
+                    Edit Part
+                  </TCButton>
+                </Col>
+                <Col md={6} sm={12}>
+                  <TCButton
+                    variant="danger"
+                    size="lg"
+                    style={{
+                      backgroundColor: "light-green",
+                      borderColor: "",
+                      padding: "10px",
+                      width: "100%",
+                    }}
+                    onClick={() => {
+                      handleShowDelete();
+                    }}
+                  >
+                    Delete Part
+                  </TCButton>
+                </Col>
+              </Row>
+              <Modal
+                show={showDelete}
+                onHide={handleCloseDelete}
+                fullscreen="md-down"
+                centered
+                size="lg"
+                scrollable
+              >
+                <Modal.Header closeButton>
+                  <Modal.Title>
+                    Are you sure you want to delete this part?
+                  </Modal.Title>
+                </Modal.Header>
+                <Modal.Footer className="d-flex justify-content-start">
+                  <TCButton
+                    variant="danger"
+                    onClick={async () => {
+                      await auth_api.deletePart(id);
+                      navigate(`/parts/your/1`);
+                    }}
+                  >
+                    Delete Part
+                  </TCButton>
+                  <TCButton
+                    variant="outline-secondary"
+                    onClick={() => {
+                      handleCloseDelete();
+                    }}
+                  >
+                    Cancel
+                  </TCButton>
+                </Modal.Footer>
+              </Modal>
+            </>
+          )}
         </Col>
 
+        <Col lg={1} md={0}/>
+
         {images && (
-          <Col lg={6} md={12}>
+          <Col lg={5} md={12}>
             <Carousel
               indicators
               data-bs-theme="dark"
@@ -239,81 +314,6 @@ const PartDetails = () => {
           )}
         </Modal.Footer>
       </Modal>
-      <>
-        {part.owner === userId && (
-          <>
-            <Row className="justify-content-end mt-2">
-              <Col md={3} sm={12}>
-                <TCButton
-                  variant="primary"
-                  size="lg"
-                  style={{
-                    backgroundColor: "light-green",
-                    borderColor: "",
-                    padding: "10px",
-                    width: "100%",
-                  }}
-                  onClick={() => {
-                    navigate(`/edit-part/${id}/`);
-                  }}
-                >
-                  Edit Part
-                </TCButton>
-              </Col>
-              <Col md={3} sm={12}>
-                <TCButton
-                  variant="danger"
-                  size="lg"
-                  style={{
-                    backgroundColor: "light-green",
-                    borderColor: "",
-                    padding: "10px",
-                    width: "100%",
-                  }}
-                  onClick={() => {
-                    handleShowDelete();
-                  }}
-                >
-                  Delete Part
-                </TCButton>
-              </Col>
-            </Row>
-            <Modal
-              show={showDelete}
-              onHide={handleCloseDelete}
-              fullscreen="md-down"
-              centered
-              size="lg"
-              scrollable
-            >
-              <Modal.Header closeButton>
-                <Modal.Title>
-                  Are you sure you want to delete this part?
-                </Modal.Title>
-              </Modal.Header>
-              <Modal.Footer className="d-flex justify-content-start">
-                <TCButton
-                  variant="danger"
-                  onClick={async () => {
-                    await auth_api.deletePart(id);
-                    navigate(`/parts/your/1`);
-                  }}
-                >
-                  Delete Part
-                </TCButton>
-                <TCButton
-                  variant="outline-secondary"
-                  onClick={() => {
-                    handleCloseDelete();
-                  }}
-                >
-                  Cancel
-                </TCButton>
-              </Modal.Footer>
-            </Modal>
-          </>
-        )}
-      </>
     </>
   );
 };

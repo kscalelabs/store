@@ -227,14 +227,87 @@ const RobotDetails = () => {
               </table>
             </Col>
           </Row>
+          {robot.owner === userId && (
+          <>
+            <Row className="mt-2 row-two">
+              <Col md={6} sm={12}>
+                <TCButton
+                  variant="primary"
+                  size="lg"
+                  style={{
+                    backgroundColor: "light-green",
+                    borderColor: "",
+                    padding: "10px",
+                    width: "100%",
+                  }}
+                  onClick={() => {
+                    navigate(`/edit-robot/${id}/`);
+                  }}
+                >
+                  Edit Robot
+                </TCButton>
+              </Col>
+              <Col md={6} sm={12}>
+                <TCButton
+                  variant="danger"
+                  size="lg"
+                  style={{
+                    backgroundColor: "light-green",
+                    borderColor: "",
+                    padding: "10px",
+                    width: "100%",
+                  }}
+                  onClick={() => {
+                    handleShowDelete();
+                  }}
+                >
+                  Delete Robot
+                </TCButton>
+              </Col>
+            </Row>
+            <Modal
+              show={showDelete}
+              onHide={handleCloseDelete}
+              fullscreen="md-down"
+              centered
+              size="lg"
+              scrollable
+            >
+              <Modal.Header closeButton>
+                <Modal.Title>
+                  Are you sure you want to delete this robot?
+                </Modal.Title>
+              </Modal.Header>
+              <Modal.Footer className="d-flex justify-content-start">
+                <TCButton
+                  variant="danger"
+                  onClick={async () => {
+                    await auth_api.deleteRobot(id);
+                    navigate(`/robots/your/1`);
+                  }}
+                >
+                  Delete Robot
+                </TCButton>
+                <TCButton
+                  variant="outline-secondary"
+                  onClick={() => {
+                    handleCloseDelete();
+                  }}
+                >
+                  Cancel
+                </TCButton>
+              </Modal.Footer>
+            </Modal>
+          </>
+        )}
         </Col>
-        <Col lg={6} md={12} className="d-flex align-content-end">
+        <Col lg={1} md={0}/>
+        <Col lg={5} md={12}>
+        <Row style={{backgroundColor: "#272727", height: "50vh"}} className="mb-4">
           <URDFComponent />
-        </Col>
-      </Row>
-      {/* Images */}
-      {images && (
-        <Col lg={6} md={12}>
+          </Row>
+          {images && (
+        <Row>
           <Carousel
             indicators
             data-bs-theme="dark"
@@ -275,8 +348,10 @@ const RobotDetails = () => {
               </Carousel.Item>
             ))}
           </Carousel>
-        </Col>
+        </Row>
       )}
+        </Col>
+      </Row>
       <Modal
         show={show}
         onHide={handleClose}
@@ -330,81 +405,6 @@ const RobotDetails = () => {
           )}
         </Modal.Footer>
       </Modal>
-      <>
-        {robot.owner === userId && (
-          <>
-            <Row className="justify-content-end mt-2">
-              <Col md={3} sm={12}>
-                <TCButton
-                  variant="primary"
-                  size="lg"
-                  style={{
-                    backgroundColor: "light-green",
-                    borderColor: "",
-                    padding: "10px",
-                    width: "100%",
-                  }}
-                  onClick={() => {
-                    navigate(`/edit-robot/${id}/`);
-                  }}
-                >
-                  Edit Robot
-                </TCButton>
-              </Col>
-              <Col md={3} sm={12}>
-                <TCButton
-                  variant="danger"
-                  size="lg"
-                  style={{
-                    backgroundColor: "light-green",
-                    borderColor: "",
-                    padding: "10px",
-                    width: "100%",
-                  }}
-                  onClick={() => {
-                    handleShowDelete();
-                  }}
-                >
-                  Delete Robot
-                </TCButton>
-              </Col>
-            </Row>
-            <Modal
-              show={showDelete}
-              onHide={handleCloseDelete}
-              fullscreen="md-down"
-              centered
-              size="lg"
-              scrollable
-            >
-              <Modal.Header closeButton>
-                <Modal.Title>
-                  Are you sure you want to delete this robot?
-                </Modal.Title>
-              </Modal.Header>
-              <Modal.Footer className="d-flex justify-content-start">
-                <TCButton
-                  variant="danger"
-                  onClick={async () => {
-                    await auth_api.deleteRobot(id);
-                    navigate(`/robots/your/1`);
-                  }}
-                >
-                  Delete Robot
-                </TCButton>
-                <TCButton
-                  variant="outline-secondary"
-                  onClick={() => {
-                    handleCloseDelete();
-                  }}
-                >
-                  Cancel
-                </TCButton>
-              </Modal.Footer>
-            </Modal>
-          </>
-        )}
-      </>
     </>
   );
 };

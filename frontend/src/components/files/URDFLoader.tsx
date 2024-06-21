@@ -68,12 +68,11 @@ export const URDFComponent = () => {
   // "https://raw.githubusercontent.com/is2ac2/URDF/main/urdf/robot.urdf";
 
   const containerStyle = {
-    width: "100vw",
-    height: "100vh",
+    width: "50vw",
+    height: "50vh",
     backgroundColor: "#272727",
   };
   return (
-    <div style={containerStyle}>
       <Canvas camera={{ position: [0, 5, 10] }}>
         <ambientLight intensity={0.5} />
         <hemisphereLight
@@ -95,6 +94,5 @@ export const URDFComponent = () => {
         <OrbitControls zoomSpeed={0.3} />
         <axesHelper />
       </Canvas>
-    </div>
   );
 };
