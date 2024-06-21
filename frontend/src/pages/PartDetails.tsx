@@ -40,6 +40,7 @@ const PartDetails = () => {
 
   const handleClose = () => setShow(false);
 
+  const handleShow = () => setShow(true);
   const handleShowDelete = () => setShowDelete(true);
   const handleCloseDelete = () => setShowDelete(false);
 
@@ -159,6 +160,7 @@ const PartDetails = () => {
               data-bs-theme="dark"
               style={{ border: "1px solid #ccc" }}
               interval={null}
+              controls={images.length > 1}
             >
               {images.map((image, key) => (
                 <Carousel.Item key={key}>
@@ -168,6 +170,9 @@ const PartDetails = () => {
                       alignItems: "center",
                       justifyContent: "center",
                       overflow: "hidden",
+                    }}
+                    onClick={() => {
+                      handleShow();
                     }}
                   >
                     <ImageComponent imageId={images[key].url} />
@@ -210,24 +215,28 @@ const PartDetails = () => {
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <ButtonGroup>
-            <TCButton
-              variant="primary"
-              onClick={() => {
-                setImageIndex((imageIndex - 1 + images.length) % images.length);
-              }}
-            >
-              Previous
-            </TCButton>
-            <TCButton
-              variant="primary"
-              onClick={() => {
-                setImageIndex((imageIndex + 1) % images.length);
-              }}
-            >
-              Next
-            </TCButton>
-          </ButtonGroup>
+          {images.length > 1 && (
+            <ButtonGroup>
+              <TCButton
+                variant="primary"
+                onClick={() => {
+                  setImageIndex(
+                    (imageIndex - 1 + images.length) % images.length,
+                  );
+                }}
+              >
+                Previous
+              </TCButton>
+              <TCButton
+                variant="primary"
+                onClick={() => {
+                  setImageIndex((imageIndex + 1) % images.length);
+                }}
+              >
+                Next
+              </TCButton>
+            </ButtonGroup>
+          )}
         </Modal.Footer>
       </Modal>
       <>
