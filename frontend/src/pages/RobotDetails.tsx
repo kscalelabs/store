@@ -1,9 +1,10 @@
+import TCButton from "components/files/TCButton";
+import { URDFComponent } from "components/files/URDFLoader";
 import ImageComponent from "components/files/ViewImage";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Bom } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
-import { URDFComponent } from "components/files/URDFLoader";
 import {
   Breadcrumb,
   ButtonGroup,
@@ -17,7 +18,6 @@ import {
 import Markdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { isFulfilled } from "utils/isfullfiled";
-import TCButton from "components/files/TCButton";
 
 interface RobotDetailsResponse {
   name: string;
@@ -163,27 +163,27 @@ const RobotDetails = () => {
             (response.weight && response.weight !== "") ||
             (response.degrees_of_freedom &&
               response.degrees_of_freedom !== "")) && (
-              <>
-                <hr />
-                {response.height !== "" && (
-                  <p className="text-muted">
-                    <strong>Height:</strong> {response.height}
-                  </p>
-                )}
-                {response.weight !== "" && (
-                  <p className="text-muted">
-                    <strong>Weight: </strong>
-                    {response.weight}
-                  </p>
-                )}
-                {response.degrees_of_freedom !== "" && (
-                  <p className="text-muted">
-                    <strong>Total Degrees of Freedom:</strong>{" "}
-                    {response.degrees_of_freedom}
-                  </p>
-                )}
-              </>
-            )}
+            <>
+              <hr />
+              {response.height !== "" && (
+                <p className="text-muted">
+                  <strong>Height:</strong> {response.height}
+                </p>
+              )}
+              {response.weight !== "" && (
+                <p className="text-muted">
+                  <strong>Weight: </strong>
+                  {response.weight}
+                </p>
+              )}
+              {response.degrees_of_freedom !== "" && (
+                <p className="text-muted">
+                  <strong>Total Degrees of Freedom:</strong>{" "}
+                  {response.degrees_of_freedom}
+                </p>
+              )}
+            </>
+          )}
           <hr />
           <Row>
             <Col>
@@ -233,8 +233,7 @@ const RobotDetails = () => {
         <Col lg={6} md={12} className="d-flex align-content-end">
           <URDFComponent />
         </Col>
-
-      </Row >
+      </Row>
       {/* Images */}
       {images && (
         <Col lg={6} md={12}>

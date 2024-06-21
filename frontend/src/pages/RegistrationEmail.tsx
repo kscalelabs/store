@@ -1,9 +1,9 @@
+import TCButton from "components/files/TCButton";
 import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { FormEvent, useState } from "react";
-import { Button, Col, Container, Form, Row, Spinner } from "react-bootstrap";
-import TCButton from "components/files/TCButton";
+import { Col, Container, Form, Row, Spinner } from "react-bootstrap";
 
 const RegistrationEmail = () => {
   const auth = useAuthentication();

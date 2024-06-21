@@ -1,9 +1,9 @@
 import imageCompression from "browser-image-compression";
+import TCButton from "components/files/TCButton";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import React, { useState } from "react";
-import { Alert, Button, Col, Form } from "react-bootstrap";
-import TCButton from "components/files/TCButton";
+import { Alert, Col, Form } from "react-bootstrap";
 
 interface ImageUploadProps {
   onUploadSuccess: (url: string) => void;

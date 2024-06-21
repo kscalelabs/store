@@ -1,10 +1,10 @@
+import TCButton from "components/files/TCButton";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Image } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import {
   Breadcrumb,
-  Button,
   ButtonGroup,
   Carousel,
   Col,
@@ -15,7 +15,6 @@ import {
 } from "react-bootstrap";
 import Markdown from "react-markdown";
 import { useNavigate, useParams } from "react-router-dom";
-import TCButton from "components/files/TCButton";
 
 interface PartDetailsResponse {
   part_name: string;

@@ -1,8 +1,8 @@
+import TCButton from "components/files/TCButton";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { FormEvent, useState } from "react";
-import { Button, Form } from "react-bootstrap";
-import TCButton from "components/files/TCButton";
+import { Form } from "react-bootstrap";
 
 const Forgot = () => {
   const auth = useAuthentication();

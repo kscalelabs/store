@@ -1,20 +1,12 @@
 import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import TCButton from "components/files/TCButton";
 import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useRef, useState } from "react";
-import {
-  Button,
-  Col,
-  Form,
-  InputGroup,
-  Overlay,
-  Row,
-  Tooltip,
-} from "react-bootstrap";
+import { Col, Form, InputGroup, Overlay, Row, Tooltip } from "react-bootstrap";
 import { CheckCircle } from "react-bootstrap-icons";
-import TCButton from "components/files/TCButton";
 const isValidEmail = (email: string) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };

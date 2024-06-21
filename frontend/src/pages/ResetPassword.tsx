@@ -1,10 +1,10 @@
+import TCButton from "components/files/TCButton";
 import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { FormEvent, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import { useParams } from "react-router-dom";
-import TCButton from "components/files/TCButton";
 
 const ResetPassword = () => {
   const auth = useAuthentication();

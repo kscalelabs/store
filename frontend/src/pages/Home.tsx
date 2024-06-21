@@ -1,9 +1,9 @@
+import TCButton from "components/files/TCButton";
 import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
 import React from "react";
-import { Button, Card, Col, Row } from "react-bootstrap";
+import { Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
-import TCButton from "components/files/TCButton";
 
 const Home: React.FC = () => {
   const { theme } = useTheme();

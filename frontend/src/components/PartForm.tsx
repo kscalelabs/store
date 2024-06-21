@@ -1,9 +1,9 @@
+import TCButton from "components/files/TCButton";
 import { Image } from "hooks/api";
 import { Theme } from "hooks/theme";
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
-import { Button, Col, Form, Row } from "react-bootstrap";
+import { Col, Form, Row } from "react-bootstrap";
 import ImageUploadComponent from "./files/UploadImage";
-import TCButton from "components/files/TCButton";
 
 interface PartFormProps {
   theme: Theme;

@@ -1,10 +1,10 @@
+import TCButton from "components/files/TCButton";
 import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { FormEvent, useEffect, useState } from "react";
-import { Button, Col, Container, Form, Row, Spinner } from "react-bootstrap";
+import { Col, Container, Form, Row, Spinner } from "react-bootstrap";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import TCButton from "components/files/TCButton";
 
 const Register = () => {
   const auth = useAuthentication();

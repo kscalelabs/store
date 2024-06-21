@@ -56,16 +56,16 @@ const LoadModel: React.FC<LoadModelProps> = ({ filepath }) => {
   );
 };
 
-export const URDFComponent = () => {
+export const InputerURDFComponent = () => {
   // Parse URL parameter
   const urlParams = new URLSearchParams(window.location.search);
   const modelPath =
     urlParams.get("filepath") ||
-    "https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2c1.urdf";
-  // "https://raw.githubusercontent.com/adubredu/DigitRobot.jl/main/urdf/digit_model.urdf";
-  // "https://raw.githubusercontent.com/openai/roboschool/1.0.49/roboschool/models_robot/atlas_description/urdf/atlas_v4_with_multisense.urdf";
-  // "https://raw.githubusercontent.com/vrtnis/robot-web-viewer/main/public/urdf/robot.urdf";
-  // "https://raw.githubusercontent.com/is2ac2/URDF/main/urdf/robot.urdf";
+    // "https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2c1.urdf";
+    // "https://raw.githubusercontent.com/adubredu/DigitRobot.jl/main/urdf/digit_model.urdf";
+    // "https://raw.githubusercontent.com/openai/roboschool/1.0.49/roboschool/models_robot/atlas_description/urdf/atlas_v4_with_multisense.urdf";
+    // "https://raw.githubusercontent.com/vrtnis/robot-web-viewer/main/public/urdf/robot.urdf";
+    "https://raw.githubusercontent.com/is2ac2/URDF/main/urdf/robot.urdf";
 
   const containerStyle = {
     width: "100vw",
