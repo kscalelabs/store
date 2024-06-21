@@ -273,9 +273,11 @@ export class api {
     return map;
   }
 
-  public async getYourRobots(): Promise<Robot[]> {
+  public async getYourRobots(page: number): Promise<[Robot[], boolean]> {
     try {
-      const response = await this.api.get("/robots/your/");
+      const response = await this.api.get("/robots/your/", {
+        params: { page },
+      });
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {

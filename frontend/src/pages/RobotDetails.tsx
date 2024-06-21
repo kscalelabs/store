@@ -382,7 +382,7 @@ const RobotDetails = () => {
                   variant="danger"
                   onClick={async () => {
                     await auth_api.deleteRobot(id);
-                    navigate(`/robots/your/`);
+                    navigate(`/robots/your/1`);
                   }}
                 >
                   Delete Robot

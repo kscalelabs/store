@@ -65,7 +65,7 @@ const App = () => {
                   <Route path="/parts/" element={<Parts />} />
                   <Route path="/part/:id" element={<PartDetails />} />
                   <Route path="/edit-part/:id" element={<EditPartForm />} />
-                  <Route path="robots/your" element={<YourRobots />} />
+                  <Route path="robots/your/:page" element={<YourRobots />} />
                   <Route path="/parts/your" element={<YourParts />} />
                   <Route path="/404" element={<NotFound />} />
                   <Route path="*" element={<NotFoundRedirect />} />

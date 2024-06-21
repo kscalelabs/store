@@ -6,6 +6,8 @@ from typing import List, Optional
 from fastapi import UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from boto3.dynamodb.conditions import Key
+
 
 from store.app.crud.base import BaseCrud
 from store.app.model import Bom, Image, Part, Robot
@@ -51,6 +53,14 @@ class RobotCrud(BaseCrud):
     async def list_robots(self, page: int = 1, items_per_page: int = 18) -> tuple[list[Robot], bool]:
         table = await self.db.Table("Robots")
         response = await table.scan()
+        return [
+            Robot.model_validate(item)
+            for item in response["Items"][(page - 1) * items_per_page : page * items_per_page]
+        ], page * items_per_page < response["Count"]
+
+    async def list_your_robots(self, user_id: str, page: int = 1, items_per_page: int = 18) -> tuple[list[Robot], bool]:
+        table = await self.db.Table("Robots")
+        response = await table.query(IndexName="ownerIndex", KeyConditionExpression=Key("owner").eq(user_id))
         return [
             Robot.model_validate(item)
             for item in response["Items"][(page - 1) * items_per_page : page * items_per_page]
@@ -129,7 +139,6 @@ class RobotCrud(BaseCrud):
             ExpressionAttributeNames=expression_attribute_names,
             ReturnValues="NONE",
         )
-
 
     async def get_image(self, url: str) -> StreamingResponse:
         s3_object = await (await (await self.s3.Bucket("images")).Object(url)).get()

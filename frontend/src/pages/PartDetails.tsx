@@ -23,6 +23,8 @@ interface PartDetailsResponse {
   images: Image[];
 }
 
+import ImageComponent from "components/files/ViewImage";
+
 const PartDetails = () => {
   const { addAlert } = useAlertQueue();
   const auth = useAuthentication();
@@ -37,7 +39,6 @@ const PartDetails = () => {
   const [showDelete, setShowDelete] = useState(false);
 
   const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
 
   const handleShowDelete = () => setShowDelete(true);
   const handleCloseDelete = () => setShowDelete(false);
@@ -169,16 +170,7 @@ const PartDetails = () => {
                       overflow: "hidden",
                     }}
                   >
-                    <img
-                      className="d-block rounded-lg"
-                      style={{ width: "100%", aspectRatio: "1/1" }}
-                      src={image.url}
-                      alt={image.caption}
-                      onClick={() => {
-                        setImageIndex(key);
-                        handleShow();
-                      }}
-                    />
+                    <ImageComponent imageId={images[key].url} />
                   </div>
                   <Carousel.Caption
                     style={{
@@ -214,11 +206,7 @@ const PartDetails = () => {
         </Modal.Header>
         <Modal.Body>
           <div style={{ display: "flex", justifyContent: "center" }}>
-            <img
-              style={{ width: "95%", aspectRatio: "1/1" }}
-              src={images[imageIndex].url}
-              alt={images[imageIndex].caption}
-            />
+            <ImageComponent imageId={images[imageIndex].url} />
           </div>
         </Modal.Body>
         <Modal.Footer>

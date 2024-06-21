@@ -44,7 +44,7 @@ const Home: React.FC = () => {
                   width: "100%",
                 }}
                 onClick={() => {
-                  navigate("/robots/your/");
+                  navigate("/robots/your/1");
                 }}
               >
                 View Your Robots

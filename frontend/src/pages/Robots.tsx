@@ -55,7 +55,7 @@ const Robots = () => {
       }
     };
     fetch_robots();
-  }, []);
+  }, [pageNumber]);
   const navigate = useNavigate();
 
   if (!robotsData) {
@@ -123,10 +123,20 @@ const Robots = () => {
           </Col>
         ))}
       </Row>
-      {(pageNumber > 1 || moreRobots) && <Row className="mt-3">
-        {pageNumber > 1 && <Col><Link to={"/robots/" + (pageNumber - 1)}>Previous Page</Link></Col>}
-        {moreRobots && <Col className="text-end"><Link to={"/robots/" + (pageNumber + 1)}>Next Page</Link></Col>}
-      </Row>}
+      {(pageNumber > 1 || moreRobots) && (
+        <Row className="mt-3">
+          {pageNumber > 1 && (
+            <Col>
+              <Link to={"/robots/" + (pageNumber - 1)}>Previous Page</Link>
+            </Col>
+          )}
+          {moreRobots && (
+            <Col className="text-end">
+              <Link to={"/robots/" + (pageNumber + 1)}>Next Page</Link>
+            </Col>
+          )}
+        </Row>
+      )}
     </>
   );
 };

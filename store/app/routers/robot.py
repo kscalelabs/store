@@ -33,17 +33,15 @@ async def list_robots(
 
 @robots_router.get("/your/")
 async def list_your_robots(
-    crud: Annotated[Crud, Depends(Crud.get)], token: Annotated[str, Depends(get_session_token)]
-) -> List[Robot]:
-    try:
-        user_id = await crud.get_user_id_from_session_token(token)
-        if user_id is None:
-            raise HTTPException(status_code=401, detail="Must be logged in to view your robots")
-        total = await crud.list_robots()
-        user_robots = [robot for robot in total if str(robot.owner) == str(user_id)]
-        return user_robots
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    crud: Annotated[Crud, Depends(Crud.get)],
+    token: Annotated[str, Depends(get_session_token)],
+    page: int = Query(description="Page number for pagination"),
+) -> tuple[List[Robot], bool]:
+    """Lists the robots that you own."""
+
+    user_id = await crud.get_user_id_from_session_token(token)
+
+    return await crud.list_your_robots(user_id, page)
 
 
 @robots_router.get("/{robot_id}")
