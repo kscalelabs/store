@@ -40,7 +40,7 @@ const NewRobot: React.FC = () => {
     try {
       await auth_api.addRobot(newFormData);
       setMessage(`Robot added successfully.`);
-      navigate(`/robots/your/`);
+      navigate(`/robots/your/1`);
     } catch (error) {
       setMessage("Error adding robot ");
     }
@@ -49,7 +49,7 @@ const NewRobot: React.FC = () => {
   useEffect(() => {
     const fetchParts = async () => {
       try {
-        const partsQuery = await auth_api.getParts();
+        const partsQuery = await auth_api.dumpParts();
         setParts(partsQuery);
       } catch (err) {
         console.error(err);

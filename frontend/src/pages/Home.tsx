@@ -17,7 +17,7 @@ const Home: React.FC = () => {
       </Row>
       <Row className="row-two">
         <Col md={6} sm={12}>
-          <Card onClick={() => navigate(`/robots`)}>
+          <Card onClick={() => navigate(`/robots/1`)}>
             <Card.Body>
               <Card.Title>Browse Robots</Card.Title>
               <Card.Text>Buy and sell robots</Card.Text>
@@ -25,7 +25,7 @@ const Home: React.FC = () => {
           </Card>
         </Col>
         <Col md={6} sm={12}>
-          <Card onClick={() => navigate(`/parts`)}>
+          <Card onClick={() => navigate(`/parts/1`)}>
             <Card.Body>
               <Card.Title>Browse Parts</Card.Title>
               <Card.Text>Buy and sell robot parts</Card.Text>
@@ -44,7 +44,7 @@ const Home: React.FC = () => {
                   width: "100%",
                 }}
                 onClick={() => {
-                  navigate("/robots/your/");
+                  navigate("/robots/your/1");
                 }}
               >
                 View Your Robots
@@ -58,7 +58,7 @@ const Home: React.FC = () => {
                   width: "100%",
                 }}
                 onClick={() => {
-                  navigate("/parts/your/");
+                  navigate("/parts/your/1");
                 }}
               >
                 View Your Parts

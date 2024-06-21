@@ -57,6 +57,7 @@ async def create_tables(crud: Crud | None = None, deletion_protection: bool = Fa
                 gsis=[
                     ("ownerIndex", "owner", "S", "HASH"),
                     ("nameIndex", "name", "S", "HASH"),
+                    ("timestampIndex", "timestamp", "N", "HASH"),
                 ],
                 deletion_protection=deletion_protection,
             ),
@@ -68,6 +69,7 @@ async def create_tables(crud: Crud | None = None, deletion_protection: bool = Fa
                 gsis=[
                     ("ownerIndex", "owner", "S", "HASH"),
                     ("nameIndex", "name", "S", "HASH"),
+                    ("timestampIndex", "timestamp", "N", "HASH"),
                 ],
                 deletion_protection=deletion_protection,
             ),

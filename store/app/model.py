@@ -51,11 +51,13 @@ class Robot(BaseModel):
     height: Optional[str] = ""
     weight: Optional[str] = ""
     degrees_of_freedom: Optional[str] = ""
+    timestamp: int
 
 
 class Part(BaseModel):
     part_id: str  # Primary key
-    part_name: str
+    name: str
     owner: str
     description: str
     images: list[Image]
+    timestamp: int

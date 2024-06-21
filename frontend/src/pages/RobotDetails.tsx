@@ -32,7 +32,7 @@ interface RobotDetailsResponse {
 interface ExtendedBom {
   part_id: string;
   quantity: number;
-  part_name: string;
+  name: string;
 }
 
 const RobotDetails = () => {
@@ -64,7 +64,7 @@ const RobotDetails = () => {
         setOwnerUsername(ownerUsername);
         const parts = robotData.bom.map(async (part) => {
           return {
-            part_name: (await auth_api.getPartById(part.part_id)).part_name,
+            name: (await auth_api.getPartById(part.part_id)).name,
             part_id: part.part_id,
             quantity: part.quantity,
           };
@@ -142,7 +142,7 @@ const RobotDetails = () => {
     <>
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
-        <Breadcrumb.Item onClick={() => navigate("/robots/")}>
+        <Breadcrumb.Item onClick={() => navigate("/robots/1")}>
           Robots
         </Breadcrumb.Item>
         <Breadcrumb.Item active>{name} </Breadcrumb.Item>
@@ -217,9 +217,7 @@ const RobotDetails = () => {
                   {parts.map((part, key) => (
                     <tr key={key}>
                       <td>
-                        <Link to={`/part/${part.part_id}`}>
-                          {part.part_name}
-                        </Link>
+                        <Link to={`/part/${part.part_id}`}>{part.name}</Link>
                       </td>
                       <td>{part.quantity}</td>
                     </tr>
@@ -382,7 +380,7 @@ const RobotDetails = () => {
                   variant="danger"
                   onClick={async () => {
                     await auth_api.deleteRobot(id);
-                    navigate(`/robots/your/`);
+                    navigate(`/robots/your/1`);
                   }}
                 >
                   Delete Robot

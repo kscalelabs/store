@@ -8,7 +8,7 @@ interface PartFormProps {
   theme: Theme;
   title: string;
   message: string;
-  part_name: string;
+  name: string;
   setName: Dispatch<SetStateAction<string>>;
   part_description: string;
   setDescription: Dispatch<SetStateAction<string>>;
@@ -21,7 +21,7 @@ const PartForm: React.FC<PartFormProps> = ({
   theme,
   title,
   message,
-  part_name,
+  name,
   setName,
   part_description,
   setDescription,
@@ -67,7 +67,7 @@ const PartForm: React.FC<PartFormProps> = ({
           onChange={(e) => {
             setName(e.target.value);
           }}
-          value={part_name}
+          value={name}
           required
         />
         <label htmlFor="desc">Description</label>

@@ -17,7 +17,7 @@ const EditPartForm: React.FC = () => {
 
   // States.
   const [message, setMessage] = useState<string>("");
-  const [Part_name, setName] = useState<string>("");
+  const [name, setName] = useState<string>("");
   const [Part_description, setDescription] = useState<string>("");
   const [Part_images, setImages] = useState<Image[]>([]);
   const [Part_id, setPartId] = useState<string>("");
@@ -28,7 +28,7 @@ const EditPartForm: React.FC = () => {
     const fetchPart = async () => {
       try {
         const PartData = await auth_api.getPartById(id);
-        setName(PartData.part_name);
+        setName(PartData.name);
         setDescription(PartData.description);
         setImages(PartData.images);
         setPartId(PartData.part_id);
@@ -48,7 +48,7 @@ const EditPartForm: React.FC = () => {
     }
     const newFormData: Part = {
       part_id: Part_id,
-      part_name: Part_name,
+      name: name,
       description: Part_description,
       owner: "",
       images: Part_images,
@@ -56,7 +56,7 @@ const EditPartForm: React.FC = () => {
     try {
       await auth_api.editPart(newFormData);
       setMessage(`Part edited successfully.`);
-      navigate(`/parts/your/`);
+      navigate(`/parts/your/1`);
     } catch (error) {
       setMessage("Error adding part ");
     }
@@ -67,7 +67,7 @@ const EditPartForm: React.FC = () => {
       theme={theme}
       title="Edit Part"
       message={message}
-      part_name={Part_name}
+      name={name}
       setName={setName}
       part_description={Part_description}
       setDescription={setDescription}
