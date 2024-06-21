@@ -33,12 +33,17 @@ const LoadModel: React.FC<LoadModelProps> = ({ filepath }) => {
     };
     loader.fetchOptions = {
       headers: { Accept: "application/vnd.github.v3.raw" },
+      packages: {} as { [key: string]: string },
     };
+    if (typeof loader.packages !== "object") {
+      loader.packages = {};
+    }
     const urls = [
+      "https://raw.githubusercontent.com/openai/roboschool/1.0.49/roboschool/models_robot/atlas_description/urdf/atlas_v4_with_multisense.urdf",
       "atlas_description",
       "https://raw.githubusercontent.com/openai/roboschool/1.0.49/roboschool/models_robot/atlas_description",
-    ]
-    for (let i = 1; i < urls.length; i += 2) {
+    ];
+    for (let i = 0; i < urls.length; i += 2) {
       loader.packages[urls[i]] = urls[i + 1];
     }
     // loader.packages = {

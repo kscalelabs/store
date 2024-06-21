@@ -1,5 +1,6 @@
 import TCButton from "components/files/TCButton";
 import { URDFComponent } from "components/files/URDFLoader";
+import { InputerURDFComponent } from "components/files/InputerURDFLoader";
 import ImageComponent from "components/files/ViewImage";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Bom } from "hooks/api";
@@ -163,27 +164,27 @@ const RobotDetails = () => {
             (response.weight && response.weight !== "") ||
             (response.degrees_of_freedom &&
               response.degrees_of_freedom !== "")) && (
-            <>
-              <hr />
-              {response.height !== "" && (
-                <p className="text-muted">
-                  <strong>Height:</strong> {response.height}
-                </p>
-              )}
-              {response.weight !== "" && (
-                <p className="text-muted">
-                  <strong>Weight: </strong>
-                  {response.weight}
-                </p>
-              )}
-              {response.degrees_of_freedom !== "" && (
-                <p className="text-muted">
-                  <strong>Total Degrees of Freedom:</strong>{" "}
-                  {response.degrees_of_freedom}
-                </p>
-              )}
-            </>
-          )}
+              <>
+                <hr />
+                {response.height !== "" && (
+                  <p className="text-muted">
+                    <strong>Height:</strong> {response.height}
+                  </p>
+                )}
+                {response.weight !== "" && (
+                  <p className="text-muted">
+                    <strong>Weight: </strong>
+                    {response.weight}
+                  </p>
+                )}
+                {response.degrees_of_freedom !== "" && (
+                  <p className="text-muted">
+                    <strong>Total Degrees of Freedom:</strong>{" "}
+                    {response.degrees_of_freedom}
+                  </p>
+                )}
+              </>
+            )}
           <hr />
           <Row>
             <Col>
@@ -228,128 +229,130 @@ const RobotDetails = () => {
             </Col>
           </Row>
           {robot.owner === userId && (
-          <>
-            <Row className="mt-2 row-two">
-              <Col md={6} sm={12}>
-                <TCButton
-                  variant="primary"
-                  size="lg"
-                  style={{
-                    backgroundColor: "light-green",
-                    borderColor: "",
-                    padding: "10px",
-                    width: "100%",
-                  }}
-                  onClick={() => {
-                    navigate(`/edit-robot/${id}/`);
-                  }}
-                >
-                  Edit Robot
-                </TCButton>
-              </Col>
-              <Col md={6} sm={12}>
-                <TCButton
-                  variant="danger"
-                  size="lg"
-                  style={{
-                    backgroundColor: "light-green",
-                    borderColor: "",
-                    padding: "10px",
-                    width: "100%",
-                  }}
-                  onClick={() => {
-                    handleShowDelete();
-                  }}
-                >
-                  Delete Robot
-                </TCButton>
-              </Col>
-            </Row>
-            <Modal
-              show={showDelete}
-              onHide={handleCloseDelete}
-              fullscreen="md-down"
-              centered
-              size="lg"
-              scrollable
-            >
-              <Modal.Header closeButton>
-                <Modal.Title>
-                  Are you sure you want to delete this robot?
-                </Modal.Title>
-              </Modal.Header>
-              <Modal.Footer className="d-flex justify-content-start">
-                <TCButton
-                  variant="danger"
-                  onClick={async () => {
-                    await auth_api.deleteRobot(id);
-                    navigate(`/robots/your/1`);
-                  }}
-                >
-                  Delete Robot
-                </TCButton>
-                <TCButton
-                  variant="outline-secondary"
-                  onClick={() => {
-                    handleCloseDelete();
-                  }}
-                >
-                  Cancel
-                </TCButton>
-              </Modal.Footer>
-            </Modal>
-          </>
-        )}
+            <>
+              <Row className="mt-2 row-two">
+                <Col md={6} sm={12}>
+                  <TCButton
+                    variant="primary"
+                    size="lg"
+                    style={{
+                      backgroundColor: "light-green",
+                      borderColor: "",
+                      padding: "10px",
+                      width: "100%",
+                    }}
+                    onClick={() => {
+                      navigate(`/edit-robot/${id}/`);
+                    }}
+                  >
+                    Edit Robot
+                  </TCButton>
+                </Col>
+                <Col md={6} sm={12}>
+                  <TCButton
+                    variant="danger"
+                    size="lg"
+                    style={{
+                      backgroundColor: "light-green",
+                      borderColor: "",
+                      padding: "10px",
+                      width: "100%",
+                    }}
+                    onClick={() => {
+                      handleShowDelete();
+                    }}
+                  >
+                    Delete Robot
+                  </TCButton>
+                </Col>
+              </Row>
+              <Modal
+                show={showDelete}
+                onHide={handleCloseDelete}
+                fullscreen="md-down"
+                centered
+                size="lg"
+                scrollable
+              >
+                <Modal.Header closeButton>
+                  <Modal.Title>
+                    Are you sure you want to delete this robot?
+                  </Modal.Title>
+                </Modal.Header>
+                <Modal.Footer className="d-flex justify-content-start">
+                  <TCButton
+                    variant="danger"
+                    onClick={async () => {
+                      await auth_api.deleteRobot(id);
+                      navigate(`/robots/your/1`);
+                    }}
+                  >
+                    Delete Robot
+                  </TCButton>
+                  <TCButton
+                    variant="outline-secondary"
+                    onClick={() => {
+                      handleCloseDelete();
+                    }}
+                  >
+                    Cancel
+                  </TCButton>
+                </Modal.Footer>
+              </Modal>
+            </>
+          )}
         </Col>
-        <Col lg={1} md={0}/>
+        <Col lg={1} md={0} />
         <Col lg={5} md={12}>
-        <Row style={{backgroundColor: "#272727", height: "50vh"}} className="mb-4">
-          <URDFComponent />
+          <Row style={{ backgroundColor: "#272727", height: "50vh" }} className="mb-4">
+            <InputerURDFComponent urls={["https://raw.githubusercontent.com/openai/roboschool/1.0.49/roboschool/models_robot/atlas_description/urdf/atlas_v4_with_multisense.urdf",
+              "atlas_description",
+              "https://raw.githubusercontent.com/openai/roboschool/1.0.49/roboschool/models_robot/atlas_description",]} />
           </Row>
           {images && (
-        <Row>
-          <Carousel
-            indicators
-            data-bs-theme="dark"
-            style={{ border: "1px solid #ccc" }}
-            interval={null}
-            controls={images.length > 1}
-          >
-            {images.map((image, key) => (
-              <Carousel.Item key={key}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    overflow: "hidden",
-                    width: "100%", // Adjust this to set the desired width
-                    paddingTop: "0%", // This maintains the aspect ratio of the container as a square
-                    position: "relative" as const,
-                  }}
-                  onClick={() => {
-                    handleShow();
-                  }}
-                >
-                  <ImageComponent imageId={images[key].url} />
-                </div>
-                <Carousel.Caption
-                  style={{
-                    backgroundColor: "rgba(255, 255, 255, 0.5)",
-                    color: "black",
-                    padding: "0.1rem",
-                    // Put the caption at the top
-                    top: 10,
-                    bottom: "unset",
-                  }}
-                >
-                  {image.caption}
-                </Carousel.Caption>
-              </Carousel.Item>
-            ))}
-          </Carousel>
-        </Row>
-      )}
+            <Row>
+              <Carousel
+                indicators
+                data-bs-theme="dark"
+                style={{ border: "1px solid #ccc" }}
+                interval={null}
+                controls={images.length > 1}
+              >
+                {images.map((image, key) => (
+                  <Carousel.Item key={key}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        overflow: "hidden",
+                        width: "100%", // Adjust this to set the desired width
+                        paddingTop: "0%", // This maintains the aspect ratio of the container as a square
+                        position: "relative" as const,
+                      }}
+                      onClick={() => {
+                        handleShow();
+                      }}
+                    >
+                      <ImageComponent imageId={images[key].url} />
+                    </div>
+                    <Carousel.Caption
+                      style={{
+                        backgroundColor: "rgba(255, 255, 255, 0.5)",
+                        color: "black",
+                        padding: "0.1rem",
+                        // Put the caption at the top
+                        top: 10,
+                        bottom: "unset",
+                      }}
+                    >
+                      {image.caption}
+                    </Carousel.Caption>
+                  </Carousel.Item>
+                ))}
+              </Carousel>
+            </Row>
+          )}
         </Col>
       </Row>
       <Modal

@@ -1,4 +1,4 @@
-@ts-nocheck
+//@ts-nocheck
 import { OrbitControls } from "@react-three/drei";
 import { Canvas, useLoader } from "@react-three/fiber";
 import React, { Suspense, useRef } from "react";
@@ -35,10 +35,17 @@ const LoadModel: React.FC<LoadModelProps> = ({ filepath, urls }) => {
         loader.fetchOptions = {
             headers: { Accept: "application/vnd.github.v3.raw" },
         };
-        urls = [
-            "atlas_description",
-            "https://raw.githubusercontent.com/openai/roboschool/1.0.49/roboschool/models_robot/atlas_description",
-        ]
+        loader.fetchOptions = {
+            headers: { Accept: "application/vnd.github.v3.raw" },
+            packages: {} as { [key: string]: string },
+        };
+        if (typeof loader.packages !== "object") {
+            loader.packages = {};
+        }
+        // const urls = [
+        //     "atlas_description",
+        //     "https://raw.githubusercontent.com/openai/roboschool/1.0.49/roboschool/models_robot/atlas_description",
+        // ];
         for (let i = 1; i < urls.length; i += 2) {
             loader.packages[urls[i]] = urls[i + 1];
         }
@@ -68,7 +75,6 @@ interface URDFComponentProps {
 }
 export const InputerURDFComponent: React.FC<URDFComponentProps> = ({ urls }) => {
     // Parse URL parameter
-    const urlParams = new URLSearchParams(window.location.search);
     const modelPath =
         urls[0];
     // "https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2c1.urdf";
