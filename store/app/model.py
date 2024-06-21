@@ -56,7 +56,7 @@ class Robot(BaseModel):
 
 class Part(BaseModel):
     part_id: str  # Primary key
-    part_name: str
+    name: str
     owner: str
     description: str
     images: list[Image]

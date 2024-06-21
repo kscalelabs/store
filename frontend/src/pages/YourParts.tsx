@@ -91,7 +91,7 @@ const YourParts = () => {
                 </div>
               )}
               <Card.Body>
-                <Card.Title>{part.part_name}</Card.Title>
+                <Card.Title>{part.name}</Card.Title>
                 <Card.Text>
                   <Markdown
                     components={{

@@ -5,7 +5,7 @@ export interface Part {
   owner: string;
   images: Image[];
   part_id: string;
-  part_name: string;
+  name: string;
 }
 
 export interface Bom {
@@ -428,13 +428,13 @@ export class api {
     }
   }
   public async addPart(part: Part): Promise<void> {
-    const s = part.part_name;
+    const s = part.name;
     try {
       await this.api.post("/parts/add/", part);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error(
-          "Error adding part:" + part.part_name,
+          "Error adding part:" + part.name,
           error.response?.data,
         );
         throw new Error(
@@ -463,7 +463,7 @@ export class api {
     }
   }
   public async editPart(part: Part): Promise<void> {
-    const s = part.part_name;
+    const s = part.name;
     try {
       await this.api.post(`parts/edit-part/${part.part_id}/`, part);
     } catch (error) {

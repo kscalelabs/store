@@ -58,7 +58,7 @@ async def current_user(
 
 
 class NewPart(BaseModel):
-    part_name: str
+    name: str
     description: str
     images: List[Image]
 
@@ -74,7 +74,7 @@ async def add_part(
         raise HTTPException(status_code=401, detail="Must be logged in to add a part")
     await crud.add_part(
         Part(
-            part_name=part.part_name,
+            name=part.name,
             description=part.description,
             images=part.images,
             owner=str(user_id),

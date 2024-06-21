@@ -17,7 +17,7 @@ import Markdown from "react-markdown";
 import { useNavigate, useParams } from "react-router-dom";
 
 interface PartDetailsResponse {
-  part_name: string;
+  name: string;
   owner: string;
   description: string;
   images: Image[];
@@ -104,12 +104,12 @@ const PartDetails = () => {
   }
 
   const response: PartDetailsResponse = {
-    part_name: part.part_name,
+    name: part.name,
     owner: part.owner,
     description: part.description,
     images: part.images,
   };
-  const { part_name, description, images } = response;
+  const { name, description, images } = response;
 
   return (
     <>
@@ -118,14 +118,14 @@ const PartDetails = () => {
         <Breadcrumb.Item onClick={() => navigate("/parts/1")}>
           Parts
         </Breadcrumb.Item>
-        <Breadcrumb.Item active>{part_name}</Breadcrumb.Item>
+        <Breadcrumb.Item active>{name}</Breadcrumb.Item>
       </Breadcrumb>
 
       <Row className="mt-3">
         <Col lg={6} md={12} className="mb-5">
           <Row>
             <Col>
-              <h1>{part_name}</h1>
+              <h1>{name}</h1>
               <small className="text-muted">ID: {id}</small>
               <br />
               <em>{ownerUsername}</em>

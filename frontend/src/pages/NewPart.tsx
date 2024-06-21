@@ -10,7 +10,7 @@ const NewPart: React.FC = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const [message, setMessage] = useState<string>("");
-  const [part_name, setName] = useState<string>("");
+  const [name, setName] = useState<string>("");
   const [part_description, setDescription] = useState<string>("");
   const [part_images, setImages] = useState<Image[]>([]);
 
@@ -23,7 +23,7 @@ const NewPart: React.FC = () => {
     }
     const newFormData: Part = {
       part_id: "",
-      part_name: part_name,
+      name: name,
       description: part_description,
       owner: "Bob",
       images: part_images,
@@ -42,7 +42,7 @@ const NewPart: React.FC = () => {
       theme={theme}
       title="Add a New Part"
       message={message}
-      part_name={part_name}
+      name={name}
       setName={setName}
       part_description={part_description}
       setDescription={setDescription}

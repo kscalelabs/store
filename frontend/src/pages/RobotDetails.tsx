@@ -32,7 +32,7 @@ interface RobotDetailsResponse {
 interface ExtendedBom {
   part_id: string;
   quantity: number;
-  part_name: string;
+  name: string;
 }
 
 const RobotDetails = () => {
@@ -64,7 +64,7 @@ const RobotDetails = () => {
         setOwnerUsername(ownerUsername);
         const parts = robotData.bom.map(async (part) => {
           return {
-            part_name: (await auth_api.getPartById(part.part_id)).part_name,
+            name: (await auth_api.getPartById(part.part_id)).name,
             part_id: part.part_id,
             quantity: part.quantity,
           };
@@ -218,7 +218,7 @@ const RobotDetails = () => {
                     <tr key={key}>
                       <td>
                         <Link to={`/part/${part.part_id}`}>
-                          {part.part_name}
+                          {part.name}
                         </Link>
                       </td>
                       <td>{part.quantity}</td>
