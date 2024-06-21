@@ -53,17 +53,20 @@ class RobotCrud(BaseCrud):
     async def list_robots(self, page: int = 1, items_per_page: int = 18) -> tuple[list[Robot], bool]:
         table = await self.db.Table("Robots")
         response = await table.scan()
+        # This is O(n log n). Look into better ways to architect the schema.
+        sorted_items = sorted(response["Items"], key=lambda x: x["timestamp"], reverse=True)
         return [
             Robot.model_validate(item)
-            for item in response["Items"][(page - 1) * items_per_page : page * items_per_page]
+            for item in sorted_items[(page - 1) * items_per_page : page * items_per_page]
         ], page * items_per_page < response["Count"]
 
     async def list_your_robots(self, user_id: str, page: int = 1, items_per_page: int = 18) -> tuple[list[Robot], bool]:
         table = await self.db.Table("Robots")
         response = await table.query(IndexName="ownerIndex", KeyConditionExpression=Key("owner").eq(user_id))
+        sorted_items = sorted(response["Items"], key=lambda x: x["timestamp"], reverse=True)
         return [
             Robot.model_validate(item)
-            for item in response["Items"][(page - 1) * items_per_page : page * items_per_page]
+            for item in sorted_items[(page - 1) * items_per_page : page * items_per_page]
         ], page * items_per_page < response["Count"]
 
     async def get_robot(self, robot_id: str) -> Robot | None:
