@@ -1,13 +1,16 @@
 """Defines all robot related API endpoints."""
 
 import logging
-from typing import Annotated, List
+import time
+from typing import Annotated, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 
+from store.app.crud.robots import EditRobot
 from store.app.crypto import new_uuid
 from store.app.db import Crud
-from store.app.model import Robot
+from store.app.model import Bom, Image, Robot
 from store.app.routers.users import get_session_token
 
 robots_router = APIRouter()
@@ -16,23 +19,31 @@ logger = logging.getLogger(__name__)
 
 
 @robots_router.get("/")
-async def list_robots(crud: Annotated[Crud, Depends(Crud.get)]) -> List[Robot]:
-    return await crud.list_robots()
+async def list_robots(
+    crud: Annotated[Crud, Depends(Crud.get)],
+    page: int = Query(description="Page number for pagination"),
+) -> tuple[List[Robot], bool]:
+    """Lists the robots in the database.
+
+    The function is paginated. The page size is 18.
+
+    Returns the robots on the page and a boolean indicating if there are more pages.
+    """
+    return await crud.list_robots(page)
 
 
 @robots_router.get("/your/")
 async def list_your_robots(
-    crud: Annotated[Crud, Depends(Crud.get)], token: Annotated[str, Depends(get_session_token)]
-) -> List[Robot]:
-    try:
-        user_id = await crud.get_user_id_from_session_token(token)
-        if user_id is None:
-            raise HTTPException(status_code=401, detail="Must be logged in to view your robots")
-        total = await crud.list_robots()
-        user_robots = [robot for robot in total if str(robot.owner) == str(user_id)]
-        return user_robots
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    crud: Annotated[Crud, Depends(Crud.get)],
+    token: Annotated[str, Depends(get_session_token)],
+    page: int = Query(description="Page number for pagination"),
+) -> tuple[List[Robot], bool]:
+    """Lists the robots that you own."""
+    user_id = await crud.get_user_id_from_session_token(token)
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Must be logged in to view your parts")
+
+    return await crud.list_your_robots(user_id, page)
 
 
 @robots_router.get("/{robot_id}")
@@ -48,18 +59,40 @@ async def current_user(
     return str(user_id)
 
 
+class NewRobot(BaseModel):
+    name: str
+    description: str
+    bom: List[Bom]
+    images: List[Image]
+    height: Optional[str]
+    weight: Optional[str]
+    degrees_of_freedom: Optional[str]
+
+
 @robots_router.post("/add/")
 async def add_robot(
-    robot: Robot,
+    new_robot: NewRobot,
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
     user_id = await crud.get_user_id_from_session_token(token)
     if user_id is None:
         raise HTTPException(status_code=401, detail="Must be logged in to add a robot")
-    robot.owner = str(user_id)
-    robot.robot_id = str(new_uuid())
-    await crud.add_robot(robot)
+
+    await crud.add_robot(
+        Robot(
+            name=new_robot.name,
+            description=new_robot.description,
+            bom=new_robot.bom,
+            images=new_robot.images,
+            height=new_robot.height,
+            weight=new_robot.weight,
+            degrees_of_freedom=new_robot.degrees_of_freedom,
+            owner=str(user_id),
+            robot_id=str(new_uuid()),
+            timestamp=int(time.time()),
+        )
+    )
     return True
 
 
@@ -79,17 +112,15 @@ async def delete_robot(
     return True
 
 
-@robots_router.post("/edit-robot/{robot_id}/")
+@robots_router.post("/edit-robot/{id}/")
 async def edit_robot(
-    robot_id: str,
-    robot: Robot,
+    id: str,
+    robot: EditRobot,
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
     user_id = await crud.get_user_id_from_session_token(token)
     if user_id is None:
         raise HTTPException(status_code=401, detail="Must be logged in to edit a robot")
-    robot.owner = str(user_id)
-    robot.robot_id = robot_id
-    await crud.update_robot(robot)
+    await crud.update_robot(id, robot)
     return True

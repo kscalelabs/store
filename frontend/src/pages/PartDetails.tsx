@@ -17,11 +17,13 @@ import Markdown from "react-markdown";
 import { useNavigate, useParams } from "react-router-dom";
 
 interface PartDetailsResponse {
-  part_name: string;
+  name: string;
   owner: string;
   description: string;
   images: Image[];
 }
+
+import ImageComponent from "components/files/ViewImage";
 
 const PartDetails = () => {
   const { addAlert } = useAlertQueue();
@@ -37,7 +39,6 @@ const PartDetails = () => {
   const [showDelete, setShowDelete] = useState(false);
 
   const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
 
   const handleShowDelete = () => setShowDelete(true);
   const handleCloseDelete = () => setShowDelete(false);
@@ -103,28 +104,28 @@ const PartDetails = () => {
   }
 
   const response: PartDetailsResponse = {
-    part_name: part.part_name,
+    name: part.name,
     owner: part.owner,
     description: part.description,
     images: part.images,
   };
-  const { part_name, description, images } = response;
+  const { name, description, images } = response;
 
   return (
     <>
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
-        <Breadcrumb.Item onClick={() => navigate("/parts/")}>
+        <Breadcrumb.Item onClick={() => navigate("/parts/1")}>
           Parts
         </Breadcrumb.Item>
-        <Breadcrumb.Item active>{part_name}</Breadcrumb.Item>
+        <Breadcrumb.Item active>{name}</Breadcrumb.Item>
       </Breadcrumb>
 
       <Row className="mt-3">
         <Col lg={6} md={12} className="mb-5">
           <Row>
             <Col>
-              <h1>{part_name}</h1>
+              <h1>{name}</h1>
               <small className="text-muted">ID: {id}</small>
               <br />
               <em>{ownerUsername}</em>
@@ -169,16 +170,7 @@ const PartDetails = () => {
                       overflow: "hidden",
                     }}
                   >
-                    <img
-                      className="d-block rounded-lg"
-                      style={{ width: "100%", aspectRatio: "1/1" }}
-                      src={image.url}
-                      alt={image.caption}
-                      onClick={() => {
-                        setImageIndex(key);
-                        handleShow();
-                      }}
-                    />
+                    <ImageComponent imageId={images[key].url} />
                   </div>
                   <Carousel.Caption
                     style={{
@@ -214,11 +206,7 @@ const PartDetails = () => {
         </Modal.Header>
         <Modal.Body>
           <div style={{ display: "flex", justifyContent: "center" }}>
-            <img
-              style={{ width: "95%", aspectRatio: "1/1" }}
-              src={images[imageIndex].url}
-              alt={images[imageIndex].caption}
-            />
+            <ImageComponent imageId={images[imageIndex].url} />
           </div>
         </Modal.Body>
         <Modal.Footer>
@@ -299,7 +287,7 @@ const PartDetails = () => {
                   variant="danger"
                   onClick={async () => {
                     await auth_api.deletePart(id);
-                    navigate(`/parts/your/`);
+                    navigate(`/parts/your/1`);
                   }}
                 >
                   Delete Part

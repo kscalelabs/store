@@ -56,17 +56,17 @@ const App = () => {
                     path="/change-email/:token"
                     element={<ChangeEmail />}
                   />
-                  <Route path="/robots/" element={<Robots />} />
+                  <Route path="/robots/:page" element={<Robots />} />
                   <Route path="/robots/add" element={<NewRobot />} />
                   <Route path="/parts/add" element={<NewPart />} />
                   <Route path="/robot/:id" element={<RobotDetails />} />
                   <Route path="/edit-robot/:id" element={<EditRobotForm />} />
                   <Route path="/test-images" element={<TestImages />} />
-                  <Route path="/parts/" element={<Parts />} />
+                  <Route path="/parts/:page" element={<Parts />} />
                   <Route path="/part/:id" element={<PartDetails />} />
                   <Route path="/edit-part/:id" element={<EditPartForm />} />
-                  <Route path="robots/your" element={<YourRobots />} />
-                  <Route path="/parts/your" element={<YourParts />} />
+                  <Route path="robots/your/:page" element={<YourRobots />} />
+                  <Route path="/parts/your/:page" element={<YourParts />} />
                   <Route path="/404" element={<NotFound />} />
                   <Route path="*" element={<NotFoundRedirect />} />
                 </Routes>

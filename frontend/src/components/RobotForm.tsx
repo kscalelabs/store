@@ -214,7 +214,7 @@ const RobotForm: React.FC<RobotFormProps> = ({
                 </option>
                 {parts.map((part, index) => (
                   <option key={index} value={part.part_id}>
-                    {part.part_name}
+                    {part.name}
                   </option>
                 ))}
               </Form.Control>

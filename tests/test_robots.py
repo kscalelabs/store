@@ -27,7 +27,7 @@ async def test_robots(app_client: AsyncClient) -> None:
     assert "session_token" in response.cookies
 
     # Create a part.
-    response = await app_client.post("/parts/add", json={"part_id": "", "owner": "", "name": "test part", "description": "test description", "images": [{"url": "", "caption": ""}]})
+    response = await app_client.post("/parts/add", json={"name": "test part", "description": "test description", "images": [{"url": "", "caption": ""}]})
 
     # Create a robot.
-    response = await app_client.post("/robots/add", json={"robot_id": "", "owner": "", "name": "test robot", "description": "test description", "bom": [], "images": [{"url": "", "caption": ""}]})
+    response = await app_client.post("/robots/add", json={"name": "test robot", "description": "test description", "bom": [], "images": [{"url": "", "caption": ""}]})
