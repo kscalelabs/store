@@ -3,6 +3,7 @@
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
+import uvicorn
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -61,3 +62,8 @@ app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(robots_router, prefix="/robots", tags=["robots"])
 app.include_router(parts_router, prefix="/parts", tags=["parts"])
 app.include_router(image_router, prefix="/image", tags=["image"])
+
+# For running with debugger
+if __name__ == "__main__":
+   
+    uvicorn.run(app, host="0.0.0.0", port=8000)
