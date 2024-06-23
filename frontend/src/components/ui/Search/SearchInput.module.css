@@ -1,0 +1,23 @@
+.SearchInput {
+    display: flex;
+    align-items: center;
+    border: 1px solid gray;
+    border-radius: 5px;
+    width: 50%;
+}
+
+.Icon {
+    margin-left: .3em;
+    filter: opacity(50%);
+}
+
+.Input {
+    border: none;
+    box-shadow: none;
+    overflow: hidden;
+    outline: none;
+}
+
+.Input:focus {
+    box-shadow: none;
+}
