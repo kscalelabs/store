@@ -13,6 +13,7 @@ import {
 } from "react-bootstrap";
 import Markdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { SearchInput } from "components/ui/Search/SearchInput"
 
 const Robots = () => {
   const auth = useAuthentication();
@@ -75,10 +76,14 @@ const Robots = () => {
 
   return (
     <>
+
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
         <Breadcrumb.Item active>Robots</Breadcrumb.Item>
       </Breadcrumb>
+      <SearchInput />
+
+
 
       <Row className="mt-5">
         {robotsData.map((robot) => (
