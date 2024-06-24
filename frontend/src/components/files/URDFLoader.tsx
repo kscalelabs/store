@@ -85,26 +85,26 @@ export const URDFComponent = () => {
     backgroundColor: "#272727",
   };
   return (
-      <Canvas camera={{ position: [0, 5, 10] }}>
-        <ambientLight intensity={0.5} />
-        <hemisphereLight
-          color={"#455A64"}
-          groundColor={"#000"}
-          intensity={0.5}
-          position={[0, 1, 0]}
-        />
-        <directionalLight
-          color={0xffffff}
-          position={[4, 10, 1]}
-          shadow-mapWidth={2048}
-          shadow-mapHeight={2048}
-          castShadow
-        />
-        <Suspense fallback={null}>
-          <LoadModel filepath={modelPath} />
-        </Suspense>
-        <OrbitControls zoomSpeed={0.3} />
-        <axesHelper />
-      </Canvas>
+    <Canvas camera={{ position: [0, 5, 10] }}>
+      <ambientLight intensity={0.5} />
+      <hemisphereLight
+        color={"#455A64"}
+        groundColor={"#000"}
+        intensity={0.5}
+        position={[0, 1, 0]}
+      />
+      <directionalLight
+        color={0xffffff}
+        position={[4, 10, 1]}
+        shadow-mapWidth={2048}
+        shadow-mapHeight={2048}
+        castShadow
+      />
+      <Suspense fallback={null}>
+        <LoadModel filepath={modelPath} />
+      </Suspense>
+      <OrbitControls zoomSpeed={0.3} />
+      <axesHelper />
+    </Canvas>
   );
 };

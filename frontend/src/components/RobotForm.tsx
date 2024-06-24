@@ -25,6 +25,8 @@ interface RobotFormProps {
   handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
   robot_images: Image[];
   setImages: Dispatch<SetStateAction<Image[]>>;
+  robotURDF: string;
+  setURDF: Dispatch<SetStateAction<string>>;
 }
 
 const RobotForm: React.FC<RobotFormProps> = ({
@@ -47,6 +49,8 @@ const RobotForm: React.FC<RobotFormProps> = ({
   handleSubmit,
   robot_images,
   setImages,
+  robotURDF,
+  setURDF
 }) => {
   const handleImageChange = (
     index: number,
@@ -113,7 +117,7 @@ const RobotForm: React.FC<RobotFormProps> = ({
           value={robot_name}
           required
         />
-        <label htmlFor="height">Height</label>
+        <label htmlFor="height">Height (Optional)</label>
         <Form.Control
           id="height"
           className="mb-3"
@@ -124,7 +128,7 @@ const RobotForm: React.FC<RobotFormProps> = ({
           }}
           value={robot_height}
         />
-        <label htmlFor="weight">Weight</label>
+        <label htmlFor="weight">Weight (Optional)</label>
         <Form.Control
           id="weight"
           className="mb-3"
@@ -135,7 +139,7 @@ const RobotForm: React.FC<RobotFormProps> = ({
           }}
           value={robot_weight}
         />
-        <label htmlFor="dof">Total Degrees of Freedom</label>
+        <label htmlFor="dof">Total Degrees of Freedom (Optional)</label>
         <Form.Control
           id="dof"
           className="mb-3"
@@ -156,6 +160,17 @@ const RobotForm: React.FC<RobotFormProps> = ({
           }}
           value={robot_description}
           required
+        />
+        <label htmlFor="urdf">URDF Link (Optional)</label>
+        <Form.Control
+          id="urdf"
+          className="mb-3"
+          type="text"
+          placeholder="ex. https://raw.githubusercontent.com/path/to/urdf.urdf"
+          onChange={(e) => {
+            setURDF(e.target.value);
+          }}
+          value={robotURDF}
         />
         <h2>Images</h2>
         {robot_images.map((image, index) => (

@@ -28,6 +28,7 @@ class EditRobot(BaseModel):
     height: Optional[str]
     weight: Optional[str]
     degrees_of_freedom: Optional[str]
+    urdf: str
 
 
 def serialize_bom(bom: Bom) -> dict:
@@ -167,20 +168,25 @@ class RobotCrud(BaseCrud):
             ":images": serialize_image_list(robot.images),
         }
 
-        if robot.height:
+        if robot.urdf is not None:
+            update_expression += "#urdf = :urdf, "
+            expression_attribute_names["#urdf"] = "urdf"
+            expression_attribute_values[":urdf"] = robot.urdf or ""
+
+        if robot.height is not None:
             update_expression += "#height = :height, "
             expression_attribute_names["#height"] = "height"
-            expression_attribute_values[":height"] = robot.height
+            expression_attribute_values[":height"] = robot.height or ""
 
-        if robot.weight:
+        if robot.weight is not None:
             update_expression += "#weight = :weight, "
             expression_attribute_names["#weight"] = "weight"
-            expression_attribute_values[":weight"] = robot.weight
+            expression_attribute_values[":weight"] = robot.weight or ""
 
-        if robot.degrees_of_freedom:
+        if robot.degrees_of_freedom is not None:
             update_expression += "#degrees_of_freedom = :degrees_of_freedom, "
             expression_attribute_names["#degrees_of_freedom"] = "degrees_of_freedom"
-            expression_attribute_values[":degrees_of_freedom"] = robot.degrees_of_freedom
+            expression_attribute_values[":degrees_of_freedom"] = robot.degrees_of_freedom or ""
 
         await table.update_item(
             Key={"robot_id": id},

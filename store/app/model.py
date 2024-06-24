@@ -52,6 +52,7 @@ class Robot(BaseModel):
     weight: Optional[str] = ""
     degrees_of_freedom: Optional[str] = ""
     timestamp: int
+    urdf: str
 
 
 class Part(BaseModel):

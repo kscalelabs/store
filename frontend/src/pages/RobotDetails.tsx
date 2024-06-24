@@ -1,6 +1,5 @@
-import TCButton from "components/files/TCButton";
-import { URDFComponent } from "components/files/URDFLoader";
 import { InputerURDFComponent } from "components/files/InputerURDFLoader";
+import TCButton from "components/files/TCButton";
 import ImageComponent from "components/files/ViewImage";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Bom } from "hooks/api";
@@ -25,6 +24,7 @@ interface RobotDetailsResponse {
   owner: string;
   description: string;
   images: { url: string; caption: string }[];
+  urdf: string;
   bom: Bom[];
   height: string;
   weight: string;
@@ -42,6 +42,7 @@ const RobotDetails = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const [userId, setUserId] = useState<string | null>(null);
+  const [urdf, setUrdf] = useState<string[] | null>(null);
   const { id } = useParams();
   const [show, setShow] = useState(false);
   const [ownerUsername, setOwnerUsername] = useState<string | null>(null);
@@ -50,6 +51,8 @@ const RobotDetails = () => {
   const [imageIndex, setImageIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [showDelete, setShowDelete] = useState(false);
+  const [isValidURDF, setIsValidURDF] = useState<boolean>(false);
+
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -76,6 +79,24 @@ const RobotDetails = () => {
             .filter(isFulfilled)
             .map((result) => result.value as ExtendedBom),
         );
+        if (robotData.urdf) {
+          try {
+            const response = await fetch(robotData.urdf, {
+              method: 'HEAD',
+              headers: {
+                'Accept': 'application/vnd.github.v3.raw'
+              }
+            });
+            if (response.ok) {
+              setIsValidURDF(true);
+            } else {
+              throw new Error('Invalid URDF URL');
+            }
+          } catch (err) {
+            setIsValidURDF(false);
+            console.error("URDF validation error: ", err);
+          }
+        }
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -135,6 +156,7 @@ const RobotDetails = () => {
     bom: robot?.bom,
     height: robot?.height,
     weight: robot?.weight,
+    urdf: robot?.urdf,
     degrees_of_freedom: robot?.degrees_of_freedom,
   };
 
@@ -304,11 +326,24 @@ const RobotDetails = () => {
         </Col>
         <Col lg={1} md={0} />
         <Col lg={5} md={12}>
-          <Row style={{ backgroundColor: "#272727", height: "50vh" }} className="mb-4">
-            <InputerURDFComponent urls={["https://raw.githubusercontent.com/openai/roboschool/1.0.49/roboschool/models_robot/atlas_description/urdf/atlas_v4_with_multisense.urdf",
-              "atlas_description",
-              "https://raw.githubusercontent.com/openai/roboschool/1.0.49/roboschool/models_robot/atlas_description",]} />
-          </Row>
+          {response.urdf}
+          {isValidURDF && (
+            <Row
+              style={{ backgroundColor: "#272727", height: "50vh" }}
+              className="mb-4"
+            >
+              {(() => {
+                try {
+                  return <InputerURDFComponent urls={response.urdf} />;
+                } catch (err) {
+                  setError("Failed to load URDF component");
+                  console.error("URDF component error: ", err);
+                }
+              })()}
+
+              {/* <InputerURDFComponent urls={response.urdf} /> */}
+            </Row>
+          )}
           {images && (
             <Row>
               <Carousel

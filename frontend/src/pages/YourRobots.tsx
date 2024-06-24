@@ -17,7 +17,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 const YourRobots = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
-  const [robotsData, setRobot] = useState<Robot[] | null>(null);
+  const [robotsData, setRobot] = useState<Robot[] | null>([]);
   const [moreRobots, setMoreRobots] = useState<boolean>(false);
 
   const { addAlert } = useAlertQueue();

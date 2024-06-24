@@ -67,6 +67,7 @@ class NewRobot(BaseModel):
     height: Optional[str]
     weight: Optional[str]
     degrees_of_freedom: Optional[str]
+    urdf: str
 
 
 @robots_router.post("/add/")
@@ -91,6 +92,7 @@ async def add_robot(
             owner=str(user_id),
             robot_id=str(new_uuid()),
             timestamp=int(time.time()),
+            urdf=new_robot.urdf,
         )
     )
     return True

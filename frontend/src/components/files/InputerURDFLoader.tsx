@@ -1,7 +1,7 @@
-//@ts-nocheck
+// @ts-nocheck
 import { OrbitControls } from "@react-three/drei";
 import { Canvas, useLoader } from "@react-three/fiber";
-import React, { Suspense, useRef } from "react";
+import React, { Suspense, useRef, useState } from "react";
 import * as THREE from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import URDFLoader from "urdf-loader";
@@ -11,15 +11,17 @@ interface LoadModelProps {
     urls: string[];
 }
 
+
 const LoadModel: React.FC<LoadModelProps> = ({ filepath, urls }) => {
     const ref = useRef<THREE.Object3D | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     const robot = useLoader(URDFLoader, filepath, (loader) => {
         // Configure loader
         loader.loadMeshFunc = (
             path: string,
             manager: THREE.LoadingManager,
-            done: (mesh: THREE.Object3D | null, err?: Error | undefined) => void,
+            done: (mesh: THREE.Object3D | null, err?: Error | undefined) => void
         ) => {
             new STLLoader(manager).load(
                 path,
@@ -29,36 +31,25 @@ const LoadModel: React.FC<LoadModelProps> = ({ filepath, urls }) => {
                     done(mesh);
                 },
                 undefined,
-                (err) => done(null, err as Error | undefined),
+                (err) => done(null, err as Error | undefined)
             );
         };
         loader.fetchOptions = {
             headers: { Accept: "application/vnd.github.v3.raw" },
+            // headers: { Accept: "*" },
         };
-        loader.fetchOptions = {
-            headers: { Accept: "application/vnd.github.v3.raw" },
-            packages: {} as { [key: string]: string },
-        };
-        if (typeof loader.packages !== "object") {
-            loader.packages = {};
-        }
-        // const urls = [
-        //     "atlas_description",
-        //     "https://raw.githubusercontent.com/openai/roboschool/1.0.49/roboschool/models_robot/atlas_description",
-        // ];
-        for (let i = 1; i < urls.length; i += 2) {
-            loader.packages[urls[i]] = urls[i + 1];
-        }
-        // loader.packages = {
-        //     atlas_description:
-        //         "https://raw.githubusercontent.com/openai/roboschool/1.0.49/roboschool/models_robot/atlas_description",
-        //     r2_description:
-        //         "https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description",
-        //     urdf: "https://raw.githubusercontent.com/adubredu/DigitRobot.jl/main/urdf",
-        //     multisense_sl_description:
-        //         "https://raw.githubusercontent.com/openai/roboschool/1.0.49/roboschool/models_robot/multisense_sl_description",
-        // };
-    }) as THREE.Group;
+
+        loader.packages = loader.packages || {};
+
+        // for (let i = 1; i < urls.length; i += 2) {
+        //     loader.packages[urls[i]] = urls[i + 1];
+        // }
+    });
+
+    // Check for load errors
+    if (!robot) {
+        throw new Error('Failed to load model');
+    }
 
     return (
         <mesh
@@ -71,21 +62,22 @@ const LoadModel: React.FC<LoadModelProps> = ({ filepath, urls }) => {
     );
 };
 interface URDFComponentProps {
-    urls: string[];
+    urls: string | null;
 }
-export const InputerURDFComponent: React.FC<URDFComponentProps> = ({ urls }) => {
+export const InputerURDFComponent: React.FC<URDFComponentProps> = ({
+    urls,
+}) => {
     // Parse URL parameter
-    const modelPath =
-        urls[0];
+    const modelPath = urls;
+    // const modelPath = (urls && urls[0] && urls[0] != "") ? urls[0] : "https://raw.githubusercontent.com/vrtnis/robot-web-viewer/main/public/urdf/robot.urdf";
     // "https://raw.githubusercontent.com/gkjohnson/nasa-urdf-robots/master/r2_description/robots/r2c1.urdf";
     // "https://raw.githubusercontent.com/adubredu/DigitRobot.jl/main/urdf/digit_model.urdf";
     // "https://raw.githubusercontent.com/openai/roboschool/1.0.49/roboschool/models_robot/atlas_description/urdf/atlas_v4_with_multisense.urdf";
     // "https://raw.githubusercontent.com/vrtnis/robot-web-viewer/main/public/urdf/robot.urdf";
 
-
     const containerStyle = {
-        width: "100vw",
-        height: "100vh",
+        width: "50vw",
+        height: "50vh",
         backgroundColor: "#272727",
     };
     return (

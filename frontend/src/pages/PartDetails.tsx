@@ -226,7 +226,7 @@ const PartDetails = () => {
           )}
         </Col>
 
-        <Col lg={1} md={0}/>
+        <Col lg={1} md={0} />
 
         {images && (
           <Col lg={5} md={12}>

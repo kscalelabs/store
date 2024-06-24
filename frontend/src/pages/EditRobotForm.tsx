@@ -21,6 +21,7 @@ const EditRobotForm: React.FC = () => {
   const [robot_description, setDescription] = useState<string>("");
   const [robot_height, setHeight] = useState<string>("");
   const [robot_weight, setWeight] = useState<string>("");
+  const [urdf, setURDF] = useState<string>("");
   const [robot_degrees_of_freedom, setDof] = useState<string>("");
   const [robot_bom, setBom] = useState<Bom[]>([]);
   const [robot_images, setImages] = useState<Image[]>([]);
@@ -36,6 +37,7 @@ const EditRobotForm: React.FC = () => {
         setName(robotData.name);
         setDescription(robotData.description);
         setBom(robotData.bom);
+        setURDF(robotData.urdf);
         setImages(robotData.images);
         setRobotId(robotData.robot_id);
         setHeight(robotData.height);
@@ -65,6 +67,7 @@ const EditRobotForm: React.FC = () => {
       images: robot_images,
       height: robot_height,
       weight: robot_weight,
+      urdf: urdf,
       degrees_of_freedom: robot_degrees_of_freedom,
     };
     try {
@@ -109,6 +112,8 @@ const EditRobotForm: React.FC = () => {
       robot_images={robot_images}
       setImages={setImages}
       message={message}
+      robotURDF={urdf}
+      setURDF={setURDF}
     />
   );
 };

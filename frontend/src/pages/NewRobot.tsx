@@ -13,6 +13,7 @@ const NewRobot: React.FC = () => {
   const [robot_name, setName] = useState<string>("");
   const [robot_height, setHeight] = useState<string>("");
   const [robot_weight, setWeight] = useState<string>("");
+  const [robot_urdf, setURDF] = useState<string>("");
   const [robot_degrees_of_freedom, setDof] = useState<string>("");
   const [robot_description, setDescription] = useState<string>("");
   const [robot_bom, setBom] = useState<Bom[]>([]);
@@ -33,6 +34,7 @@ const NewRobot: React.FC = () => {
       owner: "",
       bom: robot_bom,
       images: robot_images,
+      urdf: "",
       height: robot_height,
       weight: robot_weight,
       degrees_of_freedom: robot_degrees_of_freedom,
@@ -79,6 +81,8 @@ const NewRobot: React.FC = () => {
       robot_images={robot_images}
       setImages={setImages}
       message={message}
+      setURDF={setURDF}
+      robotURDF={robot_urdf}
     />
   );
 };
