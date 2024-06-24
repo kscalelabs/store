@@ -18,6 +18,11 @@ export interface Image {
   url: string;
 }
 
+export interface Package {
+  name: string;
+  url: string;
+}
+
 export interface Robot {
   robot_id: string;
   name: string;
@@ -28,6 +33,8 @@ export interface Robot {
   height: string;
   weight: string;
   degrees_of_freedom: string;
+  urdf: string;
+  packages: Package[];
 }
 
 interface MeResponse {

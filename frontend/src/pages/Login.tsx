@@ -1,8 +1,9 @@
+import TCButton from "components/files/TCButton";
 import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
 import { setLocalStorageAuth, useAuthentication } from "hooks/auth";
 import { FormEvent, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
@@ -62,7 +63,7 @@ const Login = () => {
         <div className="mb-4">
           <Link to="/forgot">Forgot your password?</Link>
         </div>
-        <Button type="submit">Login</Button>
+        <TCButton type="submit">Login</TCButton>
       </Form>
     </div>
   );
