@@ -2,3 +2,4 @@ crypto:
   jwt_secret: fakeJwtSecret
 site:
   homepage: http://127.0.0.1:3000
+  image_url: http://127.0.0.1:4566/images
