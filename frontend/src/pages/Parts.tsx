@@ -13,11 +13,13 @@ import {
 } from "react-bootstrap";
 import Markdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { SearchInput } from "components/ui/Search/SearchInput"
 
 const Parts = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const [partsData, setParts] = useState<Part[] | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [moreParts, setMoreParts] = useState<boolean>(false);
   const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
   const { addAlert } = useAlertQueue();
@@ -36,7 +38,7 @@ const Parts = () => {
   useEffect(() => {
     const fetch_robots = async () => {
       try {
-        const partsQuery = await auth_api.getParts(pageNumber);
+        const partsQuery = await auth_api.getParts(pageNumber, searchQuery);
         setMoreParts(partsQuery[1]);
         const parts = partsQuery[0];
         setParts(parts);
@@ -55,8 +57,7 @@ const Parts = () => {
       }
     };
     fetch_robots();
-  }, [pageNumber]);
-
+  }, [pageNumber, searchQuery]);
   const navigate = useNavigate();
 
   if (!partsData) {
@@ -80,6 +81,7 @@ const Parts = () => {
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
         <Breadcrumb.Item active>Parts</Breadcrumb.Item>
       </Breadcrumb>
+      <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
 
       <Row className="mt-5">
         {partsData.map((part) => (
