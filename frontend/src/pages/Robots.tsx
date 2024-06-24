@@ -22,6 +22,7 @@ const Robots = () => {
   const [moreRobots, setMoreRobots] = useState<boolean>(false);
   const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
   const [searchQuery, setSearchQuery] = useState("");
+  const [visibleSearchBarInput, setVisibleSearchBarInput] = useState("");
   const { addAlert } = useAlertQueue();
   const { page } = useParams();
 
@@ -34,6 +35,16 @@ const Robots = () => {
       </>
     );
   }
+
+  function handleSearch() {
+    const searchQuery = visibleSearchBarInput
+    setSearchQuery(searchQuery)
+  }
+
+  const handleSearchInputEnterKey = (query: string) => {
+    setVisibleSearchBarInput(query);
+    handleSearch()
+  };
 
   useEffect(() => {
     const fetch_robots = async () => {
@@ -77,14 +88,15 @@ const Robots = () => {
 
   return (
     <>
-
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
         <Breadcrumb.Item active>Robots</Breadcrumb.Item>
       </Breadcrumb>
-      <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-
-
+      <SearchInput
+        userInput={visibleSearchBarInput}
+        onChange={(e) => setVisibleSearchBarInput(e.target.value)}
+        onSearch={handleSearchInputEnterKey}
+      />
 
       <Row className="mt-5">
         {robotsData.map((robot) => (
