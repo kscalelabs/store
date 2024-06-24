@@ -4,9 +4,18 @@ import { Input } from "../Input/Input"
 import { Search } from 'react-bootstrap-icons'
 
 export interface SearchInputProps
-    extends React.InputHTMLAttributes<HTMLInputElement> { }
+    extends React.InputHTMLAttributes<HTMLInputElement> {
+    userInput?: string,
+    onSearch?: (query: string) => void;
+}
 
-const SearchInput = ({ className, value, onChange }: SearchInputProps) => {
+const SearchInput = ({ className, userInput, onChange, onSearch }: SearchInputProps) => {
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' && onSearch && userInput !== undefined) {
+            onSearch(userInput); // Trigger a new callback onSearch
+        }
+    };
     return (
         <div className={`${styles.SearchInput} ${className}`}>
             <Search className={styles.Icon} />
@@ -14,8 +23,9 @@ const SearchInput = ({ className, value, onChange }: SearchInputProps) => {
                 type="search"
                 placeholder="Search..."
                 className={styles.Input}
-                value={value}
+                value={userInput}
                 onChange={onChange}
+                onKeyDown={handleKeyDown}
             />
         </div>
     );
