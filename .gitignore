@@ -10,6 +10,7 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 .dmypy.json
+.venv/
 
 # Databases
 *.db
