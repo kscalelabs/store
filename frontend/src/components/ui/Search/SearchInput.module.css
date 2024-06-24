@@ -6,9 +6,17 @@
     width: 50%;
 }
 
+.SearchInput:focus-within {
+    box-shadow: 0 0 0 2px blue;
+}
+
 .Icon {
     margin-left: .3em;
     filter: opacity(50%);
+}
+
+.SearchInput:focus-within .Icon {
+    filter: opacity(100%);
 }
 
 .SearchInput .Input {
