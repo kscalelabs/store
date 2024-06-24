@@ -1,20 +1,12 @@
 import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import TCButton from "components/files/TCButton";
 import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useRef, useState } from "react";
-import {
-  Button,
-  Col,
-  Form,
-  InputGroup,
-  Overlay,
-  Row,
-  Tooltip,
-} from "react-bootstrap";
+import { Col, Form, InputGroup, Overlay, Row, Tooltip } from "react-bootstrap";
 import { CheckCircle } from "react-bootstrap-icons";
-
 const isValidEmail = (email: string) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
@@ -79,7 +71,7 @@ const EmailAuthComponent = () => {
           value={email}
           disabled={isDisabled}
         />
-        <Button
+        <TCButton
           variant="primary"
           type="submit"
           disabled={isDisabled || email.length === 0 || !isValidEmail(email)}
@@ -87,7 +79,7 @@ const EmailAuthComponent = () => {
         >
           Sign In
           <FontAwesomeIcon icon={faEnvelope} style={{ marginLeft: 15 }} />
-        </Button>
+        </TCButton>
         <Overlay
           placement="bottom-end"
           show={email !== null && email.length > 3 && !isValidEmail(email)}

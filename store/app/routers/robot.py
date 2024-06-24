@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from store.app.crud.robots import EditRobot
 from store.app.crypto import new_uuid
 from store.app.db import Crud
-from store.app.model import Bom, Image, Robot
+from store.app.model import Bom, Image, Package, Robot
 from store.app.routers.users import get_session_token
 
 robots_router = APIRouter()
@@ -26,7 +26,7 @@ async def list_robots(
 ) -> tuple[List[Robot], bool]:
     """Lists the robots in the database.
 
-    The function is paginated. The page size is 18.
+    The function is paginated. The page size is 12.
 
     Returns the robots on the page and a boolean indicating if there are more pages.
     """
@@ -68,6 +68,8 @@ class NewRobot(BaseModel):
     height: Optional[str]
     weight: Optional[str]
     degrees_of_freedom: Optional[str]
+    urdf: str
+    packages: List[Package]
 
 
 @robots_router.post("/add/")
@@ -92,6 +94,8 @@ async def add_robot(
             owner=str(user_id),
             robot_id=str(new_uuid()),
             timestamp=int(time.time()),
+            urdf=new_robot.urdf,
+            packages=new_robot.packages,
         )
     )
     return True

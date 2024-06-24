@@ -1,11 +1,12 @@
+import { InputerURDFComponent } from "components/files/InputerURDFLoader";
+import TCButton from "components/files/TCButton";
 import ImageComponent from "components/files/ViewImage";
 import { useAlertQueue } from "hooks/alerts";
-import { api, Bom } from "hooks/api";
+import { api, Bom, Package } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import {
   Breadcrumb,
-  Button,
   ButtonGroup,
   Carousel,
   Col,
@@ -23,6 +24,8 @@ interface RobotDetailsResponse {
   owner: string;
   description: string;
   images: { url: string; caption: string }[];
+  urdf: string;
+  packages: Package[];
   bom: Bom[];
   height: string;
   weight: string;
@@ -45,9 +48,11 @@ const RobotDetails = () => {
   const [ownerUsername, setOwnerUsername] = useState<string | null>(null);
   const [robot, setRobot] = useState<RobotDetailsResponse | null>(null);
   const [parts, setParts] = useState<ExtendedBom[]>([]);
+  const [package_urls, setPackages] = useState<string[]>([]);
   const [imageIndex, setImageIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [showDelete, setShowDelete] = useState(false);
+  const [isValidURDF, setIsValidURDF] = useState<boolean>(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -62,6 +67,14 @@ const RobotDetails = () => {
         setRobot(robotData);
         const ownerUsername = await auth_api.getUserById(robotData.owner);
         setOwnerUsername(ownerUsername);
+        const curPackages = [];
+        for (let i = 0; i < robotData.packages.length; i++) {
+          const package_id = robotData.packages[i].name;
+          const package_url = robotData.packages[i].url;
+          curPackages.push(package_id);
+          curPackages.push(package_url);
+        }
+        setPackages(curPackages);
         const parts = robotData.bom.map(async (part) => {
           return {
             name: (await auth_api.getPartById(part.part_id)).name,
@@ -74,6 +87,24 @@ const RobotDetails = () => {
             .filter(isFulfilled)
             .map((result) => result.value as ExtendedBom),
         );
+        if (robotData.urdf) {
+          try {
+            const response = await fetch(robotData.urdf, {
+              method: "HEAD",
+              headers: {
+                Accept: "application/vnd.github.v3.raw",
+              },
+            });
+            if (response.ok) {
+              setIsValidURDF(true);
+            } else {
+              throw new Error("Invalid URDF URL");
+            }
+          } catch (err) {
+            setIsValidURDF(false);
+            console.error("URDF validation error: ", err);
+          }
+        }
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -84,6 +115,7 @@ const RobotDetails = () => {
     };
     fetchRobot();
   }, [id]);
+  // });
   useEffect(() => {
     if (auth.isAuthenticated) {
       try {
@@ -133,6 +165,8 @@ const RobotDetails = () => {
     bom: robot?.bom,
     height: robot?.height,
     weight: robot?.weight,
+    urdf: robot?.urdf,
+    packages: robot?.packages,
     degrees_of_freedom: robot?.degrees_of_freedom,
   };
 
@@ -226,52 +260,141 @@ const RobotDetails = () => {
               </table>
             </Col>
           </Row>
+          {robot.owner === userId && (
+            <>
+              <Row className="mt-2 row-two">
+                <Col md={6} sm={12}>
+                  <TCButton
+                    variant="primary"
+                    size="lg"
+                    style={{
+                      backgroundColor: "light-green",
+                      borderColor: "",
+                      padding: "10px",
+                      width: "100%",
+                    }}
+                    onClick={() => {
+                      navigate(`/edit-robot/${id}/`);
+                    }}
+                  >
+                    Edit Robot
+                  </TCButton>
+                </Col>
+                <Col md={6} sm={12}>
+                  <TCButton
+                    variant="danger"
+                    size="lg"
+                    style={{
+                      backgroundColor: "light-green",
+                      borderColor: "",
+                      padding: "10px",
+                      width: "100%",
+                    }}
+                    onClick={() => {
+                      handleShowDelete();
+                    }}
+                  >
+                    Delete Robot
+                  </TCButton>
+                </Col>
+              </Row>
+              <Modal
+                show={showDelete}
+                onHide={handleCloseDelete}
+                fullscreen="md-down"
+                centered
+                size="lg"
+                scrollable
+              >
+                <Modal.Header closeButton>
+                  <Modal.Title>
+                    Are you sure you want to delete this robot?
+                  </Modal.Title>
+                </Modal.Header>
+                <Modal.Footer className="d-flex justify-content-start">
+                  <TCButton
+                    variant="danger"
+                    onClick={async () => {
+                      await auth_api.deleteRobot(id);
+                      navigate(`/robots/your/1`);
+                    }}
+                  >
+                    Delete Robot
+                  </TCButton>
+                  <TCButton
+                    variant="outline-secondary"
+                    onClick={() => {
+                      handleCloseDelete();
+                    }}
+                  >
+                    Cancel
+                  </TCButton>
+                </Modal.Footer>
+              </Modal>
+            </>
+          )}
         </Col>
-
-        {images && (
-          <Col lg={6} md={12}>
-            <Carousel
-              indicators
-              data-bs-theme="dark"
-              style={{ border: "1px solid #ccc" }}
-              interval={null}
-              onClick={() => {
-                setImageIndex(0);
-                handleShow();
-              }}
+        <Col lg={1} md={0} />
+        <Col lg={5} md={12}>
+          {isValidURDF && (
+            <Row
+              style={{ backgroundColor: "#272727", height: "50vh" }}
+              className="mb-4"
             >
-              {images.map((image, key) => (
-                <Carousel.Item key={key}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      overflow: "hidden",
-                      width: "100%", // Adjust this to set the desired width
-                      paddingTop: "0%", // This maintains the aspect ratio of the container as a square
-                      position: "relative" as const,
-                    }}
-                  >
-                    <ImageComponent imageId={images[key].url} />
-                  </div>
-                  <Carousel.Caption
-                    style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.5)",
-                      color: "black",
-                      padding: "0.1rem",
-                      // Put the caption at the top
-                      top: 10,
-                      bottom: "unset",
-                    }}
-                  >
-                    {image.caption}
-                  </Carousel.Caption>
-                </Carousel.Item>
-              ))}
-            </Carousel>
-          </Col>
-        )}
+              <InputerURDFComponent
+                url={response.urdf}
+                packages={package_urls}
+                key={`${response.urdf}-${package_urls.join(",")}`}
+              />
+
+              {/* <InputerURDFComponent urls={response.urdf} /> */}
+            </Row>
+          )}
+          {images && (
+            <Row>
+              <Carousel
+                indicators
+                data-bs-theme="dark"
+                style={{ border: "1px solid #ccc" }}
+                interval={null}
+                controls={images.length > 1}
+              >
+                {images.map((image, key) => (
+                  <Carousel.Item key={key}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        overflow: "hidden",
+                        width: "100%", // Adjust this to set the desired width
+                        paddingTop: "0%", // This maintains the aspect ratio of the container as a square
+                        position: "relative" as const,
+                      }}
+                      onClick={() => {
+                        handleShow();
+                      }}
+                    >
+                      <ImageComponent imageId={images[key].url} />
+                    </div>
+                    <Carousel.Caption
+                      style={{
+                        backgroundColor: "rgba(255, 255, 255, 0.5)",
+                        color: "black",
+                        padding: "0.1rem",
+                        // Put the caption at the top
+                        top: 10,
+                        bottom: "unset",
+                      }}
+                    >
+                      {image.caption}
+                    </Carousel.Caption>
+                  </Carousel.Item>
+                ))}
+              </Carousel>
+            </Row>
+          )}
+        </Col>
       </Row>
       <Modal
         show={show}
@@ -283,8 +406,7 @@ const RobotDetails = () => {
       >
         <Modal.Header closeButton>
           <Modal.Title>
-            {images[imageIndex].caption} ({imageIndex + 1} of {images.length}{" "}
-            {userId}
+            {images[imageIndex].caption} ({imageIndex + 1} of {images.length})
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -303,101 +425,30 @@ const RobotDetails = () => {
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <ButtonGroup>
-            <Button
-              variant="primary"
-              onClick={() => {
-                setImageIndex((imageIndex - 1 + images.length) % images.length);
-              }}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => {
-                setImageIndex((imageIndex + 1) % images.length);
-              }}
-            >
-              Next
-            </Button>
-          </ButtonGroup>
+          {images.length > 1 && (
+            <ButtonGroup>
+              <TCButton
+                variant="primary"
+                onClick={() => {
+                  setImageIndex(
+                    (imageIndex - 1 + images.length) % images.length,
+                  );
+                }}
+              >
+                Previous
+              </TCButton>
+              <TCButton
+                variant="primary"
+                onClick={() => {
+                  setImageIndex((imageIndex + 1) % images.length);
+                }}
+              >
+                Next
+              </TCButton>
+            </ButtonGroup>
+          )}
         </Modal.Footer>
       </Modal>
-      <>
-        {robot.owner === userId && (
-          <>
-            <Row className="justify-content-end mt-2">
-              <Col md={3} sm={12}>
-                <Button
-                  variant="primary"
-                  size="lg"
-                  style={{
-                    backgroundColor: "light-green",
-                    borderColor: "",
-                    padding: "10px",
-                    width: "100%",
-                  }}
-                  onClick={() => {
-                    navigate(`/edit-robot/${id}/`);
-                  }}
-                >
-                  Edit Robot
-                </Button>
-              </Col>
-              <Col md={3} sm={12}>
-                <Button
-                  variant="danger"
-                  size="lg"
-                  style={{
-                    backgroundColor: "light-green",
-                    borderColor: "",
-                    padding: "10px",
-                    width: "100%",
-                  }}
-                  onClick={() => {
-                    handleShowDelete();
-                  }}
-                >
-                  Delete Robot
-                </Button>
-              </Col>
-            </Row>
-            <Modal
-              show={showDelete}
-              onHide={handleCloseDelete}
-              fullscreen="md-down"
-              centered
-              size="lg"
-              scrollable
-            >
-              <Modal.Header closeButton>
-                <Modal.Title>
-                  Are you sure you want to delete this robot?
-                </Modal.Title>
-              </Modal.Header>
-              <Modal.Footer className="d-flex justify-content-start">
-                <Button
-                  variant="danger"
-                  onClick={async () => {
-                    await auth_api.deleteRobot(id);
-                    navigate(`/robots/your/1`);
-                  }}
-                >
-                  Delete Robot
-                </Button>
-                <Button
-                  variant="outline-secondary"
-                  onClick={() => {
-                    handleCloseDelete();
-                  }}
-                >
-                  Cancel
-                </Button>
-              </Modal.Footer>
-            </Modal>
-          </>
-        )}
-      </>
     </>
   );
 };

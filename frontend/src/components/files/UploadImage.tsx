@@ -1,8 +1,9 @@
 import imageCompression from "browser-image-compression";
+import TCButton from "components/files/TCButton";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import React, { useState } from "react";
-import { Alert, Button, Col, Form } from "react-bootstrap";
+import { Alert, Col, Form } from "react-bootstrap";
 
 interface ImageUploadProps {
   onUploadSuccess: (url: string) => void;
@@ -82,9 +83,9 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
           <Form.Control type="file" onChange={handleFileChange} accept=".png" />
         </Form.Group>
         {fileError && <Alert variant="danger">{fileError}</Alert>}
-        <Button onClick={handleUpload} disabled={!selectedFile}>
+        <TCButton onClick={handleUpload} disabled={!selectedFile}>
           Upload
-        </Button>
+        </TCButton>
         {uploadStatus && (
           <Alert
             variant={

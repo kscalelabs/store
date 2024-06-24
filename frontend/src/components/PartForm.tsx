@@ -1,7 +1,8 @@
+import TCButton from "components/files/TCButton";
 import { Image } from "hooks/api";
 import { Theme } from "hooks/theme";
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
-import { Button, Col, Form, Row } from "react-bootstrap";
+import { Col, Form, Row } from "react-bootstrap";
 import ImageUploadComponent from "./files/UploadImage";
 
 interface PartFormProps {
@@ -100,27 +101,27 @@ const PartForm: React.FC<PartFormProps> = ({
               />
             </Col>
             <Col md={12}>
-              <Button
+              <TCButton
                 className="mb-2 mt-2"
                 variant="danger"
                 onClick={() => handleRemoveImage(index)}
               >
                 Remove
-              </Button>
+              </TCButton>
             </Col>
           </Row>
         ))}
         <Col>
-          <Button
+          <TCButton
             className="mb-3"
             variant={theme === "dark" ? "outline-light" : "outline-dark"}
             onClick={handleAddImage}
           >
             Add Image
-          </Button>
+          </TCButton>
         </Col>
         <Col md={12}>
-          <Button type="submit">Submit</Button>
+          <TCButton type="submit">Submit</TCButton>
         </Col>
       </Form>
     </>

@@ -18,7 +18,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 const Robots = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
-  const [robotsData, setRobot] = useState<Robot[] | null>(null);
+  const [robotsData, setRobot] = useState<Robot[] | null>([]);
   const [moreRobots, setMoreRobots] = useState<boolean>(false);
   const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
   const [searchQuery, setSearchQuery] = useState("");

@@ -1,8 +1,9 @@
+import TCButton from "components/files/TCButton";
 import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { FormEvent, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import { useParams } from "react-router-dom";
 
 const ResetPassword = () => {
@@ -51,9 +52,9 @@ const ResetPassword = () => {
             value={password}
             required
           />
-          <Button className="mt-2" type="submit">
+          <TCButton className="mt-2" type="submit">
             Send
-          </Button>
+          </TCButton>
         </Form>
       )}{" "}
     </div>

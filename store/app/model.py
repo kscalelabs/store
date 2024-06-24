@@ -41,6 +41,11 @@ class Image(BaseModel):
     url: str
 
 
+class Package(BaseModel):
+    name: str
+    url: str
+
+
 class Robot(BaseModel):
     robot_id: str  # Primary key
     owner: str
@@ -52,6 +57,8 @@ class Robot(BaseModel):
     weight: Optional[str] = ""
     degrees_of_freedom: Optional[str] = ""
     timestamp: int
+    urdf: str
+    packages: list[Package]
 
 
 class Part(BaseModel):

@@ -100,7 +100,7 @@ const Parts = () => {
 
       <Row className="mt-5">
         {partsData.map((part) => (
-          <Col key={part.part_id} md={3} sm={6} xs={12}>
+          <Col key={part.part_id} lg={2} md={3} sm={6} xs={12}>
             <Card onClick={() => navigate(`/part/${part.part_id}`)}>
               {part.images[0] && (
                 <div
