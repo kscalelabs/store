@@ -5,7 +5,7 @@ import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from PIL import Image
 
 from store.app.crypto import new_uuid
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 @image_router.get("/{url}/")
-async def get_image(url: str, crud: Annotated[Crud, Depends(Crud.get)]) -> StreamingResponse:
+async def get_image(url: str, crud: Annotated[Crud, Depends(Crud.get)]) -> RedirectResponse:
     try:
         return await crud.get_image(url + ".png")
     except Exception as e:
