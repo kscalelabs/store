@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 async def list_robots(
     crud: Annotated[Crud, Depends(Crud.get)],
     page: int = Query(description="Page number for pagination"),
+    search_query: str = Query(None, description="Search query string"),
 ) -> tuple[List[Robot], bool]:
     """Lists the robots in the database.
 
@@ -29,7 +30,7 @@ async def list_robots(
 
     Returns the robots on the page and a boolean indicating if there are more pages.
     """
-    return await crud.list_robots(page)
+    return await crud.list_robots(page, search_query=search_query)
 
 
 @robots_router.get("/your/")
