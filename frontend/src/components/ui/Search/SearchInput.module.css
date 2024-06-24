@@ -11,13 +11,11 @@
     filter: opacity(50%);
 }
 
-.Input {
+.SearchInput .Input {
     border: none;
-    box-shadow: none;
     overflow: hidden;
-    outline: none;
 }
 
-.Input:focus {
+.SearchInput .Input:focus {
     box-shadow: none;
 }
