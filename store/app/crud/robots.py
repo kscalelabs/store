@@ -5,11 +5,12 @@ from typing import Any, Dict, List, Optional
 
 from boto3.dynamodb.conditions import Key
 from fastapi import UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 
 from store.app.crud.base import BaseCrud
 from store.app.model import Bom, Image, Part, Robot
+from store.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -190,10 +191,8 @@ class RobotCrud(BaseCrud):
             ReturnValues="NONE",
         )
 
-    async def get_image(self, url: str) -> StreamingResponse:
-        s3_object = await (await (await self.s3.Bucket("images")).Object(url)).get()
-        file_stream = s3_object["Body"]
-        return StreamingResponse(content=file_stream, media_type="image/png")
+    async def get_image(self, url: str) -> RedirectResponse:
+        return RedirectResponse(url=f"{settings.site.image_url}/{url}")
 
     async def upload_image(self, file: UploadFile) -> None:
         await (await self.s3.Bucket("images")).upload_fileobj(file.file, file.filename or "")
