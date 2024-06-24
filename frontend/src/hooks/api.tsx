@@ -18,6 +18,11 @@ export interface Image {
   url: string;
 }
 
+export interface Package {
+  name: string;
+  url: string;
+}
+
 export interface Robot {
   robot_id: string;
   name: string;
@@ -29,6 +34,7 @@ export interface Robot {
   weight: string;
   degrees_of_freedom: string;
   urdf: string;
+  packages: Package[];
 }
 
 interface MeResponse {
@@ -96,7 +102,7 @@ export class api {
         console.error("Error registering:", error.response?.data);
         throw new Error(
           error.response?.data?.detail ||
-          "Error registering with token " + token,
+            "Error registering with token " + token,
         );
       } else {
         console.error("Unexpected error:", error);
@@ -113,7 +119,7 @@ export class api {
         console.error("Error changing email:", error.response?.data);
         throw new Error(
           error.response?.data?.detail ||
-          "Error changing email with code " + code,
+            "Error changing email with code " + code,
         );
       } else {
         console.error("Unexpected error:", error);
@@ -168,7 +174,7 @@ export class api {
         console.error("Error logging in:", error.response?.data);
         throw new Error(
           error.response?.data?.detail ||
-          "Error logging in with email " + email,
+            "Error logging in with email " + email,
         );
       } else {
         console.error("Unexpected error:", error);
@@ -507,7 +513,7 @@ export class api {
         console.error("Error uploading image:", error.response?.data);
         throw new Error(
           error.response?.data?.detail + "gmama" + formData ||
-          "Error uploading image",
+            "Error uploading image",
         );
       } else {
         console.error("Unexpected error:", error);

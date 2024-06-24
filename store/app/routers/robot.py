@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from store.app.crud.robots import EditRobot
 from store.app.crypto import new_uuid
 from store.app.db import Crud
-from store.app.model import Bom, Image, Robot
+from store.app.model import Bom, Image, Package, Robot
 from store.app.routers.users import get_session_token
 
 robots_router = APIRouter()
@@ -68,6 +68,7 @@ class NewRobot(BaseModel):
     weight: Optional[str]
     degrees_of_freedom: Optional[str]
     urdf: str
+    packages: List[Package]
 
 
 @robots_router.post("/add/")
@@ -93,6 +94,7 @@ async def add_robot(
             robot_id=str(new_uuid()),
             timestamp=int(time.time()),
             urdf=new_robot.urdf,
+            packages=new_robot.packages,
         )
     )
     return True

@@ -9,7 +9,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from store.app.crud.base import BaseCrud
-from store.app.model import Bom, Image, Part, Robot
+from store.app.model import Bom, Image, Package, Part, Robot
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,8 @@ class EditRobot(BaseModel):
     height: Optional[str]
     weight: Optional[str]
     degrees_of_freedom: Optional[str]
-    urdf: str
+    urdf: Optional[str]
+    packages: List[Package]
 
 
 def serialize_bom(bom: Bom) -> dict:
@@ -45,6 +46,14 @@ def serialize_image(image: Image) -> dict:
 
 def serialize_image_list(image_list: List[Image]) -> List[dict]:
     return [serialize_image(image) for image in image_list]
+
+
+def serialize_package(package: Package) -> dict:
+    return {"name": package.name, "url": package.url}
+
+
+def serialize_package_list(package_list: List[Package]) -> List[dict]:
+    return [serialize_package(package) for package in package_list]
 
 
 def get_timestamp(item: Dict[str, Any]) -> int:
@@ -152,13 +161,15 @@ class RobotCrud(BaseCrud):
         update_expression = "SET #name = :name, \
             #description = :description, \
             #bom = :bom, \
-            #images = :images, "
+            #images = :images, \
+            #packages = :packages, "
 
         expression_attribute_names = {
             "#name": "name",
             "#description": "description",
             "#bom": "bom",
             "#images": "images",
+            "#packages": "packages",
         }
 
         expression_attribute_values = {
@@ -166,6 +177,7 @@ class RobotCrud(BaseCrud):
             ":description": robot.description,
             ":bom": serialize_bom_list(robot.bom),
             ":images": serialize_image_list(robot.images),
+            ":packages": serialize_package_list(robot.packages),
         }
 
         if robot.urdf is not None:

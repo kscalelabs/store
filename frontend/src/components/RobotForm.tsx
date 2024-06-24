@@ -1,5 +1,5 @@
 import TCButton from "components/files/TCButton";
-import { Bom, Image, Part } from "hooks/api";
+import { Bom, Image, Package, Part } from "hooks/api";
 import { Theme } from "hooks/theme";
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { Col, Form, Row } from "react-bootstrap";
@@ -27,6 +27,8 @@ interface RobotFormProps {
   setImages: Dispatch<SetStateAction<Image[]>>;
   robotURDF: string;
   setURDF: Dispatch<SetStateAction<string>>;
+  robot_packages: Package[];
+  setPackages: Dispatch<SetStateAction<Package[]>>;
 }
 
 const RobotForm: React.FC<RobotFormProps> = ({
@@ -50,8 +52,26 @@ const RobotForm: React.FC<RobotFormProps> = ({
   robot_images,
   setImages,
   robotURDF,
-  setURDF
+  setURDF,
+  robot_packages,
+  setPackages,
 }) => {
+  const handlePackageChange = (
+    index: number,
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
+    const newPackages = [...robot_packages];
+    newPackages[index][name as keyof Package] = value;
+    setPackages(newPackages);
+  };
+  const handleAddPackage = () => {
+    setPackages([...robot_packages, { name: "", url: "" }]);
+  };
+  const handleRemovePackage = (index: number) => {
+    const newPackages = robot_packages.filter((_, i) => i !== index);
+    setPackages(newPackages);
+  };
   const handleImageChange = (
     index: number,
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -161,6 +181,7 @@ const RobotForm: React.FC<RobotFormProps> = ({
           value={robot_description}
           required
         />
+        <h2>URDF (Optional)</h2>
         <label htmlFor="urdf">URDF Link (Optional)</label>
         <Form.Control
           id="urdf"
@@ -172,6 +193,52 @@ const RobotForm: React.FC<RobotFormProps> = ({
           }}
           value={robotURDF}
         />
+        <label htmlFor="packages">URDF Packages (Optional)</label>
+        {robot_packages &&
+          robot_packages.map((pkg, index) => (
+            <Row key={index} className="mb-3">
+              <Col md={12}>
+                <label htmlFor={"name-" + index}>Caption</label>
+                <Form.Control
+                  id={"name-" + index}
+                  className="mb-1"
+                  type="text"
+                  name="name"
+                  value={pkg.name}
+                  onChange={(e) => handlePackageChange(index, e)}
+                  required
+                />
+                <Form.Control
+                  id={"url-" + index}
+                  className="mb-1"
+                  type="text"
+                  name="url"
+                  value={pkg.url}
+                  onChange={(e) => handlePackageChange(index, e)}
+                  required
+                />
+              </Col>
+              <Col md={12}>
+                <TCButton
+                  className="mb-2 mt-2"
+                  variant="danger"
+                  onClick={() => handleRemovePackage(index)}
+                >
+                  Remove
+                </TCButton>
+              </Col>
+            </Row>
+          ))}
+        <Col>
+          <TCButton
+            className="mb-3"
+            variant={theme === "dark" ? "outline-light" : "outline-dark"}
+            onClick={handleAddPackage}
+          >
+            Add Package
+          </TCButton>
+        </Col>
+
         <h2>Images</h2>
         {robot_images.map((image, index) => (
           <Row key={index} className="mb-3">

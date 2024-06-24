@@ -1,5 +1,5 @@
 import RobotForm from "components/RobotForm";
-import { api, Bom, Image, Part, Robot } from "hooks/api";
+import { api, Bom, Image, Package, Part, Robot } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
 import React, { FormEvent, useEffect, useState } from "react";
@@ -16,6 +16,7 @@ const NewRobot: React.FC = () => {
   const [robot_urdf, setURDF] = useState<string>("");
   const [robot_degrees_of_freedom, setDof] = useState<string>("");
   const [robot_description, setDescription] = useState<string>("");
+  const [robot_packages, setPackages] = useState<Package[]>([]);
   const [robot_bom, setBom] = useState<Bom[]>([]);
   const [robot_images, setImages] = useState<Image[]>([]);
   const [parts, setParts] = useState<Part[]>([]);
@@ -38,6 +39,7 @@ const NewRobot: React.FC = () => {
       height: robot_height,
       weight: robot_weight,
       degrees_of_freedom: robot_degrees_of_freedom,
+      packages: robot_packages,
     };
     try {
       await auth_api.addRobot(newFormData);
@@ -83,6 +85,8 @@ const NewRobot: React.FC = () => {
       message={message}
       setURDF={setURDF}
       robotURDF={robot_urdf}
+      robot_packages={robot_packages}
+      setPackages={setPackages}
     />
   );
 };

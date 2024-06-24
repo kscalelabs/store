@@ -1,7 +1,7 @@
 import RobotForm from "components/RobotForm";
 import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
-import { api, Bom, Image, Part, Robot } from "hooks/api";
+import { api, Bom, Image, Package, Part, Robot } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
 import React, { FormEvent, useEffect, useState } from "react";
@@ -22,6 +22,7 @@ const EditRobotForm: React.FC = () => {
   const [robot_height, setHeight] = useState<string>("");
   const [robot_weight, setWeight] = useState<string>("");
   const [urdf, setURDF] = useState<string>("");
+  const [packages, setPackages] = useState<Package[]>([]);
   const [robot_degrees_of_freedom, setDof] = useState<string>("");
   const [robot_bom, setBom] = useState<Bom[]>([]);
   const [robot_images, setImages] = useState<Image[]>([]);
@@ -43,6 +44,7 @@ const EditRobotForm: React.FC = () => {
         setHeight(robotData.height);
         setWeight(robotData.weight);
         setDof(robotData.degrees_of_freedom);
+        setPackages(robotData.packages);
       } catch (err) {
         addAlert(humanReadableError(err), "error");
       }
@@ -68,6 +70,7 @@ const EditRobotForm: React.FC = () => {
       height: robot_height,
       weight: robot_weight,
       urdf: urdf,
+      packages: packages,
       degrees_of_freedom: robot_degrees_of_freedom,
     };
     try {
@@ -114,6 +117,8 @@ const EditRobotForm: React.FC = () => {
       message={message}
       robotURDF={urdf}
       setURDF={setURDF}
+      robot_packages={packages}
+      setPackages={setPackages}
     />
   );
 };

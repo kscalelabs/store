@@ -2,7 +2,7 @@ import { InputerURDFComponent } from "components/files/InputerURDFLoader";
 import TCButton from "components/files/TCButton";
 import ImageComponent from "components/files/ViewImage";
 import { useAlertQueue } from "hooks/alerts";
-import { api, Bom } from "hooks/api";
+import { api, Bom, Package } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import {
@@ -25,6 +25,7 @@ interface RobotDetailsResponse {
   description: string;
   images: { url: string; caption: string }[];
   urdf: string;
+  packages: Package[];
   bom: Bom[];
   height: string;
   weight: string;
@@ -42,17 +43,16 @@ const RobotDetails = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const [userId, setUserId] = useState<string | null>(null);
-  const [urdf, setUrdf] = useState<string[] | null>(null);
   const { id } = useParams();
   const [show, setShow] = useState(false);
   const [ownerUsername, setOwnerUsername] = useState<string | null>(null);
   const [robot, setRobot] = useState<RobotDetailsResponse | null>(null);
   const [parts, setParts] = useState<ExtendedBom[]>([]);
+  const [package_urls, setPackages] = useState<string[]>([]);
   const [imageIndex, setImageIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [showDelete, setShowDelete] = useState(false);
   const [isValidURDF, setIsValidURDF] = useState<boolean>(false);
-
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -67,6 +67,14 @@ const RobotDetails = () => {
         setRobot(robotData);
         const ownerUsername = await auth_api.getUserById(robotData.owner);
         setOwnerUsername(ownerUsername);
+        const curPackages = [];
+        for (let i = 0; i < robotData.packages.length; i++) {
+          const package_id = robotData.packages[i].name;
+          const package_url = robotData.packages[i].url;
+          curPackages.push(package_id);
+          curPackages.push(package_url);
+        }
+        setPackages(curPackages);
         const parts = robotData.bom.map(async (part) => {
           return {
             name: (await auth_api.getPartById(part.part_id)).name,
@@ -82,15 +90,15 @@ const RobotDetails = () => {
         if (robotData.urdf) {
           try {
             const response = await fetch(robotData.urdf, {
-              method: 'HEAD',
+              method: "HEAD",
               headers: {
-                'Accept': 'application/vnd.github.v3.raw'
-              }
+                Accept: "application/vnd.github.v3.raw",
+              },
             });
             if (response.ok) {
               setIsValidURDF(true);
             } else {
-              throw new Error('Invalid URDF URL');
+              throw new Error("Invalid URDF URL");
             }
           } catch (err) {
             setIsValidURDF(false);
@@ -157,6 +165,7 @@ const RobotDetails = () => {
     height: robot?.height,
     weight: robot?.weight,
     urdf: robot?.urdf,
+    packages: robot?.packages,
     degrees_of_freedom: robot?.degrees_of_freedom,
   };
 
@@ -186,27 +195,27 @@ const RobotDetails = () => {
             (response.weight && response.weight !== "") ||
             (response.degrees_of_freedom &&
               response.degrees_of_freedom !== "")) && (
-              <>
-                <hr />
-                {response.height !== "" && (
-                  <p className="text-muted">
-                    <strong>Height:</strong> {response.height}
-                  </p>
-                )}
-                {response.weight !== "" && (
-                  <p className="text-muted">
-                    <strong>Weight: </strong>
-                    {response.weight}
-                  </p>
-                )}
-                {response.degrees_of_freedom !== "" && (
-                  <p className="text-muted">
-                    <strong>Total Degrees of Freedom:</strong>{" "}
-                    {response.degrees_of_freedom}
-                  </p>
-                )}
-              </>
-            )}
+            <>
+              <hr />
+              {response.height !== "" && (
+                <p className="text-muted">
+                  <strong>Height:</strong> {response.height}
+                </p>
+              )}
+              {response.weight !== "" && (
+                <p className="text-muted">
+                  <strong>Weight: </strong>
+                  {response.weight}
+                </p>
+              )}
+              {response.degrees_of_freedom !== "" && (
+                <p className="text-muted">
+                  <strong>Total Degrees of Freedom:</strong>{" "}
+                  {response.degrees_of_freedom}
+                </p>
+              )}
+            </>
+          )}
           <hr />
           <Row>
             <Col>
@@ -326,7 +335,6 @@ const RobotDetails = () => {
         </Col>
         <Col lg={1} md={0} />
         <Col lg={5} md={12}>
-          {response.urdf}
           {isValidURDF && (
             <Row
               style={{ backgroundColor: "#272727", height: "50vh" }}
@@ -334,7 +342,12 @@ const RobotDetails = () => {
             >
               {(() => {
                 try {
-                  return <InputerURDFComponent urls={response.urdf} />;
+                  return (
+                    <InputerURDFComponent
+                      url={response.urdf}
+                      packages={package_urls}
+                    />
+                  );
                 } catch (err) {
                   setError("Failed to load URDF component");
                   console.error("URDF component error: ", err);
