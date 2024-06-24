@@ -1,5 +1,4 @@
 {
-    // To be used for running the backend in debug mode
     "version": "0.2.0",
     "configurations": [
         {
