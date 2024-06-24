@@ -1,7 +1,6 @@
-// @ts-nocheck
 import { OrbitControls } from "@react-three/drei";
 import { Canvas, useLoader } from "@react-three/fiber";
-import React, { Suspense, useRef, useState } from "react";
+import React, { Suspense, useRef } from "react";
 import * as THREE from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
 import URDFLoader from "urdf-loader";
@@ -13,8 +12,9 @@ interface LoadModelProps {
 
 const LoadModel: React.FC<LoadModelProps> = ({ filepath, packages }) => {
   const ref = useRef<THREE.Object3D | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
+  /* eslint-disable */
+  //@ts-nocheck
   const robot = useLoader(URDFLoader, filepath, (loader) => {
     // Configure loader
     loader.loadMeshFunc = (
