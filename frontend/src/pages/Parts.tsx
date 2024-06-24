@@ -1,4 +1,5 @@
 import ImageComponent from "components/files/ViewImage";
+import { SearchInput } from "components/ui/Search/SearchInput";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Part } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
@@ -13,7 +14,6 @@ import {
 } from "react-bootstrap";
 import Markdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { SearchInput } from "components/ui/Search/SearchInput"
 
 const Parts = () => {
   const auth = useAuthentication();
@@ -37,13 +37,13 @@ const Parts = () => {
   }
 
   function handleSearch() {
-    const searchQuery = visibleSearchBarInput
-    setSearchQuery(searchQuery)
+    const searchQuery = visibleSearchBarInput;
+    setSearchQuery(searchQuery);
   }
 
   const handleSearchInputEnterKey = (query: string) => {
     setVisibleSearchBarInput(query);
-    handleSearch()
+    handleSearch();
   };
 
   useEffect(() => {

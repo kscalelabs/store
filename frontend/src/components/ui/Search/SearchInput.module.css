@@ -1,29 +1,29 @@
 .SearchInput {
-    display: flex;
-    align-items: center;
-    border: 1px solid gray;
-    border-radius: 5px;
-    width: 50%;
+  display: flex;
+  align-items: center;
+  border: 1px solid gray;
+  border-radius: 5px;
+  width: 50%;
 }
 
 .SearchInput:focus-within {
-    box-shadow: 0 0 0 2px blue;
+  box-shadow: 0 0 0 2px blue;
 }
 
 .Icon {
-    margin-left: .3em;
-    filter: opacity(50%);
+  margin-left: 0.3em;
+  filter: opacity(50%);
 }
 
 .SearchInput:focus-within .Icon {
-    filter: opacity(100%);
+  filter: opacity(100%);
 }
 
 .SearchInput .Input {
-    border: none;
-    overflow: hidden;
+  border: none;
+  overflow: hidden;
 }
 
 .SearchInput .Input:focus {
-    box-shadow: none;
+  box-shadow: none;
 }
