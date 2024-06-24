@@ -243,9 +243,9 @@ export class api {
     return response.data.username;
   }
 
-  public async getRobots(page: number): Promise<[Robot[], boolean]> {
+  public async getRobots(page: number, searchQuery?: string): Promise<[Robot[], boolean]> {
     try {
-      const response = await this.api.get("/robots/", { params: { page } });
+      const response = await this.api.get("/robots/", { params: { page, ...(searchQuery ? { search_query: searchQuery } : {}) } });
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {

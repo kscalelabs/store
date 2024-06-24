@@ -21,6 +21,7 @@ const Robots = () => {
   const [robotsData, setRobot] = useState<Robot[] | null>(null);
   const [moreRobots, setMoreRobots] = useState<boolean>(false);
   const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
+  const [searchQuery, setSearchQuery] = useState("");
   const { addAlert } = useAlertQueue();
   const { page } = useParams();
 
@@ -37,7 +38,7 @@ const Robots = () => {
   useEffect(() => {
     const fetch_robots = async () => {
       try {
-        const robotsQuery = await auth_api.getRobots(pageNumber);
+        const robotsQuery = await auth_api.getRobots(pageNumber, searchQuery);
         setMoreRobots(robotsQuery[1]);
         const robots = robotsQuery[0];
         setRobot(robots);
@@ -56,7 +57,7 @@ const Robots = () => {
       }
     };
     fetch_robots();
-  }, [pageNumber]);
+  }, [pageNumber, searchQuery]);
   const navigate = useNavigate();
 
   if (!robotsData) {
@@ -81,7 +82,7 @@ const Robots = () => {
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
         <Breadcrumb.Item active>Robots</Breadcrumb.Item>
       </Breadcrumb>
-      <SearchInput />
+      <SearchInput value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
 
 
 
