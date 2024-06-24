@@ -115,6 +115,7 @@ const RobotDetails = () => {
     };
     fetchRobot();
   }, [id]);
+  // });
   useEffect(() => {
     if (auth.isAuthenticated) {
       try {
@@ -340,19 +341,11 @@ const RobotDetails = () => {
               style={{ backgroundColor: "#272727", height: "50vh" }}
               className="mb-4"
             >
-              {(() => {
-                try {
-                  return (
-                    <InputerURDFComponent
-                      url={response.urdf}
-                      packages={package_urls}
-                    />
-                  );
-                } catch (err) {
-                  setError("Failed to load URDF component");
-                  console.error("URDF component error: ", err);
-                }
-              })()}
+              <InputerURDFComponent
+                url={response.urdf}
+                packages={package_urls}
+                key={`${response.urdf}-${package_urls.join(",")}`}
+              />
 
               {/* <InputerURDFComponent urls={response.urdf} /> */}
             </Row>
