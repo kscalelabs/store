@@ -70,9 +70,20 @@ class RobotCrud(BaseCrud):
         table = await self.db.Table("Parts")
         await table.put_item(Item=part.model_dump())
 
-    async def list_robots(self, page: int = 1, items_per_page: int = 12) -> tuple[list[Robot], bool]:
+    async def list_robots(
+        self, page: int = 1, items_per_page: int = 12, search_query: Optional[str] = None
+    ) -> tuple[list[Robot], bool]:
         table = await self.db.Table("Robots")
-        response = await table.scan()
+        if search_query:
+            response = await table.scan(
+                FilterExpression="contains(#robot_name, :query) OR contains(description, :query)",
+                ExpressionAttributeValues={":query": search_query},
+                ExpressionAttributeNames={
+                    "#robot_name": "name"
+                },  # Define the placeholder since "name" is a dynamodb reserved keyword
+            )
+        else:
+            response = await table.scan()
         # This is O(n log n). Look into better ways to architect the schema.
         sorted_items = sorted(response["Items"], key=get_timestamp, reverse=True)
         return [
@@ -94,9 +105,20 @@ class RobotCrud(BaseCrud):
             return None
         return Robot.model_validate(robot_dict["Item"])
 
-    async def list_parts(self, page: int = 1, items_per_page: int = 12) -> tuple[list[Part], bool]:
+    async def list_parts(
+        self, page: int = 1, items_per_page: int = 12, search_query: Optional[str] = None
+    ) -> tuple[list[Part], bool]:
         table = await self.db.Table("Parts")
-        response = await table.scan()
+        if search_query:
+            response = await table.scan(
+                FilterExpression="contains(#part_name, :query) OR contains(description, :query)",
+                ExpressionAttributeValues={":query": search_query},
+                ExpressionAttributeNames={
+                    "#part_name": "name"
+                },  # Define the placeholder since "name" is a dynamodb reserved keyword
+            )
+        else:
+            response = await table.scan()
         # This is O(n log n). Look into better ways to architect the schema.
         sorted_items = sorted(response["Items"], key=get_timestamp, reverse=True)
         return [

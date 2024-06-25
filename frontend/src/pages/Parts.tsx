@@ -1,4 +1,5 @@
 import ImageComponent from "components/files/ViewImage";
+import { SearchInput } from "components/ui/Search/SearchInput";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Part } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
@@ -20,6 +21,8 @@ const Parts = () => {
   const [partsData, setParts] = useState<Part[] | null>(null);
   const [moreParts, setMoreParts] = useState<boolean>(false);
   const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [visibleSearchBarInput, setVisibleSearchBarInput] = useState("");
   const { addAlert } = useAlertQueue();
   const { page } = useParams();
 
@@ -33,10 +36,20 @@ const Parts = () => {
     );
   }
 
+  function handleSearch() {
+    const searchQuery = visibleSearchBarInput;
+    setSearchQuery(searchQuery);
+  }
+
+  const handleSearchInputEnterKey = (query: string) => {
+    setVisibleSearchBarInput(query);
+    handleSearch();
+  };
+
   useEffect(() => {
     const fetch_robots = async () => {
       try {
-        const partsQuery = await auth_api.getParts(pageNumber);
+        const partsQuery = await auth_api.getParts(pageNumber, searchQuery);
         setMoreParts(partsQuery[1]);
         const parts = partsQuery[0];
         setParts(parts);
@@ -55,8 +68,7 @@ const Parts = () => {
       }
     };
     fetch_robots();
-  }, [pageNumber]);
-
+  }, [pageNumber, searchQuery]);
   const navigate = useNavigate();
 
   if (!partsData) {
@@ -80,6 +92,11 @@ const Parts = () => {
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
         <Breadcrumb.Item active>Parts</Breadcrumb.Item>
       </Breadcrumb>
+      <SearchInput
+        userInput={visibleSearchBarInput}
+        onChange={(e) => setVisibleSearchBarInput(e.target.value)}
+        onSearch={handleSearchInputEnterKey}
+      />
 
       <Row className="mt-5">
         {partsData.map((part) => (

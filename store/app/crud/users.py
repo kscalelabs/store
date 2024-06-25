@@ -45,7 +45,6 @@ class UserCrud(BaseCrud):
         )
 
         self.__session_kv, self.__register_kv, self.__reset_password_kv, self.__change_email_kv = sessions
-
         return self
 
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:  # noqa: ANN401

@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "FastAPI Debugging",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/store/app/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [],
+            "jinja": true
+        }
+    ]
+}

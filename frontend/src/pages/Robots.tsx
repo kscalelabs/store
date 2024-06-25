@@ -1,4 +1,5 @@
 import ImageComponent from "components/files/ViewImage";
+import { SearchInput } from "components/ui/Search/SearchInput";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Robot } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
@@ -20,6 +21,8 @@ const Robots = () => {
   const [robotsData, setRobot] = useState<Robot[] | null>([]);
   const [moreRobots, setMoreRobots] = useState<boolean>(false);
   const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [visibleSearchBarInput, setVisibleSearchBarInput] = useState("");
   const { addAlert } = useAlertQueue();
   const { page } = useParams();
 
@@ -33,10 +36,20 @@ const Robots = () => {
     );
   }
 
+  function handleSearch() {
+    const searchQuery = visibleSearchBarInput;
+    setSearchQuery(searchQuery);
+  }
+
+  const handleSearchInputEnterKey = (query: string) => {
+    setVisibleSearchBarInput(query);
+    handleSearch();
+  };
+
   useEffect(() => {
     const fetch_robots = async () => {
       try {
-        const robotsQuery = await auth_api.getRobots(pageNumber);
+        const robotsQuery = await auth_api.getRobots(pageNumber, searchQuery);
         setMoreRobots(robotsQuery[1]);
         const robots = robotsQuery[0];
         setRobot(robots);
@@ -55,7 +68,7 @@ const Robots = () => {
       }
     };
     fetch_robots();
-  }, [pageNumber]);
+  }, [pageNumber, searchQuery]);
   const navigate = useNavigate();
 
   if (!robotsData) {
@@ -79,6 +92,11 @@ const Robots = () => {
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
         <Breadcrumb.Item active>Robots</Breadcrumb.Item>
       </Breadcrumb>
+      <SearchInput
+        userInput={visibleSearchBarInput}
+        onChange={(e) => setVisibleSearchBarInput(e.target.value)}
+        onSearch={handleSearchInputEnterKey}
+      />
 
       <Row className="mt-5">
         {robotsData.map((robot) => (

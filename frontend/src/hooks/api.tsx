@@ -250,9 +250,14 @@ export class api {
     return response.data.username;
   }
 
-  public async getRobots(page: number): Promise<[Robot[], boolean]> {
+  public async getRobots(
+    page: number,
+    searchQuery?: string,
+  ): Promise<[Robot[], boolean]> {
     try {
-      const response = await this.api.get("/robots/", { params: { page } });
+      const response = await this.api.get("/robots/", {
+        params: { page, ...(searchQuery ? { search_query: searchQuery } : {}) },
+      });
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -406,9 +411,14 @@ export class api {
     }
   }
 
-  public async getParts(page: number): Promise<[Part[], boolean]> {
+  public async getParts(
+    page: number,
+    searchQuery?: string,
+  ): Promise<[Part[], boolean]> {
     try {
-      const response = await this.api.get("/parts/", { params: { page } });
+      const response = await this.api.get("/parts/", {
+        params: { page, ...(searchQuery ? { search_query: searchQuery } : {}) },
+      });
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {

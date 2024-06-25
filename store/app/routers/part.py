@@ -22,8 +22,9 @@ logger = logging.getLogger(__name__)
 async def list_parts(
     crud: Annotated[Crud, Depends(Crud.get)],
     page: int = Query(description="Page number for pagination"),
+    search_query: str = Query(None, description="Search query string"),
 ) -> tuple[List[Part], bool]:
-    return await crud.list_parts(page)
+    return await crud.list_parts(page, search_query=search_query)
 
 
 @parts_router.get("/dump/")
