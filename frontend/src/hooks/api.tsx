@@ -90,6 +90,23 @@ export class api {
     }
   }
 
+  public async send_register_github(): Promise<string> {
+    try {
+      const res = await this.api.get("/users/github-login");
+      return res.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error redirecting to github:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail || "Error redirecting to github",
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+
   public async register(
     token: string,
     username: string,
@@ -182,6 +199,24 @@ export class api {
       }
     }
   }
+
+  public async login_github(code: string): Promise<MeResponse> {
+    try {
+      const res = await this.api.get(`/users/github-code/${code}`);
+      return res.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error("Error logging in:", error.response?.data);
+        throw new Error(
+          error.response?.data?.detail || "Error logging in with github",
+        );
+      } else {
+        console.error("Unexpected error:", error);
+        throw new Error("Unexpected error");
+      }
+    }
+  }
+
   public async logout(): Promise<void> {
     try {
       await this.api.delete("/users/logout/");

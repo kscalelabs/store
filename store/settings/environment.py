@@ -6,6 +6,12 @@ from omegaconf import II, MISSING
 
 
 @dataclass
+class OauthSettings:
+    github_client_id: str = field(default=II("oc.env:GITHUB_CLIENT_ID"))
+    github_client_secret: str = field(default=II("oc.env:GITHUB_CLIENT_SECRET"))
+
+
+@dataclass
 class RedisSettings:
     host: str = field(default=II("oc.env:ROBOLIST_REDIS_HOST,127.0.0.1"))
     password: str = field(default=II("oc.env:ROBOLIST_REDIS_PASSWORD,''"))
@@ -48,6 +54,7 @@ class SiteSettings:
 
 @dataclass
 class EnvironmentSettings:
+    oauth: OauthSettings = field(default_factory=OauthSettings)
     redis: RedisSettings = field(default_factory=RedisSettings)
     user: UserSettings = field(default_factory=UserSettings)
     crypto: CryptoSettings = field(default_factory=CryptoSettings)

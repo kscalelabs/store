@@ -46,6 +46,7 @@ async def create_tables(crud: Crud | None = None, deletion_protection: bool = Fa
                 gsis=[
                     ("emailIndex", "email", "S", "HASH"),
                     ("usernameIndex", "username", "S", "HASH"),
+                    ("oauthIdIndex", "oauth_id", "S", "HASH"),
                 ],
                 deletion_protection=deletion_protection,
             ),

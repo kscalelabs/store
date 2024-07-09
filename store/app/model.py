@@ -17,7 +17,8 @@ class User(BaseModel):
     user_id: str  # Primary key
     username: str
     email: str
-    password_hash: str
+    password_hash: Optional[str] = ""
+    oauth_id: str
     admin: bool
 
     @classmethod
@@ -27,6 +28,17 @@ class User(BaseModel):
             email=email,
             username=username,
             password_hash=hash_password(password),
+            oauth_id="dummy_oauth",
+            admin=False,
+        )
+
+    @classmethod
+    def create_oauth(cls, username: str, oauth_id: str) -> "User":
+        return cls(
+            user_id=str(uuid.uuid4()),
+            username=username,
+            email="dummy@kscale.dev",
+            oauth_id=oauth_id,
             admin=False,
         )
 

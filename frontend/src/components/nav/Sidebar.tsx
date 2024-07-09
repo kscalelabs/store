@@ -2,7 +2,7 @@ import TCButton from "components/files/TCButton";
 import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import { Col, Form, Offcanvas, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
@@ -14,8 +14,6 @@ interface Props {
 const Sidebar = ({ show, onHide }: Props) => {
   const { addAlert } = useAlertQueue();
 
-  const [needToCall, setNeedToCall] = useState<boolean>(true);
-  const [email, setEmail] = useState<string>("");
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
 
@@ -54,19 +52,6 @@ const Sidebar = ({ show, onHide }: Props) => {
     }
   };
 
-  useEffect(() => {
-    (async () => {
-      if (needToCall) {
-        setNeedToCall(false);
-        try {
-          const res = await auth_api.me();
-          setEmail(res.email);
-        } catch (error) {
-          console.error(error);
-        }
-      }
-    })();
-  }, []);
   return (
     <Offcanvas show={show} onHide={onHide} placement="end">
       <Offcanvas.Header closeButton>
@@ -84,7 +69,7 @@ const Sidebar = ({ show, onHide }: Props) => {
             <p>
               <strong>Change Email</strong>
             </p>
-            <p>Current email: {email}</p>
+            <p>Current email: {auth.email}</p>
             {changeEmailSuccess ? (
               <p>An email has been sent to your new email address.</p>
             ) : (

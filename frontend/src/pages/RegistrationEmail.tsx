@@ -1,9 +1,11 @@
 import TCButton from "components/files/TCButton";
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { FormEvent, useState } from "react";
-import { Col, Container, Form, Row, Spinner } from "react-bootstrap";
+import { Button, Col, Container, Form, Row, Spinner } from "react-bootstrap";
 
 const RegistrationEmail = () => {
   const auth = useAuthentication();
@@ -28,6 +30,24 @@ const RegistrationEmail = () => {
       }
     }
   };
+
+  const handleGithubSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    try {
+      setSubmitted(true);
+      const redirectUrl = await auth_api.send_register_github();
+      window.location.href = redirectUrl;
+      // setSuccess(true);
+    } catch (err) {
+      setSubmitted(false);
+      if (err instanceof Error) {
+        addAlert(err.message, "error");
+      } else {
+        addAlert("Unexpected error.", "error");
+      }
+    }
+  };
+
   if (success) {
     return (
       <div>
@@ -71,6 +91,13 @@ const RegistrationEmail = () => {
           required
         />
         <TCButton type="submit">Send Code</TCButton>
+      </Form>
+      <Form onSubmit={handleGithubSubmit}>
+        <div className="mb-3 mt-3 d-flex justify-content-center">OR</div>
+        <Button type="submit">
+          <FontAwesomeIcon icon={faGithub} style={{ marginRight: 15 }} />
+          Register with Github
+        </Button>
       </Form>
     </div>
   );
