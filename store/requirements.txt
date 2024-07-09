@@ -24,6 +24,3 @@ uvicorn[standard]
 
 # Types
 types-aioboto3[dynamodb, s3]
-
-# Session dependencies
-fastapi-sessions
