@@ -5,7 +5,7 @@ import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { FormEvent, useState } from "react";
-import { Button, Col, Container, Form, Row, Spinner } from "react-bootstrap";
+import { Col, Container, Form, Row, Spinner } from "react-bootstrap";
 
 const RegistrationEmail = () => {
   const auth = useAuthentication();
@@ -94,10 +94,10 @@ const RegistrationEmail = () => {
       </Form>
       <Form onSubmit={handleGithubSubmit}>
         <div className="mb-3 mt-3 d-flex justify-content-center">OR</div>
-        <Button type="submit">
+        <TCButton type="submit">
           <FontAwesomeIcon icon={faGithub} style={{ marginRight: 15 }} />
           Register with Github
-        </Button>
+        </TCButton>
       </Form>
     </div>
   );

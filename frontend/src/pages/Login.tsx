@@ -5,7 +5,7 @@ import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
 import { setLocalStorageAuth, useAuthentication } from "hooks/auth";
 import { FormEvent, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
@@ -84,10 +84,10 @@ const Login = () => {
       </Form>
       <Form onSubmit={handleGithubSubmit}>
         <div className="mb-3 mt-3 d-flex justify-content-center">OR</div>
-        <Button type="submit">
+        <TCButton type="submit">
           <FontAwesomeIcon icon={faGithub} style={{ marginRight: 15 }} />
           Login with Github
-        </Button>
+        </TCButton>
       </Form>
     </div>
   );
