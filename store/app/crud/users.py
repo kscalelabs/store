@@ -92,7 +92,8 @@ class UserCrud(BaseCrud):
         table = await self.db.Table("Users")
         await table.put_item(
             Item=user.model_dump(),
-            ConditionExpression="attribute_not_exists(oauth_id) AND attribute_not_exists(email) AND attribute_not_exists(username)",
+            ConditionExpression="attribute_not_exists(oauth_id) AND attribute_not_exists(email) AND \
+                attribute_not_exists(username)",
         )
 
     async def get_user(self, user_id: str) -> User | None:
