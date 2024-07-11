@@ -394,6 +394,9 @@ async def github_code(
 
     user_obj = await crud.get_user(user.user_id)
 
+    if user_obj is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
     return UserInfoResponse(
         email=user_obj.email,
         username=user_obj.username,

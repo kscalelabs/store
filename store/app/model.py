@@ -17,7 +17,7 @@ class User(BaseModel):
     user_id: str  # Primary key
     username: str
     email: str
-    password_hash: Optional[str] = ""
+    password_hash: str
     oauth_id: str
     admin: bool
 
@@ -40,6 +40,7 @@ class User(BaseModel):
             email="dummy@kscale.dev",
             oauth_id=oauth_id,
             admin=False,
+            password_hash="",
         )
 
 
