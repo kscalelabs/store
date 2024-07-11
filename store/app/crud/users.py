@@ -91,7 +91,9 @@ class UserCrud(BaseCrud):
         # Then, add the user object to the Users table.
         table = await self.db.Table("Users")
         await table.put_item(
-            Item=user.model_dump(), ConditionExpression="attribute_not_exists(email) AND attribute_not_exists(username)"
+            Item=user.model_dump(),
+            ConditionExpression="attribute_not_exists(oauth_id) AND attribute_not_exists(email) AND \
+                attribute_not_exists(username)",
         )
 
     async def get_user(self, user_id: str) -> User | None:
@@ -122,6 +124,19 @@ class UserCrud(BaseCrud):
             return None
         if len(items) > 1:
             raise ValueError(f"Multiple users found with email {email}")
+        return User.model_validate(items[0])
+
+    async def get_user_from_oauth_id(self, oauth_id: str) -> User | None:
+        table = await self.db.Table("Users")
+        user_dict = await table.query(
+            IndexName="oauthIdIndex",
+            KeyConditionExpression=Key("oauth_id").eq(oauth_id),
+        )
+        items = user_dict["Items"]
+        if len(items) == 0:
+            return None
+        if len(items) > 1:
+            raise ValueError(f"Multiple users found with oauth id {oauth_id}")
         return User.model_validate(items[0])
 
     async def get_user_id_from_session_token(self, session_token: str) -> str | None:

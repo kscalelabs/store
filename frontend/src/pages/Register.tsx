@@ -1,7 +1,7 @@
 import TCButton from "components/files/TCButton";
 import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
-import { useAuthentication } from "hooks/auth";
+import { setLocalStorageAuth, useAuthentication } from "hooks/auth";
 import { FormEvent, useEffect, useState } from "react";
 import { Col, Container, Form, Row, Spinner } from "react-bootstrap";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -23,6 +23,7 @@ const Register = () => {
     event.preventDefault();
     try {
       await auth_api.register(token || "", username, password);
+      setLocalStorageAuth(email);
       navigate("/");
     } catch (err) {
       if (err instanceof Error) {

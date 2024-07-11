@@ -121,7 +121,18 @@ export ROBOLIST_SMTP_SENDER_NAME=
 export ROBOLIST_SMTP_USERNAME=
 export ROBOLIST_REDIS_HOST=
 export ROBOLIST_REDIS_PASSWORD=
+export GITHUB_CLIENT_ID=
+export GITHUB_CLIENT_SECRET=
 ```
+
+### Github OAuth Configuration
+
+To run Github OAuth locally, you must follow these steps:
+1. Create an OAuth App on [Github Developer Settings](https://github.com/settings/developers)
+2. Set both Homepage URL and Authorization callback URL to `http://127.0.0.1:3000` before you `Update application` on Github Oauth App configuration
+3. Copy the Client ID and Client Secret from Github OAuth App configuration and set them in `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` respectively
+4. Run `source env.sh` in your Fast API terminal window to ensure it has access to the github environment variables
+
 
 ## React
 

@@ -33,8 +33,8 @@ async def create_tables(crud: Crud | None = None, deletion_protection: bool = Fa
     logging.basicConfig(level=logging.INFO)
 
     if crud is None:
-        async with Crud() as crud:
-            await create_tables(crud)
+        async with Crud() as new_crud:
+            await create_tables(new_crud)
 
     else:
         await asyncio.gather(
@@ -46,6 +46,7 @@ async def create_tables(crud: Crud | None = None, deletion_protection: bool = Fa
                 gsis=[
                     ("emailIndex", "email", "S", "HASH"),
                     ("usernameIndex", "username", "S", "HASH"),
+                    ("oauthIdIndex", "oauth_id", "S", "HASH"),
                 ],
                 deletion_protection=deletion_protection,
             ),
@@ -85,8 +86,8 @@ async def delete_tables(crud: Crud | None = None) -> None:
     logging.basicConfig(level=logging.INFO)
 
     if crud is None:
-        async with Crud() as crud:
-            await delete_tables(crud)
+        async with Crud() as new_crud:
+            await delete_tables(new_crud)
 
     else:
         await asyncio.gather(
@@ -103,8 +104,8 @@ async def populate_with_dummy_data(crud: Crud | None = None) -> None:
         crud: The top-level CRUD class.
     """
     if crud is None:
-        async with Crud() as crud:
-            await populate_with_dummy_data(crud)
+        async with Crud() as new_crud:
+            await populate_with_dummy_data(new_crud)
 
     else:
         raise NotImplementedError("This function is not yet implemented.")

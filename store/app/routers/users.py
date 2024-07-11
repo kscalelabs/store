@@ -6,18 +6,25 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.security.utils import get_authorization_scheme_param
-from pydantic.main import BaseModel
+from httpx import AsyncClient
+from pydantic.main import BaseModel as PydanticBaseModel
 
 from store.app.crypto import check_password, new_token
 from store.app.db import Crud
 from store.app.model import User
 from store.app.utils.email import send_change_email, send_delete_email, send_register_email, send_reset_password_email
+from store.settings import settings
 
 logger = logging.getLogger(__name__)
 
 users_router = APIRouter()
 
 TOKEN_TYPE = "Bearer"
+
+
+class BaseModel(PydanticBaseModel):
+    class Config:
+        arbitrary_types_allowed = True
 
 
 def set_token_cookie(response: Response, token: str, key: str) -> None:
@@ -255,9 +262,11 @@ async def get_user_info_endpoint(
 ) -> UserInfoResponse:
     user_id = await crud.get_user_id_from_session_token(token)
     if user_id is None:
+        print("executed 1")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     user_obj = await crud.get_user(user_id)
     if user_obj is None:
+        print("executed 2")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return UserInfoResponse(
         email=user_obj.email,
@@ -312,6 +321,88 @@ async def get_users_batch_endpoint(
         )
         for user_obj in user_objs
     ]
+
+
+class SessionData(BaseModel):
+    username: str
+
+
+@users_router.get("/github-login")
+async def github_login() -> str:
+    """Gives the user a redirect url to login with github.
+
+    Returns:
+        Github oauth redirect url.
+    """
+    return f"https://github.com/login/oauth/authorize?client_id={settings.oauth.github_client_id}"
+
+
+@users_router.get("/github-code/{code}", response_model=UserInfoResponse)
+async def github_code(
+    code: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+    response: Response,
+) -> UserInfoResponse:
+    """Gives the user a session token upon successful github authentication and creation of user.
+
+    Args:
+        code: Github code returned from the successful authentication.
+        crud: The CRUD object.
+        response: The response object.
+
+    Returns:
+        UserInfoResponse.
+    """
+    params = {
+        "client_id": settings.oauth.github_client_id,
+        "client_secret": settings.oauth.github_client_secret,
+        "code": code,
+    }
+    headers = {"Accept": "application/json"}
+    async with AsyncClient() as client:
+        oauth_response = await client.post(
+            url="https://github.com/login/oauth/access_token", params=params, headers=headers
+        )
+    response_json = oauth_response.json()
+    print("\n\n", response_json, "\n\n")
+
+    # access token is used to retrieve user oauth details
+    access_token = response_json["access_token"]
+    async with AsyncClient() as client:
+        headers.update({"Authorization": f"Bearer {access_token}"})
+        oauth_response = await client.get("https://api.github.com/user", headers=headers)
+
+    github_id = oauth_response.json()["html_url"]
+    github_username = oauth_response.json()["login"]
+
+    user = await crud.get_user_from_oauth_id(github_id)
+
+    # create a user if it doesn't exist, with dummy email since email is required for secondary indexing
+    if user is None:
+        user = User.create_oauth(username=github_username, oauth_id=github_id)
+        await crud.add_user(user)
+
+    token = new_token()
+
+    await crud.add_session_token(token, user.user_id, 60 * 60 * 24 * 7)
+
+    response.set_cookie(
+        key="session_token",
+        value=token,
+        httponly=True,
+    )
+
+    user_obj = await crud.get_user(user.user_id)
+
+    if user_obj is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    return UserInfoResponse(
+        email=user_obj.email,
+        username=user_obj.username,
+        user_id=user_obj.user_id,
+        admin=user_obj.admin,
+    )
 
 
 @users_router.get("/{user_id}", response_model=PublicUserInfoResponse)

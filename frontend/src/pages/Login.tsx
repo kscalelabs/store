@@ -1,3 +1,5 @@
+import { faGithub } from "@fortawesome/free-brands-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import TCButton from "components/files/TCButton";
 import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
@@ -28,6 +30,21 @@ const Login = () => {
         addAlert(err.message, "error");
       } else {
         addAlert("Unexpected error when trying to log in", "error");
+      }
+    }
+  };
+
+  const handleGithubSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    try {
+      const redirectUrl = await auth_api.send_register_github();
+      window.location.href = redirectUrl;
+      // setSuccess(true);
+    } catch (err) {
+      if (err instanceof Error) {
+        addAlert(err.message, "error");
+      } else {
+        addAlert("Unexpected error.", "error");
       }
     }
   };
@@ -64,6 +81,13 @@ const Login = () => {
           <Link to="/forgot">Forgot your password?</Link>
         </div>
         <TCButton type="submit">Login</TCButton>
+      </Form>
+      <Form onSubmit={handleGithubSubmit}>
+        <div className="mb-3 mt-3 d-flex justify-content-center">OR</div>
+        <TCButton type="submit">
+          <FontAwesomeIcon icon={faGithub} style={{ marginRight: 15 }} />
+          Login with Github
+        </TCButton>
       </Form>
     </div>
   );

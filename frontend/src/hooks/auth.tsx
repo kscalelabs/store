@@ -1,6 +1,12 @@
 import axios, { AxiosInstance } from "axios";
 import { BACKEND_URL } from "constants/backend";
-import { createContext, ReactNode, useCallback, useContext } from "react";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useState,
+} from "react";
 import { useNavigate } from "react-router-dom";
 
 const AUTH_KEY_ID = "AUTH";
@@ -9,8 +15,9 @@ const getLocalStorageAuth = (): string | null => {
   return localStorage.getItem(AUTH_KEY_ID);
 };
 
-export const setLocalStorageAuth = (email: string) => {
-  localStorage.setItem(AUTH_KEY_ID, email);
+// changed from email to id to accommodate oauth logins that don't use email
+export const setLocalStorageAuth = (id: string) => {
+  localStorage.setItem(AUTH_KEY_ID, id);
 };
 
 export const deleteLocalStorageAuth = () => {
@@ -20,8 +27,11 @@ export const deleteLocalStorageAuth = () => {
 interface AuthenticationContextProps {
   logout: () => void;
   isAuthenticated: boolean;
-  email: string | null;
+  setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
+  id: string | null;
   api: AxiosInstance;
+  email: string;
+  setEmail: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const AuthenticationContext = createContext<
@@ -37,8 +47,11 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
 
   const navigate = useNavigate();
 
-  const isAuthenticated = getLocalStorageAuth() !== null;
-  const email = getLocalStorageAuth();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
+    getLocalStorageAuth() !== null,
+  );
+  const [email, setEmail] = useState<string>("dummy@kscale.dev");
+  const id = getLocalStorageAuth();
 
   const api = axios.create({
     baseURL: BACKEND_URL,
@@ -62,8 +75,11 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
       value={{
         logout,
         isAuthenticated,
-        email,
+        setIsAuthenticated,
+        id,
         api,
+        email,
+        setEmail,
       }}
     >
       {children}
