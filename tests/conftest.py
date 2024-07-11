@@ -6,7 +6,7 @@ from typing import Generator
 import fakeredis
 import pytest
 from _pytest.python import Function
-from httpx import AsyncClient, ASGITransport
+from httpx import ASGITransport, AsyncClient
 from moto.dynamodb import mock_dynamodb
 from moto.server import ThreadedMotoServer
 from pytest_mock.plugin import MockerFixture, MockType
@@ -68,7 +68,7 @@ def mock_redis(mocker: MockerFixture) -> None:
 
 
 @pytest.fixture()
-async def app_client():
+async def app_client() -> AsyncClient:
     from store.app.main import app
     transport = ASGITransport(app)
 

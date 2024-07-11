@@ -6,6 +6,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.security.utils import get_authorization_scheme_param
+from httpx import AsyncClient
 from pydantic.main import BaseModel as PydanticBaseModel
 
 from store.app.crypto import check_password, new_token
@@ -13,10 +14,6 @@ from store.app.db import Crud
 from store.app.model import User
 from store.app.utils.email import send_change_email, send_delete_email, send_register_email, send_reset_password_email
 from store.settings import settings
-
-from httpx import AsyncClient
-
-from uuid import uuid4
 
 logger = logging.getLogger(__name__)
 
@@ -331,8 +328,8 @@ class SessionData(BaseModel):
 
 
 @users_router.get("/github-login")
-async def github_login():
-    """Gives the user a redirect url to login with github
+async def github_login() -> str:
+    """Gives the user a redirect url to login with github.
 
     Returns:
         Github oauth redirect url
@@ -345,8 +342,8 @@ async def github_code(
     code: str,
     crud: Annotated[Crud, Depends(Crud.get)],
     response: Response,
-):
-    """Gives the user a session token upon successful github authentication and creation of user
+) -> UserInfoResponse:
+    """Gives the user a session token upon successful github authentication and creation of user.
 
     Args:
         code: Github code returned from the successful authentication
@@ -356,7 +353,6 @@ async def github_code(
     Returns:
         UserInfoResponse
     """
-
     params = {
         "client_id": settings.oauth.github_client_id,
         "client_secret": settings.oauth.github_client_secret,
@@ -368,6 +364,7 @@ async def github_code(
             url="https://github.com/login/oauth/access_token", params=params, headers=headers
         )
     response_json = oauth_response.json()
+    print("\n\n", response_json, "\n\n")
 
     # access token is used to retrieve user oauth details
     access_token = response_json["access_token"]
