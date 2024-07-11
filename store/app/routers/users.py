@@ -332,7 +332,7 @@ async def github_login() -> str:
     """Gives the user a redirect url to login with github.
 
     Returns:
-        Github oauth redirect url
+        Github oauth redirect url.
     """
     return f"https://github.com/login/oauth/authorize?client_id={settings.oauth.github_client_id}"
 
@@ -346,12 +346,12 @@ async def github_code(
     """Gives the user a session token upon successful github authentication and creation of user.
 
     Args:
-        code: Github code returned from the successful authentication
+        code: Github code returned from the successful authentication.
         crud: The CRUD object.
         response: The response object.
 
     Returns:
-        UserInfoResponse
+        UserInfoResponse.
     """
     params = {
         "client_id": settings.oauth.github_client_id,
