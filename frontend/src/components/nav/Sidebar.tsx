@@ -69,7 +69,14 @@ const Sidebar = ({ show, onHide }: Props) => {
             <p>
               <strong>Change Email</strong>
             </p>
-            <p>Current email: {auth.email}</p>
+            {auth.email == "dummy@kscale.dev" ? (
+              <p>
+                No email address associated with this account. (This is because
+                you registered via OAuth.)
+              </p>
+            ) : (
+              <p>Current email: {auth.email}</p>
+            )}
             {changeEmailSuccess ? (
               <p>An email has been sent to your new email address.</p>
             ) : (
@@ -93,6 +100,10 @@ const Sidebar = ({ show, onHide }: Props) => {
           <Row>
             <p>
               <strong>Change Password</strong>
+            </p>
+            <p>
+              You may only change your password if you have a previous password.
+              If not, log out and reset your password.
             </p>
             {changePasswordSuccess ? (
               <p>Your password has been changed.</p>
