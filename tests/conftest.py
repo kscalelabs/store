@@ -3,7 +3,6 @@
 import os
 from typing import Generator
 
-import fakeredis
 import pytest
 from _pytest.python import Function
 from httpx import ASGITransport, AsyncClient
@@ -59,17 +58,10 @@ def mock_aws() -> Generator[None, None, None]:
                 os.environ[k] = v
 
 
-@pytest.fixture(autouse=True)
-def mock_redis(mocker: MockerFixture) -> None:
-    os.environ["ROBOLIST_REDIS_HOST"] = "localhost"
-    os.environ["ROBOLIST_REDIS_PASSWORD"] = ""
-    fake_redis = fakeredis.aioredis.FakeRedis()
-    mocker.patch("store.app.crud.users.Redis", return_value=fake_redis)
-
-
 @pytest.fixture()
 async def app_client() -> AsyncClient:
     from store.app.main import app
+
     transport = ASGITransport(app)
 
     async with AsyncClient(transport=transport, base_url="http://test") as app_client:

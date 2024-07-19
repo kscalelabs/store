@@ -235,4 +235,5 @@ class RobotCrud(BaseCrud):
         return RedirectResponse(url=f"{settings.site.image_url}/{url}")
 
     async def upload_image(self, file: UploadFile) -> None:
-        await (await self.s3.Bucket("images")).upload_fileobj(file.file, file.filename or "")
+        bucket = await self.s3.Bucket("images")
+        await bucket.upload_fileobj(file.file, file.filename or "")

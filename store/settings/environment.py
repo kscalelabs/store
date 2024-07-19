@@ -12,17 +12,6 @@ class OauthSettings:
 
 
 @dataclass
-class RedisSettings:
-    host: str = field(default=II("oc.env:ROBOLIST_REDIS_HOST,127.0.0.1"))
-    password: str = field(default=II("oc.env:ROBOLIST_REDIS_PASSWORD,''"))
-    port: int = field(default=6379)
-    session_db: int = field(default=0)
-    verify_email_db: int = field(default=1)
-    reset_password_db: int = field(default=2)
-    change_email_db: int = field(default=3)
-
-
-@dataclass
 class CryptoSettings:
     expire_token_minutes: int = field(default=10)
     expire_otp_minutes: int = field(default=10)
@@ -55,7 +44,6 @@ class SiteSettings:
 @dataclass
 class EnvironmentSettings:
     oauth: OauthSettings = field(default_factory=OauthSettings)
-    redis: RedisSettings = field(default_factory=RedisSettings)
     user: UserSettings = field(default_factory=UserSettings)
     crypto: CryptoSettings = field(default_factory=CryptoSettings)
     email: EmailSettings = field(default_factory=EmailSettings)

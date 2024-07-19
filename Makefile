@@ -37,11 +37,6 @@ start-docker-dynamodb:
 	@docker rm store-db || true
 	@docker run --name store-db -d -p 8000:8000 amazon/dynamodb-local
 
-start-docker-redis:
-	@docker kill store-redis || true
-	@docker rm store-redis || true
-	@docker run --name store-redis -d -p 6379:6379 redis
-
 # ------------------------ #
 #      Code Formatting     #
 # ------------------------ #

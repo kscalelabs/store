@@ -1,91 +1,18 @@
 """Defines CRUD interface for user API."""
 
 import asyncio
-import json
 import warnings
-from typing import Any, Self
 
 from boto3.dynamodb.conditions import Key
-from redis.asyncio import Redis
 
 from store.app.crud.base import BaseCrud
-from store.app.crypto import hash_password, hash_token
+from store.app.crypto import hash_password
 from store.app.model import User
-from store.settings import settings
 
 
 class UserCrud(BaseCrud):
     def __init__(self) -> None:
         super().__init__()
-
-        self.__session_kv: Redis | None = None
-        self.__register_kv: Redis | None = None
-        self.__reset_password_kv: Redis | None = None
-        self.__change_email_kv: Redis | None = None
-
-    async def __aenter__(self) -> Self:
-        self, sessions = await asyncio.gather(
-            super().__aenter__(),
-            asyncio.gather(
-                *(
-                    Redis(
-                        host=settings.redis.host,
-                        password=settings.redis.password if settings.redis.password else None,
-                        port=settings.redis.port,
-                        db=db,
-                    ).__aenter__()
-                    for db in (
-                        settings.redis.session_db,
-                        settings.redis.verify_email_db,
-                        settings.redis.reset_password_db,
-                        settings.redis.change_email_db,
-                    )
-                )
-            ),
-        )
-
-        self.__session_kv, self.__register_kv, self.__reset_password_kv, self.__change_email_kv = sessions
-        return self
-
-    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:  # noqa: ANN401
-        await asyncio.gather(
-            super().__aexit__(exc_type, exc_val, exc_tb),
-            asyncio.gather(
-                *(
-                    kv.__aexit__(exc_type, exc_val, exc_tb)
-                    for kv in (
-                        self.session_kv,
-                        self.register_kv,
-                        self.reset_password_kv,
-                        self.change_email_kv,
-                    )
-                )
-            ),
-        )
-
-    @property
-    def session_kv(self) -> Redis:
-        if self.__session_kv is None:
-            raise RuntimeError("Must call __aenter__ first!")
-        return self.__session_kv
-
-    @property
-    def register_kv(self) -> Redis:
-        if self.__register_kv is None:
-            raise RuntimeError("Must call __aenter__ first!")
-        return self.__register_kv
-
-    @property
-    def reset_password_kv(self) -> Redis:
-        if self.__reset_password_kv is None:
-            raise RuntimeError("Must call __aenter__ first!")
-        return self.__reset_password_kv
-
-    @property
-    def change_email_kv(self) -> Redis:
-        if self.__change_email_kv is None:
-            raise RuntimeError("Must call __aenter__ first!")
-        return self.__change_email_kv
 
     async def add_user(self, user: User) -> None:
         # Then, add the user object to the Users table.
@@ -140,13 +67,16 @@ class UserCrud(BaseCrud):
         return User.model_validate(items[0])
 
     async def get_user_id_from_session_token(self, session_token: str) -> str | None:
-        user_id = await self.session_kv.get(hash_token(session_token))
-        if user_id is None:
+        table = await self.db.Table("Sessions")
+        response = await table.get_item(Key={"token": session_token})
+        if "Item" not in response:
             return None
-        return user_id.decode("utf-8")
+        user_id = response["Item"]["user_id"]
+        if not isinstance(user_id, str):
+            return None
+        return user_id
 
     async def delete_user(self, user_id: str) -> None:
-        # Then, delete the user object from the Users table.
         table = await self.db.Table("Users")
         await table.delete_item(Key={"user_id": user_id})
 
@@ -160,59 +90,89 @@ class UserCrud(BaseCrud):
         return await table.item_count
 
     async def add_session_token(self, token: str, user_id: str, lifetime: int) -> None:
-        await self.session_kv.setex(hash_token(token), lifetime, user_id)
+        table = await self.db.Table("Sessions")
+        await table.put_item(
+            Item={"token": token, "user_id": user_id},
+            ConditionExpression="attribute_not_exists(token)",
+        )
 
     async def delete_session_token(self, token: str) -> None:
-        await self.session_kv.delete(hash_token(token))
+        table = await self.db.Table("Sessions")
+        await table.delete_item(Key={"token": token})
 
     async def add_register_token(self, token: str, email: str, lifetime: int) -> None:
-        await self.register_kv.setex(hash_token(token), lifetime, email)
+        table = await self.db.Table("RegisterTokens")
+        await table.put_item(
+            Item={"token": token, "email": email},
+            ConditionExpression="attribute_not_exists(token)",
+        )
 
     async def delete_register_token(self, token: str) -> None:
-        await self.register_kv.delete(hash_token(token))
+        table = await self.db.Table("RegisterTokens")
+        await table.delete_item(Key={"token": token})
 
     async def check_register_token(self, token: str) -> str:
-        email = await self.register_kv.get(hash_token(token))
-        if email is None:
+        table = await self.db.Table("RegisterTokens")
+        response = await table.get_item(Key={"token": token})
+        if "Item" not in response:
             raise ValueError("Provided token is invalid")
-        return email.decode("utf-8")
+        email = response["Item"]["email"]
+        if not isinstance(email, str):
+            raise ValueError("Provided token is invalid")
+        return email
 
     async def change_password(self, user_id: str, new_password: str) -> None:
-        await (await self.db.Table("Users")).update_item(
+        table = await self.db.Table("Users")
+        await table.update_item(
             Key={"user_id": user_id},
             AttributeUpdates={"password_hash": {"Value": hash_password(new_password), "Action": "PUT"}},
         )
 
     async def add_reset_password_token(self, token: str, user_id: str, lifetime: int) -> None:
-        await self.reset_password_kv.setex(hash_token(token), lifetime, user_id)
+        table = await self.db.Table("ResetPasswordTokens")
+        await table.put_item(
+            Item={"token": token, "user_id": user_id},
+            ConditionExpression="attribute_not_exists(token)",
+        )
 
     async def delete_reset_password_token(self, token: str) -> None:
-        await self.reset_password_kv.delete(hash_token(token))
+        table = await self.db.Table("ResetPasswordTokens")
+        await table.delete_item(Key={"token": token})
 
     async def use_reset_password_token(self, token: str, new_password: str) -> None:
-        id = await self.reset_password_kv.get(hash_token(token))
-        if id is None:
+        table = await self.db.Table("ResetPasswordTokens")
+        response = await table.get_item(Key={"token": token})
+        if "Item" not in response:
             raise ValueError("Provided token is invalid")
-        await self.change_password(id.decode("utf-8"), new_password)
-        await self.delete_reset_password_token(token)
+        user_id = response["Item"]["user_id"]
+        if not isinstance(user_id, str):
+            raise ValueError("Provided token is invalid")
+        await self.change_password(user_id, new_password)
+        await table.delete_item(Key={"token": token})
 
     async def add_change_email_token(self, token: str, user_id: str, new_email: str, lifetime: int) -> None:
-        await self.change_email_kv.setex(
-            hash_token(token), lifetime, json.dumps({"user_id": user_id, "new_email": new_email})
+        table = await self.db.Table("ChangeEmailTokens")
+        await table.put_item(
+            Item={"token": token, "user_id": user_id, "new_email": new_email},
+            ConditionExpression="attribute_not_exists(token)",
         )
 
     async def use_change_email_token(self, token: str) -> None:
-        data = await self.change_email_kv.get(hash_token(token))
-        if data is None:
+        table = await self.db.Table("ChangeEmailTokens")
+        response = await table.get_item(Key={"token": token})
+        if "Item" not in response:
             raise ValueError("Provided token is invalid")
-        data = json.loads(data)
+        user_id = response["Item"]["user_id"]
+        new_email = response["Item"]["new_email"]
+        if not isinstance(user_id, str) or not isinstance(new_email, str):
+            raise ValueError("Provided token is invalid")
         await (await self.db.Table("Users")).update_item(
-            Key={"user_id": data["user_id"]},
+            Key={"user_id": user_id},
             AttributeUpdates={
-                "email": {"Value": data["new_email"], "Action": "PUT"},
+                "email": {"Value": new_email, "Action": "PUT"},
             },
         )
-        await self.change_email_kv.delete(hash_token(token))
+        await table.delete_item(Key={"token": token})
 
 
 async def test_adhoc() -> None:

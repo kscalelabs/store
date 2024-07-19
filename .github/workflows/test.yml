@@ -38,12 +38,6 @@ jobs:
     #       -v /tmp/dynamodb:/data
     #     ports:
     #       - 8000
-    #   redis-local:
-    #     image: redis
-    #     options: >-
-    #       -p 0:6379
-    #     ports:
-    #       - 6379
 
     steps:
       - name: Check out repository

@@ -9,7 +9,7 @@ To get started developing:
 1. Clone the repository
 2. Install the React dependencies and create a `.env.local` file
 3. Install the FastAPI dependencies
-4. Start the Redis and DynamoDB databases
+4. Start the DynamoDB databases
 5. Initialize the test databases
 6. Serve the FastAPI application
 7. Serve the React frontend
@@ -61,22 +61,6 @@ To run, **source the same environment variables that you use for FastAPI** and t
 DYNAMO_ENDPOINT=http://127.0.0.1:4566 dynamodb-admin
 ```
 
-### Redis
-
-For Redis, use the `redis` Docker image:
-
-```bash
-docker pull redis  # If you haven't already
-docker run --name store-redis -d -p 6379:6379 redis  # Start the container in the background
-```
-
-Then, if you need to kill the database, you can run:
-
-```bash
-docker kill store-redis || true
-docker rm store-redis || true
-```
-
 ## FastAPI
 
 Create a Python virtual environment using either [uv](https://astral.sh/blog/uv) or [virtualenv](https://virtualenv.pypa.io/en/latest/) with at least Python 3.11. This should look something like this:
@@ -119,8 +103,6 @@ export ROBOLIST_SMTP_SENDER_EMAIL=
 export ROBOLIST_SMTP_PASSWORD=
 export ROBOLIST_SMTP_SENDER_NAME=
 export ROBOLIST_SMTP_USERNAME=
-export ROBOLIST_REDIS_HOST=
-export ROBOLIST_REDIS_PASSWORD=
 export GITHUB_CLIENT_ID=
 export GITHUB_CLIENT_SECRET=
 ```

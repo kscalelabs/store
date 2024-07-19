@@ -7,7 +7,6 @@ pydantic
 
 # AWS dependencies.
 aioboto3
-redis
 
 # Crypto dependencies
 argon2-cffi

@@ -74,6 +74,16 @@ async def create_tables(crud: Crud | None = None, deletion_protection: bool = Fa
                 ],
                 deletion_protection=deletion_protection,
             ),
+            crud._create_dynamodb_table(
+                name="Tokens",
+                keys=[
+                    ("token_id", "S", "HASH"),
+                ],
+                gsis=[
+                    ("ownerIndex", "owner", "S", "HASH"),
+                    ("timestampIndex", "timestamp", "N", "HASH"),
+                ],
+            )
         )
 
 
