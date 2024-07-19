@@ -2,17 +2,40 @@
 
 import asyncio
 import warnings
+from datetime import datetime
 
-from boto3.dynamodb.conditions import Key
-
-from store.app.crud.base import BaseCrud
+from store.app.crud.base import BaseCrud, GlobalSecondaryIndex
 from store.app.crypto import hash_password
-from store.app.model import User
+from store.app.model import OauthUser, User
+from store.settings import settings
+
+# This dictionary is used to locally cache the last time a token was validated
+# against the database. We give the tokens some buffer time to avoid hitting
+# the database too often.
+LAST_TOKEN_VALIDATION: dict[str, datetime] = {}
 
 
 class UserCrud(BaseCrud):
     def __init__(self) -> None:
         super().__init__()
+
+    @classmethod
+    def get_gsis(cls) -> list[GlobalSecondaryIndex]:
+        return super().get_gsis() + [
+            ("usernameIndex", "username", "S", "HASH"),
+            ("emailIndex", "email", "S", "HASH"),
+            ("oauthIdIndex", "oauth_id", "S", "HASH"),
+        ]
+
+    async def validate_session_token(self, token: str) -> bool:
+        if token in LAST_TOKEN_VALIDATION:
+            if (datetime.now() - LAST_TOKEN_VALIDATION[token]).seconds < settings.crypto.expire_token_minutes * 60:
+                return True
+        user_id = await self.get_user_id_from_session_token(token)
+        if user_id is None:
+            return False
+        LAST_TOKEN_VALIDATION[token] = datetime.now()
+        return True
 
     async def add_user(self, user: User) -> None:
         # Then, add the user object to the Users table.
@@ -24,70 +47,36 @@ class UserCrud(BaseCrud):
         )
 
     async def get_user(self, user_id: str) -> User | None:
-        table = await self.db.Table("Users")
-        user_dict = await table.get_item(Key={"user_id": user_id})
-        if "Item" not in user_dict:
-            return None
-        return User.model_validate(user_dict["Item"])
+        return await self._get_item(user_id, User, throw_if_missing=False)
 
     async def get_user_batch(self, user_ids: list[str]) -> list[User]:
-        users: list[User] = []
-        chunk_size = 100
-        for i in range(0, len(user_ids), chunk_size):
-            chunk = user_ids[i : i + chunk_size]
-            keys = [{"user_id": user_id} for user_id in chunk]
-            response = await self.db.batch_get_item(RequestItems={"Users": {"Keys": keys}})
-            users.extend(User.model_validate(user) for user in response["Responses"]["Users"])
-        return users
+        return await self._get_item_batch(user_ids, User)
 
     async def get_user_from_email(self, email: str) -> User | None:
-        table = await self.db.Table("Users")
-        user_dict = await table.query(
-            IndexName="emailIndex",
-            KeyConditionExpression=Key("email").eq(email),
-        )
-        items = user_dict["Items"]
-        if len(items) == 0:
+        users = await self._get_items_from_secondary_index("emailIndex", "email", email, User)
+        if len(users) == 0:
             return None
-        if len(items) > 1:
+        if len(users) > 1:
             raise ValueError(f"Multiple users found with email {email}")
-        return User.model_validate(items[0])
+        return users[0]
 
-    async def get_user_from_oauth_id(self, oauth_id: str) -> User | None:
-        table = await self.db.Table("Users")
-        user_dict = await table.query(
-            IndexName="oauthIdIndex",
-            KeyConditionExpression=Key("oauth_id").eq(oauth_id),
-        )
-        items = user_dict["Items"]
-        if len(items) == 0:
+    async def get_user_from_oauth_id(self, oauth_id: str) -> OauthUser | None:
+        users = await self._get_items_from_secondary_index("oauthIdIndex", "oauth_id", oauth_id, OauthUser)
+        if len(users) == 0:
             return None
-        if len(items) > 1:
+        if len(users) > 1:
             raise ValueError(f"Multiple users found with oauth id {oauth_id}")
-        return User.model_validate(items[0])
-
-    async def get_user_id_from_session_token(self, session_token: str) -> str | None:
-        table = await self.db.Table("Sessions")
-        response = await table.get_item(Key={"token": session_token})
-        if "Item" not in response:
-            return None
-        user_id = response["Item"]["user_id"]
-        if not isinstance(user_id, str):
-            return None
-        return user_id
+        return OauthUser.model_validate(users[0])
 
     async def delete_user(self, user_id: str) -> None:
-        table = await self.db.Table("Users")
-        await table.delete_item(Key={"user_id": user_id})
+        await self._delete_item(user_id)
 
     async def list_users(self) -> list[User]:
         warnings.warn("`list_users` probably shouldn't be called in production", ResourceWarning)
-        table = await self.db.Table("Users")
-        return [User.model_validate(user) for user in await table.scan()]
+        return await self._list_items(User)
 
     async def get_user_count(self) -> int:
-        table = await self.db.Table("Users")
-        return await table.item_count
+        return await self._count_items(User)
 
     async def add_session_token(self, token: str, user_id: str, lifetime: int) -> None:
         table = await self.db.Table("Sessions")

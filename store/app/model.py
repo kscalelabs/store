@@ -5,42 +5,57 @@ methods for converting from our input data into the format the database
 expects (for example, converting a UUID into a string).
 """
 
-import uuid
-from typing import Optional
+from typing import Self
 
 from pydantic import BaseModel
 
-from store.app.crypto import hash_password
+from store.app.crypto import hash_password, new_token, new_uuid
 
 
-class User(BaseModel):
-    user_id: str  # Primary key
+class RobolistBaseModel(BaseModel):
+    id: str
+
+
+class User(RobolistBaseModel):
     username: str
     email: str
     password_hash: str
-    oauth_id: str
-    admin: bool
+    admin: bool = False
 
     @classmethod
-    def create(cls, email: str, username: str, password: str) -> "User":
+    def create(cls, email: str, username: str, password: str) -> Self:
         return cls(
-            user_id=str(uuid.uuid4()),
+            id=str(new_uuid()),
             email=email,
             username=username,
             password_hash=hash_password(password),
-            oauth_id="dummy_oauth",
-            admin=False,
         )
 
+
+class OauthUser(RobolistBaseModel):
+    username: str
+    oauth_id: str
+    admin: bool = False
+
     @classmethod
-    def create_oauth(cls, username: str, oauth_id: str) -> "User":
+    def create(cls, username: str, oauth_id: str) -> Self:
         return cls(
-            user_id=str(uuid.uuid4()),
+            id=str(new_uuid()),
             username=username,
-            email="dummy@kscale.dev",
             oauth_id=oauth_id,
-            admin=False,
-            password_hash="",
+        )
+
+
+class SessionToken(RobolistBaseModel):
+    user_id: str
+    token: str
+
+    @classmethod
+    def create(cls, user_id: str) -> Self:
+        return cls(
+            id=str(new_uuid()),
+            user_id=user_id,
+            token=str(new_token()),
         )
 
 
@@ -59,23 +74,21 @@ class Package(BaseModel):
     url: str
 
 
-class Robot(BaseModel):
-    robot_id: str  # Primary key
+class Robot(RobolistBaseModel):
     owner: str
     name: str
     description: str
     bom: list[Bom]
     images: list[Image]
-    height: Optional[str] = ""
-    weight: Optional[str] = ""
-    degrees_of_freedom: Optional[str] = ""
+    height: str | None = None
+    weight: str | None = None
+    degrees_of_freedom: int | None = None
     timestamp: int
     urdf: str
     packages: list[Package]
 
 
-class Part(BaseModel):
-    part_id: str  # Primary key
+class Part(RobolistBaseModel):
     name: str
     owner: str
     description: str

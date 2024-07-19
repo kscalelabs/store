@@ -2,14 +2,25 @@
 
 import itertools
 import logging
-from typing import Any, AsyncContextManager, Literal, Self
+from typing import Any, AsyncContextManager, Literal, Self, TypeVar, overload
 
 import aioboto3
+from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 from types_aiobotocore_s3.service_resource import S3ServiceResource
 
+from store.app.model import RobolistBaseModel
+
 logger = logging.getLogger(__name__)
+
+T = TypeVar("T", bound=RobolistBaseModel)
+
+DEFAULT_CHUNK_SIZE = 100
+DEFAULT_SCAN_LIMIT = 1000
+
+TableKey = tuple[str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]
+GlobalSecondaryIndex = tuple[str, str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]
 
 
 class BaseCrud(AsyncContextManager["BaseCrud"]):
@@ -30,6 +41,12 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             raise RuntimeError("Must call __aenter__ first!")
         return self.__s3
 
+    @classmethod
+    def get_gsis(cls) -> list[GlobalSecondaryIndex]:
+        return [
+            ("typeIndex", "type", "S", "HASH"),
+        ]
+
     async def __aenter__(self) -> Self:
         session = aioboto3.Session()
         db = session.resource("dynamodb")
@@ -48,11 +65,95 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         if self.__s3 is not None:
             await self.__s3.__aexit__(exc_type, exc_val, exc_tb)
 
+    async def _add_item(self, item: RobolistBaseModel) -> None:
+        table = await self.db.Table("Robolist")
+        item_data = item.model_dump()
+        if "type" in item_data:
+            raise ValueError("Cannot add item with 'type' attribute")
+        item_data["type"] = item.__class__.__name__
+        await table.put_item(Item=item_data)
+
+    async def _delete_item(self, item: RobolistBaseModel | str) -> None:
+        table = await self.db.Table("Robolist")
+        if isinstance(item, str):
+            await table.delete_item(Key={"id": item})
+        else:
+            await table.delete_item(Key={"id": item.id})
+
+    async def _list_items(self, item_class: type[T], limit: int = DEFAULT_SCAN_LIMIT) -> list[T]:
+        table = await self.db.Table("Robolist")
+        item_dict = await table.scan(
+            IndexName="typeIndex",
+            Limit=limit,
+            FilterExpression=Key("type").eq(item_class.__name__),
+        )
+        return [await self._validate_item(item, item_class) for item in item_dict["Items"]]
+
+    async def _count_items(self, item_class: type[T]) -> int:
+        table = await self.db.Table("Robolist")
+        item_dict = await table.scan(
+            IndexName="typeIndex",
+            Select="COUNT",
+            FilterExpression=Key("type").eq(item_class.__name__),
+        )
+        return item_dict["Count"]
+
+    async def _validate_item(self, data: dict[str, Any], item_class: type[T]) -> T:
+        if (item_type := data.pop("type")) != item_class.__name__:
+            raise ValueError(f"Item type {str(item_type)} is not a {item_class.__name__}")
+        return item_class.model_validate(data)
+
+    @overload
+    async def _get_item(self, item_id: str, item_class: type[T], throw_if_missing: Literal[True]) -> T: ...
+
+    @overload
+    async def _get_item(self, item_id: str, item_class: type[T], throw_if_missing: Literal[False]) -> T | None: ...
+
+    async def _get_item(self, item_id: str, item_class: type[T], throw_if_missing: bool = False) -> T | None:
+        table = await self.db.Table("Robolist")
+        item_dict = await table.get_item(Key={"id": item_id})
+        if "Item" not in item_dict:
+            if throw_if_missing:
+                raise ValueError(f"Item {item_id} not found")
+            return None
+        item_data = item_dict["Item"]
+        return await self._validate_item(item_data, item_class)
+
+    async def _get_item_batch(
+        self,
+        item_ids: list[str],
+        item_class: type[T],
+        chunk_size: int = DEFAULT_CHUNK_SIZE,
+    ) -> list[T]:
+        items: list[T] = []
+        for i in range(0, len(item_ids), chunk_size):
+            chunk = item_ids[i : i + chunk_size]
+            keys = [{"id": item_id} for item_id in chunk]
+            response = await self.db.batch_get_item(RequestItems={"Robolist": {"Keys": keys}})
+            for item in response["Responses"]["Robolist"]:
+                items.append(await self._validate_item(item, item_class))
+        return items
+
+    async def _get_items_from_secondary_index(
+        self,
+        secondary_index: str,
+        secondary_index_name: str,
+        secondary_index_value: str,
+        item_class: type[T],
+    ) -> list[T]:
+        table = await self.db.Table("Robolist")
+        item_dict = await table.query(
+            IndexName=secondary_index,
+            KeyConditionExpression=Key(secondary_index_name).eq(secondary_index_value),
+        )
+        items = item_dict["Items"]
+        return [await self._validate_item(item, item_class) for item in items]
+
     async def _create_dynamodb_table(
         self,
         name: str,
-        keys: list[tuple[str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]],
-        gsis: list[tuple[str, str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]] | None = None,
+        keys: list[TableKey],
+        gsis: list[GlobalSecondaryIndex] | None = None,
         deletion_protection: bool = False,
     ) -> None:
         """Creates a table in the Dynamo database if a table of that name does not already exist.
@@ -73,18 +174,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         except ClientError:
             logger.info("Creating %s table", name)
 
-            if gsis is None:
-                table = await self.db.create_table(
-                    AttributeDefinitions=[
-                        {"AttributeName": n, "AttributeType": t} for n, t in ((n, t) for (n, t, _) in keys)
-                    ],
-                    TableName=name,
-                    KeySchema=[{"AttributeName": n, "KeyType": t} for n, _, t in keys],
-                    DeletionProtectionEnabled=deletion_protection,
-                    BillingMode="PAY_PER_REQUEST",
-                )
-
-            else:
+            if gsis:
                 table = await self.db.create_table(
                     AttributeDefinitions=[
                         {"AttributeName": n, "AttributeType": t}
@@ -102,6 +192,17 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
                             for i, n, _, t in gsis
                         ]
                     ),
+                    DeletionProtectionEnabled=deletion_protection,
+                    BillingMode="PAY_PER_REQUEST",
+                )
+
+            else:
+                table = await self.db.create_table(
+                    AttributeDefinitions=[
+                        {"AttributeName": n, "AttributeType": t} for n, t in ((n, t) for (n, t, _) in keys)
+                    ],
+                    TableName=name,
+                    KeySchema=[{"AttributeName": n, "KeyType": t} for n, _, t in keys],
                     DeletionProtectionEnabled=deletion_protection,
                     BillingMode="PAY_PER_REQUEST",
                 )

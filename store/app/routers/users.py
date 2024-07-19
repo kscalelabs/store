@@ -11,7 +11,7 @@ from pydantic.main import BaseModel as PydanticBaseModel
 
 from store.app.crypto import check_password, new_token
 from store.app.db import Crud
-from store.app.model import User
+from store.app.model import OauthUser, User
 from store.app.utils.email import send_change_email, send_delete_email, send_register_email, send_reset_password_email
 from store.settings import settings
 
@@ -364,7 +364,6 @@ async def github_code(
             url="https://github.com/login/oauth/access_token", params=params, headers=headers
         )
     response_json = oauth_response.json()
-    print("\n\n", response_json, "\n\n")
 
     # access token is used to retrieve user oauth details
     access_token = response_json["access_token"]
@@ -377,9 +376,10 @@ async def github_code(
 
     user = await crud.get_user_from_oauth_id(github_id)
 
-    # create a user if it doesn't exist, with dummy email since email is required for secondary indexing
+    # Create a user if it doesn't exist, with a dummy email
+    # since email is required for secondary indexing.
     if user is None:
-        user = User.create_oauth(username=github_username, oauth_id=github_id)
+        user = OauthUser.create(username=github_username, oauth_id=github_id)
         await crud.add_user(user)
 
     token = new_token()
