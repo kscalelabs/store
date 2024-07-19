@@ -149,6 +149,21 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         items = item_dict["Items"]
         return [await self._validate_item(item, item_class) for item in items]
 
+    async def _update_item(self, item_id: str, item_class: type[T], new_values: dict[str, Any]) -> None:  # noqa: ANN401
+        # Validates the new values.
+        for field_name, field_value in new_values.items():
+            if (field_info := item_class.model_fields.get(field_name)) is None:
+                raise ValueError(f"Field {field_name} not in model {item_class.__name__}")
+            if field_info.annotation is not None and not isinstance(field_value, field_info.annotation):
+                raise ValueError(f"Field {field_name} is not of type {field_info.annotation}")
+
+        # Updates the table.
+        table = await self.db.Table("Robolist")
+        await table.update_item(
+            Key={"id": item_id},
+            AttributeUpdates={k: {"Value": v, "Action": "PUT"} for k, v in new_values.items()},
+        )
+
     async def _create_dynamodb_table(
         self,
         name: str,

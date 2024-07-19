@@ -7,20 +7,40 @@ expects (for example, converting a UUID into a string).
 
 from typing import Self
 
+import jwt
 from pydantic import BaseModel
 
-from store.app.crypto import hash_password, new_token, new_uuid
+from store.app.crypto import hash_password, new_uuid
+from store.settings import settings
 
 
 class RobolistBaseModel(BaseModel):
+    """Defines the base model for Robolist database rows.
+
+    Our database architecture uses a single table with a single primary key
+    (the `id` field). This class provides a common interface for all models
+    that are stored in the database.
+    """
+
     id: str
 
 
+class UserPermissions(BaseModel):
+    admin: bool = False
+
+
 class User(RobolistBaseModel):
+    """Defines the user model for the API.
+
+    Users are defined by their email, username and password hash. This is the
+    simplest form of authentication, and is used for users who sign up with
+    their email and password.
+    """
+
     username: str
     email: str
     password_hash: str
-    admin: bool = False
+    permissions: UserPermissions = UserPermissions()
 
     @classmethod
     def create(cls, email: str, username: str, password: str) -> Self:
@@ -32,31 +52,64 @@ class User(RobolistBaseModel):
         )
 
 
-class OauthUser(RobolistBaseModel):
-    username: str
-    oauth_id: str
-    admin: bool = False
+class APIKey(RobolistBaseModel):
+    """The API key is used for querying the API.
 
-    @classmethod
-    def create(cls, username: str, oauth_id: str) -> Self:
-        return cls(
-            id=str(new_uuid()),
-            username=username,
-            oauth_id=oauth_id,
-        )
+    Downstream users keep the JWT locally, and it is used to authenticate
+    requests to the API. The key is stored in the database, and can be
+    revoked by the user at any time.
+    """
 
-
-class SessionToken(RobolistBaseModel):
     user_id: str
-    token: str
+    is_active: bool = True
 
     @classmethod
     def create(cls, user_id: str) -> Self:
         return cls(
             id=str(new_uuid()),
             user_id=user_id,
-            token=str(new_token()),
         )
+
+    def to_jwt(self) -> str:
+        return jwt.encode(
+            payload={"token": self.id, "user_id": self.user_id},
+            key=settings.crypto.jwt_secret,
+        )
+
+    @classmethod
+    def from_jwt(cls, jwt_token: str) -> Self:
+        data = jwt.decode(
+            jwt=jwt_token,
+            key=settings.crypto.jwt_secret,
+        )
+        return cls(id=data["token"], user_id=data["user_id"])
+
+
+class RegisterToken(RobolistBaseModel):
+    """Stores a token for registering a new user."""
+
+    email: str
+
+    @classmethod
+    def create(cls, email: str) -> Self:
+        return cls(
+            id=str(new_uuid()),
+            email=email,
+        )
+
+    def to_jwt(self) -> str:
+        return jwt.encode(
+            payload={"token": self.id, "email": self.email},
+            key=settings.crypto.jwt_secret,
+        )
+
+    @classmethod
+    def from_jwt(cls, jwt_token: str) -> Self:
+        data = jwt.decode(
+            jwt=jwt_token,
+            key=settings.crypto.jwt_secret,
+        )
+        return cls(id=data["token"], email=data["email"])
 
 
 class Bom(BaseModel):

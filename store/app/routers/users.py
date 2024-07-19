@@ -243,7 +243,7 @@ async def login_user_endpoint(
         value=token,
         httponly=True,
     )
-    await crud.add_session_token(token, user.user_id, 60 * 60 * 24 * 7)
+    await crud.get_api_key(token, user.user_id)
 
     return True
 
@@ -298,7 +298,7 @@ async def logout_user_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
     response: Response,
 ) -> bool:
-    await crud.delete_session_token(token)
+    await crud.delete_api_key(token)
     response.delete_cookie("session_token")
     return True
 
@@ -384,7 +384,7 @@ async def github_code(
 
     token = new_token()
 
-    await crud.add_session_token(token, user.user_id, 60 * 60 * 24 * 7)
+    await crud.get_api_key(token, user.user_id)
 
     response.set_cookie(
         key="session_token",

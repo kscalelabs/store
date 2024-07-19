@@ -10,6 +10,7 @@ aioboto3
 
 # Crypto dependencies
 argon2-cffi
+pyjwt[asyncio]
 
 # FastAPI dependencies.
 aiohttp
