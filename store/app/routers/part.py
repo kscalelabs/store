@@ -7,7 +7,6 @@ from typing import Annotated, List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
-from store.app.crud.robots import EditPart
 from store.app.crypto import new_uuid
 from store.app.db import Crud
 from store.app.model import Image, Part
@@ -38,10 +37,8 @@ async def list_your_parts(
     token: Annotated[str, Depends(get_session_token)],
     page: int = Query(description="Page number for pagination"),
 ) -> tuple[List[Part], bool]:
-    user_id = await crud.get_user_id_from_session_token(token)
-    if user_id is None:
-        raise HTTPException(status_code=401, detail="Must be logged in to view your parts")
-    return await crud.list_your_parts(user_id, page)
+    user = await crud.get_user_from_jwt(token)
+    return await crud.list_your_parts(user, page)
 
 
 @parts_router.get("/{part_id}")
@@ -54,8 +51,8 @@ async def current_user(
     crud: Annotated[Crud, Depends(Crud.get)],
     token: Annotated[str, Depends(get_session_token)],
 ) -> str | None:
-    user_id = await crud.get_user_id_from_session_token(token)
-    return str(user_id)
+    user = await crud.get_user_from_jwt(token)
+    return user.id
 
 
 class NewPart(BaseModel):
@@ -70,15 +67,13 @@ async def add_part(
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    user_id = await crud.get_user_id_from_session_token(token)
-    if user_id is None:
-        raise HTTPException(status_code=401, detail="Must be logged in to add a part")
+    user = await crud.get_user_from_jwt(token)
     await crud.add_part(
         Part(
             name=part.name,
             description=part.description,
             images=part.images,
-            owner=str(user_id),
+            owner=user.id,
             part_id=str(new_uuid()),
             timestamp=int(time.time()),
         )
@@ -95,8 +90,8 @@ async def delete_part(
     part = await crud.get_part(part_id)
     if part is None:
         raise HTTPException(status_code=404, detail="Part not found")
-    user_id = await crud.get_user_id_from_session_token(token)
-    if part.owner != user_id:
+    user = await crud.get_user_from_jwt(token)
+    if part.owner != user.id:
         raise HTTPException(status_code=403, detail="You do not own this part")
     await crud.delete_part(part_id)
     return True
@@ -105,12 +100,15 @@ async def delete_part(
 @parts_router.post("/edit-part/{part_id}/")
 async def edit_part(
     part_id: str,
-    part: EditPart,
+    part: dict[str, any], # There has got to be a better type annotation than this (possibly the deleted) EditPart class
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    user_id = await crud.get_user_id_from_session_token(token)
-    if user_id is None:
-        raise HTTPException(status_code=401, detail="Must be logged in to edit a part")
-    await crud.update_part(part_id, part)
+    user = await crud.get_user_from_jwt(token)
+    part_info = await crud.get_part(part_id)
+    if part_info is None:
+        raise HTTPException(status_code=404, detail="Part not found")
+    if user.id != part_info.owner:
+        raise HTTPException(status_code=403, detail = "You do not own this part")
+    await crud._update_item(part_id, Part, part)
     return True

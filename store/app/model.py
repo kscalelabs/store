@@ -63,10 +63,10 @@ class APIKey(RobolistBaseModel):
     user_id: str
 
     @classmethod
-    def create(cls, user_id: str) -> Self:
+    def create(cls, id: str) -> Self:
         return cls(
             id=str(new_uuid()),
-            user_id=user_id,
+            user_id=id,
         )
 
     def to_jwt(self) -> str:

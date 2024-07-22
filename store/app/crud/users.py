@@ -31,11 +31,11 @@ class UserCrud(BaseCrud):
     async def add_user(self, user: User) -> None:
         await self._add_item(user)
 
-    async def get_user(self, user_id: str) -> User | None:
-        return await self._get_item(user_id, User, throw_if_missing=False)
+    async def get_user(self, id: str) -> User | None:
+        return await self._get_item(id, User, throw_if_missing=False)
 
-    async def get_user_batch(self, user_ids: list[str]) -> list[User]:
-        return await self._get_item_batch(user_ids, User)
+    async def get_user_batch(self, ids: list[str]) -> list[User]:
+        return await self._get_item_batch(ids, User)
 
     async def get_user_from_email(self, email: str) -> User | None:
         users = await self._get_items_from_secondary_index("emailIndex", "email", email, User)
@@ -45,8 +45,12 @@ class UserCrud(BaseCrud):
             raise ValueError(f"Multiple users found with email {email}")
         return users[0]
 
-    async def delete_user(self, user_id: str) -> None:
-        await self._delete_item(user_id)
+    # Note: we need to make this function throw an error if there is no user associated with the JWT
+    async def get_user_from_jwt(self, jwt: str) -> User | None:
+        raise NotImplementedError("Getting user from JWT not implemented yet")
+
+    async def delete_user(self, id: str) -> None:
+        await self._delete_item(id)
 
     async def list_users(self) -> list[User]:
         warnings.warn("`list_users` probably shouldn't be called in production", ResourceWarning)
@@ -55,8 +59,8 @@ class UserCrud(BaseCrud):
     async def get_user_count(self) -> int:
         return await self._count_items(User)
 
-    async def add_api_key(self, user_id: str) -> APIKey:
-        token = APIKey.create(user_id=user_id)
+    async def add_api_key(self, id: str) -> APIKey:
+        token = APIKey.create(id=id)
         await self._add_item(token)
         return token
 
@@ -84,11 +88,11 @@ class UserCrud(BaseCrud):
         LAST_API_KEY_VALIDATION[token] = (cur_time, is_valid)
         return is_valid
 
-    async def change_password(self, user_id: str, new_password: str) -> None:
-        await self._update_item(user_id, User, {"password_hash": hash_password(new_password)})
+    async def change_password(self, id: str, new_password: str) -> None:
+        await self._update_item(id, User, {"password_hash": hash_password(new_password)})
 
-    async def change_email(self, user_id: str, new_email: str) -> None:
-        await self._update_item(user_id, User, {"email": new_email})
+    async def change_email(self, id: str, new_email: str) -> None:
+        await self._update_item(id, User, {"email": new_email})
 
 
 async def test_adhoc() -> None:

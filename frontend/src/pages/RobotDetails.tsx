@@ -120,8 +120,8 @@ const RobotDetails = () => {
     if (auth.isAuthenticated) {
       try {
         const fetchUserId = async () => {
-          const user_id = await auth_api.currentUser();
-          setUserId(user_id);
+          const id = await auth_api.currentUser();
+          setUserId(id);
         };
         fetchUserId();
       } catch (err) {

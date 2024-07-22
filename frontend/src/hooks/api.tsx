@@ -38,7 +38,7 @@ export interface Robot {
 }
 
 interface MeResponse {
-  user_id: string;
+  id: string;
   email: string;
   username: string;
   admin: boolean;
@@ -309,13 +309,13 @@ export class api {
 
   public async getUserBatch(userIds: string[]): Promise<Map<string, string>> {
     const params = new URLSearchParams();
-    userIds.forEach((id) => params.append("user_ids", id));
+    userIds.forEach((id) => params.append("ids", id));
     const response = await this.api.get("/users/batch/", {
       params,
     });
     const map = new Map();
     for (const index in response.data) {
-      map.set(response.data[index].user_id, response.data[index].username);
+      map.set(response.data[index].id, response.data[index].username);
     }
     return map;
   }
@@ -368,8 +368,8 @@ export class api {
   }
   public async currentUser(): Promise<string> {
     try {
-      const response = await this.api.get("/robots/user/");
-      return response.data;
+      const response = await this.api.get("/users/me");
+      return response.data.id;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error fetching current user:", error.response?.data);

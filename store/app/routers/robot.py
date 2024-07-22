@@ -23,15 +23,6 @@ async def get_robot(robot_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> 
     return await crud.get_robot(robot_id)
 
 
-@robots_router.get("/user/")
-async def current_user(
-    crud: Annotated[Crud, Depends(Crud.get)],
-    token: Annotated[str, Depends(get_session_token)],
-) -> str | None:
-    user_id = await crud.get_user_id_from_session_token(token)
-    return str(user_id)
-
-
 class NewRobot(BaseModel):
     name: str
     description: str
@@ -50,9 +41,7 @@ async def add_robot(
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    user_id = await crud.get_user_id_from_session_token(token)
-    if user_id is None:
-        raise HTTPException(status_code=401, detail="Must be logged in to add a robot")
+    id = await crud.get_user_from_jwt(token)
 
     await crud.add_robot(
         Robot(
@@ -64,7 +53,7 @@ async def add_robot(
             height=new_robot.height,
             weight=new_robot.weight,
             degrees_of_freedom=new_robot.degrees_of_freedom,
-            owner=str(user_id),
+            owner=str(id),
             timestamp=int(time.time()),
             urdf=new_robot.urdf,
             packages=new_robot.packages,
@@ -82,8 +71,8 @@ async def delete_robot(
     robot = await crud.get_robot(robot_id)
     if robot is None:
         raise HTTPException(status_code=404, detail="Robot not found")
-    user_id = await crud.get_user_id_from_session_token(token)
-    if str(robot.owner) != str(user_id):
+    user = await crud.get_user_from_jwt(token)
+    if robot.owner != user.id:
         raise HTTPException(status_code=403, detail="You do not own this robot")
     await crud.delete_robot(robot_id)
     return True
@@ -92,12 +81,16 @@ async def delete_robot(
 @robots_router.post("/edit-robot/{id}/")
 async def edit_robot(
     id: str,
-    robot: EditRobot,
+    robot: dict[str, any],
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    user_id = await crud.get_user_id_from_session_token(token)
-    if user_id is None:
-        raise HTTPException(status_code=401, detail="Must be logged in to edit a robot")
-    await crud.update_robot(id, robot)
+    id = await crud.get_user_from_jwt(token)
+    robot_info = await crud.get_robot(id)
+    if robot_info is None:
+        raise HTTPException(status_code=404, detail="Robot not found")
+    user = await crud.get_user_from_jwt(token)
+    if robot_info.owner != user.id:
+        raise HTTPException(status_code=403, detail="You do not own this robot")
+    await crud._update_item(id, Robot, robot)
     return True

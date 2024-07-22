@@ -133,7 +133,7 @@ async def forgot_password_user_endpoint(
         return True
     reset_password_token = new_token()
     # Magic number: 1 hour
-    await crud.add_reset_password_token(reset_password_token, user.user_id, 60 * 60)
+    await crud.add_reset_password_token(reset_password_token, user.id, 60 * 60)
     await send_reset_password_email(email, reset_password_token)
     return True
 
@@ -163,16 +163,11 @@ async def send_change_email_user_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
     token: Annotated[str, Depends(get_session_token)],
 ) -> bool:
-    user_id = await crud.get_user_id_from_session_token(token)
-    if user_id is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    user = await crud.get_user(user_id)
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    user = await crud.get_user_from_jwt(token)
     change_email_token = new_token()
     """Sends a verification email to the new email address."""
     # Magic number: 1 hour
-    await crud.add_change_email_token(change_email_token, user.user_id, data.new_email, 60 * 60)
+    await crud.add_change_email_token(change_email_token, user.id, data.new_email, 60 * 60)
     await send_change_email(data.new_email, change_email_token)
     return True
 
@@ -199,15 +194,8 @@ async def change_password_user_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
     """Changes the user's password."""
-    user_id = await crud.get_user_id_from_session_token(token)
-    if user_id is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    user = await crud.get_user(user_id)
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    if not check_password(data.old_password, user.password_hash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
-    await crud.change_password(user_id, data.new_password)
+    user = await crud.get_user_from_jwt(token)
+    await crud.change_password(user.id, data.new_password)
     return True
 
 
@@ -243,7 +231,7 @@ async def login_user_endpoint(
         value=token,
         httponly=True,
     )
-    await crud.get_api_key(token, user.user_id)
+    await crud.get_api_key(token, user.id)
 
     return True
 
@@ -251,7 +239,7 @@ async def login_user_endpoint(
 class UserInfoResponse(BaseModel):
     email: str
     username: str
-    user_id: str
+    id: str
     admin: bool
 
 
@@ -260,20 +248,16 @@ async def get_user_info_endpoint(
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UserInfoResponse:
-    user_id = await crud.get_user_id_from_session_token(token)
-    if user_id is None:
-        print("executed 1")
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    user_obj = await crud.get_user(user_id)
-    if user_obj is None:
-        print("executed 2")
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return UserInfoResponse(
-        email=user_obj.email,
-        username=user_obj.username,
-        user_id=user_obj.user_id,
-        admin=user_obj.admin,
-    )
+    try:
+        user = await crud.get_user_from_jwt(token)
+        return UserInfoResponse(
+            email=user.email,
+            username=user.username,
+            id=user.id,
+            permissions=user.permissions,
+        )
+    except:
+        return None
 
 
 @users_router.delete("/me")
@@ -281,14 +265,9 @@ async def delete_user_endpoint(
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    user_id = await crud.get_user_id_from_session_token(token)
-    if user_id is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    user_obj = await crud.get_user(user_id)
-    if user_obj is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    await crud.delete_user(user_id)
-    await send_delete_email(user_obj.email)
+    user = await crud.get_user_from_jwt(token)
+    await crud.delete_user(user.id)
+    await send_delete_email(user.email)
     return True
 
 
@@ -305,19 +284,19 @@ async def logout_user_endpoint(
 
 class PublicUserInfoResponse(BaseModel):
     username: str
-    user_id: str
+    id: str
 
 
 @users_router.get("/batch", response_model=list[PublicUserInfoResponse])
 async def get_users_batch_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
-    user_ids: list[str] = Query(...),
+    ids: list[str] = Query(...),
 ) -> list[PublicUserInfoResponse]:
-    user_objs = await crud.get_user_batch(user_ids)
+    user_objs = await crud.get_user_batch(ids)
     return [
         PublicUserInfoResponse(
             username=user_obj.username,
-            user_id=user_obj.user_id,
+            id=user_obj.id,
         )
         for user_obj in user_objs
     ]
@@ -384,7 +363,7 @@ async def github_code(
 
     token = new_token()
 
-    await crud.get_api_key(token, user.user_id)
+    await crud.get_api_key(token, user.id)
 
     response.set_cookie(
         key="session_token",
@@ -392,7 +371,7 @@ async def github_code(
         httponly=True,
     )
 
-    user_obj = await crud.get_user(user.user_id)
+    user_obj = await crud.get_user(user.id)
 
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -400,19 +379,19 @@ async def github_code(
     return UserInfoResponse(
         email=user_obj.email,
         username=user_obj.username,
-        user_id=user_obj.user_id,
+        id=user_obj.id,
         admin=user_obj.admin,
     )
 
 
-@users_router.get("/{user_id}", response_model=PublicUserInfoResponse)
+@users_router.get("/{id}", response_model=PublicUserInfoResponse)
 async def get_user_info_by_id_endpoint(
-    user_id: str, crud: Annotated[Crud, Depends(Crud.get)]
+    id: str, crud: Annotated[Crud, Depends(Crud.get)]
 ) -> PublicUserInfoResponse:
-    user_obj = await crud.get_user(user_id)
+    user_obj = await crud.get_user(id)
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return PublicUserInfoResponse(
         username=user_obj.username,
-        user_id=user_obj.user_id,
+        id=user_obj.id,
     )
