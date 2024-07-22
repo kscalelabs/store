@@ -3,18 +3,23 @@
 import logging
 from datetime import datetime, timedelta
 from email.utils import parseaddr as parse_email_address
-from jose import jwt
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.security.utils import get_authorization_scheme_param
 from httpx import AsyncClient
+from jose import jwt
 from pydantic.main import BaseModel as PydanticBaseModel
 
 from store.app.crypto import check_password, new_token
 from store.app.db import Crud
 from store.app.model import User
-from store.app.utils.email import send_change_email, send_delete_email, send_register_email, send_reset_password_email
+from store.app.utils.email import (
+    send_change_email,
+    send_delete_email,
+    send_register_email,
+    send_reset_password_email,
+)
 from store.settings import settings
 
 logger = logging.getLogger(__name__)
