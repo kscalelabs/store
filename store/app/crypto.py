@@ -5,18 +5,6 @@ import uuid
 from argon2 import PasswordHasher
 
 
-def new_register_jwt(email: str) -> str:
-    raise NotImplementedError()
-
-def new_reset_password_jwt(email: str) -> str:
-    raise NotImplementedError()
-
-def new_change_email_jwt(old_email: str, new_email: str) -> str:
-    raise NotImplementedError()
-
-def new_auth_jwt(id: str) -> str:
-    raise NotImplementedError()
-
 def new_uuid() -> uuid.UUID:
     return uuid.uuid4()
 
