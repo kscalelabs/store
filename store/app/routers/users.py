@@ -42,8 +42,7 @@ def set_token_cookie(response: Response, token: str, key: str) -> None:
 async def get_session_token(request: Request) -> str:
     token = request.cookies.get("robolist_token")
     if not token:
-        authorization = request.headers.get(
-            "Authorization") or request.headers.get("authorization")
+        authorization = request.headers.get("Authorization") or request.headers.get("authorization")
         if authorization:
             scheme, credentials = get_authorization_scheme_param(authorization)
             if not (scheme and credentials):
@@ -226,10 +225,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(
-        to_encode, settings.crypto.jwt_secret, algorithm="HS256"
-    )
+    encoded_jwt = jwt.encode(to_encode, settings.crypto.jwt_secret, algorithm="HS256")
     return encoded_jwt
+
 
 async def get_current_user(token: str = Depends(get_session_token)):
     credentials_exception = HTTPException(
@@ -269,15 +267,10 @@ async def login_user_endpoint(
     """
     user = await crud.get_user_from_email(data.email)
     if not user or not check_password(data.password, user.password_hash):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
 
     access_token_expires = timedelta(seconds=60 * 60 * 24 * 7)
-    token = create_access_token(
-        data={"sub": user.user_id},
-        expires_delta=access_token_expires
-    )
+    token = create_access_token(data={"sub": user.user_id}, expires_delta=access_token_expires)
     # await crud.add_session_token(token, user.user_id, 60 * 60 * 24 * 7)
     response.set_cookie(
         key="robolist_token",
@@ -286,7 +279,8 @@ async def login_user_endpoint(
         secure=False,
         samesite="lax",
     )
-    return { "token": token }
+    return {"token": token}
+
 
 class UserInfoResponse(BaseModel):
     email: str

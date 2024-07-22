@@ -1,4 +1,5 @@
 """Defines the main entrypoint for the FastAPI app."""
+
 import os
 import logging
 from contextlib import asynccontextmanager
@@ -19,6 +20,7 @@ from store.settings import settings
 
 if os.getenv("ROBOLIST_ENVIRONMENT") == "local":
     from dotenv import load_dotenv
+
     load_dotenv(".env.local")
 
 
@@ -51,6 +53,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.exception_handler(ValueError)
 async def value_error_exception_handler(request: Request, exc: ValueError) -> JSONResponse:
