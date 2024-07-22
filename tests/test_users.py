@@ -1,7 +1,5 @@
 """Runs tests on the user APIs."""
 
-
-
 from httpx import AsyncClient
 from pytest_mock.plugin import MockType
 
@@ -27,11 +25,9 @@ async def test_user_auth_functions(app_client: AsyncClient, mock_send_email: Moc
     assert mock_send_email.call_count == 1
 
     # Register.
-    response = await app_client.post("/users/register", json={
-        "username": test_username,
-        "token": test_token,
-        "password": test_password
-    })
+    response = await app_client.post(
+        "/users/register", json={"username": test_username, "token": test_token, "password": test_password}
+    )
     assert response.status_code == 200
 
     # Checks that without the session token we get a 401 response.
@@ -44,10 +40,13 @@ async def test_user_auth_functions(app_client: AsyncClient, mock_send_email: Moc
     assert response.status_code == 401, response.json()
 
     # Log in.
-    response = await app_client.post("/users/login", json={
-        "email": test_email,
-        "password": test_password,
-    })
+    response = await app_client.post(
+        "/users/login",
+        json={
+            "email": test_email,
+            "password": test_password,
+        },
+    )
     assert response.status_code == 200
     assert "session_token" in response.cookies
     token = response.cookies["session_token"]
@@ -59,9 +58,7 @@ async def test_user_auth_functions(app_client: AsyncClient, mock_send_email: Moc
 
     # Use the Authorization header instead of the cookie.
     response = await app_client.get(
-        "/users/me",
-        cookies={"session_token": ""},
-        headers={"Authorization": f"Bearer {token}"}
+        "/users/me", cookies={"session_token": ""}, headers={"Authorization": f"Bearer {token}"}
     )
     assert response.status_code == 200, response.json()
     assert response.json()["email"] == test_email
@@ -77,10 +74,13 @@ async def test_user_auth_functions(app_client: AsyncClient, mock_send_email: Moc
     assert response.json()["detail"] == "Not authenticated"
 
     # Log the user back in, getting new session token.
-    response = await app_client.post("/users/login", json={
-        "email": test_email,
-        "password": test_password,
-    })
+    response = await app_client.post(
+        "/users/login",
+        json={
+            "email": test_email,
+            "password": test_password,
+        },
+    )
     assert response.status_code == 200
     assert "session_token" in response.cookies
     token = response.cookies["session_token"]

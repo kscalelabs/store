@@ -7,7 +7,6 @@ from typing import Annotated, List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from store.app.crud.robots import EditRobot
 from store.app.crypto import new_uuid
 from store.app.db import Crud
 from store.app.model import Bom, Image, Package, Robot
@@ -41,7 +40,7 @@ async def add_robot(
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    id = await crud.get_user_from_jwt(token)
+    id = await crud.get_user_from_token(token)
 
     await crud.add_robot(
         Robot(
@@ -71,7 +70,7 @@ async def delete_robot(
     robot = await crud.get_robot(robot_id)
     if robot is None:
         raise HTTPException(status_code=404, detail="Robot not found")
-    user = await crud.get_user_from_jwt(token)
+    user = await crud.get_user_from_token(token)
     if robot.owner != user.id:
         raise HTTPException(status_code=403, detail="You do not own this robot")
     await crud.delete_robot(robot_id)
@@ -85,11 +84,11 @@ async def edit_robot(
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    id = await crud.get_user_from_jwt(token)
+    id = await crud.get_user_from_token(token)
     robot_info = await crud.get_robot(id)
     if robot_info is None:
         raise HTTPException(status_code=404, detail="Robot not found")
-    user = await crud.get_user_from_jwt(token)
+    user = await crud.get_user_from_token(token)
     if robot_info.owner != user.id:
         raise HTTPException(status_code=403, detail="You do not own this robot")
     await crud._update_item(id, Robot, robot)

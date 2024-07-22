@@ -9,7 +9,6 @@ Tv = TypeVar("Tv")
 
 
 class LRUCache(Generic[Tk, Tv]):
-
     def __init__(self, capacity: int) -> None:
         super().__init__()
 

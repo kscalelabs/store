@@ -100,7 +100,9 @@ async def delete_part(
 @parts_router.post("/edit-part/{part_id}/")
 async def edit_part(
     part_id: str,
-    part: dict[str, any], # There has got to be a better type annotation than this (possibly the deleted) EditPart class
+    part: dict[
+        str, any
+    ],  # There has got to be a better type annotation than this (possibly the deleted) EditPart class
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
@@ -109,6 +111,6 @@ async def edit_part(
     if part_info is None:
         raise HTTPException(status_code=404, detail="Part not found")
     if user.id != part_info.owner:
-        raise HTTPException(status_code=403, detail = "You do not own this part")
+        raise HTTPException(status_code=403, detail="You do not own this part")
     await crud._update_item(part_id, Part, part)
     return True

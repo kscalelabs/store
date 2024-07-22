@@ -163,7 +163,7 @@ async def send_change_email_user_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
     token: Annotated[str, Depends(get_session_token)],
 ) -> bool:
-    user = await crud.get_user_from_jwt(token)
+    user = await crud.get_user_from_token(token)
     change_email_token = new_token()
     """Sends a verification email to the new email address."""
     # Magic number: 1 hour
@@ -194,7 +194,7 @@ async def change_password_user_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
     """Changes the user's password."""
-    user = await crud.get_user_from_jwt(token)
+    user = await crud.get_user_from_token(token)
     await crud.change_password(user.id, data.new_password)
     return True
 
@@ -248,7 +248,7 @@ async def get_user_info_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UserInfoResponse:
     try:
-        user = await crud.get_user_from_jwt(token)
+        user = await crud.get_user_from_token(token)
         return UserInfoResponse(
             email=user.email,
             username=user.username,
@@ -264,7 +264,7 @@ async def delete_user_endpoint(
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    user = await crud.get_user_from_jwt(token)
+    user = await crud.get_user_from_token(token)
     await crud.delete_user(user.id)
     await send_delete_email(user.email)
     return True
@@ -382,9 +382,7 @@ async def github_code(
 
 
 @users_router.get("/{id}", response_model=PublicUserInfoResponse)
-async def get_user_info_by_id_endpoint(
-    id: str, crud: Annotated[Crud, Depends(Crud.get)]
-) -> PublicUserInfoResponse:
+async def get_user_info_by_id_endpoint(id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> PublicUserInfoResponse:
     user_obj = await crud.get_user(id)
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")

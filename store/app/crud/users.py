@@ -45,9 +45,10 @@ class UserCrud(BaseCrud):
             raise ValueError(f"Multiple users found with email {email}")
         return users[0]
 
-    # Note: we need to make this function throw an error if there is no user associated with the JWT
-    async def get_user_from_jwt(self, jwt: str) -> User | None:
-        raise NotImplementedError("Getting user from JWT not implemented yet")
+    # Note: we need to make this function throw an error if there is no user associated with the API key ("token")
+    # Distinction to make: token is the id, API key is the entire object associated with the token (i.e. the id)
+    async def get_user_from_token(self, token: str) -> User:
+        raise NotImplementedError()
 
     async def delete_user(self, id: str) -> None:
         await self._delete_item(id)
@@ -58,6 +59,9 @@ class UserCrud(BaseCrud):
 
     async def get_user_count(self) -> int:
         return await self._count_items(User)
+
+    async def get_api_key(self, id: str) -> APIKey:
+        raise NotImplementedError()
 
     async def add_api_key(self, id: str) -> APIKey:
         token = APIKey.create(id=id)
@@ -93,6 +97,30 @@ class UserCrud(BaseCrud):
 
     async def change_email(self, id: str, new_email: str) -> None:
         await self._update_item(id, User, {"email": new_email})
+
+    async def add_register_token(self, token: str, email: str, lifetime: int) -> None:
+        raise NotImplementedError()
+
+    async def delete_register_token(self, token: str) -> None:
+        raise NotImplementedError()
+
+    async def check_register_token(self, token: str) -> str:
+        raise NotImplementedError()
+
+    async def add_reset_password_token(self, token: str, user_id: str, lifetime: int) -> None:
+        raise NotImplementedError()
+
+    async def delete_reset_password_token(self, token: str) -> None:
+        raise NotImplementedError()
+
+    async def use_reset_password_token(self, token: str, new_password: str) -> None:
+        raise NotImplementedError()
+
+    async def add_change_email_token(self, token: str, user_id: str, new_email: str, lifetime: int) -> None:
+        raise NotImplementedError()
+
+    async def use_change_email_token(self, token: str) -> None:
+        raise NotImplementedError()
 
 
 async def test_adhoc() -> None:
