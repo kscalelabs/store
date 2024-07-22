@@ -3,8 +3,8 @@
 import logging
 from datetime import datetime, timedelta
 from email.utils import parseaddr as parse_email_address
+from jose import jwt
 from typing import Annotated, Optional
-from jose import JWTError, jwt
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.security.utils import get_authorization_scheme_param
@@ -218,7 +218,7 @@ class UserLogin(BaseModel):
     password: str
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
