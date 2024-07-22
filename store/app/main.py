@@ -1,7 +1,7 @@
 """Defines the main entrypoint for the FastAPI app."""
 
-import os
 import logging
+import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -15,7 +15,6 @@ from store.app.routers.image import image_router
 from store.app.routers.part import parts_router
 from store.app.routers.robot import robots_router
 from store.app.routers.users import users_router
-
 from store.settings import settings
 
 if os.getenv("ROBOLIST_ENVIRONMENT") == "local":

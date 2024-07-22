@@ -2,10 +2,10 @@
 
 import asyncio
 import json
-import jwt
 import warnings
 from typing import Any, Self
 
+import jwt
 from boto3.dynamodb.conditions import Key
 from redis.asyncio import Redis
 
