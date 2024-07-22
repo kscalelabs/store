@@ -231,7 +231,6 @@ async def login_user_endpoint(
         value=token,
         httponly=True,
     )
-    await crud.get_api_key(token, user.id)
 
     return True
 
@@ -362,8 +361,6 @@ async def github_code(
         await crud.add_user(user)
 
     token = new_token()
-
-    await crud.get_api_key(token, user.id)
 
     response.set_cookie(
         key="session_token",
