@@ -11,7 +11,7 @@ from pydantic.main import BaseModel as PydanticBaseModel
 
 from store.app.crypto import check_password, new_register_jwt, new_reset_password_jwt, new_change_email_jwt, new_auth_jwt
 from store.app.db import Crud
-from store.app.model import OauthUser, User
+from store.app.model import User
 from store.app.utils.email import send_change_email, send_delete_email, send_register_email, send_reset_password_email
 from store.settings import settings
 
@@ -229,7 +229,6 @@ async def login_user_endpoint(
         value=token,
         httponly=True,
     )
-    await crud.get_api_key(token, user.user_id)
 
     return True
 
@@ -351,17 +350,15 @@ async def github_code(
     github_id = oauth_response.json()["html_url"]
     github_username = oauth_response.json()["login"]
 
-    user = await crud.get_user_from_oauth_id(github_id)
+    user = await crud.get_user(github_id)
 
     # Create a user if it doesn't exist, with a dummy email
     # since email is required for secondary indexing.
     if user is None:
-        user = OauthUser.create(username=github_username, oauth_id=github_id)
+        user = User.create(username=github_username, oauth_id=github_id)
         await crud.add_user(user)
 
     token = new_auth_jwt(user.id)
-
-    await crud.get_api_key(token, user.user_id)
 
     response.set_cookie(
         key="session_token",
@@ -369,7 +366,7 @@ async def github_code(
         httponly=True,
     )
 
-    user_obj = await crud.get_user(user.user_id)
+    user_obj = await crud.get_user(user.id)
 
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -377,8 +374,8 @@ async def github_code(
     return UserInfoResponse(
         email=user_obj.email,
         username=user_obj.username,
-        user_id=user_obj.user_id,
-        admin=user_obj.admin,
+        user_id=user_obj.id,
+        permissions = user_obj.permissions
     )
 
 
@@ -391,5 +388,5 @@ async def get_user_info_by_id_endpoint(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return PublicUserInfoResponse(
         username=user_obj.username,
-        user_id=user_obj.user_id,
+        user_id=user_obj.id,
     )
