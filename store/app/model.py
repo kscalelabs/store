@@ -38,12 +38,12 @@ class User(RobolistBaseModel):
     """
 
     username: str
-    email: str
+    email: str | None
     password_hash: str
     permissions: UserPermissions = UserPermissions()
 
     @classmethod
-    def create(cls, email: str, username: str, password: str, id: str | None = None) -> Self:
+    def create(cls, email: str | None, username: str, password: str, id: str | None = None) -> Self:
         return cls(
             id=id or str(new_uuid()),
             email=email,

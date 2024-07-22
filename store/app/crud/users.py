@@ -16,16 +16,6 @@ from store.utils import LRUCache
 LAST_API_KEY_VALIDATION = LRUCache[str, tuple[datetime, bool]](2**20)
 
 
-# Exception for when a user is not found
-class UserNotFoundError(Exception):
-    def __init__(self, message: str) -> None:
-        super().__init__(message)
-        self.message = message
-
-    def __str__(self) -> str:
-        return f"UserNotFoundError: {self.message}"
-
-
 class UserCrud(BaseCrud):
     def __init__(self) -> None:
         super().__init__()
