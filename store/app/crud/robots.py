@@ -4,6 +4,7 @@ import logging
 
 from store.app.crud.base import BaseCrud
 from store.app.model import Part, Robot
+from fastapi import UploadFile
 
 logger = logging.getLogger(__name__)
 
@@ -34,4 +35,7 @@ class RobotCrud(BaseCrud):
         raise NotImplementedError()
 
     async def list_your_parts(self, user_id: str, page: int, search_query: str) -> list[Part]:
+        raise NotImplementedError()
+
+    async def upload_image(self, file: UploadFile) -> None:
         raise NotImplementedError()

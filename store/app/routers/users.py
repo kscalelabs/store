@@ -246,7 +246,7 @@ class UserInfoResponse(BaseModel):
 async def get_user_info_endpoint(
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> UserInfoResponse:
+) -> UserInfoResponse | None:
     try:
         user = await crud.get_user_from_token(token)
         return UserInfoResponse(
@@ -357,9 +357,8 @@ async def github_code(
     # Create a user if it doesn't exist, with a dummy email
     # since email is required for secondary indexing.
     if user is None:
-        user = User.create(username=github_username, oauth_id=github_id)
+        user = User.create(username=github_username, id=github_id)
         await crud.add_user(user)
-
     token = new_token()
 
     response.set_cookie(

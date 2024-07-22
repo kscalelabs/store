@@ -16,14 +16,6 @@ image_router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-@image_router.get("/{url}/")
-async def get_image(url: str, crud: Annotated[Crud, Depends(Crud.get)]) -> RedirectResponse:
-    try:
-        return await crud.get_image(url + ".png")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 @image_router.post("/upload/")
 async def upload_image(crud: Annotated[Crud, Depends(Crud.get)], file: UploadFile) -> JSONResponse:
     try:

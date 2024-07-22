@@ -2,7 +2,7 @@
 
 import logging
 import time
-from typing import Annotated, List, Optional
+from typing import Annotated, Any, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -80,11 +80,10 @@ async def delete_robot(
 @robots_router.post("/edit-robot/{id}/")
 async def edit_robot(
     id: str,
-    robot: dict[str, any],
+    robot: dict[str, Any],
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    id = await crud.get_user_from_token(token)
     robot_info = await crud.get_robot(id)
     if robot_info is None:
         raise HTTPException(status_code=404, detail="Robot not found")
