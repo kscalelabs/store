@@ -24,6 +24,7 @@ const Login = () => {
     try {
       await auth_api.login(email, password);
       setLocalStorageAuth(email);
+      auth.setIsAuthenticated(true)
       navigate("/");
     } catch (err) {
       if (err instanceof Error) {

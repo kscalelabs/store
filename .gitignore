@@ -25,3 +25,5 @@ out*/
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+.flox
+.env.local
