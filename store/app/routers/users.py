@@ -1,8 +1,10 @@
 """Defines the API endpoint for creating, deleting and updating user information."""
 
 import logging
+from datetime import datetime, timedelta
 from email.utils import parseaddr as parse_email_address
-from typing import Annotated
+from typing import Annotated, Optional
+from jose import JWTError, jwt
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.security.utils import get_authorization_scheme_param
@@ -38,9 +40,10 @@ def set_token_cookie(response: Response, token: str, key: str) -> None:
 
 
 async def get_session_token(request: Request) -> str:
-    token = request.cookies.get("session_token")
+    token = request.cookies.get("robolist_token")
     if not token:
-        authorization = request.headers.get("Authorization") or request.headers.get("authorization")
+        authorization = request.headers.get(
+            "Authorization") or request.headers.get("authorization")
         if authorization:
             scheme, credentials = get_authorization_scheme_param(authorization)
             if not (scheme and credentials):
@@ -216,12 +219,44 @@ class UserLogin(BaseModel):
     password: str
 
 
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(
+        to_encode, settings.crypto.jwt_secret, algorithm="HS256"
+    )
+    return encoded_jwt
+
+async def get_current_user(token: str = Depends(get_session_token)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+        token_data = TokenData(username=username)
+    except JWTError:
+        raise credentials_exception
+    user = get_user(fake_users_db, username=token_data.username)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
 @users_router.post("/login")
 async def login_user_endpoint(
     data: UserLogin,
     crud: Annotated[Crud, Depends(Crud.get)],
     response: Response,
-) -> bool:
+) -> dict:
     """Gives the user a session token if they present the correct credentials.
 
     Args:
@@ -233,20 +268,25 @@ async def login_user_endpoint(
         True if the credentials are correct.
     """
     user = await crud.get_user_from_email(data.email)
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-    if not check_password(data.password, user.password_hash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-    token = new_token()
+    if not user or not check_password(data.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password"
+        )
+
+    access_token_expires = timedelta(seconds=60 * 60 * 24 * 7)
+    token = create_access_token(
+        data={"sub": user.user_id},
+        expires_delta=access_token_expires
+    )
+    # await crud.add_session_token(token, user.user_id, 60 * 60 * 24 * 7)
     response.set_cookie(
-        key="session_token",
+        key="robolist_token",
         value=token,
         httponly=True,
+        secure=False,
+        samesite="lax",
     )
-    await crud.add_session_token(token, user.user_id, 60 * 60 * 24 * 7)
-
-    return True
-
+    return { "token": token }
 
 class UserInfoResponse(BaseModel):
     email: str

@@ -30,6 +30,8 @@ def hash_password(password: str) -> str:
 
 
 def check_password(password: str, hash: str) -> bool:
+    if not password or not hash:
+        return False
     try:
         return PasswordHasher().verify(hash, password)
     except Exception:

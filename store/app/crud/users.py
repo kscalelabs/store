@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import jwt
 import warnings
 from typing import Any, Self
 
@@ -140,10 +141,8 @@ class UserCrud(BaseCrud):
         return User.model_validate(items[0])
 
     async def get_user_id_from_session_token(self, session_token: str) -> str | None:
-        user_id = await self.session_kv.get(hash_token(session_token))
-        if user_id is None:
-            return None
-        return user_id.decode("utf-8")
+        payload = jwt.decode(session_token, settings.crypto.jwt_secret, algorithms=["HS256"])
+        return payload["sub"]
 
     async def delete_user(self, user_id: str) -> None:
         # Then, delete the user object from the Users table.

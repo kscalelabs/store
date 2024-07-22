@@ -1,13 +1,13 @@
 # requirements-dev.txt
 
+python-dotenv
 # Linting
-black
 darglint
 mypy
 ruff
 
 # Testing
-moto[dynamodb]
+moto
 fakeredis
 pytest
 pytest-aiohttp

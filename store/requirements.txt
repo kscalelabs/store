@@ -7,10 +7,12 @@ pydantic
 
 # AWS dependencies.
 aioboto3
-redis
 
 # Crypto dependencies
 argon2-cffi
+python-jose[cryptography]
+passlib[bcrypt]
+pyjwt
 
 # FastAPI dependencies.
 aiohttp

@@ -1,5 +1,5 @@
 """Defines the main entrypoint for the FastAPI app."""
-
+import os
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
@@ -14,7 +14,13 @@ from store.app.routers.image import image_router
 from store.app.routers.part import parts_router
 from store.app.routers.robot import robots_router
 from store.app.routers.users import users_router
+
 from store.settings import settings
+
+if os.getenv("ROBOLIST_ENVIRONMENT") == "local":
+    from dotenv import load_dotenv
+    load_dotenv(".env.local")
+
 
 LOCALHOST_URLS = [
     "http://127.0.0.1:3000",
@@ -35,15 +41,16 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 app = FastAPI(lifespan=lifespan)
 
+allowed_origins = list({settings.site.homepage, *LOCALHOST_URLS})
+
 # Adds CORS middleware.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins={settings.site.homepage, *LOCALHOST_URLS},
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 @app.exception_handler(ValueError)
 async def value_error_exception_handler(request: Request, exc: ValueError) -> JSONResponse:
