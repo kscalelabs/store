@@ -4,7 +4,7 @@ import logging
 import time
 from typing import Annotated, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from store.app.crud.robots import EditRobot
@@ -18,35 +18,6 @@ robots_router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-@robots_router.get("/")
-async def list_robots(
-    crud: Annotated[Crud, Depends(Crud.get)],
-    page: int = Query(description="Page number for pagination"),
-    search_query: str = Query(None, description="Search query string"),
-) -> tuple[List[Robot], bool]:
-    """Lists the robots in the database.
-
-    The function is paginated. The page size is 12.
-
-    Returns the robots on the page and a boolean indicating if there are more pages.
-    """
-    return await crud.list_robots(page, search_query=search_query)
-
-
-@robots_router.get("/your/")
-async def list_your_robots(
-    crud: Annotated[Crud, Depends(Crud.get)],
-    token: Annotated[str, Depends(get_session_token)],
-    page: int = Query(description="Page number for pagination"),
-) -> tuple[List[Robot], bool]:
-    """Lists the robots that you own."""
-    user_id = await crud.get_user_id_from_session_token(token)
-    if user_id is None:
-        raise HTTPException(status_code=401, detail="Must be logged in to view your parts")
-
-    return await crud.list_your_robots(user_id, page)
-
-
 @robots_router.get("/{robot_id}")
 async def get_robot(robot_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> Robot | None:
     return await crud.get_robot(robot_id)
@@ -54,7 +25,8 @@ async def get_robot(robot_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> 
 
 @robots_router.get("/user/")
 async def current_user(
-    crud: Annotated[Crud, Depends(Crud.get)], token: Annotated[str, Depends(get_session_token)]
+    crud: Annotated[Crud, Depends(Crud.get)],
+    token: Annotated[str, Depends(get_session_token)],
 ) -> str | None:
     user_id = await crud.get_user_id_from_session_token(token)
     return str(user_id)
@@ -67,7 +39,7 @@ class NewRobot(BaseModel):
     images: List[Image]
     height: Optional[str]
     weight: Optional[str]
-    degrees_of_freedom: Optional[str]
+    degrees_of_freedom: Optional[int]
     urdf: str
     packages: List[Package]
 
@@ -84,6 +56,7 @@ async def add_robot(
 
     await crud.add_robot(
         Robot(
+            id=str(new_uuid()),
             name=new_robot.name,
             description=new_robot.description,
             bom=new_robot.bom,
@@ -92,7 +65,6 @@ async def add_robot(
             weight=new_robot.weight,
             degrees_of_freedom=new_robot.degrees_of_freedom,
             owner=str(user_id),
-            robot_id=str(new_uuid()),
             timestamp=int(time.time()),
             urdf=new_robot.urdf,
             packages=new_robot.packages,

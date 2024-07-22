@@ -13,11 +13,7 @@ from store.utils import LRUCache
 # This dictionary is used to locally cache the last time a token was validated
 # against the database. We give the tokens some buffer time to avoid hitting
 # the database too often.
-LAST_API_KEY_VALIDATION = LRUCache[str, datetime](2**20)
-
-# This dictionary is used to locally cache the fact that a token has been
-# deleted, to avoid hitting the database too often.
-TOKEN_IS_DELETED = LRUCache[str, bool](2**20)
+LAST_API_KEY_VALIDATION = LRUCache[str, tuple[datetime, bool]](2**20)
 
 
 class UserCrud(BaseCrud):
@@ -33,12 +29,6 @@ class UserCrud(BaseCrud):
         ]
 
     async def add_user(self, user: User) -> None:
-        # table = await self.db.Table("Users")
-        # await table.put_item(
-        #     Item=user.model_dump(),
-        #     ConditionExpression="attribute_not_exists(oauth_id) AND attribute_not_exists(email) AND \
-        #         attribute_not_exists(username)",
-        # )
         await self._add_item(user)
 
     async def get_user(self, user_id: str) -> User | None:
@@ -74,14 +64,25 @@ class UserCrud(BaseCrud):
         await self._delete_item(token)
 
     async def api_key_is_valid(self, token: str) -> bool:
+        """Validates a token against the database, with caching.
+
+        In order to reduce the number of database queries, we locally cache
+        whether or not a token is valid for some amount of time.
+
+        Args:
+            token: The token to validate.
+
+        Returns:
+            If the token is valid, meaning, if it exists in the database.
+        """
+        cur_time = datetime.now()
         if token in LAST_API_KEY_VALIDATION:
-            if (datetime.now() - LAST_API_KEY_VALIDATION[token]).seconds < settings.crypto.expire_token_minutes * 60:
-                return True
-        user_id = await self._get_item(token, APIKey, throw_if_missing=False)
-        if user_id is None:
-            return False
-        LAST_API_KEY_VALIDATION[token] = datetime.now()
-        return True
+            last_time, is_valid = LAST_API_KEY_VALIDATION[token]
+            if (cur_time - last_time).seconds < settings.crypto.cache_token_db_result_seconds:
+                return is_valid
+        is_valid = await self._item_exists(token)
+        LAST_API_KEY_VALIDATION[token] = (cur_time, is_valid)
+        return is_valid
 
     async def change_password(self, user_id: str, new_password: str) -> None:
         await self._update_item(user_id, User, {"password_hash": hash_password(new_password)})

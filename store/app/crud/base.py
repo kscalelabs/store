@@ -80,14 +80,43 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         else:
             await table.delete_item(Key={"id": item.id})
 
-    async def _list_items(self, item_class: type[T], limit: int = DEFAULT_SCAN_LIMIT) -> list[T]:
+    async def _list_items(
+        self,
+        item_class: type[T],
+        expression_attribute_names: dict[str, str] | None = None,
+        expression_attribute_values: dict[str, Any] | None = None,
+        filter_expression: str | None = None,
+        offset: int | None = None,
+        limit: int = DEFAULT_SCAN_LIMIT,
+    ) -> list[T]:
+        # table = await self.db.Table("Robolist")
+        # item_dict = await table.scan(
+        #     IndexName="typeIndex",
+        #     Limit=limit,
+        #     FilterExpression=Key("type").eq(item_class.__name__),
+        # )
+        # return [await self._validate_item(item, item_class) for item in item_dict["Items"]]
         table = await self.db.Table("Robolist")
-        item_dict = await table.scan(
-            IndexName="typeIndex",
-            Limit=limit,
-            FilterExpression=Key("type").eq(item_class.__name__),
-        )
-        return [await self._validate_item(item, item_class) for item in item_dict["Items"]]
+        kwargs = {
+            "IndexName": "typeIndex",
+            "FilterExpression": Key("type").eq(item_class.__name__),
+        }
+        if expression_attribute_names is not None:
+            kwargs["ExpressionAttributeNames"] = expression_attribute_names
+        if expression_attribute_values is not None:
+            kwargs["ExpressionAttributeValues"] = expression_attribute_values
+        if filter_expression is not None:
+            kwargs["FilterExpression"] = filter_expression
+        if offset is not None:
+            kwargs["ExclusiveStartKey"] = {"id": offset}
+        items = []
+        while True:
+            item_dict = await table.scan(**kwargs)
+            items.extend([await self._validate_item(item, item_class) for item in item_dict["Items"]])
+            if "LastEvaluatedKey" not in item_dict or len(items) >= limit:
+                break
+            kwargs["ExclusiveStartKey"] = item_dict["LastEvaluatedKey"]
+        return items[:limit]
 
     async def _count_items(self, item_class: type[T]) -> int:
         table = await self.db.Table("Robolist")
@@ -118,6 +147,11 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             return None
         item_data = item_dict["Item"]
         return await self._validate_item(item_data, item_class)
+
+    async def _item_exists(self, item_id: str) -> bool:
+        table = await self.db.Table("Robolist")
+        item_dict = await table.get_item(Key={"id": item_id})
+        return "Item" in item_dict
 
     async def _get_item_batch(
         self,

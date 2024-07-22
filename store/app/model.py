@@ -61,7 +61,6 @@ class APIKey(RobolistBaseModel):
     """
 
     user_id: str
-    is_active: bool = True
 
     @classmethod
     def create(cls, user_id: str) -> Self:

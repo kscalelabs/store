@@ -13,7 +13,7 @@ class OauthSettings:
 
 @dataclass
 class CryptoSettings:
-    expire_token_minutes: int = field(default=10)
+    cache_token_db_result_seconds: int = field(default=30)
     expire_otp_minutes: int = field(default=10)
     jwt_secret: str = field(default=MISSING)
     algorithm: str = field(default="HS256")
