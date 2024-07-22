@@ -9,6 +9,8 @@ from store.app.crud.base import BaseCrud
 from store.app.crud.robots import RobotCrud
 from store.app.crud.users import UserCrud
 
+TABLE_NAME = "Robolist"
+
 
 class Crud(
     UserCrud,
@@ -38,7 +40,7 @@ async def create_tables(crud: Crud | None = None, deletion_protection: bool = Fa
 
     else:
         await crud._create_dynamodb_table(
-            name="Robolist",
+            name=TABLE_NAME,
             keys=[
                 ("id", "S", "HASH"),
             ],
@@ -60,7 +62,7 @@ async def delete_tables(crud: Crud | None = None) -> None:
             await delete_tables(new_crud)
 
     else:
-        await crud._delete_dynamodb_table("Robolist")
+        await crud._delete_dynamodb_table(TABLE_NAME)
 
 
 async def populate_with_dummy_data(crud: Crud | None = None) -> None:
