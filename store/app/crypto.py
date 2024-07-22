@@ -1,11 +1,11 @@
 """Defines crypto functions."""
 
-import uuid
-
-from argon2 import PasswordHasher
 import hashlib
 import secrets
 import string
+import uuid
+
+from argon2 import PasswordHasher
 
 
 def new_token(length: int = 64) -> str:

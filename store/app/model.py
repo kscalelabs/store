@@ -43,9 +43,9 @@ class User(RobolistBaseModel):
     permissions: UserPermissions = UserPermissions()
 
     @classmethod
-    def create(cls, email: str, username: str, password: str) -> Self:
+    def create(cls, email: str, username: str, password: str, id: str | None = None) -> Self:
         return cls(
-            id=str(new_uuid()),
+            id=id or str(new_uuid()),
             email=email,
             username=username,
             password_hash=hash_password(password),

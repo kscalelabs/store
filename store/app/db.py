@@ -5,7 +5,7 @@ import asyncio
 import logging
 from typing import AsyncGenerator, Self
 
-from store.app.crud.base import BaseCrud, TABLE_NAME
+from store.app.crud.base import TABLE_NAME, BaseCrud
 from store.app.crud.robots import RobotCrud
 from store.app.crud.users import UserCrud
 

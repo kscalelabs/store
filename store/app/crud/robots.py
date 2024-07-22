@@ -2,9 +2,10 @@
 
 import logging
 
+from fastapi import UploadFile
+
 from store.app.crud.base import BaseCrud
 from store.app.model import Part, Robot
-from fastapi import UploadFile
 
 logger = logging.getLogger(__name__)
 

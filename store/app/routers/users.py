@@ -9,6 +9,7 @@ from fastapi.security.utils import get_authorization_scheme_param
 from httpx import AsyncClient
 from pydantic.main import BaseModel as PydanticBaseModel
 
+from store.app.crud.users import UserNotFoundError
 from store.app.crypto import check_password, new_token
 from store.app.db import Crud
 from store.app.model import User, UserPermissions
@@ -255,7 +256,7 @@ async def get_user_info_endpoint(
             id=user.id,
             permissions=user.permissions,
         )
-    except:
+    except UserNotFoundError:
         return None
 
 
@@ -356,8 +357,11 @@ async def github_code(
 
     # Create a user if it doesn't exist, with a dummy email
     # since email is required for secondary indexing.
+    #
+    # The password is a long, generated token that just serves as a placeholder.
+    # It in effect forces users to use "Reset Password" to set a password after authenticating with Oauth.
     if user is None:
-        user = User.create(username=github_username, id=github_id)
+        user = User.create(email="dummy@kscale.dev", username=github_username, password=new_token(), id=github_id)
         await crud.add_user(user)
     token = new_token()
 
