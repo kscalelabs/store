@@ -26,3 +26,12 @@ class RobotCrud(BaseCrud):
 
     async def delete_part(self, part_id: str) -> None:
         await self._delete_item(part_id)
+    
+    async def dump_parts(self) -> list[Part]:
+        raise NotImplementedError()
+
+    async def list_parts(self, page: int, search_query: str):
+        raise NotImplementedError()
+
+    async def list_your_parts(self, user, page: int, search_query: str):
+        raise NotImplementedError()

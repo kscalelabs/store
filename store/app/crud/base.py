@@ -10,8 +10,9 @@ from botocore.exceptions import ClientError
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 from types_aiobotocore_s3.service_resource import S3ServiceResource
 
-from store.app.db import TABLE_NAME
 from store.app.model import RobolistBaseModel
+
+TABLE_NAME = "Robolist"
 
 logger = logging.getLogger(__name__)
 
