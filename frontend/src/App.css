@@ -12,6 +12,8 @@ div.content {
 html,
 body {
   word-wrap: break-word;
+  font-family: "Roboto", "Franklin Gothic Medium", "Arial Narrow", Arial,
+    sans-serif;
 }
 
 form {
