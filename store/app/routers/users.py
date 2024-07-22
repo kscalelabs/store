@@ -9,7 +9,7 @@ from fastapi.security.utils import get_authorization_scheme_param
 from httpx import AsyncClient
 from pydantic.main import BaseModel as PydanticBaseModel
 
-from store.app.crypto import check_password, new_token
+from store.app.crypto import check_password, new_register_jwt, new_reset_password_jwt, new_change_email_jwt, new_auth_jwt
 from store.app.db import Crud
 from store.app.model import OauthUser, User
 from store.app.utils.email import send_change_email, send_delete_email, send_register_email, send_reset_password_email
@@ -80,7 +80,7 @@ async def send_register_email_endpoint(
 ) -> bool:
     """Sends a verification email to the new email address."""
     email = validate_email(data.email)
-    verify_email_token = new_token()
+    verify_email_token = new_register_jwt(email)
     # Magic number: 7 days
     await crud.add_register_token(verify_email_token, email, 60 * 60 * 24 * 7)
     await send_register_email(email, verify_email_token)
@@ -131,9 +131,7 @@ async def forgot_password_user_endpoint(
     user = await crud.get_user_from_email(email)
     if user is None:
         return True
-    reset_password_token = new_token()
-    # Magic number: 1 hour
-    await crud.add_reset_password_token(reset_password_token, user.id, 60 * 60)
+    reset_password_token = new_reset_password_jwt(email)
     await send_reset_password_email(email, reset_password_token)
     return True
 
@@ -164,7 +162,7 @@ async def send_change_email_user_endpoint(
     token: Annotated[str, Depends(get_session_token)],
 ) -> bool:
     user = await crud.get_user_from_jwt(token)
-    change_email_token = new_token()
+    change_email_token = new_change_email_jwt(user.email, data.new_email)
     """Sends a verification email to the new email address."""
     # Magic number: 1 hour
     await crud.add_change_email_token(change_email_token, user.id, data.new_email, 60 * 60)
@@ -225,13 +223,13 @@ async def login_user_endpoint(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
     if not check_password(data.password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-    token = new_token()
+    token = new_auth_jwt(user.id)
     response.set_cookie(
         key="session_token",
         value=token,
         httponly=True,
     )
-    await crud.get_api_key(token, user.id)
+    await crud.get_api_key(token, user.user_id)
 
     return True
 
@@ -239,7 +237,7 @@ async def login_user_endpoint(
 class UserInfoResponse(BaseModel):
     email: str
     username: str
-    id: str
+    user_id: str
     admin: bool
 
 
@@ -253,7 +251,7 @@ async def get_user_info_endpoint(
         return UserInfoResponse(
             email=user.email,
             username=user.username,
-            id=user.id,
+            user_id=user.id,
             permissions=user.permissions,
         )
     except:
@@ -284,19 +282,19 @@ async def logout_user_endpoint(
 
 class PublicUserInfoResponse(BaseModel):
     username: str
-    id: str
+    user_id: str
 
 
 @users_router.get("/batch", response_model=list[PublicUserInfoResponse])
 async def get_users_batch_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
-    ids: list[str] = Query(...),
+    user_ids: list[str] = Query(...),
 ) -> list[PublicUserInfoResponse]:
-    user_objs = await crud.get_user_batch(ids)
+    user_objs = await crud.get_user_batch(user_ids)
     return [
         PublicUserInfoResponse(
             username=user_obj.username,
-            id=user_obj.id,
+            user_id=user_obj.id,
         )
         for user_obj in user_objs
     ]
@@ -361,9 +359,9 @@ async def github_code(
         user = OauthUser.create(username=github_username, oauth_id=github_id)
         await crud.add_user(user)
 
-    token = new_token()
+    token = new_auth_jwt(user.id)
 
-    await crud.get_api_key(token, user.id)
+    await crud.get_api_key(token, user.user_id)
 
     response.set_cookie(
         key="session_token",
@@ -371,7 +369,7 @@ async def github_code(
         httponly=True,
     )
 
-    user_obj = await crud.get_user(user.id)
+    user_obj = await crud.get_user(user.user_id)
 
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -379,19 +377,19 @@ async def github_code(
     return UserInfoResponse(
         email=user_obj.email,
         username=user_obj.username,
-        id=user_obj.id,
+        user_id=user_obj.user_id,
         admin=user_obj.admin,
     )
 
 
-@users_router.get("/{id}", response_model=PublicUserInfoResponse)
+@users_router.get("/{user_id}", response_model=PublicUserInfoResponse)
 async def get_user_info_by_id_endpoint(
-    id: str, crud: Annotated[Crud, Depends(Crud.get)]
+    user_id: str, crud: Annotated[Crud, Depends(Crud.get)]
 ) -> PublicUserInfoResponse:
-    user_obj = await crud.get_user(id)
+    user_obj = await crud.get_user(user_id)
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return PublicUserInfoResponse(
         username=user_obj.username,
-        id=user_obj.id,
+        user_id=user_obj.user_id,
     )
