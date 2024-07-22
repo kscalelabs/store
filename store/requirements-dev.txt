@@ -2,6 +2,7 @@
 
 python-dotenv
 # Linting
+black
 darglint
 mypy
 ruff
