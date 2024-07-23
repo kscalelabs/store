@@ -25,10 +25,6 @@ def new_uuid() -> uuid.UUID:
     return uuid.uuid4()
 
 
-def hash_password(password: str) -> str:
-    return PasswordHasher().hash(password)
-
-
 def check_password(password: str, hash: str) -> bool:
     try:
         return PasswordHasher().verify(hash, password)

@@ -158,6 +158,48 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         items = item_dict["Items"]
         return [await self._validate_item(item, item_class) for item in items]
 
+    @overload
+    async def _get_unique_item_from_secondary_index(
+        self,
+        secondary_index: str,
+        secondary_index_name: str,
+        secondary_index_value: str,
+        item_class: type[T],
+        throw_if_missing: Literal[True],
+    ) -> T: ...
+
+    @overload
+    async def _get_unique_item_from_secondary_index(
+        self,
+        secondary_index: str,
+        secondary_index_name: str,
+        secondary_index_value: str,
+        item_class: type[T],
+        throw_if_missing: Literal[False] = False,
+    ) -> T | None: ...
+
+    async def _get_unique_item_from_secondary_index(
+        self,
+        secondary_index: str,
+        secondary_index_name: str,
+        secondary_index_value: str,
+        item_class: type[T],
+        throw_if_missing: bool = False,
+    ) -> T | None:
+        items = await self._get_items_from_secondary_index(
+            secondary_index,
+            secondary_index_name,
+            secondary_index_value,
+            item_class,
+        )
+        if len(items) == 0:
+            if throw_if_missing:
+                raise ValueError(f"No items found with {secondary_index_name} {secondary_index_value}")
+            return None
+        if len(items) > 1:
+            raise ValueError(f"Multiple items found with {secondary_index_name} {secondary_index_value}")
+        return items[0]
+
     async def _update_item(self, item_id: str, item_class: type[T], new_values: dict[str, Any]) -> None:  # noqa: ANN401
         # Validates the new values.
         for field_name, field_value in new_values.items():

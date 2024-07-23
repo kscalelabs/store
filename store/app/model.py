@@ -10,7 +10,7 @@ from typing import Self
 import jwt
 from pydantic import BaseModel
 
-from store.app.crypto import hash_password, new_uuid
+from store.app.crypto import new_uuid
 from store.settings import settings
 
 
@@ -26,7 +26,7 @@ class RobolistBaseModel(BaseModel):
 
 
 class UserPermissions(BaseModel):
-    admin: bool = False
+    is_admin: bool = False
 
 
 class User(RobolistBaseModel):
@@ -38,17 +38,17 @@ class User(RobolistBaseModel):
     """
 
     username: str
-    email: str | None
-    password_hash: str
+    email: str
+    auth_keys: list[str]
     permissions: UserPermissions = UserPermissions()
 
     @classmethod
-    def create(cls, email: str | None, username: str, password: str, id: str | None = None) -> Self:
+    def create(cls, username: str, email: str, auth_key: str) -> Self:
         return cls(
-            id=id or str(new_uuid()),
-            email=email,
+            id=str(new_uuid()),
             username=username,
-            password_hash=hash_password(password),
+            email=email,
+            auth_keys=[auth_key],
         )
 
 

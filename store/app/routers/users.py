@@ -112,8 +112,8 @@ async def register_user_endpoint(
     user = await crud.get_user_from_email(email)
     if user is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists")
-    user = User.create(username=data.username, email=email, password=data.password)
-    await crud.add_user(user)
+    # user = User.create(username=data.username, email=email, password=data.password)
+    # await crud.add_user(user)
     return True
 
 
@@ -236,7 +236,6 @@ async def login_user_endpoint(
 
 
 class UserInfoResponse(BaseModel):
-    email: str | None
     username: str
     id: str
     permissions: UserPermissions
@@ -250,7 +249,6 @@ async def get_user_info_endpoint(
     try:
         user = await crud.get_user_from_token(token)
         return UserInfoResponse(
-            email=user.email,
             username=user.username,
             id=user.id,
             permissions=user.permissions,
@@ -266,8 +264,7 @@ async def delete_user_endpoint(
 ) -> bool:
     user = await crud.get_user_from_token(token)
     await crud.delete_user(user.id)
-    if user.email is not None:
-        await send_delete_email(user.email)
+    await send_delete_email(user.email)
     return True
 
 
@@ -340,7 +337,9 @@ async def github_code(
     headers = {"Accept": "application/json"}
     async with AsyncClient() as client:
         oauth_response = await client.post(
-            url="https://github.com/login/oauth/access_token", params=params, headers=headers
+            url="https://github.com/login/oauth/access_token",
+            params=params,
+            headers=headers,
         )
     response_json = oauth_response.json()
 
@@ -352,17 +351,18 @@ async def github_code(
 
     github_id = oauth_response.json()["html_url"]
     github_username = oauth_response.json()["login"]
+    github_email = oauth_response.json()["email"]
 
     user = await crud.get_user(github_id)
 
     # Create a user if it doesn't exist, with a dummy email
     # since email is required for secondary indexing.
-    #
-    # The password is a long, generated token that just serves as a placeholder.
-    # It in effect forces users to use "Reset Password" to set a password after authenticating with Oauth.
     if user is None:
-        user = User.create(email=None, username=github_username, password=new_token(), id=github_id)
-        await crud.add_user(user)
+        user = await crud.create_user_from_github_token(
+            username=github_username,
+            email=github_email,
+            github_id=github_id,
+        )
     token = new_token()
 
     response.set_cookie(
@@ -377,7 +377,6 @@ async def github_code(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     return UserInfoResponse(
-        email=user_obj.email,
         username=user_obj.username,
         id=user_obj.id,
         permissions=user_obj.permissions,
