@@ -5,7 +5,7 @@ import warnings
 from datetime import datetime
 
 from store.app.crud.base import BaseCrud, GlobalSecondaryIndex
-from store.app.model import APIKey, User
+from store.app.model import OAuthKey, APIKey, User
 from store.settings import settings
 from store.utils import LRUCache
 
@@ -36,37 +36,35 @@ class UserCrud(BaseCrud):
     def get_gsis(cls) -> list[GlobalSecondaryIndex]:
         return super().get_gsis() + [
             ("emailIndex", "email", "S", "HASH"),
-            ("authKeyIndex", "auth_key", "S", "HASH"),
         ]
 
     async def get_user(self, id: str) -> User | None:
         return await self._get_item(id, User, throw_if_missing=False)
 
-    async def get_user_from_github_token(self, token: str) -> User | None:
-        return await self._get_unique_item_from_secondary_index(
-            "authKeyIndex",
-            "auth_key",
-            github_auth_key(token),
-            User,
-        )
+    async def create_user_from_token(self, token: str, email: str) -> User:
+        user = User.create(email=email)
+        await self._add_item(user)
+        key = OAuthKey.create(token, user.id)
+        await self._add_item(key)
+        return user
+
+    async def get_user_from_token(self, token: str) -> User | None:
+        key = await self._get_item(token, OAuthKey, throw_if_missing=False)
+        if key is None:
+            return None
+        return await self.get_user(key.user_id)
 
     async def create_user_from_github_token(self, github_id: str, email: str) -> User:
-        user = User.create(email=email, auth_keys=[github_auth_key(github_id)])
-        await self._add_item(user)
-        return user
-
-    async def get_user_from_google_token(self, token: str) -> User | None:
-        return await self._get_unique_item_from_secondary_index(
-            "authKeyIndex",
-            "auth_key",
-            google_auth_key(token),
-            User,
-        )
+        return await self.create_user_from_token(github_auth_key(github_id), email)
 
     async def create_user_from_google_token(self, google_id: str, email: str) -> User:
-        user = User.create(email=email, auth_keys=[google_auth_key(google_id)])
-        await self._add_item(user)
-        return user
+        return await self.create_user_from_token(google_auth_key(google_id), email)
+
+    async def get_user_from_github_token(self, token: str) -> User | None:
+        return await self.get_user_from_token(github_auth_key(token))
+
+    async def get_user_from_google_token(self, token: str) -> User | None:
+        return await self.get_user_from_token(google_auth_key(token))
 
     async def get_user_from_email(self, email: str) -> User | None:
         return await self._get_unique_item_from_secondary_index("emailIndex", "email", email, User)
@@ -79,10 +77,8 @@ class UserCrud(BaseCrud):
     async def get_user_batch(self, ids: list[str]) -> list[User]:
         return await self._get_item_batch(ids, User)
 
-    # Note: we need to make this function throw an error if there is no user associated with the API key ("token")
-    # Distinction to make: token is the id, API key is the entire object associated with the token (i.e. the id)
-    async def get_user_from_token(self, token: str) -> User:
-        key = await self.get_api_key(token)
+    async def get_user_from_api_key(self, key: str) -> User:
+        key = await self.get_api_key(key)
         return await self._get_item(key.user_id, User, throw_if_missing=True)
 
     async def delete_user(self, id: str) -> None:

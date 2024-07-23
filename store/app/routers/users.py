@@ -88,7 +88,7 @@ async def get_user_info_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UserInfoResponse | None:
     try:
-        user = await crud.get_user_from_token(token)
+        user = await crud.get_user_from_api_key(token)
         return UserInfoResponse(
             id=user.id,
             permissions=user.permissions,
@@ -102,7 +102,7 @@ async def delete_user_endpoint(
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    user = await crud.get_user_from_token(token)
+    user = await crud.get_user_from_api_key(token)
     await crud.delete_user(user.id)
     await send_delete_email(user.email)
     return True
@@ -176,7 +176,6 @@ async def github_code(
     access_token = response_json["access_token"]
     async with AsyncClient() as client:
         headers.update({"Authorization": f"Bearer {access_token}"})
-        print(access_token)
         oauth_response = await client.get("https://api.github.com/user", headers=headers)
         oauth_email_response = await client.get("https://api.github.com/user/emails", headers=headers)
 
@@ -194,11 +193,11 @@ async def github_code(
     # This is solely so mypy stops complaining.
     assert user is not None
 
-    token = new_token()
+    api_key = await crud.add_api_key(user.id)
 
     response.set_cookie(
         key="session_token",
-        value=token,
+        value=api_key.id,
         httponly=True,
     )
 

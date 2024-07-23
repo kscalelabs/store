@@ -38,7 +38,7 @@ async def list_your_parts(
     page: int = Query(description="Page number for pagination"),
     search_query: str = Query(None, description="Search query string"),
 ) -> tuple[list[Part], bool]:
-    user = await crud.get_user_from_token(token)
+    user = await crud.get_user_from_api_key(token)
     return await crud.list_your_parts(user.id, page, search_query=search_query)
 
 
@@ -52,7 +52,7 @@ async def current_user(
     crud: Annotated[Crud, Depends(Crud.get)],
     token: Annotated[str, Depends(get_session_token)],
 ) -> str | None:
-    user = await crud.get_user_from_token(token)
+    user = await crud.get_user_from_api_key(token)
     return user.id
 
 
@@ -68,7 +68,7 @@ async def add_part(
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    user = await crud.get_user_from_token(token)
+    user = await crud.get_user_from_api_key(token)
     await crud.add_part(
         Part(
             name=part.name,
@@ -91,7 +91,7 @@ async def delete_part(
     part = await crud.get_part(part_id)
     if part is None:
         raise HTTPException(status_code=404, detail="Part not found")
-    user = await crud.get_user_from_token(token)
+    user = await crud.get_user_from_api_key(token)
     if part.owner != user.id:
         raise HTTPException(status_code=403, detail="You do not own this part")
     await crud.delete_part(part_id)
@@ -107,7 +107,7 @@ async def edit_part(
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    user = await crud.get_user_from_token(token)
+    user = await crud.get_user_from_api_key(token)
     part_info = await crud.get_part(part_id)
     if part_info is None:
         raise HTTPException(status_code=404, detail="Part not found")

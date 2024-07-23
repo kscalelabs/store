@@ -50,7 +50,7 @@ async def list_your_parts(
     page: int = Query(description="Page number for pagination"),
     search_query: str = Query(None, description="Search query string"),
 ) -> tuple[list[Robot], bool]:
-    user = await crud.get_user_from_token(token)
+    user = await crud.get_user_from_api_key(token)
     return await crud.list_your_robots(user.id, page, search_query=search_query)
 
 
@@ -60,7 +60,7 @@ async def add_robot(
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    id = await crud.get_user_from_token(token)
+    id = await crud.get_user_from_api_key(token)
 
     await crud.add_robot(
         Robot(
@@ -90,7 +90,7 @@ async def delete_robot(
     robot = await crud.get_robot(robot_id)
     if robot is None:
         raise HTTPException(status_code=404, detail="Robot not found")
-    user = await crud.get_user_from_token(token)
+    user = await crud.get_user_from_api_key(token)
     if robot.owner != user.id:
         raise HTTPException(status_code=403, detail="You do not own this robot")
     await crud.delete_robot(robot_id)
@@ -107,7 +107,7 @@ async def edit_robot(
     robot_info = await crud.get_robot(id)
     if robot_info is None:
         raise HTTPException(status_code=404, detail="Robot not found")
-    user = await crud.get_user_from_token(token)
+    user = await crud.get_user_from_api_key(token)
     if robot_info.owner != user.id:
         raise HTTPException(status_code=403, detail="You do not own this robot")
     await crud._update_item(id, Robot, robot)

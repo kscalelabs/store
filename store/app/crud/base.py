@@ -5,7 +5,7 @@ import logging
 from typing import Any, AsyncContextManager, Callable, Literal, Self, TypeVar, overload
 
 import aioboto3
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 from types_aiobotocore_s3.service_resource import S3ServiceResource
