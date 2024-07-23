@@ -11,7 +11,7 @@ from pydantic.main import BaseModel as PydanticBaseModel
 
 from store.app.crypto import new_token
 from store.app.db import Crud
-from store.app.model import UserPermissions
+from store.app.model import User, UserPermissions
 from store.app.utils.email import send_delete_email
 from store.settings import settings
 
@@ -181,10 +181,7 @@ async def github_code(
         oauth_email_response = await client.get("https://api.github.com/user/emails", headers=headers)
 
     github_id = oauth_response.json()["html_url"]
-    email = None
-    for entry in oauth_email_response.json():
-        if entry["primary"] == True:
-            email = entry["email"]
+    email = next(entry["email"] for entry in oauth_email_response.json() if entry["primary"])
 
     user = await crud.get_user_from_github_token(github_id)
     # Exception occurs when user does not exist.
@@ -194,6 +191,8 @@ async def github_code(
             email=email,
             github_id=github_id,
         )
+    # This is solely so mypy stops complaining.
+    assert user is not None
 
     token = new_token()
 

@@ -108,7 +108,8 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         if offset:
             query_params["ExclusiveStartKey"] = {"id": offset}
 
-        return (await table.query(**query_params))["Items"]
+        items = (await table.query(**query_params))["Items"]
+        return [self._validate_item(item, item_class) for item in items]
 
     async def _count_items(self, item_class: type[T]) -> int:
         table = await self.db.Table(TABLE_NAME)
@@ -119,7 +120,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         )
         return item_dict["Count"]
 
-    async def _validate_item(self, data: dict[str, Any], item_class: type[T]) -> T:
+    def _validate_item(self, data: dict[str, Any], item_class: type[T]) -> T:
         if (item_type := data.pop("type")) != item_class.__name__:
             raise ValueError(f"Item type {str(item_type)} is not a {item_class.__name__}")
         return item_class.model_validate(data)
@@ -138,7 +139,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
                 raise ValueError(f"Item {item_id} not found")
             return None
         item_data = item_dict["Item"]
-        return await self._validate_item(item_data, item_class)
+        return self._validate_item(item_data, item_class)
 
     async def _item_exists(self, item_id: str) -> bool:
         table = await self.db.Table(TABLE_NAME)
@@ -157,7 +158,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             keys = [{"id": item_id} for item_id in chunk]
             response = await self.db.batch_get_item(RequestItems={TABLE_NAME: {"Keys": keys}})
             for item in response["Responses"][TABLE_NAME]:
-                items.append(await self._validate_item(item, item_class))
+                items.append(self._validate_item(item, item_class))
         return items
 
     async def _get_items_from_secondary_index(
@@ -173,7 +174,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             KeyConditionExpression=Key(secondary_index_name).eq(secondary_index_value),
         )
         items = item_dict["Items"]
-        return [await self._validate_item(item, item_class) for item in items]
+        return [self._validate_item(item, item_class) for item in items]
 
     @overload
     async def _get_unique_item_from_secondary_index(

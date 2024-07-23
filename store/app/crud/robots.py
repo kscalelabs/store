@@ -44,9 +44,9 @@ class RobotCrud(BaseCrud):
             )
         else:
             response = await self._list_items(Part)
-        sorted_items = sorted(response, key=lambda item: item["timestamp"], reverse=True)
-        return [
-                self._validate_item(item, Part) for item in sorted_items[(page - 1) * self.items_per_page : page * self.items_per_page]
+        sorted_items = sorted(response, key=lambda part: part.timestamp, reverse=True)
+        return sorted_items[
+            (page - 1) * self.items_per_page : page * self.items_per_page
         ], page * self.items_per_page < len(response)
 
     async def list_your_parts(self, user_id: str, page: int, search_query: str) -> tuple[list[Part], bool]:
@@ -59,13 +59,11 @@ class RobotCrud(BaseCrud):
             )
         else:
             response = await self._list_items(
-                Part,
-                filter_expression="user_id=:user_id",
-                expression_attribute_values={":user_id": user_id}
+                Part, filter_expression="user_id=:user_id", expression_attribute_values={":user_id": user_id}
             )
-        sorted_items = sorted(response, key=lambda item: item["timestamp"], reverse=True)
-        return [
-                self._validate_item(item, Part) for item in sorted_items[(page - 1) * self.items_per_page : page * self.items_per_page]
+        sorted_items = sorted(response, key=lambda part: part.timestamp, reverse=True)
+        return sorted_items[
+            (page - 1) * self.items_per_page : page * self.items_per_page
         ], page * self.items_per_page < len(response)
 
     async def upload_image(self, file: UploadFile) -> None:
