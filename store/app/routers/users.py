@@ -162,6 +162,7 @@ async def github_code(
         "client_id": settings.oauth.github_client_id,
         "client_secret": settings.oauth.github_client_secret,
         "code": code,
+        "scope": "user:email",
     }
     headers = {"Accept": "application/json"}
     async with AsyncClient() as client:
@@ -181,15 +182,15 @@ async def github_code(
     github_id = oauth_response.json()["html_url"]
     github_email = oauth_response.json()["email"]
 
-    user = await crud.get_user(github_id)
-
-    # Create a user if it doesn't exist, with a dummy email
-    # since email is required for secondary indexing.
-    if user is None:
+    user = await crud.get_user_from_github_token(github_id)
+    # Exception occurs when user does not exist.
+    # Create a user if this is the case.
+    if user == None:
         user = await crud.create_user_from_github_token(
             email=github_email,
             github_id=github_id,
         )
+
     token = new_token()
 
     response.set_cookie(
@@ -198,12 +199,7 @@ async def github_code(
         httponly=True,
     )
 
-    user_obj = await crud.get_user(user.id)
-
-    if user_obj is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
-    return UserInfoResponse(id=user_obj.id, permissions=user_obj.permissions)
+    return UserInfoResponse(id=user.id, permissions=user.permissions)
 
 
 @users_router.get("/{id}", response_model=PublicUserInfoResponse)

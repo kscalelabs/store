@@ -3,10 +3,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import TCButton from "components/files/TCButton";
 import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
-import { setLocalStorageAuth, useAuthentication } from "hooks/auth";
-import { FormEvent, useState } from "react";
+import { useAuthentication } from "hooks/auth";
+import { FormEvent } from "react";
 import { Form } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const auth = useAuthentication();
@@ -31,7 +30,10 @@ const Login = () => {
   return (
     <div>
       <h1 className="mb-4">Login</h1>
-      <p>If you don't already have an account, authenticating will automatically create an account for you.</p>
+      <p>
+        If you do not already have an account, authenticating will automatically
+        create an account for you.
+      </p>
       <Form onSubmit={handleGithubSubmit}>
         <TCButton type="submit">
           <FontAwesomeIcon icon={faGithub} style={{ marginRight: 15 }} />
