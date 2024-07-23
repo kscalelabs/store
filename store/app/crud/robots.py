@@ -11,8 +11,6 @@ logger = logging.getLogger(__name__)
 
 
 class RobotCrud(BaseCrud):
-    items_per_page = 12
-
     async def add_robot(self, robot: Robot) -> None:
         await self._add_item(robot)
 
