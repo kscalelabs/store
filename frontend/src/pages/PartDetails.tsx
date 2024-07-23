@@ -250,7 +250,7 @@ const PartDetails = () => {
                       handleShow();
                     }}
                   >
-                    <ImageComponent imageId={images[key].url} />
+                    <ImageComponent imageId={images[key].url + ".png"} caption={images[key].caption} />
                   </div>
                   <Carousel.Caption
                     style={{
@@ -286,7 +286,7 @@ const PartDetails = () => {
         </Modal.Header>
         <Modal.Body>
           <div style={{ display: "flex", justifyContent: "center" }}>
-            <ImageComponent imageId={images[imageIndex].url} />
+            <ImageComponent imageId={images[imageIndex].url + ".png"} caption={images[imageIndex].caption} />
           </div>
         </Modal.Body>
         <Modal.Footer>

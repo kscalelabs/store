@@ -198,6 +198,7 @@ async def github_code(
         key="session_token",
         value=api_key.id,
         httponly=True,
+        samesite="lax"
     )
 
     return UserInfoResponse(id=user.id, permissions=user.permissions)

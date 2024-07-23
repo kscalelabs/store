@@ -375,7 +375,7 @@ const RobotDetails = () => {
                         handleShow();
                       }}
                     >
-                      <ImageComponent imageId={images[key].url} />
+                      <ImageComponent imageId={images[key].url + ".png"} caption={images[key].caption} />
                     </div>
                     <Carousel.Caption
                       style={{
@@ -421,7 +421,7 @@ const RobotDetails = () => {
               position: "relative",
             }}
           >
-            <ImageComponent imageId={images[imageIndex].url} />
+            <ImageComponent imageId={images[imageIndex].url + ".png"} caption={images[imageIndex].caption} />
           </div>
         </Modal.Body>
         <Modal.Footer>

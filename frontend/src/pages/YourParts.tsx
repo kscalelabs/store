@@ -87,7 +87,7 @@ const YourParts = () => {
                     borderTopRightRadius: ".25rem",
                   }}
                 >
-                  <ImageComponent imageId={"mini" + part.images[0].url} />
+                  <ImageComponent imageId={"mini" + part.images[0].url + ".png"} caption={part.images[0].caption} />
                 </div>
               )}
               <Card.Body>
