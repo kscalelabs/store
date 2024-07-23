@@ -45,4 +45,4 @@ class RobotCrud(BaseCrud):
         return await self._list_your(Part, user_id, page, lambda x: x.timestamp, search_query)
 
     async def upload_image(self, file: UploadFile) -> None:
-        raise NotImplementedError()
+        await (await self.s3.Bucket("images")).upload_fileobj(file.file, file.filename or "")
