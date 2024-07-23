@@ -37,19 +37,13 @@ class User(RobolistBaseModel):
     their email and password.
     """
 
-    username: str
     email: str
     auth_keys: list[str]
     permissions: UserPermissions = UserPermissions()
 
     @classmethod
-    def create(cls, username: str, email: str, auth_key: str) -> Self:
-        return cls(
-            id=str(new_uuid()),
-            username=username,
-            email=email,
-            auth_keys=[auth_key],
-        )
+    def create(cls, email: str, auth_keys: list[str] | None = None) -> Self:
+        return cls(id=str(new_uuid()), email=email, auth_keys=auth_keys)
 
 
 class APIKey(RobolistBaseModel):

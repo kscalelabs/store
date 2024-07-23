@@ -39,37 +39,44 @@ class UserCrud(BaseCrud):
     @classmethod
     def get_gsis(cls) -> list[GlobalSecondaryIndex]:
         return super().get_gsis() + [
-            ("usernameIndex", "username", "S", "HASH"),
+            ("emailIndex", "email", "S", "HASH"),
             ("authKeyIndex", "auth_key", "S", "HASH"),
         ]
 
     async def get_user(self, id: str) -> User | None:
         return await self._get_item(id, User, throw_if_missing=False)
 
-    async def get_user_from_username(self, username: str) -> User | None:
-        return await self._get_unique_item_from_secondary_index("usernameIndex", "username", username, User)
-
     async def get_user_from_github_token(self, token: str) -> User | None:
-        raise NotImplementedError
+        return await self._get_unique_item_from_secondary_index(
+            "authKeyIndex",
+            "auth_key",
+            github_auth_key(token),
+            User,
+        )
 
-    async def create_user_from_github_token(self, github_id: str, email: str, username: str) -> User:
-        user = User.create(username=username, email=email, auth_key=github_auth_key(github_id))
+    async def create_user_from_github_token(self, github_id: str, email: str) -> User:
+        user = User.create(email=email, auth_keys=[github_auth_key(github_id)])
         await self._add_item(user)
         return user
 
     async def get_user_from_google_token(self, token: str) -> User | None:
-        raise NotImplementedError
+        return await self._get_unique_item_from_secondary_index(
+            "authKeyIndex",
+            "auth_key",
+            google_auth_key(token),
+            User,
+        )
 
-    async def create_user_from_google_token(self, google_id: str, email: str, username: str) -> User:
-        user = User.create(username=username, email=email, auth_key=google_auth_key(google_id))
+    async def create_user_from_google_token(self, google_id: str, email: str) -> User:
+        user = User.create(email=email, auth_keys=[google_auth_key(google_id)])
         await self._add_item(user)
         return user
 
     async def get_user_from_email(self, email: str) -> User | None:
-        raise NotImplementedError
+        return await self._get_unique_item_from_secondary_index("emailIndex", "email", email, User)
 
-    async def create_user_from_email(self, email: str, username: str) -> User:
-        user = User.create(username=username, email=email, auth_key=email_auth_key(email))
+    async def create_user_from_email(self, email: str) -> User:
+        user = User.create(email=email)
         await self._add_item(user)
         return user
 
@@ -153,7 +160,7 @@ class UserCrud(BaseCrud):
 
 async def test_adhoc() -> None:
     async with UserCrud() as crud:
-        await crud.create_user_from_email(username="ben", email="ben@kscale.dev")
+        await crud.create_user_from_email(email="ben@kscale.dev")
 
 
 if __name__ == "__main__":
