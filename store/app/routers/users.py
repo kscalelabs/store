@@ -11,7 +11,7 @@ from pydantic.main import BaseModel as PydanticBaseModel
 
 from store.app.crypto import check_password, new_token
 from store.app.db import Crud
-from store.app.model import User, UserPermissions
+from store.app.model import UserPermissions
 from store.app.utils.email import send_change_email, send_delete_email, send_register_email, send_reset_password_email
 from store.settings import settings
 
@@ -98,8 +98,6 @@ async def get_registration_email_endpoint(
 
 class UserRegister(BaseModel):
     token: str
-    username: str
-    password: str
 
 
 @users_router.post("/register")
@@ -109,11 +107,9 @@ async def register_user_endpoint(
 ) -> bool:
     """Registers a new user with the given email and password."""
     email = await crud.check_register_token(data.token)
-    user = await crud.get_user_from_email(email)
-    if user is not None:
+    if (await crud.get_user_from_email(email)) is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists")
-    # user = User.create(username=data.username, email=email, password=data.password)
-    # await crud.add_user(user)
+    await crud.create_user_from_email(email)
     return True
 
 
@@ -182,23 +178,6 @@ async def change_email_user_endpoint(
     return True
 
 
-class ChangePassword(BaseModel):
-    old_password: str
-    new_password: str
-
-
-@users_router.post("/change-password")
-async def change_password_user_endpoint(
-    data: ChangePassword,
-    token: Annotated[str, Depends(get_session_token)],
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    """Changes the user's password."""
-    user = await crud.get_user_from_token(token)
-    await crud.change_password(user.id, data.new_password)
-    return True
-
-
 class UserLogin(BaseModel):
     email: str
     password: str
@@ -236,7 +215,6 @@ async def login_user_endpoint(
 
 
 class UserInfoResponse(BaseModel):
-    username: str
     id: str
     permissions: UserPermissions
 
@@ -249,7 +227,6 @@ async def get_user_info_endpoint(
     try:
         user = await crud.get_user_from_token(token)
         return UserInfoResponse(
-            username=user.username,
             id=user.id,
             permissions=user.permissions,
         )
@@ -280,7 +257,6 @@ async def logout_user_endpoint(
 
 
 class PublicUserInfoResponse(BaseModel):
-    username: str
     id: str
 
 
@@ -290,17 +266,7 @@ async def get_users_batch_endpoint(
     ids: list[str] = Query(...),
 ) -> list[PublicUserInfoResponse]:
     user_objs = await crud.get_user_batch(ids)
-    return [
-        PublicUserInfoResponse(
-            username=user_obj.username,
-            id=user_obj.id,
-        )
-        for user_obj in user_objs
-    ]
-
-
-class SessionData(BaseModel):
-    username: str
+    return [PublicUserInfoResponse(id=user_obj.id) for user_obj in user_objs]
 
 
 @users_router.get("/github-login")
@@ -350,7 +316,6 @@ async def github_code(
         oauth_response = await client.get("https://api.github.com/user", headers=headers)
 
     github_id = oauth_response.json()["html_url"]
-    github_username = oauth_response.json()["login"]
     github_email = oauth_response.json()["email"]
 
     user = await crud.get_user(github_id)
@@ -359,7 +324,6 @@ async def github_code(
     # since email is required for secondary indexing.
     if user is None:
         user = await crud.create_user_from_github_token(
-            username=github_username,
             email=github_email,
             github_id=github_id,
         )
@@ -376,11 +340,7 @@ async def github_code(
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    return UserInfoResponse(
-        username=user_obj.username,
-        id=user_obj.id,
-        permissions=user_obj.permissions,
-    )
+    return UserInfoResponse(id=user_obj.id, permissions=user_obj.permissions)
 
 
 @users_router.get("/{id}", response_model=PublicUserInfoResponse)
@@ -388,7 +348,4 @@ async def get_user_info_by_id_endpoint(id: str, crud: Annotated[Crud, Depends(Cr
     user_obj = await crud.get_user(id)
     if user_obj is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return PublicUserInfoResponse(
-        username=user_obj.username,
-        id=user_obj.id,
-    )
+    return PublicUserInfoResponse(id=user_obj.id)

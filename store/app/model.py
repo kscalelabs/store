@@ -43,7 +43,7 @@ class User(RobolistBaseModel):
 
     @classmethod
     def create(cls, email: str, auth_keys: list[str] | None = None) -> Self:
-        return cls(id=str(new_uuid()), email=email, auth_keys=auth_keys)
+        return cls(id=str(new_uuid()), email=email, auth_keys=auth_keys or [])
 
 
 class APIKey(RobolistBaseModel):
