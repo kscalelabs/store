@@ -42,7 +42,7 @@ class User(RobolistBaseModel):
     permissions: UserPermissions = UserPermissions()
 
     @classmethod
-    def create(cls, email: str, auth_keys: list[str]=[]) -> Self:
+    def create(cls, email: str, auth_keys: list[str] = []) -> Self:
         return cls(id=str(new_uuid()), email=email, auth_keys=auth_keys)
 
 

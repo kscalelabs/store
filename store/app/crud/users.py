@@ -126,33 +126,6 @@ class UserCrud(BaseCrud):
         LAST_API_KEY_VALIDATION[token] = (cur_time, is_valid)
         return is_valid
 
-    async def change_email(self, id: str, new_email: str) -> None:
-        await self._update_item(id, User, {"email": new_email})
-
-    async def add_register_token(self, token: str, email: str, lifetime: int) -> None:
-        raise NotImplementedError()
-
-    async def delete_register_token(self, token: str) -> None:
-        raise NotImplementedError()
-
-    async def check_register_token(self, token: str) -> str:
-        raise NotImplementedError()
-
-    async def add_reset_password_token(self, token: str, user_id: str, lifetime: int) -> None:
-        raise NotImplementedError()
-
-    async def delete_reset_password_token(self, token: str) -> None:
-        raise NotImplementedError()
-
-    async def use_reset_password_token(self, token: str, new_password: str) -> None:
-        raise NotImplementedError()
-
-    async def add_change_email_token(self, token: str, user_id: str, new_email: str, lifetime: int) -> None:
-        raise NotImplementedError()
-
-    async def use_change_email_token(self, token: str) -> None:
-        raise NotImplementedError()
-
 
 async def test_adhoc() -> None:
     async with UserCrud() as crud:

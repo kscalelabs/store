@@ -9,10 +9,10 @@ from fastapi.security.utils import get_authorization_scheme_param
 from httpx import AsyncClient
 from pydantic.main import BaseModel as PydanticBaseModel
 
-from store.app.crypto import check_password, new_token
+from store.app.crypto import new_token
 from store.app.db import Crud
 from store.app.model import UserPermissions
-from store.app.utils.email import send_change_email, send_delete_email, send_register_email, send_reset_password_email
+from store.app.utils.email import send_delete_email
 from store.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -73,145 +73,8 @@ class SendRegister(BaseModel):
     email: str
 
 
-@users_router.post("/send-register-email")
-async def send_register_email_endpoint(
-    data: SendRegister,
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    """Sends a verification email to the new email address."""
-    email = validate_email(data.email)
-    verify_email_token = new_token()
-    # Magic number: 7 days
-    await crud.add_register_token(verify_email_token, email, 60 * 60 * 24 * 7)
-    await send_register_email(email, verify_email_token)
-    return True
-
-
-@users_router.get("/registration-email/{token}")
-async def get_registration_email_endpoint(
-    token: str,
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> str:
-    """Gets the email address associated with a registration token."""
-    return await crud.check_register_token(token)
-
-
 class UserRegister(BaseModel):
     token: str
-
-
-@users_router.post("/register")
-async def register_user_endpoint(
-    data: UserRegister,
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    """Registers a new user with the given email and password."""
-    email = await crud.check_register_token(data.token)
-    if (await crud.get_user_from_email(email)) is not None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists")
-    await crud.create_user_from_email(email)
-    return True
-
-
-class UserForgotPassword(BaseModel):
-    email: str
-
-
-@users_router.post("/forgot-password")
-async def forgot_password_user_endpoint(
-    data: UserForgotPassword,
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    """Sends a reset password email to the user."""
-    email = validate_email(data.email)
-    user = await crud.get_user_from_email(email)
-    if user is None:
-        return True
-    reset_password_token = new_token()
-    # Magic number: 1 hour
-    await crud.add_reset_password_token(reset_password_token, user.id, 60 * 60)
-    await send_reset_password_email(email, reset_password_token)
-    return True
-
-
-class ResetPassword(BaseModel):
-    password: str
-
-
-@users_router.post("/reset-password/{token}")
-async def reset_password_user_endpoint(
-    token: str,
-    data: ResetPassword,
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    """Resets a user's password."""
-    await crud.use_reset_password_token(token, data.password)
-    return True
-
-
-class NewEmail(BaseModel):
-    new_email: str
-
-
-@users_router.post("/change-email")
-async def send_change_email_user_endpoint(
-    data: NewEmail,
-    crud: Annotated[Crud, Depends(Crud.get)],
-    token: Annotated[str, Depends(get_session_token)],
-) -> bool:
-    user = await crud.get_user_from_token(token)
-    change_email_token = new_token()
-    """Sends a verification email to the new email address."""
-    # Magic number: 1 hour
-    await crud.add_change_email_token(change_email_token, user.id, data.new_email, 60 * 60)
-    await send_change_email(data.new_email, change_email_token)
-    return True
-
-
-@users_router.post("/change-email/{token}")
-async def change_email_user_endpoint(
-    token: str,
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    """Changes the user's email address."""
-    await crud.use_change_email_token(token)
-    return True
-
-
-class UserLogin(BaseModel):
-    email: str
-    password: str
-
-
-@users_router.post("/login")
-async def login_user_endpoint(
-    data: UserLogin,
-    crud: Annotated[Crud, Depends(Crud.get)],
-    response: Response,
-) -> bool:
-    """Gives the user a session token if they present the correct credentials.
-
-    Args:
-        data: User email and password.
-        crud: The CRUD object.
-        response: The response object.
-
-    Returns:
-        True if the credentials are correct.
-    """
-    user = await crud.get_user_from_email(data.email)
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-    if not check_password(data.password, user.password_hash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-    token = new_token()
-    response.set_cookie(
-        key="session_token",
-        value=token,
-        httponly=True,
-    )
-
-    return True
 
 
 class UserInfoResponse(BaseModel):
@@ -276,7 +139,7 @@ async def github_login() -> str:
     Returns:
         Github oauth redirect url.
     """
-    return f"https://github.com/login/oauth/authorize?client_id={settings.oauth.github_client_id}"
+    return "https://github.com/login/oauth/authorize?clfe24185"
 
 
 @users_router.get("/github-code/{code}", response_model=UserInfoResponse)
