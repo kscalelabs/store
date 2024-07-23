@@ -5,7 +5,7 @@ import warnings
 from datetime import datetime
 
 from store.app.crud.base import BaseCrud, GlobalSecondaryIndex
-from store.app.model import OAuthKey, APIKey, User
+from store.app.model import APIKey, OAuthKey, User
 from store.settings import settings
 from store.utils import LRUCache
 

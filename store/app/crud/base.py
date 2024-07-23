@@ -5,7 +5,7 @@ import logging
 from typing import Any, AsyncContextManager, Callable, Literal, Self, TypeVar, overload
 
 import aioboto3
-from boto3.dynamodb.conditions import Attr, Key
+from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 from types_aiobotocore_s3.service_resource import S3ServiceResource
@@ -138,8 +138,8 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         if search_query:
             response = await self._list_items(
                 item_class,
-                filter_expression="(contains(#part_name, :query) OR contains(description, :query)) AND user_id=:user_id",
-                expression_attribute_names={"#part_name": "name"},
+                filter_expression="(contains(#p_name, :query) OR contains(description, :query)) AND user_id=:user_id",
+                expression_attribute_names={"#p_name": "name"},
                 expression_attribute_values={":query": search_query, ":user_id": user_id},
             )
         else:

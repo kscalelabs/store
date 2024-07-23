@@ -9,9 +9,8 @@ from fastapi.security.utils import get_authorization_scheme_param
 from httpx import AsyncClient
 from pydantic.main import BaseModel as PydanticBaseModel
 
-from store.app.crypto import new_token
 from store.app.db import Crud
-from store.app.model import User, UserPermissions
+from store.app.model import UserPermissions
 from store.app.utils.email import send_delete_email
 from store.settings import settings
 
@@ -185,7 +184,7 @@ async def github_code(
     user = await crud.get_user_from_github_token(github_id)
     # Exception occurs when user does not exist.
     # Create a user if this is the case.
-    if user == None:
+    if user is None:
         user = await crud.create_user_from_github_token(
             email=email,
             github_id=github_id,
