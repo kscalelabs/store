@@ -23,10 +23,6 @@ def google_auth_key(google_id: str) -> str:
     return f"google:{google_id}"
 
 
-def email_auth_key(email: str) -> str:
-    return f"email:{email}"
-
-
 class UserNotFoundError(Exception):
     def __init__(self, message: str) -> None:
         super().__init__(message)
