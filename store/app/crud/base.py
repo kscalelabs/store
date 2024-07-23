@@ -2,7 +2,7 @@
 
 import itertools
 import logging
-from typing import Any, AsyncContextManager, Literal, Self, TypeVar, overload
+from typing import Any, AsyncContextManager, Callable, Literal, Self, TypeVar, overload
 
 import aioboto3
 from boto3.dynamodb.conditions import Key
@@ -20,6 +20,7 @@ T = TypeVar("T", bound=RobolistBaseModel)
 
 DEFAULT_CHUNK_SIZE = 100
 DEFAULT_SCAN_LIMIT = 1000
+ITEMS_PER_PAGE = 12
 
 TableKey = tuple[str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]
 GlobalSecondaryIndex = tuple[str, str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]
@@ -110,6 +111,38 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
 
         items = (await table.query(**query_params))["Items"]
         return [self._validate_item(item, item_class) for item in items]
+    
+    async def _list(self, item_class: type[T], page: int, sort_key: Callable[[T], int], search_query: str | None = None) -> tuple[list[T], bool]:
+        if search_query:
+            response = await self._list_items(
+                item_class,
+                filter_expression="contains(#part_name, :query) OR contains(description, :query)",
+                expression_attribute_names={"#part_name": "name"},
+                expression_attribute_values={":query": search_query},
+            )
+        else:
+            response = await self._list_items(item_class)
+        sorted_items = sorted(response, key=sort_key, reverse=True)
+        return sorted_items[
+            (page - 1) * ITEMS_PER_PAGE : page * ITEMS_PER_PAGE
+        ], page * ITEMS_PER_PAGE < len(response)
+
+    async def _list_your(self, item_class: type[T], user_id: str, page: int, sort_key: Callable[[T], int], search_query: str | None = None) -> tuple[list[T], bool]:
+        if search_query:
+            response = await self._list_items(
+                item_class,
+                filter_expression="(contains(#part_name, :query) OR contains(description, :query)) AND user_id=:user_id",
+                expression_attribute_names={"#part_name": "name"},
+                expression_attribute_values={":query": search_query, ":user_id": user_id},
+            )
+        else:
+            response = await self._list_items(
+                item_class, filter_expression="user_id=:user_id", expression_attribute_values={":user_id": user_id}
+            )
+        sorted_items = sorted(response, key=sort_key, reverse=True)
+        return sorted_items[
+            (page - 1) * ITEMS_PER_PAGE : page * ITEMS_PER_PAGE
+        ], page * ITEMS_PER_PAGE < len(response)
 
     async def _count_items(self, item_class: type[T]) -> int:
         table = await self.db.Table(TABLE_NAME)
