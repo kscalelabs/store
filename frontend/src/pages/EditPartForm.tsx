@@ -31,7 +31,7 @@ const EditPartForm: React.FC = () => {
         setName(PartData.name);
         setDescription(PartData.description);
         setImages(PartData.images);
-        setPartId(PartData.part_id);
+        setPartId(PartData.id);
       } catch (err) {
         addAlert(humanReadableError(err), "error");
       }
@@ -47,7 +47,7 @@ const EditPartForm: React.FC = () => {
       return;
     }
     const newFormData: Part = {
-      part_id: Part_id,
+      id: Part_id,
       name: name,
       description: Part_description,
       owner: "",

@@ -113,5 +113,6 @@ async def edit_part(
         raise HTTPException(status_code=404, detail="Part not found")
     if user.id != part_info.owner:
         raise HTTPException(status_code=403, detail="You do not own this part")
+    part["owner"] = user.id
     await crud._update_item(part_id, Part, part)
     return True

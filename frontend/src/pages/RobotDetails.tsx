@@ -77,8 +77,8 @@ const RobotDetails = () => {
         setPackages(curPackages);
         const parts = robotData.bom.map(async (part) => {
           return {
-            name: (await auth_api.getPartById(part.part_id)).name,
-            part_id: part.part_id,
+            name: (await auth_api.getPartById(id)).name,
+            part_id: id,
             quantity: part.quantity,
           };
         });
@@ -251,7 +251,7 @@ const RobotDetails = () => {
                   {parts.map((part, key) => (
                     <tr key={key}>
                       <td>
-                        <Link to={`/part/${part.part_id}`}>{part.name}</Link>
+                        <Link to={`/part/${id}`}>{part.name}</Link>
                       </td>
                       <td>{part.quantity}</td>
                     </tr>

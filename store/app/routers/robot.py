@@ -60,7 +60,7 @@ async def add_robot(
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    id = await crud.get_user_from_api_key(token)
+    user = await crud.get_user_from_api_key(token)
 
     await crud.add_robot(
         Robot(
@@ -72,7 +72,7 @@ async def add_robot(
             height=new_robot.height,
             weight=new_robot.weight,
             degrees_of_freedom=new_robot.degrees_of_freedom,
-            owner=str(id),
+            owner=user.id,
             timestamp=int(time.time()),
             urdf=new_robot.urdf,
             packages=new_robot.packages,

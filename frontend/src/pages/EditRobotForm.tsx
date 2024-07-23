@@ -40,7 +40,7 @@ const EditRobotForm: React.FC = () => {
         setBom(robotData.bom);
         setURDF(robotData.urdf);
         setImages(robotData.images);
-        setRobotId(robotData.robot_id);
+        setRobotId(robotData.id);
         setHeight(robotData.height);
         setWeight(robotData.weight);
         setDof(robotData.degrees_of_freedom);
@@ -61,7 +61,7 @@ const EditRobotForm: React.FC = () => {
       return;
     }
     const newFormData: Robot = {
-      robot_id: robot_id,
+      id: robot_id,
       name: robot_name,
       description: robot_description,
       owner: "",

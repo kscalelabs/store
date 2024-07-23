@@ -4,7 +4,7 @@ export interface Part {
   description: string;
   owner: string;
   images: Image[];
-  part_id: string;
+  id: string;
   name: string;
 }
 
@@ -24,7 +24,7 @@ export interface Package {
 }
 
 export interface Robot {
-  robot_id: string;
+  id: string;
   name: string;
   description: string;
   owner: string;
@@ -151,7 +151,7 @@ export class api {
     });
     const map = new Map();
     for (const index in response.data) {
-      map.set(response.data[index].id, response.data[index].username);
+      map.set(response.data[index].id, response.data[index].email);
     }
     return map;
   }
@@ -253,7 +253,7 @@ export class api {
   public async editRobot(robot: Robot): Promise<void> {
     const s = robot.name;
     try {
-      await this.api.post(`robots/edit-robot/${robot.robot_id}/`, robot);
+      await this.api.post(`robots/edit-robot/${robot.id}/`, robot);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error editing robot:", error.response?.data);
@@ -350,7 +350,7 @@ export class api {
   public async editPart(part: Part): Promise<void> {
     const s = part.name;
     try {
-      await this.api.post(`parts/edit-part/${part.part_id}/`, part);
+      await this.api.post(`parts/edit-part/${part.id}/`, part);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error editing part:", error.response?.data);
