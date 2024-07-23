@@ -51,45 +51,6 @@ export class api {
     this.api = api;
   }
 
-  public async send_register_email(email: string): Promise<void> {
-    try {
-      await this.api.post("/users/send-register-email", { email });
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error(
-          "Error sending registration email:",
-          error.response?.data,
-        );
-        throw new Error(
-          error.response?.data?.detail || "Error sending verification email",
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
-  public async get_registration_email(token: string): Promise<string> {
-    try {
-      const res = await this.api.get("/users/registration-email/" + token);
-      return res.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error(
-          "Error fetching registration email:",
-          error.response?.data,
-        );
-        throw new Error(
-          error.response?.data?.detail || "Error fetching registration email",
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
   public async send_register_github(): Promise<string> {
     try {
       const res = await this.api.get("/users/github-login");
@@ -99,99 +60,6 @@ export class api {
         console.error("Error redirecting to github:", error.response?.data);
         throw new Error(
           error.response?.data?.detail || "Error redirecting to github",
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
-  public async register(
-    token: string,
-    username: string,
-    password: string,
-  ): Promise<void> {
-    try {
-      await this.api.post("/users/register/", { token, username, password });
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error registering:", error.response?.data);
-        throw new Error(
-          error.response?.data?.detail ||
-            "Error registering with token " + token,
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
-  public async change_email(code: string): Promise<void> {
-    try {
-      await this.api.post("/users/change-email/" + code);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error changing email:", error.response?.data);
-        throw new Error(
-          error.response?.data?.detail ||
-            "Error changing email with code " + code,
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
-  public async send_change_email(new_email: string): Promise<void> {
-    try {
-      await this.api.post("/users/change-email", { new_email });
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error sending change email:", error.response?.data);
-        throw new Error(
-          error.response?.data?.detail || "Error sending change email",
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
-  public async change_password(
-    old_password: string,
-    new_password: string,
-  ): Promise<void> {
-    try {
-      await this.api.post("/users/change-password", {
-        old_password,
-        new_password,
-      });
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error changing password:", error.response?.data);
-        throw new Error(
-          error.response?.data?.detail || "Error changing password",
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
-  public async login(email: string, password: string): Promise<void> {
-    try {
-      await this.api.post("/users/login/", { email, password });
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error logging in:", error.response?.data);
-        throw new Error(
-          error.response?.data?.detail ||
-            "Error logging in with email " + email,
         );
       } else {
         console.error("Unexpected error:", error);
@@ -224,38 +92,6 @@ export class api {
       if (axios.isAxiosError(error)) {
         console.error("Error logging out:", error.response?.data);
         throw new Error(error.response?.data?.detail || "Error logging out");
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
-  public async forgot(email: string): Promise<void> {
-    try {
-      await this.api.post("/users/forgot-password/", { email });
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error sending forgot password:", error.response?.data);
-        throw new Error(
-          error.response?.data?.detail || "Error sending forgot password",
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
-  public async reset_password(token: string, password: string): Promise<void> {
-    try {
-      await this.api.post("/users/reset-password/" + token, { password });
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error resetting password:", error.response?.data);
-        throw new Error(
-          error.response?.data?.detail || "Error resetting password",
-        );
       } else {
         console.error("Unexpected error:", error);
         throw new Error("Unexpected error");
