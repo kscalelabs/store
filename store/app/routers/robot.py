@@ -110,5 +110,6 @@ async def edit_robot(
     user = await crud.get_user_from_api_key(token)
     if robot_info.owner != user.id:
         raise HTTPException(status_code=403, detail="You do not own this robot")
+    robot["owner"] = user.id
     await crud._update_item(id, Robot, robot)
     return True
