@@ -4,7 +4,7 @@ import logging
 import time
 from typing import Annotated, Any, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
 from store.app.crypto import new_uuid
@@ -32,6 +32,26 @@ class NewRobot(BaseModel):
     degrees_of_freedom: Optional[int]
     urdf: str
     packages: List[Package]
+
+
+@robots_router.get("/")
+async def list_parts(
+    crud: Annotated[Crud, Depends(Crud.get)],
+    page: int = Query(description="Page number for pagination"),
+    search_query: str = Query(None, description="Search query string"),
+) -> tuple[list[Robot], bool]:
+    return await crud.list_parts(page, search_query=search_query)
+
+
+@robots_router.get("/your/")
+async def list_your_parts(
+    crud: Annotated[Crud, Depends(Crud.get)],
+    token: Annotated[str, Depends(get_session_token)],
+    page: int = Query(description="Page number for pagination"),
+    search_query: str = Query(None, description="Search query string"),
+) -> tuple[list[Robot], bool]:
+    user = await crud.get_user_from_token(token)
+    return await crud.list_your_parts(user.id, page, search_query=search_query)
 
 
 @robots_router.post("/add/")
