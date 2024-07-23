@@ -139,7 +139,7 @@ async def github_login() -> str:
     Returns:
         Github oauth redirect url.
     """
-    return "https://github.com/login/oauth/authorize?clfe24185"
+    return f"https://github.com/login/oauth/authorize?client_id={settings.oauth.github_client_id}"
 
 
 @users_router.get("/github-code/{code}", response_model=UserInfoResponse)
