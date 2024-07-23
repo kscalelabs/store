@@ -82,7 +82,8 @@ class UserCrud(BaseCrud):
     # Note: we need to make this function throw an error if there is no user associated with the API key ("token")
     # Distinction to make: token is the id, API key is the entire object associated with the token (i.e. the id)
     async def get_user_from_token(self, token: str) -> User:
-        raise NotImplementedError()
+        key = await self.get_api_key(token)
+        return await self.get_user(key.user_id)
 
     async def delete_user(self, id: str) -> None:
         await self._delete_item(id)
@@ -95,7 +96,7 @@ class UserCrud(BaseCrud):
         return await self._count_items(User)
 
     async def get_api_key(self, id: str) -> APIKey:
-        raise NotImplementedError()
+        return await self._get_item(id, APIKey)
 
     async def add_api_key(self, id: str) -> APIKey:
         token = APIKey.create(id=id)

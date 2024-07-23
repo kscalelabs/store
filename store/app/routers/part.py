@@ -22,7 +22,7 @@ async def list_parts(
     crud: Annotated[Crud, Depends(Crud.get)],
     page: int = Query(description="Page number for pagination"),
     search_query: str = Query(None, description="Search query string"),
-) -> list[Part]:
+) -> tuple[list[Part], bool]:
     return await crud.list_parts(page, search_query=search_query)
 
 
@@ -37,7 +37,7 @@ async def list_your_parts(
     token: Annotated[str, Depends(get_session_token)],
     page: int = Query(description="Page number for pagination"),
     search_query: str = Query(None, description="Search query string"),
-) -> list[Part]:
+) -> tuple[list[Part], bool]:
     user = await crud.get_user_from_token(token)
     return await crud.list_your_parts(user.id, page, search_query=search_query)
 

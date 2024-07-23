@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class RobotCrud(BaseCrud):
+    items_per_page = 12
+
     async def add_robot(self, robot: Robot) -> None:
         await self._add_item(robot)
 
@@ -30,13 +32,41 @@ class RobotCrud(BaseCrud):
         await self._delete_item(part_id)
 
     async def dump_parts(self) -> list[Part]:
-        raise NotImplementedError()
+        return await self._list_items(Part)
 
-    async def list_parts(self, page: int, search_query: str) -> list[Part]:
-        raise NotImplementedError()
+    async def list_parts(self, page: int, search_query: str | None = None) -> tuple[list[Part], bool]:
+        if search_query:
+            response = await self._list_items(
+                Part,
+                filter_expression="contains(#part_name, :query) OR contains(description, :query)",
+                expression_attribute_names={"#part_name": "name"},
+                expression_attribute_values={":query": search_query},
+            )
+        else:
+            response = await self._list_items(Part)
+        sorted_items = sorted(response, key=lambda item: item["timestamp"], reverse=True)
+        return [
+                self._validate_item(item, Part) for item in sorted_items[(page - 1) * self.items_per_page : page * self.items_per_page]
+        ], page * self.items_per_page < len(response)
 
-    async def list_your_parts(self, user_id: str, page: int, search_query: str) -> list[Part]:
-        raise NotImplementedError()
+    async def list_your_parts(self, user_id: str, page: int, search_query: str) -> tuple[list[Part], bool]:
+        if search_query:
+            response = await self._list_items(
+                Part,
+                filter_expression="(contains(#part_name, :query) OR contains(description, :query)) AND user_id=:user_id",
+                expression_attribute_names={"#part_name": "name"},
+                expression_attribute_values={":query": search_query, ":user_id": user_id},
+            )
+        else:
+            response = await self._list_items(
+                Part,
+                filter_expression="user_id=:user_id",
+                expression_attribute_values={":user_id": user_id}
+            )
+        sorted_items = sorted(response, key=lambda item: item["timestamp"], reverse=True)
+        return [
+                self._validate_item(item, Part) for item in sorted_items[(page - 1) * self.items_per_page : page * self.items_per_page]
+        ], page * self.items_per_page < len(response)
 
     async def upload_image(self, file: UploadFile) -> None:
         raise NotImplementedError()

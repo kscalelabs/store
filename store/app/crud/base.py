@@ -91,7 +91,24 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         offset: int | None = None,
         limit: int = DEFAULT_SCAN_LIMIT,
     ) -> list[T]:
-        raise NotImplementedError("This function is not yet implemented")
+        table = await self.db.Table(TABLE_NAME)
+
+        query_params = {
+            "IndexName": "typeIndex",
+            "KeyConditionExpression": Key("type").eq(item_class.__name__),
+            "Limit": limit,
+        }
+
+        if expression_attribute_names:
+            query_params["ExpressionAttributeNames"] = expression_attribute_names
+        if expression_attribute_values:
+            query_params["ExpressionAttributeValues"] = expression_attribute_values
+        if filter_expression:
+            query_params["FilterExpression"] = filter_expression
+        if offset:
+            query_params["ExclusiveStartKey"] = {"id": offset}
+
+        return (await table.query(**query_params))["Items"]
 
     async def _count_items(self, item_class: type[T]) -> int:
         table = await self.db.Table(TABLE_NAME)
