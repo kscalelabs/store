@@ -40,7 +40,7 @@ async def list_parts(
     page: int = Query(description="Page number for pagination"),
     search_query: str = Query(None, description="Search query string"),
 ) -> tuple[list[Robot], bool]:
-    return await crud.list_parts(page, search_query=search_query)
+    return await crud.list_robots(page, search_query=search_query)
 
 
 @robots_router.get("/your/")
@@ -51,7 +51,7 @@ async def list_your_parts(
     search_query: str = Query(None, description="Search query string"),
 ) -> tuple[list[Robot], bool]:
     user = await crud.get_user_from_token(token)
-    return await crud.list_your_parts(user.id, page, search_query=search_query)
+    return await crud.list_your_robots(user.id, page, search_query=search_query)
 
 
 @robots_router.post("/add/")
