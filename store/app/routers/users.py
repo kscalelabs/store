@@ -139,7 +139,7 @@ async def github_login() -> str:
     Returns:
         Github oauth redirect url.
     """
-    return f"https://github.com/login/oauth/authorize?client_id={settings.oauth.github_client_id}"
+    return f"https://github.com/login/oauth/authorize?scope=user:email&client_id={settings.oauth.github_client_id}"
 
 
 @users_router.get("/github-code/{code}", response_model=UserInfoResponse)
@@ -162,7 +162,6 @@ async def github_code(
         "client_id": settings.oauth.github_client_id,
         "client_secret": settings.oauth.github_client_secret,
         "code": code,
-        "scope": "user:email",
     }
     headers = {"Accept": "application/json"}
     async with AsyncClient() as client:
@@ -177,17 +176,22 @@ async def github_code(
     access_token = response_json["access_token"]
     async with AsyncClient() as client:
         headers.update({"Authorization": f"Bearer {access_token}"})
+        print(access_token)
         oauth_response = await client.get("https://api.github.com/user", headers=headers)
+        oauth_email_response = await client.get("https://api.github.com/user/emails", headers=headers)
 
     github_id = oauth_response.json()["html_url"]
-    github_email = oauth_response.json()["email"]
+    email = None
+    for entry in oauth_email_response.json():
+        if entry["primary"] == True:
+            email = entry["email"]
 
     user = await crud.get_user_from_github_token(github_id)
     # Exception occurs when user does not exist.
     # Create a user if this is the case.
     if user == None:
         user = await crud.create_user_from_github_token(
-            email=github_email,
+            email=email,
             github_id=github_id,
         )
 
