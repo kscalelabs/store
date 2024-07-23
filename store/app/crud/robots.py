@@ -33,7 +33,7 @@ class RobotCrud(BaseCrud):
 
     async def dump_parts(self) -> list[Part]:
         return await self._list_items(Part)
-    
+
     async def list_robots(self, page: int, search_query: str | None = None) -> tuple[list[Part], bool]:
         return await self._list(Part, page, lambda x: x.timestamp, search_query)
 

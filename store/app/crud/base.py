@@ -111,8 +111,10 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
 
         items = (await table.query(**query_params))["Items"]
         return [self._validate_item(item, item_class) for item in items]
-    
-    async def _list(self, item_class: type[T], page: int, sort_key: Callable[[T], int], search_query: str | None = None) -> tuple[list[T], bool]:
+
+    async def _list(
+        self, item_class: type[T], page: int, sort_key: Callable[[T], int], search_query: str | None = None
+    ) -> tuple[list[T], bool]:
         if search_query:
             response = await self._list_items(
                 item_class,
@@ -123,11 +125,16 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         else:
             response = await self._list_items(item_class)
         sorted_items = sorted(response, key=sort_key, reverse=True)
-        return sorted_items[
-            (page - 1) * ITEMS_PER_PAGE : page * ITEMS_PER_PAGE
-        ], page * ITEMS_PER_PAGE < len(response)
+        return sorted_items[(page - 1) * ITEMS_PER_PAGE : page * ITEMS_PER_PAGE], page * ITEMS_PER_PAGE < len(response)
 
-    async def _list_your(self, item_class: type[T], user_id: str, page: int, sort_key: Callable[[T], int], search_query: str | None = None) -> tuple[list[T], bool]:
+    async def _list_your(
+        self,
+        item_class: type[T],
+        user_id: str,
+        page: int,
+        sort_key: Callable[[T], int],
+        search_query: str | None = None,
+    ) -> tuple[list[T], bool]:
         if search_query:
             response = await self._list_items(
                 item_class,
@@ -140,9 +147,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
                 item_class, filter_expression="user_id=:user_id", expression_attribute_values={":user_id": user_id}
             )
         sorted_items = sorted(response, key=sort_key, reverse=True)
-        return sorted_items[
-            (page - 1) * ITEMS_PER_PAGE : page * ITEMS_PER_PAGE
-        ], page * ITEMS_PER_PAGE < len(response)
+        return sorted_items[(page - 1) * ITEMS_PER_PAGE : page * ITEMS_PER_PAGE], page * ITEMS_PER_PAGE < len(response)
 
     async def _count_items(self, item_class: type[T]) -> int:
         table = await self.db.Table(TABLE_NAME)

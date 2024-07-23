@@ -83,7 +83,7 @@ class UserCrud(BaseCrud):
     # Distinction to make: token is the id, API key is the entire object associated with the token (i.e. the id)
     async def get_user_from_token(self, token: str) -> User:
         key = await self.get_api_key(token)
-        return await self._get_item(key.user_id, User, throw_if_missing=True)            
+        return await self._get_item(key.user_id, User, throw_if_missing=True)
 
     async def delete_user(self, id: str) -> None:
         await self._delete_item(id)
