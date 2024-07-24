@@ -93,7 +93,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             await table.delete_item(Key={"id": item})
         else:
             await table.delete_item(Key={"id": item.id})
-    
+
     async def _delete_hashed_item(self, item: RobolistBaseModel | str) -> None:
         table = await self.db.Table(TABLE_NAME)
         if isinstance(item, str):
