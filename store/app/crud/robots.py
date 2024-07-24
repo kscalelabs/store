@@ -47,4 +47,8 @@ class RobotCrud(BaseCrud):
 
     async def upload_image(self, file: UploadFile) -> None:
         bucket = await self.s3.Bucket(settings.s3.bucket)
-        await bucket.upload_fileobj(file.file, f"{settings.s3.prefix}{file.filename}")
+        await bucket.upload_fileobj(
+            file.file,
+            f"{settings.s3.prefix}{file.filename}",
+            ExtraArgs={"ContentType": file.content_type},
+        )
