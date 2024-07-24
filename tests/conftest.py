@@ -1,11 +1,12 @@
 """Pytest configuration file."""
 
 import os
-from typing import Generator
+from typing import AsyncGenerator, Generator, cast
 
 import pytest
 from _pytest.python import Function
 from httpx import ASGITransport, AsyncClient, Response
+from httpx._transports.asgi import _ASGIApp
 from moto.dynamodb import mock_dynamodb
 from moto.server import ThreadedMotoServer
 from pytest_mock.plugin import MockerFixture, MockType
@@ -61,10 +62,10 @@ def mock_aws() -> Generator[None, None, None]:
 
 
 @pytest.fixture()
-async def app_client() -> AsyncClient:
+async def app_client() -> AsyncGenerator[AsyncClient, None]:
     from store.app.main import app
 
-    transport = ASGITransport(app)
+    transport = ASGITransport(cast(_ASGIApp, app))
 
     async with AsyncClient(transport=transport, base_url="http://test") as app_client:
         yield app_client
@@ -76,17 +77,20 @@ def mock_send_email(mocker: MockerFixture) -> MockType:
     mock.return_value = None
     return mock
 
+
 @pytest.fixture(autouse=True)
 def mock_github_access_token(mocker: MockerFixture) -> MockType:
     mock = mocker.patch("store.app.routers.users.github_access_token_req")
     mock.return_value = Response(status_code=200, json={"access_token": ""})
     return mock
 
+
 @pytest.fixture(autouse=True)
 def mock_github(mocker: MockerFixture) -> MockType:
     mock = mocker.patch("store.app.routers.users.github_req")
     mock.return_value = Response(status_code=200, json={"html_url": "https://github.com/chennisden"})
     return mock
+
 
 @pytest.fixture(autouse=True)
 def mock_github_email(mocker: MockerFixture) -> MockType:
