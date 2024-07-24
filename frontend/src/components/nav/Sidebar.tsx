@@ -1,7 +1,3 @@
-import { useAlertQueue } from "hooks/alerts";
-import { api } from "hooks/api";
-import { useAuthentication } from "hooks/auth";
-import { useState } from "react";
 import { Col, Offcanvas, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
@@ -11,17 +7,6 @@ interface Props {
 }
 
 const Sidebar = ({ show, onHide }: Props) => {
-  const { addAlert } = useAlertQueue();
-
-  const auth = useAuthentication();
-  const auth_api = new api(auth.api);
-
-  const [newEmail, setNewEmail] = useState<string>("");
-  const [changeEmailSuccess, setChangeEmailSuccess] = useState<boolean>(false);
-  const [oldPassword, setOldPassword] = useState<string>("");
-  const [newPassword, setNewPassword] = useState<string>("");
-  const [changePasswordSuccess, setChangePasswordSuccess] =
-    useState<boolean>(false);
 
   return (
     <Offcanvas show={show} onHide={onHide} placement="end">
