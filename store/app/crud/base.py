@@ -262,10 +262,8 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     async def _update_item(self, item_id: str, item_class: type[T], new_values: dict[str, Any]) -> None:  # noqa: ANN401
         # Validates the new values.
         for field_name, field_value in new_values.items():
-            if (field_info := item_class.model_fields.get(field_name)) is None:
+            if item_class.model_fields.get(field_name) is None:
                 raise ValueError(f"Field {field_name} not in model {item_class.__name__}")
-            # if field_info.annotation is not None and not isinstance(field_value, field_info.annotation):
-            #     raise ValueError(f"Field {field_name} is not of type {field_info.annotation}")
 
         # Updates the table.
         table = await self.db.Table(TABLE_NAME)
