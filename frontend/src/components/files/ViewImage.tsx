@@ -1,4 +1,4 @@
-import { S3_URL } from "constants/backend";
+import { BACKEND_URL } from "constants/backend";
 import React from "react";
 
 interface ImageProps {
@@ -10,7 +10,7 @@ const ImageComponent: React.FC<ImageProps> = ({ imageId, caption }) => {
   return (
     <div style={{ width: "100%", paddingTop: "100%", position: "relative" }}>
       <img
-        src={new URL("images/" + imageId, S3_URL).toString()}
+        src={new URL(`image/${imageId}`, BACKEND_URL).toString()}
         alt={caption}
         className="d-block rounded-lg"
         style={{

@@ -9,6 +9,8 @@ from omegaconf import II, MISSING
 class OauthSettings:
     github_client_id: str = field(default=II("oc.env:GITHUB_CLIENT_ID"))
     github_client_secret: str = field(default=II("oc.env:GITHUB_CLIENT_SECRET"))
+    google_client_id: str = field(default=II("oc.env:GOOGLE_CLIENT_ID"))
+    google_client_secret: str = field(default=II("oc.env:GOOGLE_CLIENT_SECRET"))
 
 
 @dataclass
@@ -44,7 +46,7 @@ class S3Settings:
 @dataclass
 class SiteSettings:
     homepage: str = field(default=MISSING)
-    image_url: str | None = field(default=None)
+    image_base_url: str = field(default=MISSING)
 
 
 @dataclass

@@ -91,6 +91,7 @@ Settings for the app backend live in the `store/settings/` directory. To configu
 To locally develop, setting the following environment variables will work (presuming you have set everything else up):
 
 ```
+# Specifies a local environment verses production environment.
 export ROBOLIST_ENVIRONMENT=local
 
 # For AWS
@@ -99,7 +100,7 @@ export AWS_ACCESS_KEY_ID=test
 export AWS_SECRET_ACCESS_KEY=test
 export AWS_ENDPOINT_URL_DYNAMODB=http://127.0.0.1:4566
 
-# For hooking up the frontend
+# For letting the frontend know the backend URL.
 export REACT_APP_BACKEND_URL=http://127.0.0.1:8080
 
 # For SMTP
@@ -115,6 +116,7 @@ export GITHUB_CLIENT_SECRET=
 
 # For Google OAuth
 export GOOGLE_CLIENT_ID=
+export GOOGLE_CLIENT_SECRET=
 ```
 
 ### Github OAuth Configuration
