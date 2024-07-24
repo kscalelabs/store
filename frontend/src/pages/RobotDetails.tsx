@@ -189,7 +189,10 @@ const RobotDetails = () => {
               <h1>{name}</h1>
               <small className="text-muted">ID: {id}</small>
               <br />
-              <em>This listing is maintained by <a href={'mailto:' + ownerEmail}>{ownerEmail}</a>.</em>
+              <em>
+                This listing is maintained by{" "}
+                <a href={"mailto:" + ownerEmail}>{ownerEmail}</a>.
+              </em>
             </Col>
           </Row>
           {((response.height && response.height !== "") ||
@@ -375,7 +378,10 @@ const RobotDetails = () => {
                         handleShow();
                       }}
                     >
-                      <ImageComponent imageId={images[key].url + ".png"} caption={images[key].caption} />
+                      <ImageComponent
+                        imageId={images[key].url + ".png"}
+                        caption={images[key].caption}
+                      />
                     </div>
                     <Carousel.Caption
                       style={{
@@ -421,7 +427,10 @@ const RobotDetails = () => {
               position: "relative",
             }}
           >
-            <ImageComponent imageId={images[imageIndex].url + ".png"} caption={images[imageIndex].caption} />
+            <ImageComponent
+              imageId={images[imageIndex].url + ".png"}
+              caption={images[imageIndex].caption}
+            />
           </div>
         </Modal.Body>
         <Modal.Footer>

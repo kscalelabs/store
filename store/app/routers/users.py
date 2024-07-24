@@ -195,12 +195,7 @@ async def github_code(
 
     api_key = await crud.add_api_key(user.id)
 
-    response.set_cookie(
-        key="session_token",
-        value=api_key.id,
-        httponly=True,
-        samesite="lax"
-    )
+    response.set_cookie(key="session_token", value=api_key.id, httponly=True, samesite="lax")
 
     return UserInfoResponse(id=user.id, permissions=user.permissions)
 

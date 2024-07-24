@@ -1,9 +1,8 @@
-import TCButton from "components/files/TCButton";
 import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
-import { FormEvent, useState } from "react";
-import { Col, Form, Offcanvas, Row } from "react-bootstrap";
+import { useState } from "react";
+import { Col, Offcanvas, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 interface Props {

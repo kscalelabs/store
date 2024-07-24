@@ -112,7 +112,10 @@ const Robots = () => {
                     borderTopRightRadius: ".25rem",
                   }}
                 >
-                  <ImageComponent imageId={"mini" + robot.images[0].url + ".png"} caption={robot.images[0].caption}/>
+                  <ImageComponent
+                    imageId={"mini" + robot.images[0].url + ".png"}
+                    caption={robot.images[0].caption}
+                  />
                 </div>
               )}
               <Card.Body>

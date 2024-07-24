@@ -129,7 +129,10 @@ const PartDetails = () => {
               <h1>{name}</h1>
               <small className="text-muted">ID: {id}</small>
               <br />
-              <em>This listing is maintained by <a href={'mailto:' + ownerEmail}>{ownerEmail}</a>.</em>
+              <em>
+                This listing is maintained by{" "}
+                <a href={"mailto:" + ownerEmail}>{ownerEmail}</a>.
+              </em>
             </Col>
           </Row>
           <hr />
@@ -250,7 +253,10 @@ const PartDetails = () => {
                       handleShow();
                     }}
                   >
-                    <ImageComponent imageId={images[key].url + ".png"} caption={images[key].caption} />
+                    <ImageComponent
+                      imageId={images[key].url + ".png"}
+                      caption={images[key].caption}
+                    />
                   </div>
                   <Carousel.Caption
                     style={{
@@ -286,7 +292,10 @@ const PartDetails = () => {
         </Modal.Header>
         <Modal.Body>
           <div style={{ display: "flex", justifyContent: "center" }}>
-            <ImageComponent imageId={images[imageIndex].url + ".png"} caption={images[imageIndex].caption} />
+            <ImageComponent
+              imageId={images[imageIndex].url + ".png"}
+              caption={images[imageIndex].caption}
+            />
           </div>
         </Modal.Body>
         <Modal.Footer>
