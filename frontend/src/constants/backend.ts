@@ -3,8 +3,6 @@ import { AxiosError, isAxiosError } from "axios";
 export const BACKEND_URL =
   process.env.REACT_APP_BACKEND_URL || "http://127.0.0.1:8080";
 
-export const S3_URL = process.env.S3_URL || "http://127.0.0.1:4566";
-
 // eslint-disable-next-line
 export const humanReadableError = (error: any | undefined) => {
   if (isAxiosError(error)) {

@@ -9,6 +9,8 @@ from omegaconf import II, MISSING
 class OauthSettings:
     github_client_id: str = field(default=II("oc.env:GITHUB_CLIENT_ID"))
     github_client_secret: str = field(default=II("oc.env:GITHUB_CLIENT_SECRET"))
+    google_client_id: str = field(default=II("oc.env:GOOGLE_CLIENT_ID"))
+    google_client_secret: str = field(default=II("oc.env:GOOGLE_CLIENT_SECRET"))
 
 
 @dataclass
@@ -27,18 +29,24 @@ class UserSettings:
 
 @dataclass
 class EmailSettings:
-    host: str = field(default=II("oc.env:ROBOLIST_SMTP_HOST"))
+    host: str = field(default=II("oc.env:SMTP_HOST"))
     port: int = field(default=587)
-    username: str = field(default=II("oc.env:ROBOLIST_SMTP_USERNAME"))
-    password: str = field(default=II("oc.env:ROBOLIST_SMTP_PASSWORD"))
-    sender_email: str = field(default=II("oc.env:ROBOLIST_SMTP_SENDER_EMAIL"))
-    sender_name: str = field(default=II("oc.env:ROBOLIST_SMTP_SENDER_NAME"))
+    username: str = field(default=II("oc.env:SMTP_USERNAME"))
+    password: str = field(default=II("oc.env:SMTP_PASSWORD"))
+    sender_email: str = field(default=II("oc.env:SMTP_SENDER_EMAIL"))
+    sender_name: str = field(default=II("oc.env:SMTP_SENDER_NAME"))
+
+
+@dataclass
+class S3Settings:
+    bucket: str = field(default=II("oc.env:S3_BUCKET"))
+    prefix: str = field(default=II("oc.env:S3_PREFIX"))
 
 
 @dataclass
 class SiteSettings:
     homepage: str = field(default=MISSING)
-    image_url: str | None = field(default=None)
+    image_base_url: str = field(default=MISSING)
 
 
 @dataclass
@@ -47,5 +55,6 @@ class EnvironmentSettings:
     user: UserSettings = field(default_factory=UserSettings)
     crypto: CryptoSettings = field(default_factory=CryptoSettings)
     email: EmailSettings = field(default_factory=EmailSettings)
+    s3: S3Settings = field(default_factory=S3Settings)
     site: SiteSettings = field(default_factory=SiteSettings)
     debug: bool = field(default=False)

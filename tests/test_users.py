@@ -18,7 +18,7 @@ async def test_user_auth_functions(app_client: AsyncClient) -> None:
     assert response.status_code == 401, response.json()
 
     # Because of the way we patched GitHub functions for mocking, it doesn't matter what token we pass in.
-    response = await app_client.get("/users/github-code/doesnt-matter")
+    response = await app_client.get("/users/github/code/doesnt-matter")
     assert response.status_code == 200, response.json()
     assert "session_token" in response.cookies
     token = response.cookies["session_token"]
@@ -49,7 +49,7 @@ async def test_user_auth_functions(app_client: AsyncClient) -> None:
     assert response.json()["detail"] == "Not authenticated"
 
     # Log the user back in, getting new session token.
-    response = await app_client.get("/users/github-code/doesnt-matter")
+    response = await app_client.get("/users/github/code/doesnt-matter")
     assert response.status_code == 200, response.json()
     assert "session_token" in response.cookies
 

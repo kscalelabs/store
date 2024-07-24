@@ -80,20 +80,20 @@ def mock_send_email(mocker: MockerFixture) -> MockType:
 
 @pytest.fixture(autouse=True)
 def mock_github_access_token(mocker: MockerFixture) -> MockType:
-    mock = mocker.patch("store.app.routers.users.github_access_token_req")
+    mock = mocker.patch("store.app.routers.auth.github.github_access_token_req")
     mock.return_value = Response(status_code=200, json={"access_token": ""})
     return mock
 
 
 @pytest.fixture(autouse=True)
 def mock_github(mocker: MockerFixture) -> MockType:
-    mock = mocker.patch("store.app.routers.users.github_req")
+    mock = mocker.patch("store.app.routers.auth.github.github_req")
     mock.return_value = Response(status_code=200, json={"html_url": "https://github.com/chennisden"})
     return mock
 
 
 @pytest.fixture(autouse=True)
 def mock_github_email(mocker: MockerFixture) -> MockType:
-    mock = mocker.patch("store.app.routers.users.github_email_req")
+    mock = mocker.patch("store.app.routers.auth.github.github_email_req")
     mock.return_value = Response(status_code=200, json=[{"email": "dchen@kscale.dev", "primary": True}])
     return mock

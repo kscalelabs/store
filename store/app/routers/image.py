@@ -5,11 +5,12 @@ import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from PIL import Image
 
 from store.app.crypto import new_uuid
 from store.app.db import Crud
+from store.settings import settings
 
 image_router = APIRouter()
 
@@ -38,3 +39,9 @@ async def upload_image(crud: Annotated[Crud, Depends(Crud.get)], file: UploadFil
         return JSONResponse(status_code=200, content={"id": image_id})
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@image_router.get("{image_fname}")
+async def image_url(image_fname: str) -> RedirectResponse:
+    image_url = f"{settings.site.image_base_url}/{image_fname}"
+    return RedirectResponse(url=image_url)

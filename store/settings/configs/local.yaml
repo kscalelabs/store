@@ -1,5 +1,8 @@
 crypto:
   jwt_secret: fakeJwtSecret
+s3:
+  bucket: images
+  prefix: ""
 site:
   homepage: http://127.0.0.1:3000
-  image_url: http://127.0.0.1:4566/images
+  image_base_url: http://127.0.0.1:4566/images
