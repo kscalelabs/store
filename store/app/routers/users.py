@@ -6,6 +6,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.security.utils import get_authorization_scheme_param
+from httpx import Response as HttpxResponse
 from httpx import AsyncClient
 from pydantic.main import BaseModel as PydanticBaseModel
 
@@ -141,6 +142,21 @@ async def github_login() -> str:
     """
     return f"https://github.com/login/oauth/authorize?scope=user:email&client_id={settings.oauth.github_client_id}"
 
+async def github_access_token_req(params: dict[str, str], headers: dict[str, str]) -> HttpxResponse:
+    async with AsyncClient() as client:
+        return await client.post(
+            url="https://github.com/login/oauth/access_token",
+            params=params,
+            headers=headers,
+        )
+
+async def github_req(headers: dict[str, str]) -> HttpxResponse:
+    async with AsyncClient() as client:
+        return await client.get("https://api.github.com/user", headers=headers)
+
+async def github_email_req(headers: dict[str, str]) -> HttpxResponse:
+    async with AsyncClient() as client:
+        return await client.get("https://api.github.com/user/emails", headers=headers)
 
 @users_router.get("/github-code/{code}", response_model=UserInfoResponse)
 async def github_code(
@@ -164,20 +180,14 @@ async def github_code(
         "code": code,
     }
     headers = {"Accept": "application/json"}
-    async with AsyncClient() as client:
-        oauth_response = await client.post(
-            url="https://github.com/login/oauth/access_token",
-            params=params,
-            headers=headers,
-        )
+    oauth_response = await github_access_token_req(params, headers)
     response_json = oauth_response.json()
 
     # access token is used to retrieve user oauth details
     access_token = response_json["access_token"]
-    async with AsyncClient() as client:
-        headers.update({"Authorization": f"Bearer {access_token}"})
-        oauth_response = await client.get("https://api.github.com/user", headers=headers)
-        oauth_email_response = await client.get("https://api.github.com/user/emails", headers=headers)
+    headers.update({"Authorization": f"Bearer {access_token}"})
+    oauth_response = await github_req(headers)
+    oauth_email_response = await github_email_req(headers)
 
     github_id = oauth_response.json()["html_url"]
     email = next(entry["email"] for entry in oauth_email_response.json() if entry["primary"])

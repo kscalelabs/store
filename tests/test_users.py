@@ -12,9 +12,7 @@ async def test_user_auth_functions(app_client: AsyncClient, mock_send_email: Moc
     await create_tables()
     await crud.__aenter__()
 
-    test_username = "test"
     test_email = "test@example.com"
-    test_password = "test password"
     test_token = "test_token"
 
     await crud.add_register_token(test_token, test_email, 3600)
