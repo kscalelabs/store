@@ -6,8 +6,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.security.utils import get_authorization_scheme_param
-from httpx import Response as HttpxResponse
-from httpx import AsyncClient
+from httpx import AsyncClient, Response as HttpxResponse
 from pydantic.main import BaseModel as PydanticBaseModel
 
 from store.app.db import Crud
@@ -142,6 +141,7 @@ async def github_login() -> str:
     """
     return f"https://github.com/login/oauth/authorize?scope=user:email&client_id={settings.oauth.github_client_id}"
 
+
 async def github_access_token_req(params: dict[str, str], headers: dict[str, str]) -> HttpxResponse:
     async with AsyncClient() as client:
         return await client.post(
@@ -150,13 +150,16 @@ async def github_access_token_req(params: dict[str, str], headers: dict[str, str
             headers=headers,
         )
 
+
 async def github_req(headers: dict[str, str]) -> HttpxResponse:
     async with AsyncClient() as client:
         return await client.get("https://api.github.com/user", headers=headers)
 
+
 async def github_email_req(headers: dict[str, str]) -> HttpxResponse:
     async with AsyncClient() as client:
         return await client.get("https://api.github.com/user/emails", headers=headers)
+
 
 @users_router.get("/github-code/{code}", response_model=UserInfoResponse)
 async def github_code(
