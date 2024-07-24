@@ -27,12 +27,18 @@ class UserSettings:
 
 @dataclass
 class EmailSettings:
-    host: str = field(default=II("oc.env:ROBOLIST_SMTP_HOST"))
+    host: str = field(default=II("oc.env:SMTP_HOST"))
     port: int = field(default=587)
-    username: str = field(default=II("oc.env:ROBOLIST_SMTP_USERNAME"))
-    password: str = field(default=II("oc.env:ROBOLIST_SMTP_PASSWORD"))
-    sender_email: str = field(default=II("oc.env:ROBOLIST_SMTP_SENDER_EMAIL"))
-    sender_name: str = field(default=II("oc.env:ROBOLIST_SMTP_SENDER_NAME"))
+    username: str = field(default=II("oc.env:SMTP_USERNAME"))
+    password: str = field(default=II("oc.env:SMTP_PASSWORD"))
+    sender_email: str = field(default=II("oc.env:SMTP_SENDER_EMAIL"))
+    sender_name: str = field(default=II("oc.env:SMTP_SENDER_NAME"))
+
+
+@dataclass
+class S3Settings:
+    bucket: str = field(default=II("oc.env:S3_BUCKET"))
+    prefix: str = field(default=II("oc.env:S3_PREFIX"))
 
 
 @dataclass
@@ -47,5 +53,6 @@ class EnvironmentSettings:
     user: UserSettings = field(default_factory=UserSettings)
     crypto: CryptoSettings = field(default_factory=CryptoSettings)
     email: EmailSettings = field(default_factory=EmailSettings)
+    s3: S3Settings = field(default_factory=S3Settings)
     site: SiteSettings = field(default_factory=SiteSettings)
     debug: bool = field(default=False)

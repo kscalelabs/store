@@ -87,33 +87,6 @@ class APIKey(RobolistBaseModel):
         return cls(id=data["token"], user_id=data["user_id"])
 
 
-class RegisterToken(RobolistBaseModel):
-    """Stores a token for registering a new user."""
-
-    email: str
-
-    @classmethod
-    def create(cls, email: str) -> Self:
-        return cls(
-            id=str(new_uuid()),
-            email=email,
-        )
-
-    def to_jwt(self) -> str:
-        return jwt.encode(
-            payload={"token": self.id, "email": self.email},
-            key=settings.crypto.jwt_secret,
-        )
-
-    @classmethod
-    def from_jwt(cls, jwt_token: str) -> Self:
-        data = jwt.decode(
-            jwt=jwt_token,
-            key=settings.crypto.jwt_secret,
-        )
-        return cls(id=data["token"], email=data["email"])
-
-
 class Bom(BaseModel):
     part_id: str
     quantity: int

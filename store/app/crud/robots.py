@@ -6,6 +6,7 @@ from fastapi import UploadFile
 
 from store.app.crud.base import BaseCrud
 from store.app.model import Part, Robot
+from store.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -45,4 +46,5 @@ class RobotCrud(BaseCrud):
         return await self._list_your(Part, user_id, page, lambda x: x.timestamp, search_query)
 
     async def upload_image(self, file: UploadFile) -> None:
-        await (await self.s3.Bucket("images")).upload_fileobj(file.file, file.filename or "")
+        bucket = await self.s3.Bucket(settings.s3.bucket)
+        await bucket.upload_fileobj(file.file, f"{settings.s3.prefix}{file.filename}")

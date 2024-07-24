@@ -53,7 +53,7 @@ export class api {
 
   public async send_register_github(): Promise<string> {
     try {
-      const res = await this.api.get("/users/github-login");
+      const res = await this.api.get("/users/github/login");
       return res.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -70,7 +70,7 @@ export class api {
 
   public async login_github(code: string): Promise<MeResponse> {
     try {
-      const res = await this.api.get(`/users/github-code/${code}`);
+      const res = await this.api.get(`/users/github/code/${code}`);
       return res.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {

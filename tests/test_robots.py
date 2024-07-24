@@ -9,7 +9,7 @@ async def test_robots(app_client: AsyncClient) -> None:
     await create_tables()
 
     # Register.
-    response = await app_client.get("/users/github-code/doesnt-matter")
+    response = await app_client.get("/users/github/code/doesnt-matter")
     assert response.status_code == 200, response.json()
     assert "session_token" in response.cookies
 

@@ -92,29 +92,39 @@ To locally develop, setting the following environment variables will work (presu
 
 ```
 export ROBOLIST_ENVIRONMENT=local
+
+# For AWS
 export AWS_DEFAULT_REGION='us-east-1'
 export AWS_ACCESS_KEY_ID=test
 export AWS_SECRET_ACCESS_KEY=test
 export AWS_ENDPOINT_URL_DYNAMODB=http://127.0.0.1:4566
-export AWS_ENDPOINT_URL_S3=http://127.0.0.1:4566
+
+# For hooking up the frontend
 export REACT_APP_BACKEND_URL=http://127.0.0.1:8080
-export ROBOLIST_SMTP_HOST=smtp.gmail.com
-export ROBOLIST_SMTP_SENDER_EMAIL=
-export ROBOLIST_SMTP_PASSWORD=
-export ROBOLIST_SMTP_SENDER_NAME=
-export ROBOLIST_SMTP_USERNAME=
+
+# For SMTP
+export SMTP_HOST=smtp.gmail.com
+export SMTP_SENDER_EMAIL=
+export SMTP_PASSWORD=
+export SMTP_SENDER_NAME=
+export SMTP_USERNAME=
+
+# For Github OAuth
 export GITHUB_CLIENT_ID=
 export GITHUB_CLIENT_SECRET=
+
+# For Google OAuth
+export GOOGLE_CLIENT_ID=
 ```
 
 ### Github OAuth Configuration
 
 To run Github OAuth locally, you must follow these steps:
+
 1. Create an OAuth App on [Github Developer Settings](https://github.com/settings/developers)
 2. Set both Homepage URL and Authorization callback URL to `http://127.0.0.1:3000` before you `Update application` on Github Oauth App configuration
 3. Copy the Client ID and Client Secret from Github OAuth App configuration and set them in `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` respectively
 4. Run `source env.sh` in your Fast API terminal window to ensure it has access to the github environment variables
-
 
 ## React
 
