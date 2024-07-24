@@ -5,7 +5,6 @@ import warnings
 from datetime import datetime
 
 from store.app.crud.base import BaseCrud, GlobalSecondaryIndex
-from store.app.crypto import hash_token
 from store.app.model import APIKey, APIKeySource, OAuthKey, PermissionSet, User
 from store.settings import settings
 from store.utils import LRUCache
@@ -13,7 +12,7 @@ from store.utils import LRUCache
 # This dictionary is used to locally cache the last time a token was validated
 # against the database. We give the tokens some buffer time to avoid hitting
 # the database too often.
-LAST_API_KEY_VALIDATION = LRUCache[str, tuple[datetime, bool]](2**20)
+API_KEY_CACHE = LRUCache[str, tuple[datetime, APIKey]](2**20)
 
 
 def github_auth_key(github_id: str) -> str:
@@ -92,9 +91,15 @@ class UserCrud(BaseCrud):
     async def get_user_count(self) -> int:
         return await self._count_items(User)
 
-    async def get_api_key(self, id: str) -> APIKey:
-        hashed_id = hash_token(id)
-        return await self._get_item(hashed_id, APIKey, throw_if_missing=True)
+    async def get_api_key(self, api_key_id: str) -> APIKey:
+        cur_time = datetime.now()
+        if api_key_id in API_KEY_CACHE:
+            last_time, api_key = API_KEY_CACHE[api_key_id]
+            if (cur_time - last_time).total_seconds() < settings.crypto.cache_token_db_result_seconds:
+                return api_key
+        api_key = await self._get_item(api_key_id, APIKey, throw_if_missing=True)
+        API_KEY_CACHE[api_key_id] = (cur_time, api_key)
+        return api_key
 
     async def add_api_key(
         self,
@@ -103,32 +108,11 @@ class UserCrud(BaseCrud):
         permissions: PermissionSet,
     ) -> APIKey:
         token = APIKey.create(user_id=user_id, source=source, permissions=permissions)
-        await self._add_hashed_item(token)
+        await self._add_item(token)
         return token
 
     async def delete_api_key(self, token: APIKey | str) -> None:
-        await self._delete_hashed_item(token)
-
-    async def api_key_is_valid(self, token: str) -> bool:
-        """Validates a token against the database, with caching.
-
-        In order to reduce the number of database queries, we locally cache
-        whether or not a token is valid for some amount of time.
-
-        Args:
-            token: The token to validate.
-
-        Returns:
-            If the token is valid, meaning, if it exists in the database.
-        """
-        cur_time = datetime.now()
-        if token in LAST_API_KEY_VALIDATION:
-            last_time, is_valid = LAST_API_KEY_VALIDATION[token]
-            if (cur_time - last_time).seconds < settings.crypto.cache_token_db_result_seconds:
-                return is_valid
-        is_valid = await self._hashed_item_exists(token)
-        LAST_API_KEY_VALIDATION[token] = (cur_time, is_valid)
-        return is_valid
+        await self._delete_item(token)
 
 
 async def test_adhoc() -> None:

@@ -40,6 +40,9 @@ class LRUCache(Generic[Tk, Tv]):
         if len(self.cache) > self.capacity:
             self.cache.popitem(last=False)
 
+    def pop(self, key: Tk) -> Tv:
+        return self.cache.pop(key)
+
     def __getitem__(self, key: Tk) -> Tv:
         if (item := self.get(key)) is None:
             raise KeyError(key)
