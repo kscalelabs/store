@@ -32,7 +32,7 @@ const PartDetails = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const { id } = useParams();
   const [show, setShow] = useState(false);
-  const [ownerUsername, setOwnerUsername] = useState<string | null>(null);
+  const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
   const [part, setPart] = useState<PartDetailsResponse | null>(null);
   const [imageIndex, setImageIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -49,8 +49,8 @@ const PartDetails = () => {
       try {
         const partData = await auth_api.getPartById(id);
         setPart(partData);
-        const ownerUsername = await auth_api.getUserById(partData.owner);
-        setOwnerUsername(ownerUsername);
+        const ownerEmail = await auth_api.getUserById(partData.owner);
+        setOwnerEmail(ownerEmail);
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -129,7 +129,7 @@ const PartDetails = () => {
               <h1>{name}</h1>
               <small className="text-muted">ID: {id}</small>
               <br />
-              <em>{ownerUsername}</em>
+              <em>This listing is maintained by <a href={'mailto:' + ownerEmail}>{ownerEmail}</a>.</em>
             </Col>
           </Row>
           <hr />

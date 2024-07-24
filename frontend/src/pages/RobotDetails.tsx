@@ -45,7 +45,7 @@ const RobotDetails = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const { id } = useParams();
   const [show, setShow] = useState(false);
-  const [ownerUsername, setOwnerUsername] = useState<string | null>(null);
+  const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
   const [robot, setRobot] = useState<RobotDetailsResponse | null>(null);
   const [parts, setParts] = useState<ExtendedBom[]>([]);
   const [package_urls, setPackages] = useState<string[]>([]);
@@ -65,8 +65,8 @@ const RobotDetails = () => {
       try {
         const robotData = await auth_api.getRobotById(id);
         setRobot(robotData);
-        const ownerUsername = await auth_api.getUserById(robotData.owner);
-        setOwnerUsername(ownerUsername);
+        const ownerEmail = await auth_api.getUserById(robotData.owner);
+        setOwnerEmail(ownerEmail);
         const curPackages = [];
         for (let i = 0; i < robotData.packages.length; i++) {
           const package_id = robotData.packages[i].name;
@@ -189,7 +189,7 @@ const RobotDetails = () => {
               <h1>{name}</h1>
               <small className="text-muted">ID: {id}</small>
               <br />
-              <em>{ownerUsername}</em>
+              <em>This listing is maintained by <a href={'mailto:' + ownerEmail}>{ownerEmail}</a>.</em>
             </Col>
           </Row>
           {((response.height && response.height !== "") ||

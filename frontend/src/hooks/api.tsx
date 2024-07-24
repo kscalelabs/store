@@ -118,7 +118,7 @@ export class api {
 
   public async getUserById(userId: string | undefined): Promise<string> {
     const response = await this.api.get(`/users/${userId}`);
-    return response.data.username;
+    return response.data.email;
   }
 
   public async getRobots(
