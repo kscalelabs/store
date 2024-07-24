@@ -6,7 +6,7 @@ from datetime import datetime
 
 from store.app.crud.base import BaseCrud, GlobalSecondaryIndex
 from store.app.crypto import hash_token
-from store.app.model import APIKey, OAuthKey, User
+from store.app.model import APIKey, APIKeySource, OAuthKey, PermissionSet, User
 from store.settings import settings
 from store.utils import LRUCache
 
@@ -96,8 +96,13 @@ class UserCrud(BaseCrud):
         hashed_id = hash_token(id)
         return await self._get_item(hashed_id, APIKey, throw_if_missing=True)
 
-    async def add_api_key(self, id: str) -> APIKey:
-        token = APIKey.create(id=id)
+    async def add_api_key(
+        self,
+        user_id: str,
+        source: APIKeySource,
+        permissions: PermissionSet,
+    ) -> APIKey:
+        token = APIKey.create(user_id=user_id, source=source, permissions=permissions)
         await self._add_hashed_item(token)
         return token
 

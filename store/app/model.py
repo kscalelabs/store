@@ -5,7 +5,7 @@ methods for converting from our input data into the format the database
 expects (for example, converting a UUID into a string).
 """
 
-from typing import Self
+from typing import Literal, Self
 
 from pydantic import BaseModel
 
@@ -53,6 +53,11 @@ class OAuthKey(RobolistBaseModel):
         return cls(id=token, user_id=user_id)
 
 
+APIKeySource = Literal["user", "oauth"]
+Permission = Literal["read", "write", "admin"]
+PermissionSet = set[Permission] | Literal["full"]
+
+
 class APIKey(RobolistBaseModel):
     """The API key is used for querying the API.
 
@@ -62,12 +67,23 @@ class APIKey(RobolistBaseModel):
     """
 
     user_id: str
+    source: APIKeySource
+    permissions: set[Permission]
 
     @classmethod
-    def create(cls, id: str) -> Self:
+    def create(
+        cls,
+        user_id: str,
+        source: APIKeySource,
+        permissions: PermissionSet,
+    ) -> Self:
+        if permissions == "full":
+            permissions = {"read", "write", "admin"}
         return cls(
             id=str(new_uuid()),
-            user_id=id,
+            user_id=user_id,
+            source=source,
+            permissions=permissions,
         )
 
 
