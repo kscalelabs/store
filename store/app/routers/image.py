@@ -41,7 +41,7 @@ async def upload_image(crud: Annotated[Crud, Depends(Crud.get)], file: UploadFil
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@image_router.get("{image_fname}")
+@image_router.get("/{image_fname}")
 async def image_url(image_fname: str) -> RedirectResponse:
     image_url = f"{settings.site.image_base_url}/{image_fname}"
     return RedirectResponse(url=image_url)
