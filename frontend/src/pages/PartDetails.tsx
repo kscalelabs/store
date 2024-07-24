@@ -32,7 +32,7 @@ const PartDetails = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const { id } = useParams();
   const [show, setShow] = useState(false);
-  const [ownerUsername, setOwnerUsername] = useState<string | null>(null);
+  const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
   const [part, setPart] = useState<PartDetailsResponse | null>(null);
   const [imageIndex, setImageIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
@@ -49,8 +49,8 @@ const PartDetails = () => {
       try {
         const partData = await auth_api.getPartById(id);
         setPart(partData);
-        const ownerUsername = await auth_api.getUserById(partData.owner);
-        setOwnerUsername(ownerUsername);
+        const ownerEmail = await auth_api.getUserById(partData.owner);
+        setOwnerEmail(ownerEmail);
       } catch (err) {
         if (err instanceof Error) {
           setError(err.message);
@@ -68,8 +68,8 @@ const PartDetails = () => {
     if (auth.isAuthenticated) {
       try {
         const fetchUserId = async () => {
-          const user_id = await auth_api.currentUser();
-          setUserId(user_id);
+          const id = await auth_api.currentUser();
+          setUserId(id);
         };
         fetchUserId();
       } catch (err) {
@@ -129,7 +129,10 @@ const PartDetails = () => {
               <h1>{name}</h1>
               <small className="text-muted">ID: {id}</small>
               <br />
-              <em>{ownerUsername}</em>
+              <em>
+                This listing is maintained by{" "}
+                <a href={"mailto:" + ownerEmail}>{ownerEmail}</a>.
+              </em>
             </Col>
           </Row>
           <hr />
@@ -250,7 +253,10 @@ const PartDetails = () => {
                       handleShow();
                     }}
                   >
-                    <ImageComponent imageId={images[key].url} />
+                    <ImageComponent
+                      imageId={images[key].url + ".png"}
+                      caption={images[key].caption}
+                    />
                   </div>
                   <Carousel.Caption
                     style={{
@@ -286,7 +292,10 @@ const PartDetails = () => {
         </Modal.Header>
         <Modal.Body>
           <div style={{ display: "flex", justifyContent: "center" }}>
-            <ImageComponent imageId={images[imageIndex].url} />
+            <ImageComponent
+              imageId={images[imageIndex].url + ".png"}
+              caption={images[imageIndex].caption}
+            />
           </div>
         </Modal.Body>
         <Modal.Footer>

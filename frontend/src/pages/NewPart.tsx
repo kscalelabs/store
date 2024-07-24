@@ -22,7 +22,7 @@ const NewPart: React.FC = () => {
       return;
     }
     const newFormData: Part = {
-      part_id: "",
+      id: "",
       name: name,
       description: part_description,
       owner: "Bob",

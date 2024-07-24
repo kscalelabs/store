@@ -45,7 +45,7 @@ const RobotDetails = () => {
   const [userId, setUserId] = useState<string | null>(null);
   const { id } = useParams();
   const [show, setShow] = useState(false);
-  const [ownerUsername, setOwnerUsername] = useState<string | null>(null);
+  const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
   const [robot, setRobot] = useState<RobotDetailsResponse | null>(null);
   const [parts, setParts] = useState<ExtendedBom[]>([]);
   const [package_urls, setPackages] = useState<string[]>([]);
@@ -65,8 +65,8 @@ const RobotDetails = () => {
       try {
         const robotData = await auth_api.getRobotById(id);
         setRobot(robotData);
-        const ownerUsername = await auth_api.getUserById(robotData.owner);
-        setOwnerUsername(ownerUsername);
+        const ownerEmail = await auth_api.getUserById(robotData.owner);
+        setOwnerEmail(ownerEmail);
         const curPackages = [];
         for (let i = 0; i < robotData.packages.length; i++) {
           const package_id = robotData.packages[i].name;
@@ -77,8 +77,8 @@ const RobotDetails = () => {
         setPackages(curPackages);
         const parts = robotData.bom.map(async (part) => {
           return {
-            name: (await auth_api.getPartById(part.part_id)).name,
-            part_id: part.part_id,
+            name: (await auth_api.getPartById(id)).name,
+            part_id: id,
             quantity: part.quantity,
           };
         });
@@ -120,8 +120,8 @@ const RobotDetails = () => {
     if (auth.isAuthenticated) {
       try {
         const fetchUserId = async () => {
-          const user_id = await auth_api.currentUser();
-          setUserId(user_id);
+          const id = await auth_api.currentUser();
+          setUserId(id);
         };
         fetchUserId();
       } catch (err) {
@@ -189,7 +189,10 @@ const RobotDetails = () => {
               <h1>{name}</h1>
               <small className="text-muted">ID: {id}</small>
               <br />
-              <em>{ownerUsername}</em>
+              <em>
+                This listing is maintained by{" "}
+                <a href={"mailto:" + ownerEmail}>{ownerEmail}</a>.
+              </em>
             </Col>
           </Row>
           {((response.height && response.height !== "") ||
@@ -251,7 +254,7 @@ const RobotDetails = () => {
                   {parts.map((part, key) => (
                     <tr key={key}>
                       <td>
-                        <Link to={`/part/${part.part_id}`}>{part.name}</Link>
+                        <Link to={`/part/${id}`}>{part.name}</Link>
                       </td>
                       <td>{part.quantity}</td>
                     </tr>
@@ -375,7 +378,10 @@ const RobotDetails = () => {
                         handleShow();
                       }}
                     >
-                      <ImageComponent imageId={images[key].url} />
+                      <ImageComponent
+                        imageId={images[key].url + ".png"}
+                        caption={images[key].caption}
+                      />
                     </div>
                     <Carousel.Caption
                       style={{
@@ -421,7 +427,10 @@ const RobotDetails = () => {
               position: "relative",
             }}
           >
-            <ImageComponent imageId={images[imageIndex].url} />
+            <ImageComponent
+              imageId={images[imageIndex].url + ".png"}
+              caption={images[imageIndex].caption}
+            />
           </div>
         </Modal.Body>
         <Modal.Footer>

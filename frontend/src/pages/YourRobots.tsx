@@ -75,8 +75,8 @@ const YourRobots = () => {
 
       <Row className="mt-5">
         {robotsData.map((robot) => (
-          <Col key={robot.robot_id} lg={2} md={4} sm={6} xs={12}>
-            <Card onClick={() => navigate(`/robot/${robot.robot_id}`)}>
+          <Col key={robot.id} lg={2} md={4} sm={6} xs={12}>
+            <Card onClick={() => navigate(`/robot/${robot.id}`)}>
               {robot.images[0] && (
                 <div
                   style={{
@@ -87,7 +87,10 @@ const YourRobots = () => {
                     borderTopRightRadius: ".25rem",
                   }}
                 >
-                  <ImageComponent imageId={"mini" + robot.images[0].url} />
+                  <ImageComponent
+                    imageId={"mini" + robot.images[0].url + ".png"}
+                    caption={robot.images[0].caption}
+                  />
                 </div>
               )}
               <Card.Body>

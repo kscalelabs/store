@@ -6,10 +6,8 @@ import { AlertQueue, AlertQueueProvider } from "hooks/alerts";
 import { AuthenticationProvider } from "hooks/auth";
 import { ThemeProvider } from "hooks/theme";
 import About from "pages/About";
-import ChangeEmail from "pages/ChangeEmail";
 import EditPartForm from "pages/EditPartForm";
 import EditRobotForm from "pages/EditRobotForm";
-import Forgot from "pages/Forgot";
 import Home from "pages/Home";
 import Login from "pages/Login";
 import Logout from "pages/Logout";
@@ -18,9 +16,6 @@ import NewRobot from "pages/NewRobot";
 import NotFound from "pages/NotFound";
 import PartDetails from "pages/PartDetails";
 import Parts from "pages/Parts";
-import Register from "pages/Register";
-import RegistrationEmail from "pages/RegistrationEmail";
-import ResetPassword from "pages/ResetPassword";
 import RobotDetails from "pages/RobotDetails";
 import Robots from "pages/Robots";
 import TestImages from "pages/TestImages";
@@ -44,18 +39,7 @@ const App = () => {
                   <Route path="/" element={<Home />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<RegistrationEmail />} />
-                  <Route path="/register/:token" element={<Register />} />
                   <Route path="/logout" element={<Logout />} />
-                  <Route path="/forgot" element={<Forgot />} />
-                  <Route
-                    path="/reset-password/:token"
-                    element={<ResetPassword />}
-                  />
-                  <Route
-                    path="/change-email/:token"
-                    element={<ChangeEmail />}
-                  />
                   <Route path="/robots/:page" element={<Robots />} />
                   <Route path="/robots/add" element={<NewRobot />} />
                   <Route path="/parts/add" element={<NewPart />} />

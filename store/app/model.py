@@ -5,43 +5,113 @@ methods for converting from our input data into the format the database
 expects (for example, converting a UUID into a string).
 """
 
-import uuid
-from typing import Optional
+from typing import Self
 
+import jwt
 from pydantic import BaseModel
 
-from store.app.crypto import hash_password
+from store.app.crypto import new_uuid
+from store.settings import settings
 
 
-class User(BaseModel):
-    user_id: str  # Primary key
-    username: str
+class RobolistBaseModel(BaseModel):
+    """Defines the base model for Robolist database rows.
+
+    Our database architecture uses a single table with a single primary key
+    (the `id` field). This class provides a common interface for all models
+    that are stored in the database.
+    """
+
+    id: str
+
+
+class UserPermissions(BaseModel):
+    is_admin: bool = False
+
+
+class User(RobolistBaseModel):
+    """Defines the user model for the API.
+
+    Users are defined by their email, username and password hash. This is the
+    simplest form of authentication, and is used for users who sign up with
+    their email and password.
+    """
+
     email: str
-    password_hash: str
-    oauth_id: str
-    admin: bool
+    permissions: UserPermissions = UserPermissions()
 
     @classmethod
-    def create(cls, email: str, username: str, password: str) -> "User":
+    def create(cls, email: str) -> Self:
+        return cls(id=str(new_uuid()), email=email)
+
+
+class OAuthKey(RobolistBaseModel):
+    """Keys for OAuth providers which identify users."""
+
+    user_id: str
+
+    @classmethod
+    def create(cls, token: str, user_id: str) -> Self:
+        return cls(id=token, user_id=user_id)
+
+
+class APIKey(RobolistBaseModel):
+    """The API key is used for querying the API.
+
+    Downstream users keep the JWT locally, and it is used to authenticate
+    requests to the API. The key is stored in the database, and can be
+    revoked by the user at any time.
+    """
+
+    user_id: str
+
+    @classmethod
+    def create(cls, id: str) -> Self:
         return cls(
-            user_id=str(uuid.uuid4()),
+            id=str(new_uuid()),
+            user_id=id,
+        )
+
+    def to_jwt(self) -> str:
+        return jwt.encode(
+            payload={"token": self.id, "user_id": self.user_id},
+            key=settings.crypto.jwt_secret,
+        )
+
+    @classmethod
+    def from_jwt(cls, jwt_token: str) -> Self:
+        data = jwt.decode(
+            jwt=jwt_token,
+            key=settings.crypto.jwt_secret,
+        )
+        return cls(id=data["token"], user_id=data["user_id"])
+
+
+class RegisterToken(RobolistBaseModel):
+    """Stores a token for registering a new user."""
+
+    email: str
+
+    @classmethod
+    def create(cls, email: str) -> Self:
+        return cls(
+            id=str(new_uuid()),
             email=email,
-            username=username,
-            password_hash=hash_password(password),
-            oauth_id="dummy_oauth",
-            admin=False,
+        )
+
+    def to_jwt(self) -> str:
+        return jwt.encode(
+            payload={"token": self.id, "email": self.email},
+            key=settings.crypto.jwt_secret,
         )
 
     @classmethod
-    def create_oauth(cls, username: str, oauth_id: str) -> "User":
-        return cls(
-            user_id=str(uuid.uuid4()),
-            username=username,
-            email="dummy@kscale.dev",
-            oauth_id=oauth_id,
-            admin=False,
-            password_hash="",
+    def from_jwt(cls, jwt_token: str) -> Self:
+        data = jwt.decode(
+            jwt=jwt_token,
+            key=settings.crypto.jwt_secret,
         )
+        return cls(id=data["token"], email=data["email"])
 
 
 class Bom(BaseModel):
@@ -59,23 +129,21 @@ class Package(BaseModel):
     url: str
 
 
-class Robot(BaseModel):
-    robot_id: str  # Primary key
+class Robot(RobolistBaseModel):
     owner: str
     name: str
     description: str
     bom: list[Bom]
     images: list[Image]
-    height: Optional[str] = ""
-    weight: Optional[str] = ""
-    degrees_of_freedom: Optional[str] = ""
+    height: str | None = None
+    weight: str | None = None
+    degrees_of_freedom: int | None = None
     timestamp: int
     urdf: str
     packages: list[Package]
 
 
-class Part(BaseModel):
-    part_id: str  # Primary key
+class Part(RobolistBaseModel):
     name: str
     owner: str
     description: str

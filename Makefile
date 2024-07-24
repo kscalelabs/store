@@ -37,18 +37,13 @@ start-docker-dynamodb:
 	@docker rm store-db || true
 	@docker run --name store-db -d -p 8000:8000 amazon/dynamodb-local
 
-start-docker-redis:
-	@docker kill store-redis || true
-	@docker rm store-redis || true
-	@docker run --name store-redis -d -p 6379:6379 redis
-
 # ------------------------ #
 #      Code Formatting     #
 # ------------------------ #
 
 format-backend:
-	@black store
-	@ruff format store
+	@black store tests
+	@ruff format store tests
 .PHONY: format
 
 format-frontend:
@@ -63,9 +58,9 @@ format: format-backend format-frontend
 # ------------------------ #
 
 static-checks-backend:
-	@black --diff --check store
-	@ruff check store
-	@mypy --install-types --non-interactive store
+	@black --diff --check store tests
+	@ruff check store tests
+	@mypy --install-types --non-interactive store tests
 .PHONY: lint
 
 static-checks-frontend:

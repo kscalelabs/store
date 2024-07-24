@@ -75,8 +75,8 @@ const YourParts = () => {
 
       <Row className="mt-5">
         {partsData.map((part) => (
-          <Col key={part.part_id} lg={2} md={3} sm={6} xs={12}>
-            <Card onClick={() => navigate(`/part/${part.part_id}`)}>
+          <Col key={part.id} lg={2} md={3} sm={6} xs={12}>
+            <Card onClick={() => navigate(`/part/${part.id}`)}>
               {part.images[0] && (
                 <div
                   style={{
@@ -87,7 +87,10 @@ const YourParts = () => {
                     borderTopRightRadius: ".25rem",
                   }}
                 >
-                  <ImageComponent imageId={"mini" + part.images[0].url} />
+                  <ImageComponent
+                    imageId={"mini" + part.images[0].url + ".png"}
+                    caption={part.images[0].caption}
+                  />
                 </div>
               )}
               <Card.Body>

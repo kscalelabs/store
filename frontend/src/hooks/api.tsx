@@ -4,7 +4,7 @@ export interface Part {
   description: string;
   owner: string;
   images: Image[];
-  part_id: string;
+  id: string;
   name: string;
 }
 
@@ -24,7 +24,7 @@ export interface Package {
 }
 
 export interface Robot {
-  robot_id: string;
+  id: string;
   name: string;
   description: string;
   owner: string;
@@ -38,7 +38,7 @@ export interface Robot {
 }
 
 interface MeResponse {
-  user_id: string;
+  id: string;
   email: string;
   username: string;
   admin: boolean;
@@ -51,45 +51,6 @@ export class api {
     this.api = api;
   }
 
-  public async send_register_email(email: string): Promise<void> {
-    try {
-      await this.api.post("/users/send-register-email", { email });
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error(
-          "Error sending registration email:",
-          error.response?.data,
-        );
-        throw new Error(
-          error.response?.data?.detail || "Error sending verification email",
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
-  public async get_registration_email(token: string): Promise<string> {
-    try {
-      const res = await this.api.get("/users/registration-email/" + token);
-      return res.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error(
-          "Error fetching registration email:",
-          error.response?.data,
-        );
-        throw new Error(
-          error.response?.data?.detail || "Error fetching registration email",
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
   public async send_register_github(): Promise<string> {
     try {
       const res = await this.api.get("/users/github-login");
@@ -99,99 +60,6 @@ export class api {
         console.error("Error redirecting to github:", error.response?.data);
         throw new Error(
           error.response?.data?.detail || "Error redirecting to github",
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
-  public async register(
-    token: string,
-    username: string,
-    password: string,
-  ): Promise<void> {
-    try {
-      await this.api.post("/users/register/", { token, username, password });
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error registering:", error.response?.data);
-        throw new Error(
-          error.response?.data?.detail ||
-            "Error registering with token " + token,
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
-  public async change_email(code: string): Promise<void> {
-    try {
-      await this.api.post("/users/change-email/" + code);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error changing email:", error.response?.data);
-        throw new Error(
-          error.response?.data?.detail ||
-            "Error changing email with code " + code,
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
-  public async send_change_email(new_email: string): Promise<void> {
-    try {
-      await this.api.post("/users/change-email", { new_email });
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error sending change email:", error.response?.data);
-        throw new Error(
-          error.response?.data?.detail || "Error sending change email",
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
-  public async change_password(
-    old_password: string,
-    new_password: string,
-  ): Promise<void> {
-    try {
-      await this.api.post("/users/change-password", {
-        old_password,
-        new_password,
-      });
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error changing password:", error.response?.data);
-        throw new Error(
-          error.response?.data?.detail || "Error changing password",
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
-  public async login(email: string, password: string): Promise<void> {
-    try {
-      await this.api.post("/users/login/", { email, password });
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error logging in:", error.response?.data);
-        throw new Error(
-          error.response?.data?.detail ||
-            "Error logging in with email " + email,
         );
       } else {
         console.error("Unexpected error:", error);
@@ -231,38 +99,6 @@ export class api {
     }
   }
 
-  public async forgot(email: string): Promise<void> {
-    try {
-      await this.api.post("/users/forgot-password/", { email });
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error sending forgot password:", error.response?.data);
-        throw new Error(
-          error.response?.data?.detail || "Error sending forgot password",
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
-  public async reset_password(token: string, password: string): Promise<void> {
-    try {
-      await this.api.post("/users/reset-password/" + token, { password });
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error resetting password:", error.response?.data);
-        throw new Error(
-          error.response?.data?.detail || "Error resetting password",
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
-
   public async me(): Promise<MeResponse> {
     try {
       const res = await this.api.get("/users/me/");
@@ -282,7 +118,7 @@ export class api {
 
   public async getUserById(userId: string | undefined): Promise<string> {
     const response = await this.api.get(`/users/${userId}`);
-    return response.data.username;
+    return response.data.email;
   }
 
   public async getRobots(
@@ -309,13 +145,13 @@ export class api {
 
   public async getUserBatch(userIds: string[]): Promise<Map<string, string>> {
     const params = new URLSearchParams();
-    userIds.forEach((id) => params.append("user_ids", id));
+    userIds.forEach((id) => params.append("ids", id));
     const response = await this.api.get("/users/batch/", {
       params,
     });
     const map = new Map();
     for (const index in response.data) {
-      map.set(response.data[index].user_id, response.data[index].username);
+      map.set(response.data[index].id, response.data[index].email);
     }
     return map;
   }
@@ -368,8 +204,8 @@ export class api {
   }
   public async currentUser(): Promise<string> {
     try {
-      const response = await this.api.get("/robots/user/");
-      return response.data;
+      const response = await this.api.get("/users/me");
+      return response.data.id;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error fetching current user:", error.response?.data);
@@ -417,7 +253,7 @@ export class api {
   public async editRobot(robot: Robot): Promise<void> {
     const s = robot.name;
     try {
-      await this.api.post(`robots/edit-robot/${robot.robot_id}/`, robot);
+      await this.api.post(`robots/edit-robot/${robot.id}/`, robot);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error editing robot:", error.response?.data);
@@ -514,7 +350,7 @@ export class api {
   public async editPart(part: Part): Promise<void> {
     const s = part.name;
     try {
-      await this.api.post(`parts/edit-part/${part.part_id}/`, part);
+      await this.api.post(`parts/edit-part/${part.id}/`, part);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error editing part:", error.response?.data);

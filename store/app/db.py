@@ -5,7 +5,7 @@ import asyncio
 import logging
 from typing import AsyncGenerator, Self
 
-from store.app.crud.base import BaseCrud
+from store.app.crud.base import TABLE_NAME, BaseCrud
 from store.app.crud.robots import RobotCrud
 from store.app.crud.users import UserCrud
 
@@ -37,43 +37,13 @@ async def create_tables(crud: Crud | None = None, deletion_protection: bool = Fa
             await create_tables(new_crud)
 
     else:
-        await asyncio.gather(
-            crud._create_dynamodb_table(
-                name="Users",
-                keys=[
-                    ("user_id", "S", "HASH"),
-                ],
-                gsis=[
-                    ("emailIndex", "email", "S", "HASH"),
-                    ("usernameIndex", "username", "S", "HASH"),
-                    ("oauthIdIndex", "oauth_id", "S", "HASH"),
-                ],
-                deletion_protection=deletion_protection,
-            ),
-            crud._create_dynamodb_table(
-                name="Robots",
-                keys=[
-                    ("robot_id", "S", "HASH"),
-                ],
-                gsis=[
-                    ("ownerIndex", "owner", "S", "HASH"),
-                    ("nameIndex", "name", "S", "HASH"),
-                    ("timestampIndex", "timestamp", "N", "HASH"),
-                ],
-                deletion_protection=deletion_protection,
-            ),
-            crud._create_dynamodb_table(
-                name="Parts",
-                keys=[
-                    ("part_id", "S", "HASH"),
-                ],
-                gsis=[
-                    ("ownerIndex", "owner", "S", "HASH"),
-                    ("nameIndex", "name", "S", "HASH"),
-                    ("timestampIndex", "timestamp", "N", "HASH"),
-                ],
-                deletion_protection=deletion_protection,
-            ),
+        await crud._create_dynamodb_table(
+            name=TABLE_NAME,
+            keys=[
+                ("id", "S", "HASH"),
+            ],
+            gsis=crud.get_gsis(),
+            deletion_protection=deletion_protection,
         )
 
 
@@ -90,11 +60,7 @@ async def delete_tables(crud: Crud | None = None) -> None:
             await delete_tables(new_crud)
 
     else:
-        await asyncio.gather(
-            crud._delete_dynamodb_table("Users"),
-            crud._delete_dynamodb_table("Robots"),
-            crud._delete_dynamodb_table("Parts"),
-        )
+        await crud._delete_dynamodb_table(TABLE_NAME)
 
 
 async def populate_with_dummy_data(crud: Crud | None = None) -> None:

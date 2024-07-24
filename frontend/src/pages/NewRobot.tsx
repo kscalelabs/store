@@ -29,7 +29,7 @@ const NewRobot: React.FC = () => {
       return;
     }
     const newFormData: Robot = {
-      robot_id: "",
+      id: "",
       name: robot_name,
       description: robot_description,
       owner: "",

@@ -30,8 +30,8 @@ interface AuthenticationContextProps {
   setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
   id: string | null;
   api: AxiosInstance;
-  email: string;
-  setEmail: React.Dispatch<React.SetStateAction<string>>;
+  email: string | null;
+  setEmail: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const AuthenticationContext = createContext<
@@ -50,7 +50,7 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
     getLocalStorageAuth() !== null,
   );
-  const [email, setEmail] = useState<string>("dummy@kscale.dev");
+  const [email, setEmail] = useState<string | null>(null);
   const id = getLocalStorageAuth();
 
   const api = axios.create({

@@ -6,13 +6,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.security.utils import get_authorization_scheme_param
-from httpx import AsyncClient
+from httpx import AsyncClient, Response as HttpxResponse
 from pydantic.main import BaseModel as PydanticBaseModel
 
-from store.app.crypto import check_password, new_token
 from store.app.db import Crud
-from store.app.model import User
-from store.app.utils.email import send_change_email, send_delete_email, send_register_email, send_reset_password_email
+from store.app.model import UserPermissions
+from store.app.utils.email import send_delete_email
 from store.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -73,207 +72,28 @@ class SendRegister(BaseModel):
     email: str
 
 
-@users_router.post("/send-register-email")
-async def send_register_email_endpoint(
-    data: SendRegister,
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    """Sends a verification email to the new email address."""
-    email = validate_email(data.email)
-    verify_email_token = new_token()
-    # Magic number: 7 days
-    await crud.add_register_token(verify_email_token, email, 60 * 60 * 24 * 7)
-    await send_register_email(email, verify_email_token)
-    return True
-
-
-@users_router.get("/registration-email/{token}")
-async def get_registration_email_endpoint(
-    token: str,
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> str:
-    """Gets the email address associated with a registration token."""
-    return await crud.check_register_token(token)
-
-
 class UserRegister(BaseModel):
     token: str
-    username: str
-    password: str
-
-
-@users_router.post("/register")
-async def register_user_endpoint(
-    data: UserRegister,
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    """Registers a new user with the given email and password."""
-    email = await crud.check_register_token(data.token)
-    user = await crud.get_user_from_email(email)
-    if user is not None:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="User already exists")
-    user = User.create(username=data.username, email=email, password=data.password)
-    await crud.add_user(user)
-    return True
-
-
-class UserForgotPassword(BaseModel):
-    email: str
-
-
-@users_router.post("/forgot-password")
-async def forgot_password_user_endpoint(
-    data: UserForgotPassword,
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    """Sends a reset password email to the user."""
-    email = validate_email(data.email)
-    user = await crud.get_user_from_email(email)
-    if user is None:
-        return True
-    reset_password_token = new_token()
-    # Magic number: 1 hour
-    await crud.add_reset_password_token(reset_password_token, user.user_id, 60 * 60)
-    await send_reset_password_email(email, reset_password_token)
-    return True
-
-
-class ResetPassword(BaseModel):
-    password: str
-
-
-@users_router.post("/reset-password/{token}")
-async def reset_password_user_endpoint(
-    token: str,
-    data: ResetPassword,
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    """Resets a user's password."""
-    await crud.use_reset_password_token(token, data.password)
-    return True
-
-
-class NewEmail(BaseModel):
-    new_email: str
-
-
-@users_router.post("/change-email")
-async def send_change_email_user_endpoint(
-    data: NewEmail,
-    crud: Annotated[Crud, Depends(Crud.get)],
-    token: Annotated[str, Depends(get_session_token)],
-) -> bool:
-    user_id = await crud.get_user_id_from_session_token(token)
-    if user_id is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    user = await crud.get_user(user_id)
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    change_email_token = new_token()
-    """Sends a verification email to the new email address."""
-    # Magic number: 1 hour
-    await crud.add_change_email_token(change_email_token, user.user_id, data.new_email, 60 * 60)
-    await send_change_email(data.new_email, change_email_token)
-    return True
-
-
-@users_router.post("/change-email/{token}")
-async def change_email_user_endpoint(
-    token: str,
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    """Changes the user's email address."""
-    await crud.use_change_email_token(token)
-    return True
-
-
-class ChangePassword(BaseModel):
-    old_password: str
-    new_password: str
-
-
-@users_router.post("/change-password")
-async def change_password_user_endpoint(
-    data: ChangePassword,
-    token: Annotated[str, Depends(get_session_token)],
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    """Changes the user's password."""
-    user_id = await crud.get_user_id_from_session_token(token)
-    if user_id is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    user = await crud.get_user(user_id)
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    if not check_password(data.old_password, user.password_hash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
-    await crud.change_password(user_id, data.new_password)
-    return True
-
-
-class UserLogin(BaseModel):
-    email: str
-    password: str
-
-
-@users_router.post("/login")
-async def login_user_endpoint(
-    data: UserLogin,
-    crud: Annotated[Crud, Depends(Crud.get)],
-    response: Response,
-) -> bool:
-    """Gives the user a session token if they present the correct credentials.
-
-    Args:
-        data: User email and password.
-        crud: The CRUD object.
-        response: The response object.
-
-    Returns:
-        True if the credentials are correct.
-    """
-    user = await crud.get_user_from_email(data.email)
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-    if not check_password(data.password, user.password_hash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-    token = new_token()
-    response.set_cookie(
-        key="session_token",
-        value=token,
-        httponly=True,
-    )
-    await crud.add_session_token(token, user.user_id, 60 * 60 * 24 * 7)
-
-    return True
 
 
 class UserInfoResponse(BaseModel):
-    email: str
-    username: str
-    user_id: str
-    admin: bool
+    id: str
+    permissions: UserPermissions
 
 
 @users_router.get("/me", response_model=UserInfoResponse)
 async def get_user_info_endpoint(
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> UserInfoResponse:
-    user_id = await crud.get_user_id_from_session_token(token)
-    if user_id is None:
-        print("executed 1")
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    user_obj = await crud.get_user(user_id)
-    if user_obj is None:
-        print("executed 2")
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return UserInfoResponse(
-        email=user_obj.email,
-        username=user_obj.username,
-        user_id=user_obj.user_id,
-        admin=user_obj.admin,
-    )
+) -> UserInfoResponse | None:
+    try:
+        user = await crud.get_user_from_api_key(token)
+        return UserInfoResponse(
+            id=user.id,
+            permissions=user.permissions,
+        )
+    except ValueError:
+        return None
 
 
 @users_router.delete("/me")
@@ -281,14 +101,9 @@ async def delete_user_endpoint(
     token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    user_id = await crud.get_user_id_from_session_token(token)
-    if user_id is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    user_obj = await crud.get_user(user_id)
-    if user_obj is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    await crud.delete_user(user_id)
-    await send_delete_email(user_obj.email)
+    user = await crud.get_user_from_api_key(token)
+    await crud.delete_user(user.id)
+    await send_delete_email(user.email)
     return True
 
 
@@ -298,33 +113,23 @@ async def logout_user_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
     response: Response,
 ) -> bool:
-    await crud.delete_session_token(token)
+    await crud.delete_api_key(token)
     response.delete_cookie("session_token")
     return True
 
 
 class PublicUserInfoResponse(BaseModel):
-    username: str
-    user_id: str
+    id: str
+    email: str
 
 
 @users_router.get("/batch", response_model=list[PublicUserInfoResponse])
 async def get_users_batch_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
-    user_ids: list[str] = Query(...),
+    ids: list[str] = Query(...),
 ) -> list[PublicUserInfoResponse]:
-    user_objs = await crud.get_user_batch(user_ids)
-    return [
-        PublicUserInfoResponse(
-            username=user_obj.username,
-            user_id=user_obj.user_id,
-        )
-        for user_obj in user_objs
-    ]
-
-
-class SessionData(BaseModel):
-    username: str
+    users = await crud.get_user_batch(ids)
+    return [PublicUserInfoResponse(id=user.id, email=user.email) for user in users]
 
 
 @users_router.get("/github-login")
@@ -334,7 +139,26 @@ async def github_login() -> str:
     Returns:
         Github oauth redirect url.
     """
-    return f"https://github.com/login/oauth/authorize?client_id={settings.oauth.github_client_id}"
+    return f"https://github.com/login/oauth/authorize?scope=user:email&client_id={settings.oauth.github_client_id}"
+
+
+async def github_access_token_req(params: dict[str, str], headers: dict[str, str]) -> HttpxResponse:
+    async with AsyncClient() as client:
+        return await client.post(
+            url="https://github.com/login/oauth/access_token",
+            params=params,
+            headers=headers,
+        )
+
+
+async def github_req(headers: dict[str, str]) -> HttpxResponse:
+    async with AsyncClient() as client:
+        return await client.get("https://api.github.com/user", headers=headers)
+
+
+async def github_email_req(headers: dict[str, str]) -> HttpxResponse:
+    async with AsyncClient() as client:
+        return await client.get("https://api.github.com/user/emails", headers=headers)
 
 
 @users_router.get("/github-code/{code}", response_model=UserInfoResponse)
@@ -359,60 +183,39 @@ async def github_code(
         "code": code,
     }
     headers = {"Accept": "application/json"}
-    async with AsyncClient() as client:
-        oauth_response = await client.post(
-            url="https://github.com/login/oauth/access_token", params=params, headers=headers
-        )
+    oauth_response = await github_access_token_req(params, headers)
     response_json = oauth_response.json()
-    print("\n\n", response_json, "\n\n")
 
     # access token is used to retrieve user oauth details
     access_token = response_json["access_token"]
-    async with AsyncClient() as client:
-        headers.update({"Authorization": f"Bearer {access_token}"})
-        oauth_response = await client.get("https://api.github.com/user", headers=headers)
+    headers.update({"Authorization": f"Bearer {access_token}"})
+    oauth_response = await github_req(headers)
+    oauth_email_response = await github_email_req(headers)
 
     github_id = oauth_response.json()["html_url"]
-    github_username = oauth_response.json()["login"]
+    email = next(entry["email"] for entry in oauth_email_response.json() if entry["primary"])
 
-    user = await crud.get_user_from_oauth_id(github_id)
-
-    # create a user if it doesn't exist, with dummy email since email is required for secondary indexing
+    user = await crud.get_user_from_github_token(github_id)
+    # Exception occurs when user does not exist.
+    # Create a user if this is the case.
     if user is None:
-        user = User.create_oauth(username=github_username, oauth_id=github_id)
-        await crud.add_user(user)
+        user = await crud.create_user_from_github_token(
+            email=email,
+            github_id=github_id,
+        )
+    # This is solely so mypy stops complaining.
+    assert user is not None
 
-    token = new_token()
+    api_key = await crud.add_api_key(user.id)
 
-    await crud.add_session_token(token, user.user_id, 60 * 60 * 24 * 7)
+    response.set_cookie(key="session_token", value=api_key.id, httponly=True, samesite="lax")
 
-    response.set_cookie(
-        key="session_token",
-        value=token,
-        httponly=True,
-    )
+    return UserInfoResponse(id=user.id, permissions=user.permissions)
 
-    user_obj = await crud.get_user(user.user_id)
 
-    if user_obj is None:
+@users_router.get("/{id}", response_model=PublicUserInfoResponse)
+async def get_user_info_by_id_endpoint(id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> PublicUserInfoResponse:
+    user = await crud.get_user(id)
+    if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
-    return UserInfoResponse(
-        email=user_obj.email,
-        username=user_obj.username,
-        user_id=user_obj.user_id,
-        admin=user_obj.admin,
-    )
-
-
-@users_router.get("/{user_id}", response_model=PublicUserInfoResponse)
-async def get_user_info_by_id_endpoint(
-    user_id: str, crud: Annotated[Crud, Depends(Crud.get)]
-) -> PublicUserInfoResponse:
-    user_obj = await crud.get_user(user_id)
-    if user_obj is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return PublicUserInfoResponse(
-        username=user_obj.username,
-        user_id=user_obj.user_id,
-    )
+    return PublicUserInfoResponse(id=user.id, email=user.email)
