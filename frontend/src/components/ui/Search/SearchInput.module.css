@@ -22,6 +22,7 @@
 .SearchInput .Input {
   border: none;
   overflow: hidden;
+  background-color: transparent;
 }
 
 .SearchInput .Input:focus {
