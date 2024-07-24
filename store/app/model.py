@@ -7,11 +7,9 @@ expects (for example, converting a UUID into a string).
 
 from typing import Self
 
-import jwt
 from pydantic import BaseModel
 
 from store.app.crypto import new_uuid
-from store.settings import settings
 
 
 class RobolistBaseModel(BaseModel):
@@ -71,20 +69,6 @@ class APIKey(RobolistBaseModel):
             id=str(new_uuid()),
             user_id=id,
         )
-
-    def to_jwt(self) -> str:
-        return jwt.encode(
-            payload={"token": self.id, "user_id": self.user_id},
-            key=settings.crypto.jwt_secret,
-        )
-
-    @classmethod
-    def from_jwt(cls, jwt_token: str) -> Self:
-        data = jwt.decode(
-            jwt=jwt_token,
-            key=settings.crypto.jwt_secret,
-        )
-        return cls(id=data["token"], user_id=data["user_id"])
 
 
 class Bom(BaseModel):

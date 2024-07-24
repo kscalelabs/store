@@ -5,6 +5,7 @@ import warnings
 from datetime import datetime
 
 from store.app.crud.base import BaseCrud, GlobalSecondaryIndex
+from store.app.crypto import hash_token
 from store.app.model import APIKey, OAuthKey, User
 from store.settings import settings
 from store.utils import LRUCache
@@ -92,15 +93,16 @@ class UserCrud(BaseCrud):
         return await self._count_items(User)
 
     async def get_api_key(self, id: str) -> APIKey:
-        return await self._get_item(id, APIKey, throw_if_missing=True)
+        hashed_id = hash_token(id)
+        return await self._get_item(hashed_id, APIKey, throw_if_missing=True)
 
     async def add_api_key(self, id: str) -> APIKey:
         token = APIKey.create(id=id)
-        await self._add_item(token)
+        await self._add_hashed_item(token)
         return token
 
     async def delete_api_key(self, token: APIKey | str) -> None:
-        await self._delete_item(token)
+        await self._delete_hashed_item(token)
 
     async def api_key_is_valid(self, token: str) -> bool:
         """Validates a token against the database, with caching.
@@ -119,7 +121,7 @@ class UserCrud(BaseCrud):
             last_time, is_valid = LAST_API_KEY_VALIDATION[token]
             if (cur_time - last_time).seconds < settings.crypto.cache_token_db_result_seconds:
                 return is_valid
-        is_valid = await self._item_exists(token)
+        is_valid = await self._hashed_item_exists(token)
         LAST_API_KEY_VALIDATION[token] = (cur_time, is_valid)
         return is_valid
 
