@@ -7,7 +7,6 @@ interface Props {
 }
 
 const Sidebar = ({ show, onHide }: Props) => {
-
   return (
     <Offcanvas show={show} onHide={onHide} placement="end">
       <Offcanvas.Header closeButton>
