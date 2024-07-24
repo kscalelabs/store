@@ -4,14 +4,13 @@ import itertools
 import logging
 from typing import Any, AsyncContextManager, Callable, Literal, Self, TypeVar, overload
 
-from store.app.crypto import hash_token
-
 import aioboto3
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 from types_aiobotocore_s3.service_resource import S3ServiceResource
 
+from store.app.crypto import hash_token
 from store.app.model import RobolistBaseModel
 
 TABLE_NAME = "Robolist"

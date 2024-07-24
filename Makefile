@@ -43,7 +43,7 @@ start-docker-dynamodb:
 
 format-backend:
 	@black store tests
-	@ruff format store tests
+	@ruff check --fix store tests
 .PHONY: format
 
 format-frontend:

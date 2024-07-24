@@ -7,11 +7,9 @@ expects (for example, converting a UUID into a string).
 
 from typing import Self
 
-import jwt
 from pydantic import BaseModel
 
 from store.app.crypto import new_uuid
-from store.settings import settings
 
 
 class RobolistBaseModel(BaseModel):
