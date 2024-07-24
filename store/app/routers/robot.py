@@ -35,7 +35,7 @@ class NewRobot(BaseModel):
 
 
 @robots_router.get("/")
-async def list_parts(
+async def list_robots(
     crud: Annotated[Crud, Depends(Crud.get)],
     page: int = Query(description="Page number for pagination"),
     search_query: str = Query(None, description="Search query string"),
@@ -44,7 +44,7 @@ async def list_parts(
 
 
 @robots_router.get("/your/")
-async def list_your_parts(
+async def list_your_robots(
     crud: Annotated[Crud, Depends(Crud.get)],
     token: Annotated[str, Depends(get_session_token)],
     page: int = Query(description="Page number for pagination"),
