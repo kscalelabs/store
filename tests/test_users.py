@@ -28,6 +28,7 @@ async def test_user_auth_functions(app_client: AsyncClient) -> None:
     # Checks that with the session token we get a 200 response.
     response = await app_client.get("/users/me")
     assert response.status_code == 200, response.json()
+
     # Check the id of the user we are authenticated as matches the id of the user we created.
     assert response.json()["id"] == user_id
 
@@ -63,4 +64,4 @@ async def test_user_auth_functions(app_client: AsyncClient) -> None:
     # Tries deleting the user again, which should fail.
     response = await app_client.delete("/users/me")
     assert response.status_code == 400, response.json()
-    assert response.json()["detail"] == "Item " + user_id + " not found"
+    assert response.json()["detail"] == "Item not found"

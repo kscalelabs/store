@@ -189,7 +189,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         item_dict = await table.get_item(Key={"id": item_id})
         if "Item" not in item_dict:
             if throw_if_missing:
-                raise ValueError(f"Item {item_id} not found")
+                raise ValueError("Item not found")
             return None
         item_data = item_dict["Item"]
         return self._validate_item(item_data, item_class)
