@@ -7,10 +7,13 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
-from store.app.crypto import new_uuid
 from store.app.db import Crud
-from store.app.model import Image, Part
-from store.app.routers.users import get_session_token
+from store.app.model import Image, Part, User
+from store.app.routers.users import (
+    get_session_user_with_read_permission,
+    get_session_user_with_write_permission,
+)
+from store.utils import new_uuid
 
 parts_router = APIRouter()
 
@@ -34,11 +37,10 @@ async def dump_parts(crud: Annotated[Crud, Depends(Crud.get)]) -> list[Part]:
 @parts_router.get("/your/")
 async def list_your_parts(
     crud: Annotated[Crud, Depends(Crud.get)],
-    token: Annotated[str, Depends(get_session_token)],
+    user: Annotated[User, Depends(get_session_user_with_read_permission)],
     page: int = Query(description="Page number for pagination"),
     search_query: str = Query(None, description="Search query string"),
 ) -> tuple[list[Part], bool]:
-    user = await crud.get_user_from_api_key(token)
     return await crud.list_your_parts(user.id, page, search_query=search_query)
 
 
@@ -49,10 +51,8 @@ async def get_part(part_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> Pa
 
 @parts_router.get("/user/")
 async def current_user(
-    crud: Annotated[Crud, Depends(Crud.get)],
-    token: Annotated[str, Depends(get_session_token)],
+    user: Annotated[User, Depends(get_session_user_with_read_permission)],
 ) -> str | None:
-    user = await crud.get_user_from_api_key(token)
     return user.id
 
 
@@ -65,10 +65,9 @@ class NewPart(BaseModel):
 @parts_router.post("/add/")
 async def add_part(
     part: NewPart,
-    token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
 ) -> bool:
-    user = await crud.get_user_from_api_key(token)
     await crud.add_part(
         Part(
             name=part.name,
@@ -85,29 +84,26 @@ async def add_part(
 @parts_router.delete("/delete/{part_id}")
 async def delete_part(
     part_id: str,
-    token: Annotated[str, Depends(get_session_token)],
     crud: Annotated[Crud, Depends(Crud.get)],
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
 ) -> bool:
     part = await crud.get_part(part_id)
     if part is None:
         raise HTTPException(status_code=404, detail="Part not found")
-    user = await crud.get_user_from_api_key(token)
     if part.owner != user.id:
         raise HTTPException(status_code=403, detail="You do not own this part")
     await crud.delete_part(part_id)
     return True
 
 
+# TODO: Improve part type annotations.
 @parts_router.post("/edit-part/{part_id}/")
 async def edit_part(
     part_id: str,
-    part: dict[
-        str, Any
-    ],  # There has got to be a better type annotation than this (possibly the deleted) EditPart class
-    token: Annotated[str, Depends(get_session_token)],
+    part: dict[str, Any],
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    user = await crud.get_user_from_api_key(token)
     part_info = await crud.get_part(part_id)
     if part_info is None:
         raise HTTPException(status_code=404, detail="Part not found")

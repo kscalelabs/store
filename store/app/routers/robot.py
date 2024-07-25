@@ -7,10 +7,13 @@ from typing import Annotated, Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
-from store.app.crypto import new_uuid
 from store.app.db import Crud
-from store.app.model import Bom, Image, Package, Robot
-from store.app.routers.users import get_session_token
+from store.app.model import Bom, Image, Package, Robot, User
+from store.app.routers.users import (
+    get_session_user_with_read_permission,
+    get_session_user_with_write_permission,
+)
+from store.utils import new_uuid
 
 robots_router = APIRouter()
 
@@ -46,22 +49,19 @@ async def list_robots(
 @robots_router.get("/your/")
 async def list_your_robots(
     crud: Annotated[Crud, Depends(Crud.get)],
-    token: Annotated[str, Depends(get_session_token)],
+    user: Annotated[User, Depends(get_session_user_with_read_permission)],
     page: int = Query(description="Page number for pagination"),
     search_query: str = Query(None, description="Search query string"),
 ) -> tuple[list[Robot], bool]:
-    user = await crud.get_user_from_api_key(token)
     return await crud.list_your_robots(user.id, page, search_query=search_query)
 
 
 @robots_router.post("/add/")
 async def add_robot(
     new_robot: NewRobot,
-    token: Annotated[str, Depends(get_session_token)],
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    user = await crud.get_user_from_api_key(token)
-
     await crud.add_robot(
         Robot(
             id=str(new_uuid()),
@@ -84,13 +84,12 @@ async def add_robot(
 @robots_router.delete("/delete/{robot_id}/")
 async def delete_robot(
     robot_id: str,
-    token: Annotated[str, Depends(get_session_token)],
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
     robot = await crud.get_robot(robot_id)
     if robot is None:
         raise HTTPException(status_code=404, detail="Robot not found")
-    user = await crud.get_user_from_api_key(token)
     if robot.owner != user.id:
         raise HTTPException(status_code=403, detail="You do not own this robot")
     await crud.delete_robot(robot_id)
@@ -101,13 +100,12 @@ async def delete_robot(
 async def edit_robot(
     id: str,
     robot: dict[str, Any],
-    token: Annotated[str, Depends(get_session_token)],
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
     robot_info = await crud.get_robot(id)
     if robot_info is None:
         raise HTTPException(status_code=404, detail="Robot not found")
-    user = await crud.get_user_from_api_key(token)
     if robot_info.owner != user.id:
         raise HTTPException(status_code=403, detail="You do not own this robot")
     robot["owner"] = user.id

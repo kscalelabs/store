@@ -10,7 +10,6 @@ from botocore.exceptions import ClientError
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 from types_aiobotocore_s3.service_resource import S3ServiceResource
 
-from store.app.crypto import hash_token
 from store.app.model import RobolistBaseModel
 
 TABLE_NAME = "Robolist"
@@ -77,28 +76,12 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         item_data["type"] = item.__class__.__name__
         await table.put_item(Item=item_data)
 
-    async def _add_hashed_item(self, item: RobolistBaseModel) -> None:
-        table = await self.db.Table(TABLE_NAME)
-        item_data = item.model_dump()
-        if "type" in item_data:
-            raise ValueError("Cannot add item with 'type' attribute")
-        item_data["type"] = item.__class__.__name__
-        item_data["id"] = hash_token(item_data["id"])
-        await table.put_item(Item=item_data)
-
     async def _delete_item(self, item: RobolistBaseModel | str) -> None:
         table = await self.db.Table(TABLE_NAME)
         if isinstance(item, str):
             await table.delete_item(Key={"id": item})
         else:
             await table.delete_item(Key={"id": item.id})
-
-    async def _delete_hashed_item(self, item: RobolistBaseModel | str) -> None:
-        table = await self.db.Table(TABLE_NAME)
-        if isinstance(item, str):
-            await table.delete_item(Key={"id": hash_token(item)})
-        else:
-            await table.delete_item(Key={"id": hash_token(item.id)})
 
     async def _list_items(
         self,
@@ -130,7 +113,11 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         return [self._validate_item(item, item_class) for item in items]
 
     async def _list(
-        self, item_class: type[T], page: int, sort_key: Callable[[T], int], search_query: str | None = None
+        self,
+        item_class: type[T],
+        page: int,
+        sort_key: Callable[[T], int],
+        search_query: str | None = None,
     ) -> tuple[list[T], bool]:
         if search_query:
             response = await self._list_items(
@@ -187,7 +174,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     async def _get_item(self, item_id: str, item_class: type[T], throw_if_missing: Literal[True]) -> T: ...
 
     @overload
-    async def _get_item(self, item_id: str, item_class: type[T], throw_if_missing: Literal[False]) -> T | None: ...
+    async def _get_item(self, item_id: str, item_class: type[T], throw_if_missing: bool = False) -> T | None: ...
 
     async def _get_item(self, item_id: str, item_class: type[T], throw_if_missing: bool = False) -> T | None:
         table = await self.db.Table(TABLE_NAME)
@@ -202,11 +189,6 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     async def _item_exists(self, item_id: str) -> bool:
         table = await self.db.Table(TABLE_NAME)
         item_dict = await table.get_item(Key={"id": item_id})
-        return "Item" in item_dict
-
-    async def _hashed_item_exists(self, item_id: str) -> bool:
-        table = await self.db.Table(TABLE_NAME)
-        item_dict = await table.get_item(Key={"id": hash_token(item_id)})
         return "Item" in item_dict
 
     async def _get_item_batch(
@@ -256,7 +238,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         secondary_index_name: str,
         secondary_index_value: str,
         item_class: type[T],
-        throw_if_missing: Literal[False] = False,
+        throw_if_missing: bool = False,
     ) -> T | None: ...
 
     async def _get_unique_item_from_secondary_index(

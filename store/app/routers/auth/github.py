@@ -93,7 +93,11 @@ async def github_code(
             github_id=github_id,
         )
 
-    api_key = await crud.add_api_key(user.id)
+    api_key = await crud.add_api_key(
+        user_id=user.id,
+        source="oauth",
+        permissions="full",  # OAuth tokens have full permissions.
+    )
 
     response.set_cookie(key="session_token", value=api_key.id, httponly=True, samesite="lax")
 

@@ -5,11 +5,11 @@ methods for converting from our input data into the format the database
 expects (for example, converting a UUID into a string).
 """
 
-from typing import Self
+from typing import Literal, Self
 
 from pydantic import BaseModel
 
-from store.app.crypto import new_uuid
+from store.utils import new_uuid
 
 
 class RobolistBaseModel(BaseModel):
@@ -53,21 +53,37 @@ class OAuthKey(RobolistBaseModel):
         return cls(id=token, user_id=user_id)
 
 
+APIKeySource = Literal["user", "oauth"]
+APIKeyPermission = Literal["read", "write", "admin"]
+APIKeyPermissionSet = set[APIKeyPermission] | Literal["full"]
+
+
 class APIKey(RobolistBaseModel):
     """The API key is used for querying the API.
 
-    Downstream users keep the JWT locally, and it is used to authenticate
+    Downstream users keep the API key, and it is used to authenticate
     requests to the API. The key is stored in the database, and can be
     revoked by the user at any time.
     """
 
     user_id: str
+    source: APIKeySource
+    permissions: set[APIKeyPermission]
 
     @classmethod
-    def create(cls, id: str) -> Self:
+    def create(
+        cls,
+        user_id: str,
+        source: APIKeySource,
+        permissions: APIKeyPermissionSet,
+    ) -> Self:
+        if permissions == "full":
+            permissions = {"read", "write", "admin"}
         return cls(
             id=str(new_uuid()),
-            user_id=id,
+            user_id=user_id,
+            source=source,
+            permissions=permissions,
         )
 
 

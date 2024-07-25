@@ -2,18 +2,12 @@
 
 import asyncio
 import warnings
-from datetime import datetime
+from typing import Literal, overload
 
 from store.app.crud.base import BaseCrud, GlobalSecondaryIndex
-from store.app.crypto import hash_token
-from store.app.model import APIKey, OAuthKey, User
+from store.app.model import APIKey, APIKeyPermissionSet, APIKeySource, OAuthKey, User
 from store.settings import settings
-from store.utils import LRUCache
-
-# This dictionary is used to locally cache the last time a token was validated
-# against the database. We give the tokens some buffer time to avoid hitting
-# the database too often.
-LAST_API_KEY_VALIDATION = LRUCache[str, tuple[datetime, bool]](2**20)
+from store.utils import cache_result
 
 
 def github_auth_key(github_id: str) -> str:
@@ -39,8 +33,14 @@ class UserCrud(BaseCrud):
             ("emailIndex", "email", "S", "HASH"),
         ]
 
-    async def get_user(self, id: str) -> User | None:
-        return await self._get_item(id, User, throw_if_missing=False)
+    @overload
+    async def get_user(self, id: str) -> User | None: ...
+
+    @overload
+    async def get_user(self, id: str, throw_if_missing: Literal[True]) -> User: ...
+
+    async def get_user(self, id: str, throw_if_missing: bool = False) -> User | None:
+        return await self._get_item(id, User, throw_if_missing=throw_if_missing)
 
     async def create_user_from_token(self, token: str, email: str) -> User:
         user = User.create(email=email)
@@ -78,9 +78,9 @@ class UserCrud(BaseCrud):
     async def get_user_batch(self, ids: list[str]) -> list[User]:
         return await self._get_item_batch(ids, User)
 
-    async def get_user_from_api_key(self, key: str) -> User:
-        key = await self.get_api_key(key)
-        return await self._get_item(key.user_id, User, throw_if_missing=True)
+    async def get_user_from_api_key(self, api_key_id: str) -> User:
+        api_key = await self.get_api_key(api_key_id)
+        return await self._get_item(api_key.user_id, User, throw_if_missing=True)
 
     async def delete_user(self, id: str) -> None:
         await self._delete_item(id)
@@ -92,38 +92,22 @@ class UserCrud(BaseCrud):
     async def get_user_count(self) -> int:
         return await self._count_items(User)
 
-    async def get_api_key(self, id: str) -> APIKey:
-        hashed_id = hash_token(id)
-        return await self._get_item(hashed_id, APIKey, throw_if_missing=True)
+    @cache_result(settings.crypto.cache_token_db_result_seconds)
+    async def get_api_key(self, api_key_id: str) -> APIKey:
+        return await self._get_item(api_key_id, APIKey, throw_if_missing=True)
 
-    async def add_api_key(self, id: str) -> APIKey:
-        token = APIKey.create(id=id)
-        await self._add_hashed_item(token)
+    async def add_api_key(
+        self,
+        user_id: str,
+        source: APIKeySource,
+        permissions: APIKeyPermissionSet,
+    ) -> APIKey:
+        token = APIKey.create(user_id=user_id, source=source, permissions=permissions)
+        await self._add_item(token)
         return token
 
     async def delete_api_key(self, token: APIKey | str) -> None:
-        await self._delete_hashed_item(token)
-
-    async def api_key_is_valid(self, token: str) -> bool:
-        """Validates a token against the database, with caching.
-
-        In order to reduce the number of database queries, we locally cache
-        whether or not a token is valid for some amount of time.
-
-        Args:
-            token: The token to validate.
-
-        Returns:
-            If the token is valid, meaning, if it exists in the database.
-        """
-        cur_time = datetime.now()
-        if token in LAST_API_KEY_VALIDATION:
-            last_time, is_valid = LAST_API_KEY_VALIDATION[token]
-            if (cur_time - last_time).seconds < settings.crypto.cache_token_db_result_seconds:
-                return is_valid
-        is_valid = await self._hashed_item_exists(token)
-        LAST_API_KEY_VALIDATION[token] = (cur_time, is_valid)
-        return is_valid
+        await self._delete_item(token)
 
 
 async def test_adhoc() -> None:
