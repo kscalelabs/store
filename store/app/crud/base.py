@@ -11,8 +11,9 @@ from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 from types_aiobotocore_s3.service_resource import S3ServiceResource
 
 from store.app.model import RobolistBaseModel
+from store.settings import settings
 
-TABLE_NAME = "Robolist"
+TABLE_NAME = settings.dynamo.table_name
 
 logger = logging.getLogger(__name__)
 
@@ -254,6 +255,8 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         item_class: type[T],
         throw_if_missing: bool = False,
     ) -> T | None:
+        if secondary_index_name not in item_class.model_fields:
+            raise ValueError(f"Field '{secondary_index_name}' not in model {item_class.__name__}")
         items = await self._get_items_from_secondary_index(
             secondary_index,
             secondary_index_name,

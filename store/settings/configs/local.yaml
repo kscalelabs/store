@@ -3,6 +3,8 @@ crypto:
 s3:
   bucket: images
   prefix: ""
+dynamo:
+  table_name: robolist-local
 site:
   homepage: http://127.0.0.1:3000
   image_base_url: http://127.0.0.1:4566/images

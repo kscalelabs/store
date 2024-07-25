@@ -31,8 +31,8 @@ docker run -d --name localstack -p 4566:4566 -p 4571:4571 localstack/localstack
 Then, if you need to kill the database, you can run:
 
 ```bash
-docker kill store-db || true
-docker rm store-db || true
+docker kill localstack || true
+docker rm localstack || true
 ```
 
 Initialize the test databases by running the creation script:

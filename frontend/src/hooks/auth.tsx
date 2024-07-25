@@ -25,13 +25,11 @@ export const deleteLocalStorageAuth = () => {
 };
 
 interface AuthenticationContextProps {
+  login: (apiKeyId: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
-  setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
   id: string | null;
   api: AxiosInstance;
-  email: string | null;
-  setEmail: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const AuthenticationContext = createContext<
@@ -44,42 +42,40 @@ interface AuthenticationProviderProps {
 
 export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
   const { children } = props;
-
   const navigate = useNavigate();
-
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
-    getLocalStorageAuth() !== null,
-  );
-  const [email, setEmail] = useState<string | null>(null);
-  const id = getLocalStorageAuth();
+  const [id, setId] = useState<string | null>(getLocalStorageAuth());
 
   const api = axios.create({
     baseURL: BACKEND_URL,
     withCredentials: true,
   });
 
+  const login = useCallback((apiKeyId: string) => {
+    (async () => {
+      setLocalStorageAuth(apiKeyId);
+      setId(apiKeyId);
+      navigate("/");
+    })();
+  }, []);
+
   const logout = useCallback(() => {
     (async () => {
-      try {
-        await api.delete<boolean>("/users/logout");
-        deleteLocalStorageAuth();
-        navigate("/");
-      } catch (error) {
-        // Do nothing
-      }
+      deleteLocalStorageAuth();
+      setId(null);
+      navigate("/");
     })();
   }, [navigate]);
+
+  const isAuthenticated = id !== null;
 
   return (
     <AuthenticationContext.Provider
       value={{
+        login,
         logout,
         isAuthenticated,
-        setIsAuthenticated,
         id,
         api,
-        email,
-        setEmail,
       }}
     >
       {children}
