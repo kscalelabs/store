@@ -11,8 +11,8 @@ const Logout = () => {
     (async () => {
       deleteLocalStorageAuth();
       try {
-        await auth_api.logout();
         auth.setIsAuthenticated(false);
+        await auth_api.logout();
       } catch (err) {
         console.error(err);
       }
