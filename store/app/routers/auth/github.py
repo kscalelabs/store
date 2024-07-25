@@ -68,7 +68,6 @@ async def github_code(
         "client_id": settings.oauth.github_client_id,
         "client_secret": settings.oauth.github_client_secret,
         "code": code,
-        "redirect_uri": "http://localhost:8000/login",
     }
 
     headers = {"Accept": "application/json"}
