@@ -34,14 +34,14 @@ async def dump_parts(crud: Annotated[Crud, Depends(Crud.get)]) -> list[Part]:
     return await crud.dump_parts()
 
 
-@parts_router.get("/your/")
-async def list_your_parts(
+@parts_router.get("/me/")
+async def list_my_parts(
     crud: Annotated[Crud, Depends(Crud.get)],
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
     page: int = Query(description="Page number for pagination"),
     search_query: str = Query(None, description="Search query string"),
 ) -> tuple[list[Part], bool]:
-    return await crud.list_your_parts(user.id, page, search_query=search_query)
+    return await crud.list_user_parts(user.id, page, search_query=search_query)
 
 
 @parts_router.get("/{part_id}")
@@ -97,7 +97,7 @@ async def delete_part(
 
 
 # TODO: Improve part type annotations.
-@parts_router.post("/edit-part/{part_id}/")
+@parts_router.post("/edit/{part_id}/")
 async def edit_part(
     part_id: str,
     part: dict[str, Any],

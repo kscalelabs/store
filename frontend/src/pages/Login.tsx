@@ -16,7 +16,7 @@ const Login = () => {
   const handleGithubSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      const redirectUrl = await auth_api.send_register_github();
+      const redirectUrl = await auth_api.sendRegisterGithub();
       window.location.href = redirectUrl;
     } catch (err) {
       if (err instanceof Error) {

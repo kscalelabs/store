@@ -8,7 +8,6 @@ from httpx import AsyncClient, Response as HttpxResponse
 from pydantic.main import BaseModel
 
 from store.app.db import Crud
-from store.app.model import UserPermissions
 from store.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -45,17 +44,16 @@ async def github_email_req(headers: dict[str, str]) -> HttpxResponse:
         return await client.get("https://api.github.com/user/emails", headers=headers)
 
 
-class UserInfoResponse(BaseModel):
-    id: str
-    permissions: UserPermissions
+class GithubAuthResponse(BaseModel):
+    api_key_id: str
 
 
-@github_auth_router.get("/code/{code}", response_model=UserInfoResponse)
+@github_auth_router.get("/code/{code}", response_model=GithubAuthResponse)
 async def github_code(
     code: str,
     crud: Annotated[Crud, Depends(Crud.get)],
     response: Response,
-) -> UserInfoResponse:
+) -> GithubAuthResponse:
     """Gives the user a session token upon successful github authentication and creation of user.
 
     Args:
@@ -84,14 +82,7 @@ async def github_code(
     github_id = oauth_response.json()["html_url"]
     email = next(entry["email"] for entry in oauth_email_response.json() if entry["primary"])
 
-    user = await crud.get_user_from_github_token(github_id)
-
-    # We create a new user if the user does not exist yet.
-    if user is None:
-        user = await crud.create_user_from_github_token(
-            email=email,
-            github_id=github_id,
-        )
+    user = await crud.get_user_from_github_token(github_id, email)
 
     api_key = await crud.add_api_key(
         user_id=user.id,
@@ -101,4 +92,4 @@ async def github_code(
 
     response.set_cookie(key="session_token", value=api_key.id, httponly=True, samesite="lax")
 
-    return UserInfoResponse(id=user.id, permissions=user.permissions)
+    return GithubAuthResponse(api_key_id=api_key.id)

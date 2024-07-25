@@ -31,49 +31,70 @@ class UserCrud(BaseCrud):
     def get_gsis(cls) -> list[GlobalSecondaryIndex]:
         return super().get_gsis() + [
             ("emailIndex", "email", "S", "HASH"),
+            ("tokenIndex", "token", "S", "HASH"),
         ]
-
-    @overload
-    async def get_user(self, id: str) -> User | None: ...
 
     @overload
     async def get_user(self, id: str, throw_if_missing: Literal[True]) -> User: ...
 
+    @overload
+    async def get_user(self, id: str, throw_if_missing: bool = False) -> User | None: ...
+
     async def get_user(self, id: str, throw_if_missing: bool = False) -> User | None:
         return await self._get_item(id, User, throw_if_missing=throw_if_missing)
 
-    async def create_user_from_token(self, token: str, email: str) -> User:
+    async def _create_user_from_email(self, email: str) -> User:
         user = User.create(email=email)
-        await self._add_item(user)
-        key = OAuthKey.create(token, user.id)
-        await self._add_item(key)
+        await self._add_item(user, unique_fields=["email"])
         return user
 
-    async def get_user_from_token(self, token: str) -> User | None:
-        key = await self._get_item(token, OAuthKey, throw_if_missing=False)
-        if key is None:
-            return None
-        return await self.get_user(key.user_id)
+    async def _create_user_from_auth_key(self, auth_key: str, email: str) -> User:
+        user = await self._create_user_from_email(email)
+        key = OAuthKey.create(auth_key, user.id)
+        await self._add_item(key, unique_fields=["user_token"])
+        return user
 
-    async def create_user_from_github_token(self, github_id: str, email: str) -> User:
-        return await self.create_user_from_token(github_auth_key(github_id), email)
+    @overload
+    async def _get_oauth_key(self, token: str, throw_if_missing: Literal[True]) -> OAuthKey: ...
 
-    async def create_user_from_google_token(self, google_id: str, email: str) -> User:
-        return await self.create_user_from_token(google_auth_key(google_id), email)
+    @overload
+    async def _get_oauth_key(self, token: str, throw_if_missing: bool = False) -> OAuthKey | None: ...
 
-    async def get_user_from_github_token(self, token: str) -> User | None:
-        return await self.get_user_from_token(github_auth_key(token))
+    async def _get_oauth_key(self, token: str, throw_if_missing: bool = False) -> OAuthKey | None:
+        return await self._get_unique_item_from_secondary_index(
+            "tokenIndex",
+            "token",
+            token,
+            OAuthKey,
+            throw_if_missing=throw_if_missing,
+        )
 
-    async def get_user_from_google_token(self, token: str) -> User | None:
-        return await self.get_user_from_token(google_auth_key(token))
+    async def _get_user_from_auth_key(self, token: str) -> User | None:
+        key = await self._get_oauth_key(token)
+        return None if key is None else await self.get_user(key.user_id)
+
+    async def get_user_from_github_token(self, token: str, email: str) -> User:
+        auth_key = github_auth_key(token)
+        user = await self._get_user_from_auth_key(auth_key)
+        if user is not None:
+            return user
+        return await self._create_user_from_auth_key(auth_key, email)
+
+    async def delete_github_token(self, github_id: str) -> None:
+        await self._delete_item(await self._get_oauth_key(github_auth_key(github_id), throw_if_missing=True))
+
+    async def get_user_from_google_token(self, token: str, email: str) -> User | None:
+        auth_key = google_auth_key(token)
+        user = await self._get_user_from_auth_key(auth_key)
+        if user is not None:
+            return user
+        return await self._create_user_from_auth_key(auth_key, email)
+
+    async def delete_google_token(self, google_id: str) -> None:
+        await self._delete_item(await self._get_oauth_key(google_auth_key(google_id), throw_if_missing=True))
 
     async def get_user_from_email(self, email: str) -> User | None:
         return await self._get_unique_item_from_secondary_index("emailIndex", "email", email, User)
-
-    async def create_user_from_email(self, email: str) -> User:
-        user = User.create(email=email)
-        await self._add_item(user)
-        return user
 
     async def get_user_batch(self, ids: list[str]) -> list[User]:
         return await self._get_item_batch(ids, User)
@@ -102,9 +123,9 @@ class UserCrud(BaseCrud):
         source: APIKeySource,
         permissions: APIKeyPermissionSet,
     ) -> APIKey:
-        token = APIKey.create(user_id=user_id, source=source, permissions=permissions)
-        await self._add_item(token)
-        return token
+        api_key = APIKey.create(user_id=user_id, source=source, permissions=permissions)
+        await self._add_item(api_key)
+        return api_key
 
     async def delete_api_key(self, token: APIKey | str) -> None:
         await self._delete_item(token)
@@ -112,7 +133,7 @@ class UserCrud(BaseCrud):
 
 async def test_adhoc() -> None:
     async with UserCrud() as crud:
-        await crud.create_user_from_email(email="ben@kscale.dev")
+        await crud._create_user_from_email(email="ben@kscale.dev")
 
 
 if __name__ == "__main__":

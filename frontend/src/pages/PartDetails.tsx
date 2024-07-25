@@ -168,7 +168,7 @@ const PartDetails = () => {
                       width: "100%",
                     }}
                     onClick={() => {
-                      navigate(`/edit-part/${id}/`);
+                      navigate(`/part/edit/${id}/`);
                     }}
                   >
                     Edit Part
@@ -210,7 +210,7 @@ const PartDetails = () => {
                     variant="danger"
                     onClick={async () => {
                       await auth_api.deletePart(id);
-                      navigate(`/parts/your/1`);
+                      navigate(`/parts/me/1`);
                     }}
                   >
                     Delete Part

@@ -44,7 +44,7 @@ const NewRobot: React.FC = () => {
     try {
       await auth_api.addRobot(newFormData);
       setMessage(`Robot added successfully.`);
-      navigate(`/robots/your/1`);
+      navigate(`/robots/me/1`);
     } catch (error) {
       setMessage("Error adding robot ");
     }

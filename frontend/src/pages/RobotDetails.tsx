@@ -277,7 +277,7 @@ const RobotDetails = () => {
                       width: "100%",
                     }}
                     onClick={() => {
-                      navigate(`/edit-robot/${id}/`);
+                      navigate(`/robot/edit/${id}/`);
                     }}
                   >
                     Edit Robot
@@ -319,7 +319,7 @@ const RobotDetails = () => {
                     variant="danger"
                     onClick={async () => {
                       await auth_api.deleteRobot(id);
-                      navigate(`/robots/your/1`);
+                      navigate(`/robots/me/1`);
                     }}
                   >
                     Delete Robot

@@ -46,14 +46,14 @@ async def list_robots(
     return await crud.list_robots(page, search_query=search_query)
 
 
-@robots_router.get("/your/")
-async def list_your_robots(
+@robots_router.get("/me/")
+async def list_my_robots(
     crud: Annotated[Crud, Depends(Crud.get)],
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
     page: int = Query(description="Page number for pagination"),
     search_query: str = Query(None, description="Search query string"),
 ) -> tuple[list[Robot], bool]:
-    return await crud.list_your_robots(user.id, page, search_query=search_query)
+    return await crud.list_user_robots(user.id, page, search_query=search_query)
 
 
 @robots_router.post("/add/")
@@ -96,7 +96,7 @@ async def delete_robot(
     return True
 
 
-@robots_router.post("/edit-robot/{id}/")
+@robots_router.post("/edit/{id}/")
 async def edit_robot(
     id: str,
     robot: dict[str, Any],

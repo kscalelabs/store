@@ -1,6 +1,6 @@
 import ImageComponent from "components/files/ViewImage";
 import { useAlertQueue } from "hooks/alerts";
-import { api, Robot } from "hooks/api";
+import { api, Part } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import {
@@ -14,14 +14,13 @@ import {
 import Markdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-const YourRobots = () => {
+const MyParts = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
-  const [robotsData, setRobot] = useState<Robot[] | null>([]);
-  const [moreRobots, setMoreRobots] = useState<boolean>(false);
-
+  const [partsData, setParts] = useState<Part[] | null>(null);
   const { addAlert } = useAlertQueue();
   const { page } = useParams();
+  const [moreParts, setMoreParts] = useState<boolean>(false);
 
   const pageNumber = parseInt(page || "", 10);
   if (isNaN(pageNumber) || pageNumber < 0) {
@@ -34,11 +33,11 @@ const YourRobots = () => {
   }
 
   useEffect(() => {
-    const fetch_your_robots = async () => {
+    const fetch_parts = async () => {
       try {
-        const robotsQuery = await auth_api.getYourRobots(pageNumber);
-        setRobot(robotsQuery[0]);
-        setMoreRobots(robotsQuery[1]);
+        const partsQuery = await auth_api.getMyParts(pageNumber);
+        setParts(partsQuery[0]);
+        setMoreParts(partsQuery[1]);
       } catch (err) {
         if (err instanceof Error) {
           addAlert(err.message, "error");
@@ -47,11 +46,12 @@ const YourRobots = () => {
         }
       }
     };
-    fetch_your_robots();
-  }, [pageNumber]);
+    fetch_parts();
+  }, []);
+
   const navigate = useNavigate();
 
-  if (!robotsData) {
+  if (!partsData) {
     return (
       <Container
         fluid
@@ -70,14 +70,14 @@ const YourRobots = () => {
     <>
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
-        <Breadcrumb.Item active>Your Robots</Breadcrumb.Item>
+        <Breadcrumb.Item active>My Parts</Breadcrumb.Item>
       </Breadcrumb>
 
       <Row className="mt-5">
-        {robotsData.map((robot) => (
-          <Col key={robot.id} lg={2} md={4} sm={6} xs={12}>
-            <Card onClick={() => navigate(`/robot/${robot.id}`)}>
-              {robot.images[0] && (
+        {partsData.map((part) => (
+          <Col key={part.id} lg={2} md={3} sm={6} xs={12}>
+            <Card onClick={() => navigate(`/part/${part.id}`)}>
+              {part.images[0] && (
                 <div
                   style={{
                     aspectRatio: "1/1",
@@ -88,13 +88,13 @@ const YourRobots = () => {
                   }}
                 >
                   <ImageComponent
-                    imageId={"mini" + robot.images[0].url + ".png"}
-                    caption={robot.images[0].caption}
+                    imageId={"mini" + part.images[0].url + ".png"}
+                    caption={part.images[0].caption}
                   />
                 </div>
               )}
               <Card.Body>
-                <Card.Title>{robot.name}</Card.Title>
+                <Card.Title>{part.name}</Card.Title>
                 <Card.Text>
                   <Markdown
                     components={{
@@ -108,24 +108,24 @@ const YourRobots = () => {
                       h6: ({ ...props }) => <h6 {...props} className="h6" />,
                     }}
                   >
-                    {robot.description}
+                    {part.description}
                   </Markdown>
-                </Card.Text>{" "}
+                </Card.Text>
               </Card.Body>
             </Card>
           </Col>
         ))}
       </Row>
-      {(pageNumber > 1 || moreRobots) && (
+      {(pageNumber > 1 || moreParts) && (
         <Row className="mt-3">
           {pageNumber > 1 && (
             <Col>
-              <Link to={"/robots/your/" + (pageNumber - 1)}>Previous Page</Link>
+              <Link to={"/parts/me/" + (pageNumber - 1)}>Previous Page</Link>
             </Col>
           )}
-          {moreRobots && (
+          {moreParts && (
             <Col className="text-end">
-              <Link to={"/robots/your/" + (pageNumber + 1)}>Next Page</Link>
+              <Link to={"/parts/me/" + (pageNumber + 1)}>Next Page</Link>
             </Col>
           )}
         </Row>
@@ -134,4 +134,4 @@ const YourRobots = () => {
   );
 };
 
-export default YourRobots;
+export default MyParts;

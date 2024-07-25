@@ -45,10 +45,10 @@ const Home: React.FC = () => {
                   width: "100%",
                 }}
                 onClick={() => {
-                  navigate("/robots/your/1");
+                  navigate("/robots/me/1");
                 }}
               >
-                View Your Robots
+                View My Robots
               </TCButton>
             </Col>
             <Col md={6} sm={12}>
@@ -59,10 +59,10 @@ const Home: React.FC = () => {
                   width: "100%",
                 }}
                 onClick={() => {
-                  navigate("/parts/your/1");
+                  navigate("/parts/me/1");
                 }}
               >
-                View Your Parts
+                View My Parts
               </TCButton>
             </Col>
           </Row>

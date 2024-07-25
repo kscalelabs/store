@@ -31,7 +31,7 @@ const NewPart: React.FC = () => {
     try {
       await auth_api.addPart(newFormData);
       setMessage(`Part added successfully.`);
-      navigate("/parts/your/1");
+      navigate("/parts/me/1");
     } catch (error) {
       setMessage("Error adding Part ");
     }

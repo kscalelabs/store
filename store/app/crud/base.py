@@ -68,20 +68,25 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         if self.__s3 is not None:
             await self.__s3.__aexit__(exc_type, exc_val, exc_tb)
 
-    async def _add_item(self, item: RobolistBaseModel) -> None:
+    async def _add_item(self, item: RobolistBaseModel, unique_fields: list[str] | None = None) -> None:
         table = await self.db.Table(TABLE_NAME)
         item_data = item.model_dump()
         if "type" in item_data:
             raise ValueError("Cannot add item with 'type' attribute")
         item_data["type"] = item.__class__.__name__
-        await table.put_item(Item=item_data)
+        condition = "attribute_not_exists(id)"
+        if unique_fields:
+            for field in unique_fields:
+                assert hasattr(item, field), f"Item does not have field {field}"
+            condition += " AND " + " AND ".join(f"attribute_not_exists({field})" for field in unique_fields)
+        await table.put_item(
+            Item=item_data,
+            ConditionExpression=condition,
+        )
 
     async def _delete_item(self, item: RobolistBaseModel | str) -> None:
         table = await self.db.Table(TABLE_NAME)
-        if isinstance(item, str):
-            await table.delete_item(Key={"id": item})
-        else:
-            await table.delete_item(Key={"id": item.id})
+        await table.delete_item(Key={"id": item if isinstance(item, str) else item.id})
 
     async def _list_items(
         self,
@@ -131,7 +136,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         sorted_items = sorted(response, key=sort_key, reverse=True)
         return sorted_items[(page - 1) * ITEMS_PER_PAGE : page * ITEMS_PER_PAGE], page * ITEMS_PER_PAGE < len(response)
 
-    async def _list_your(
+    async def _list_me(
         self,
         item_class: type[T],
         user_id: str,
@@ -181,7 +186,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         item_dict = await table.get_item(Key={"id": item_id})
         if "Item" not in item_dict:
             if throw_if_missing:
-                raise ValueError(f"Item {item_id} not found")
+                raise ValueError("Item not found")
             return None
         item_data = item_dict["Item"]
         return self._validate_item(item_data, item_class)
