@@ -2,14 +2,16 @@ import imageCompression from "browser-image-compression";
 import TCButton from "components/files/TCButton";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Alert, Col } from "react-bootstrap";
 
 interface ImageUploadProps {
   onUploadSuccess: (url: string) => void;
 }
 
-const ImageUploadComponent: React.FC<ImageUploadProps> = ({ onUploadSuccess }) => {
+const ImageUploadComponent: React.FC<ImageUploadProps> = ({
+  onUploadSuccess,
+}) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [compressedFile, setCompressedFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
@@ -64,7 +66,9 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({ onUploadSuccess }) =
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      setFileError(`File size should not exceed ${MAX_FILE_SIZE / 1024 / 1024} MB`);
+      setFileError(
+        `File size should not exceed ${MAX_FILE_SIZE / 1024 / 1024} MB`,
+      );
       setSelectedFile(null);
       return;
     }
@@ -87,7 +91,6 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({ onUploadSuccess }) =
     }
   };
 
-
   const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setDragOver(true);
@@ -106,7 +109,9 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({ onUploadSuccess }) =
     }
   };
 
-  const handleFileInputChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileInputChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     if (event.target.files) {
       const file = event.target.files[0];
       if (file) {
