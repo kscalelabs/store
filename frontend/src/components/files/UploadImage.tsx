@@ -17,7 +17,7 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({ onUploadSuccess }) =
   const [dragOver, setDragOver] = useState<boolean>(false);
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
-  const MAX_FILE_SIZE = 2 * 1024 * 1024;
+  const MAX_FILE_SIZE = 25 * 1024 * 1024;
   const validFileTypes = ["image/png", "image/jpeg", "image/jpg"];
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
