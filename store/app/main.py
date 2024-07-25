@@ -23,6 +23,12 @@ LOCALHOST_URLS = [
 ]
 
 
+if os.getenv("ROBOLIST_ENVIRONMENT") == "local":
+    from dotenv import load_dotenv
+
+    load_dotenv(".env.local")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Initializes the app and creates the database tables."""
@@ -33,9 +39,6 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     finally:
         pass
 
-if os.getenv("ROBOLIST_ENVIRONMENT") == "local":
-    from dotenv import load_dotenv
-    load_dotenv(".env.local")
 
 app = FastAPI(lifespan=lifespan)
 
