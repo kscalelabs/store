@@ -4,7 +4,7 @@ import logging
 import time
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
 from store.app.db import Crud
@@ -89,9 +89,9 @@ async def delete_part(
 ) -> bool:
     part = await crud.get_part(part_id)
     if part is None:
-        raise HTTPException(status_code=404, detail="Part not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Part not found")
     if part.owner != user.id:
-        raise HTTPException(status_code=403, detail="You do not own this part")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this part")
     await crud.delete_part(part_id)
     return True
 
@@ -106,9 +106,9 @@ async def edit_part(
 ) -> bool:
     part_info = await crud.get_part(part_id)
     if part_info is None:
-        raise HTTPException(status_code=404, detail="Part not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Part not found")
     if user.id != part_info.owner:
-        raise HTTPException(status_code=403, detail="You do not own this part")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this part")
     part["owner"] = user.id
     await crud._update_item(part_id, Part, part)
     return True

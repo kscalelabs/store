@@ -3,7 +3,7 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from httpx import AsyncClient, Response as HttpxResponse
 from pydantic.main import BaseModel
 
@@ -68,10 +68,13 @@ async def github_code(
         "client_id": settings.oauth.github_client_id,
         "client_secret": settings.oauth.github_client_secret,
         "code": code,
+        "redirect_uri": "http://localhost:8000/login",
     }
+
     headers = {"Accept": "application/json"}
     oauth_response = await github_access_token_req(params, headers)
-    response_json = oauth_response.json()
+    if not oauth_response.is_success or "error" in (response_json := oauth_response.json()):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Github authentication failed")
 
     # access token is used to retrieve user oauth details
     access_token = response_json["access_token"]

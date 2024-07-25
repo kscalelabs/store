@@ -31,7 +31,7 @@ class UserCrud(BaseCrud):
     def get_gsis(cls) -> list[GlobalSecondaryIndex]:
         return super().get_gsis() + [
             ("emailIndex", "email", "S", "HASH"),
-            ("tokenIndex", "token", "S", "HASH"),
+            ("userTokenIndex", "user_token", "S", "HASH"),
         ]
 
     @overload
@@ -62,8 +62,8 @@ class UserCrud(BaseCrud):
 
     async def _get_oauth_key(self, token: str, throw_if_missing: bool = False) -> OAuthKey | None:
         return await self._get_unique_item_from_secondary_index(
-            "tokenIndex",
-            "token",
+            "userTokenIndex",
+            "user_token",
             token,
             OAuthKey,
             throw_if_missing=throw_if_missing,

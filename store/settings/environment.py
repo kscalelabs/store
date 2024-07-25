@@ -44,6 +44,11 @@ class S3Settings:
 
 
 @dataclass
+class DynamoSettings:
+    table_name: str = field(default=MISSING)
+
+
+@dataclass
 class SiteSettings:
     homepage: str = field(default=MISSING)
     image_base_url: str = field(default=MISSING)
@@ -56,5 +61,6 @@ class EnvironmentSettings:
     crypto: CryptoSettings = field(default_factory=CryptoSettings)
     email: EmailSettings = field(default_factory=EmailSettings)
     s3: S3Settings = field(default_factory=S3Settings)
+    dynamo: DynamoSettings = field(default_factory=DynamoSettings)
     site: SiteSettings = field(default_factory=SiteSettings)
     debug: bool = field(default=False)
