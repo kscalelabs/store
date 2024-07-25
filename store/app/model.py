@@ -7,10 +7,8 @@ expects (for example, converting a UUID into a string).
 
 from typing import Literal, Self
 
-import jwt
 from pydantic import BaseModel
 
-from store.settings import settings
 from store.utils import new_uuid
 
 
@@ -63,7 +61,7 @@ APIKeyPermissionSet = set[APIKeyPermission] | Literal["full"]
 class APIKey(RobolistBaseModel):
     """The API key is used for querying the API.
 
-    Downstream users keep the JWT locally, and it is used to authenticate
+    Downstream users keep the API key, and it is used to authenticate
     requests to the API. The key is stored in the database, and can be
     revoked by the user at any time.
     """
@@ -87,22 +85,6 @@ class APIKey(RobolistBaseModel):
             source=source,
             permissions=permissions,
         )
-
-    def to_jwt(self) -> str:
-        return jwt.encode(
-            {"id": self.id},
-            settings.crypto.jwt_secret,
-            algorithm=settings.crypto.algorithm,
-        )
-
-    @classmethod
-    def from_jwt(cls, token: str) -> str:
-        data = jwt.decode(
-            token,
-            settings.crypto.jwt_secret,
-            algorithm=settings.crypto.algorithm,
-        )
-        return data["id"]
 
 
 class Bom(BaseModel):

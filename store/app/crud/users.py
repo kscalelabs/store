@@ -71,13 +71,8 @@ class UserCrud(BaseCrud):
     async def get_user_batch(self, ids: list[str]) -> list[User]:
         return await self._get_item_batch(ids, User)
 
-    async def get_user_from_api_key(
-        self,
-        *,
-        api_key_id: str | None = None,
-        api_key_jwt: str | None = None,
-    ) -> User:
-        api_key = await self.get_api_key(api_key_id=api_key_id, api_key_jwt=api_key_jwt)
+    async def get_user_from_api_key(self, api_key_id: str) -> User:
+        api_key = await self.get_api_key(api_key_id)
         return await self._get_item(api_key.user_id, User, throw_if_missing=True)
 
     async def delete_user(self, id: str) -> None:
@@ -91,19 +86,8 @@ class UserCrud(BaseCrud):
         return await self._count_items(User)
 
     @cache_result(settings.crypto.cache_token_db_result_seconds)
-    async def get_api_key(
-        self,
-        *,
-        api_key_id: str | None = None,
-        api_key_jwt: str | None = None,
-    ) -> APIKey:
-        if api_key_id is not None and api_key_jwt is not None:
-            raise ValueError("Cannot provide both `api_key_id` and `api_key_jwt`")
-        if api_key_jwt is not None:
-            api_key_id = APIKey.from_jwt(api_key_jwt)
-        if api_key_id is not None:
-            return await self._get_item(api_key_id, APIKey, throw_if_missing=True)
-        raise ValueError("Must provide either `api_key_id` or `api_key_jwt`")
+    async def get_api_key(self, api_key_id: str) -> APIKey:
+        return await self._get_item(api_key_id, APIKey, throw_if_missing=True)
 
     async def add_api_key(
         self,

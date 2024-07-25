@@ -36,9 +36,9 @@ def set_token_cookie(response: Response, token: str, key: str) -> None:
     )
 
 
-async def get_api_key_jwt(request: Request) -> str:
-    api_key_jwt = request.cookies.get("session_token")
-    if not api_key_jwt:
+async def get_request_api_key_id(request: Request) -> str:
+    api_key_id = request.cookies.get("session_token")
+    if not api_key_id:
         authorization = request.headers.get("Authorization") or request.headers.get("authorization")
         if authorization:
             scheme, credentials = get_authorization_scheme_param(authorization)
@@ -57,15 +57,15 @@ async def get_api_key_jwt(request: Request) -> str:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
         )
-    return api_key_jwt
+    return api_key_id
 
 
 async def get_session_user_with_permission(
     permission: APIKeyPermission,
     crud: Annotated[Crud, Depends(Crud.get)],
-    api_key_jwt: Annotated[str, Depends(get_api_key_jwt)],
+    api_key_id: Annotated[str, Depends(get_request_api_key_id)],
 ) -> User:
-    api_key = await crud.get_api_key(api_key_jwt=api_key_jwt)
+    api_key = await crud.get_api_key(api_key_id)
     if permission not in api_key.permissions:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
     user = await crud.get_user(api_key.user_id)
@@ -126,7 +126,7 @@ async def delete_user_endpoint(
 
 @users_router.delete("/logout")
 async def logout_user_endpoint(
-    token: Annotated[str, Depends(get_api_key_jwt)],
+    token: Annotated[str, Depends(get_request_api_key_id)],
     crud: Annotated[Crud, Depends(Crud.get)],
     response: Response,
 ) -> bool:
