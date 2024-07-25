@@ -51,7 +51,7 @@ class UserCrud(BaseCrud):
     async def _create_user_from_auth_key(self, auth_key: str, email: str) -> User:
         user = await self._create_user_from_email(email)
         key = OAuthKey.create(auth_key, user.id)
-        await self._add_item(key, unique_fields=["token"])
+        await self._add_item(key, unique_fields=["user_token"])
         return user
 
     @overload

@@ -35,27 +35,27 @@ class User(RobolistBaseModel):
     """
 
     email: str
-    permissions: set[UserPermission]
+    permissions: set[UserPermission] | None = None
 
     @classmethod
     def create(cls, email: str) -> Self:
-        return cls(id=str(new_uuid()), email=email, permissions=set())
+        return cls(id=str(new_uuid()), email=email, permissions=None)
 
 
 class OAuthKey(RobolistBaseModel):
     """Keys for OAuth providers which identify users."""
 
     user_id: str
-    token: str
+    user_token: str
 
     @classmethod
-    def create(cls, token: str, user_id: str) -> Self:
-        return cls(id=str(new_uuid()), user_id=user_id, token=token)
+    def create(cls, user_token: str, user_id: str) -> Self:
+        return cls(id=str(new_uuid()), user_id=user_id, user_token=user_token)
 
 
 APIKeySource = Literal["user", "oauth"]
 APIKeyPermission = Literal["read", "write", "admin"]
-APIKeyPermissionSet = set[APIKeyPermission] | Literal["full"]
+APIKeyPermissionSet = set[APIKeyPermission] | Literal["full", None]
 
 
 class APIKey(RobolistBaseModel):
@@ -68,7 +68,7 @@ class APIKey(RobolistBaseModel):
 
     user_id: str
     source: APIKeySource
-    permissions: set[APIKeyPermission]
+    permissions: set[APIKeyPermission] | None = None
 
     @classmethod
     def create(

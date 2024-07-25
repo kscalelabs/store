@@ -33,7 +33,9 @@ async def test_user_auth_functions(app_client: AsyncClient) -> None:
 
     # Use the Authorization header instead of the cookie.
     response = await app_client.get(
-        "/users/me", cookies={"session_token": ""}, headers={"Authorization": f"Bearer {token}"}
+        "/users/me",
+        cookies={"session_token": ""},
+        headers={"Authorization": f"Bearer {token}"},
     )
     assert response.status_code == 200, response.json()
     assert response.json()["id"] == user_id

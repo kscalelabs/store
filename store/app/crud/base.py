@@ -76,6 +76,8 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         item_data["type"] = item.__class__.__name__
         condition = "attribute_not_exists(id)"
         if unique_fields:
+            for field in unique_fields:
+                assert hasattr(item, field), f"Item does not have field {field}"
             condition += " AND " + " AND ".join(f"attribute_not_exists({field})" for field in unique_fields)
         await table.put_item(
             Item=item_data,
