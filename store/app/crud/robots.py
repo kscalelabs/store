@@ -36,14 +36,14 @@ class RobotCrud(BaseCrud):
     async def list_robots(self, page: int, search_query: str | None = None) -> tuple[list[Robot], bool]:
         return await self._list(Robot, page, lambda x: x.timestamp, search_query)
 
-    async def list_your_robots(self, user_id: str, page: int, search_query: str) -> tuple[list[Robot], bool]:
-        return await self._list_your(Robot, user_id, page, lambda x: x.timestamp, search_query)
+    async def list_user_robots(self, user_id: str, page: int, search_query: str) -> tuple[list[Robot], bool]:
+        return await self._list_me(Robot, user_id, page, lambda x: x.timestamp, search_query)
 
     async def list_parts(self, page: int, search_query: str | None = None) -> tuple[list[Part], bool]:
         return await self._list(Part, page, lambda x: x.timestamp, search_query)
 
-    async def list_your_parts(self, user_id: str, page: int, search_query: str) -> tuple[list[Part], bool]:
-        return await self._list_your(Part, user_id, page, lambda x: x.timestamp, search_query)
+    async def list_user_parts(self, user_id: str, page: int, search_query: str) -> tuple[list[Part], bool]:
+        return await self._list_me(Part, user_id, page, lambda x: x.timestamp, search_query)
 
     async def upload_image(self, file: UploadFile) -> None:
         bucket = await self.s3.Bucket(settings.s3.bucket)

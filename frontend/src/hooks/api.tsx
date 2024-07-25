@@ -44,6 +44,10 @@ interface MeResponse {
   admin: boolean;
 }
 
+interface UploadImageResponse {
+  image_id: string;
+}
+
 export class api {
   public api: AxiosInstance;
 
@@ -156,9 +160,9 @@ export class api {
     return map;
   }
 
-  public async getYourRobots(page: number): Promise<[Robot[], boolean]> {
+  public async getMyRobots(page: number): Promise<[Robot[], boolean]> {
     try {
-      const response = await this.api.get("/robots/your/", {
+      const response = await this.api.get("/robots/me/", {
         params: { page },
       });
       return response.data;
@@ -174,6 +178,7 @@ export class api {
       }
     }
   }
+
   public async getRobotById(robotId: string | undefined): Promise<Robot> {
     try {
       const response = await this.api.get(`/robots/${robotId}`);
@@ -188,6 +193,7 @@ export class api {
       }
     }
   }
+
   public async getPartById(partId: string | undefined): Promise<Part> {
     try {
       const response = await this.api.get(`/parts/${partId}`);
@@ -202,6 +208,7 @@ export class api {
       }
     }
   }
+
   public async currentUser(): Promise<string> {
     try {
       const response = await this.api.get("/users/me");
@@ -218,6 +225,7 @@ export class api {
       }
     }
   }
+
   public async addRobot(robot: Robot): Promise<void> {
     const s = robot.name;
     try {
@@ -234,6 +242,7 @@ export class api {
       }
     }
   }
+
   public async deleteRobot(id: string | undefined): Promise<void> {
     const s = id;
     try {
@@ -250,10 +259,11 @@ export class api {
       }
     }
   }
+
   public async editRobot(robot: Robot): Promise<void> {
     const s = robot.name;
     try {
-      await this.api.post(`robots/edit-robot/${robot.id}/`, robot);
+      await this.api.post(`/robots/edit/${robot.id}/`, robot);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error editing robot:", error.response?.data);
@@ -301,9 +311,10 @@ export class api {
       }
     }
   }
-  public async getYourParts(page: number): Promise<[Part[], boolean]> {
+
+  public async getMyParts(page: number): Promise<[Part[], boolean]> {
     try {
-      const response = await this.api.get("/parts/your/", { params: { page } });
+      const response = await this.api.get("/parts/me/", { params: { page } });
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -315,6 +326,7 @@ export class api {
       }
     }
   }
+
   public async addPart(part: Part): Promise<void> {
     const s = part.name;
     try {
@@ -331,10 +343,11 @@ export class api {
       }
     }
   }
+
   public async deletePart(id: string | undefined): Promise<void> {
     const s = id;
     try {
-      await this.api.delete(`parts/delete/${id}/`);
+      await this.api.delete(`/parts/delete/${id}/`);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error deleting part:", error.response?.data);
@@ -347,10 +360,11 @@ export class api {
       }
     }
   }
+
   public async editPart(part: Part): Promise<void> {
     const s = part.name;
     try {
-      await this.api.post(`parts/edit-part/${part.id}/`, part);
+      await this.api.post<boolean>(`/parts/edit/${part.id}/`, part);
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error editing part:", error.response?.data);
@@ -363,32 +377,19 @@ export class api {
       }
     }
   }
-  public async getImage(imageId: string): Promise<Blob> {
-    try {
-      const response = await this.api.get(`/image/${imageId}/`, {
-        responseType: "blob",
-      });
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error fetching image:", error.response?.data);
-        throw new Error(
-          error.response?.data?.detail || "Error fetching image " + imageId,
-        );
-      } else {
-        console.error("Unexpected error:", error);
-        throw new Error("Unexpected error");
-      }
-    }
-  }
+
   public async uploadImage(formData: FormData): Promise<string> {
     try {
-      const res = await this.api.post("/image/upload/", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
+      const res = await this.api.post<UploadImageResponse>(
+        "/image/upload/",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         },
-      });
-      return res.data.id;
+      );
+      return res.data.image_id;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error uploading image:", error.response?.data);

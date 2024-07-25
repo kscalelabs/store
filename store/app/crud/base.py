@@ -86,10 +86,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
 
     async def _delete_item(self, item: RobolistBaseModel | str) -> None:
         table = await self.db.Table(TABLE_NAME)
-        if isinstance(item, str):
-            await table.delete_item(Key={"id": item})
-        else:
-            await table.delete_item(Key={"id": item.id})
+        await table.delete_item(Key={"id": item if isinstance(item, str) else item.id})
 
     async def _list_items(
         self,
@@ -139,7 +136,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         sorted_items = sorted(response, key=sort_key, reverse=True)
         return sorted_items[(page - 1) * ITEMS_PER_PAGE : page * ITEMS_PER_PAGE], page * ITEMS_PER_PAGE < len(response)
 
-    async def _list_your(
+    async def _list_me(
         self,
         item_class: type[T],
         user_id: str,

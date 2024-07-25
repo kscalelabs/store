@@ -76,7 +76,7 @@ const EditRobotForm: React.FC = () => {
     try {
       await auth_api.editRobot(newFormData);
       setMessage(`Robot edited successfully.`);
-      navigate(`/robots/your/1`);
+      navigate(`/robots/me/1`);
     } catch (error) {
       setMessage("Error adding robot ");
     }

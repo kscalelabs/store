@@ -45,17 +45,17 @@ async def github_email_req(headers: dict[str, str]) -> HttpxResponse:
         return await client.get("https://api.github.com/user/emails", headers=headers)
 
 
-class UserInfoResponse(BaseModel):
-    id: str
+class GithubAuthResponse(BaseModel):
+    api_key_id: str
     permissions: set[UserPermission] | None
 
 
-@github_auth_router.get("/code/{code}", response_model=UserInfoResponse)
+@github_auth_router.get("/code/{code}", response_model=GithubAuthResponse)
 async def github_code(
     code: str,
     crud: Annotated[Crud, Depends(Crud.get)],
     response: Response,
-) -> UserInfoResponse:
+) -> GithubAuthResponse:
     """Gives the user a session token upon successful github authentication and creation of user.
 
     Args:
@@ -94,4 +94,4 @@ async def github_code(
 
     response.set_cookie(key="session_token", value=api_key.id, httponly=True, samesite="lax")
 
-    return UserInfoResponse(id=user.id, permissions=user.permissions)
+    return GithubAuthResponse(api_key_id=api_key.id, permissions=user.permissions)

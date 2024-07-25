@@ -22,15 +22,12 @@ async def test_user_auth_functions(app_client: AsyncClient) -> None:
     assert response.status_code == 200, response.json()
     assert "session_token" in response.cookies
     token = response.cookies["session_token"]
-
-    user_id = response.json()["id"]
+    assert token == response.json()["api_key_id"]
 
     # Checks that with the session token we get a 200 response.
     response = await app_client.get("/users/me")
     assert response.status_code == 200, response.json()
-
-    # Check the id of the user we are authenticated as matches the id of the user we created.
-    assert response.json()["id"] == user_id
+    user_id = response.json()["user_id"]
 
     # Use the Authorization header instead of the cookie.
     response = await app_client.get(
@@ -39,7 +36,7 @@ async def test_user_auth_functions(app_client: AsyncClient) -> None:
         headers={"Authorization": f"Bearer {token}"},
     )
     assert response.status_code == 200, response.json()
-    assert response.json()["id"] == user_id
+    assert response.json()["user_id"] == user_id
 
     # Log the user out, which deletes the session token.
     response = await app_client.delete("/users/logout")

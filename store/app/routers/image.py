@@ -5,8 +5,9 @@ import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
 from PIL import Image
+from pydantic.main import BaseModel
 
 from store.app.db import Crud
 from store.settings import settings
@@ -17,8 +18,12 @@ image_router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
+class UserInfoResponse(BaseModel):
+    image_id: str
+
+
 @image_router.post("/upload/")
-async def upload_image(crud: Annotated[Crud, Depends(Crud.get)], file: UploadFile) -> JSONResponse:
+async def upload_image(crud: Annotated[Crud, Depends(Crud.get)], file: UploadFile) -> UserInfoResponse:
     try:
         if file.content_type != "image/png":
             raise HTTPException(status_code=400, detail="Only PNG images are supported")
@@ -36,7 +41,7 @@ async def upload_image(crud: Annotated[Crud, Depends(Crud.get)], file: UploadFil
         upload = UploadFile(filename="mini" + image_id + ".png", file=compressed_image_io)
         await crud.upload_image(upload)
 
-        return JSONResponse(status_code=200, content={"id": image_id})
+        return UserInfoResponse(image_id=image_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

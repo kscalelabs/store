@@ -11,6 +11,8 @@ import EditRobotForm from "pages/EditRobotForm";
 import Home from "pages/Home";
 import Login from "pages/Login";
 import Logout from "pages/Logout";
+import MyParts from "pages/MyParts";
+import MyRobots from "pages/MyRobots";
 import NewPart from "pages/NewPart";
 import NewRobot from "pages/NewRobot";
 import NotFound from "pages/NotFound";
@@ -19,8 +21,6 @@ import Parts from "pages/Parts";
 import RobotDetails from "pages/RobotDetails";
 import Robots from "pages/Robots";
 import TestImages from "pages/TestImages";
-import YourParts from "pages/YourParts";
-import YourRobots from "pages/YourRobots";
 import { Container } from "react-bootstrap";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import "./App.css";
@@ -44,13 +44,13 @@ const App = () => {
                   <Route path="/robots/add" element={<NewRobot />} />
                   <Route path="/parts/add" element={<NewPart />} />
                   <Route path="/robot/:id" element={<RobotDetails />} />
-                  <Route path="/edit-robot/:id" element={<EditRobotForm />} />
-                  <Route path="/test-images" element={<TestImages />} />
+                  <Route path="/robot/edit/:id" element={<EditRobotForm />} />
+                  <Route path="/images/test" element={<TestImages />} />
                   <Route path="/parts/:page" element={<Parts />} />
                   <Route path="/part/:id" element={<PartDetails />} />
-                  <Route path="/edit-part/:id" element={<EditPartForm />} />
-                  <Route path="robots/your/:page" element={<YourRobots />} />
-                  <Route path="/parts/your/:page" element={<YourParts />} />
+                  <Route path="/part/edit/:id" element={<EditPartForm />} />
+                  <Route path="/robots/my/:page" element={<MyRobots />} />
+                  <Route path="/parts/my/:page" element={<MyParts />} />
                   <Route path="/404" element={<NotFound />} />
                   <Route path="*" element={<NotFoundRedirect />} />
                 </Routes>

@@ -106,7 +106,7 @@ class UserRegister(BaseModel):
 
 
 class UserInfoResponse(BaseModel):
-    id: str
+    user_id: str
     permissions: set[UserPermission] | None
 
 
@@ -116,7 +116,7 @@ async def get_user_info_endpoint(
 ) -> UserInfoResponse | None:
     try:
         return UserInfoResponse(
-            id=user.id,
+            user_id=user.id,
             permissions=user.permissions,
         )
     except ValueError:
