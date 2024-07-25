@@ -1,8 +1,8 @@
 """Defines CRUD interface for robot API."""
 
+import io
 import logging
-
-from fastapi import UploadFile
+from typing import BinaryIO
 
 from store.app.crud.base import BaseCrud
 from store.app.model import Part, Robot
@@ -45,10 +45,10 @@ class RobotCrud(BaseCrud):
     async def list_user_parts(self, user_id: str, page: int, search_query: str) -> tuple[list[Part], bool]:
         return await self._list_me(Part, user_id, page, lambda x: x.timestamp, search_query)
 
-    async def upload_image(self, file: UploadFile) -> None:
+    async def upload_image(self, file: io.BytesIO | BinaryIO, filename: str, content_type: str) -> None:
         bucket = await self.s3.Bucket(settings.s3.bucket)
         await bucket.upload_fileobj(
-            file.file,
-            f"{settings.s3.prefix}{file.filename}",
-            ExtraArgs={"ContentType": file.content_type},
+            file,
+            f"{settings.s3.prefix}{filename}",
+            ExtraArgs={"ContentType": content_type},
         )
