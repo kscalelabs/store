@@ -2,6 +2,7 @@
 
 import asyncio
 import warnings
+from typing import Literal, overload
 
 from store.app.crud.base import BaseCrud, GlobalSecondaryIndex
 from store.app.model import APIKey, APIKeyPermissionSet, APIKeySource, OAuthKey, User
@@ -32,8 +33,14 @@ class UserCrud(BaseCrud):
             ("emailIndex", "email", "S", "HASH"),
         ]
 
-    async def get_user(self, id: str) -> User | None:
-        return await self._get_item(id, User, throw_if_missing=False)
+    @overload
+    async def get_user(self, id: str) -> User | None: ...
+
+    @overload
+    async def get_user(self, id: str, throw_if_missing: Literal[True]) -> User: ...
+
+    async def get_user(self, id: str, throw_if_missing: bool = False) -> User | None:
+        return await self._get_item(id, User, throw_if_missing=throw_if_missing)
 
     async def create_user_from_token(self, token: str, email: str) -> User:
         user = User.create(email=email)

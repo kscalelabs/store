@@ -174,7 +174,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     async def _get_item(self, item_id: str, item_class: type[T], throw_if_missing: Literal[True]) -> T: ...
 
     @overload
-    async def _get_item(self, item_id: str, item_class: type[T], throw_if_missing: Literal[False]) -> T | None: ...
+    async def _get_item(self, item_id: str, item_class: type[T], throw_if_missing: bool = False) -> T | None: ...
 
     async def _get_item(self, item_id: str, item_class: type[T], throw_if_missing: bool = False) -> T | None:
         table = await self.db.Table(TABLE_NAME)
@@ -238,7 +238,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         secondary_index_name: str,
         secondary_index_value: str,
         item_class: type[T],
-        throw_if_missing: Literal[False] = False,
+        throw_if_missing: bool = False,
     ) -> T | None: ...
 
     async def _get_unique_item_from_secondary_index(

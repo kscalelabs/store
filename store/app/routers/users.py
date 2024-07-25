@@ -1,6 +1,5 @@
 """Defines the API endpoint for creating, deleting and updating user information."""
 
-import functools
 import logging
 from email.utils import parseaddr as parse_email_address
 from typing import Annotated
@@ -10,7 +9,7 @@ from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel as PydanticBaseModel
 
 from store.app.db import Crud
-from store.app.model import APIKeyPermission, User, UserPermissions
+from store.app.model import User, UserPermissions
 from store.app.routers.auth.github import github_auth_router
 from store.app.utils.email import send_delete_email
 
@@ -60,23 +59,34 @@ async def get_request_api_key_id(request: Request) -> str:
     return api_key_id
 
 
-async def get_session_user_with_permission(
-    permission: APIKeyPermission,
+async def get_session_user_with_read_permission(
     crud: Annotated[Crud, Depends(Crud.get)],
     api_key_id: Annotated[str, Depends(get_request_api_key_id)],
 ) -> User:
     api_key = await crud.get_api_key(api_key_id)
-    if permission not in api_key.permissions:
+    if "read" not in api_key.permissions:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
-    user = await crud.get_user(api_key.user_id)
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
-    return user
+    return await crud.get_user(api_key.user_id, throw_if_missing=True)
 
 
-get_session_user_with_read_permission = functools.partial(get_session_user_with_permission, permission="read")
-get_session_user_with_write_permission = functools.partial(get_session_user_with_permission, permission="write")
-get_session_user_with_admin_permission = functools.partial(get_session_user_with_permission, permission="admin")
+async def get_session_user_with_write_permission(
+    crud: Annotated[Crud, Depends(Crud.get)],
+    api_key_id: Annotated[str, Depends(get_request_api_key_id)],
+) -> User:
+    api_key = await crud.get_api_key(api_key_id)
+    if "write" not in api_key.permissions:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+    return await crud.get_user(api_key.user_id, throw_if_missing=True)
+
+
+async def get_session_user_with_admin_permission(
+    crud: Annotated[Crud, Depends(Crud.get)],
+    api_key_id: Annotated[str, Depends(get_request_api_key_id)],
+) -> User:
+    api_key = await crud.get_api_key(api_key_id)
+    if "admin" not in api_key.permissions:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+    return await crud.get_user(api_key.user_id, throw_if_missing=True)
 
 
 def validate_email(email: str) -> str:
