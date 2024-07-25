@@ -54,11 +54,17 @@ interface UploadImageResponse {
 
 export class api {
   public api: AxiosInstance;
-  public onError: (error: Error) => void = () => {};
+  public onError: (error: Error) => void;
+  public onFinish: () => void;
 
-  constructor(api: AxiosInstance, onError: (error: Error) => void = () => {}) {
+  constructor(
+    api: AxiosInstance,
+    onError: (error: Error) => void = () => {},
+    onFinish: () => void = () => {},
+  ) {
     this.api = api;
     this.onError = onError;
+    this.onFinish = onFinish;
   }
 
   private async callWrapper<T>(call: () => Promise<T>): Promise<T> {
@@ -67,6 +73,8 @@ export class api {
     } catch (error) {
       this.onError(error as Error);
       throw error;
+    } finally {
+      this.onFinish();
     }
   }
 
