@@ -25,7 +25,7 @@ class UserInfoResponse(BaseModel):
 @image_router.post("/upload/")
 async def upload_image(crud: Annotated[Crud, Depends(Crud.get)], file: UploadFile) -> UserInfoResponse:
     try:
-        if file.content_type != "image/png":
+        if(file.content_type in ["image/png", "image/jpeg", "image/jpg"]):
             raise HTTPException(status_code=400, detail="Only PNG images are supported")
         if len(await file.read()) > 1024 * 1024 * 2:
             raise HTTPException(status_code=400, detail="Image is too large")
