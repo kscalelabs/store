@@ -8,9 +8,9 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from fastapi.responses import JSONResponse, RedirectResponse
 from PIL import Image
 
-from store.app.crypto import new_uuid
 from store.app.db import Crud
 from store.settings import settings
+from store.utils import new_uuid
 
 image_router = APIRouter()
 

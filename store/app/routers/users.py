@@ -1,5 +1,6 @@
 """Defines the API endpoint for creating, deleting and updating user information."""
 
+import functools
 import logging
 from email.utils import parseaddr as parse_email_address
 from typing import Annotated
@@ -9,7 +10,7 @@ from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel as PydanticBaseModel
 
 from store.app.db import Crud
-from store.app.model import UserPermissions
+from store.app.model import Permission, User, UserPermissions
 from store.app.routers.auth.github import github_auth_router
 from store.app.utils.email import send_delete_email
 
@@ -35,9 +36,9 @@ def set_token_cookie(response: Response, token: str, key: str) -> None:
     )
 
 
-async def get_session_token(request: Request) -> str:
-    token = request.cookies.get("session_token")
-    if not token:
+async def get_api_key_jwt(request: Request) -> str:
+    api_key_jwt = request.cookies.get("session_token")
+    if not api_key_jwt:
         authorization = request.headers.get("Authorization") or request.headers.get("authorization")
         if authorization:
             scheme, credentials = get_authorization_scheme_param(authorization)
@@ -56,7 +57,26 @@ async def get_session_token(request: Request) -> str:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
         )
-    return token
+    return api_key_jwt
+
+
+async def get_session_user_with_permission(
+    permission: Permission,
+    crud: Annotated[Crud, Depends(Crud.get)],
+    api_key_jwt: Annotated[str, Depends(get_api_key_jwt)],
+) -> User:
+    api_key = await crud.get_api_key(api_key_jwt=api_key_jwt)
+    if permission not in api_key.permissions:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+    user = await crud.get_user(api_key.user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+    return user
+
+
+get_session_user_with_read_permission = functools.partial(get_session_user_with_permission, permission="read")
+get_session_user_with_write_permission = functools.partial(get_session_user_with_permission, permission="write")
+get_session_user_with_admin_permission = functools.partial(get_session_user_with_permission, permission="admin")
 
 
 def validate_email(email: str) -> str:
@@ -82,11 +102,10 @@ class UserInfoResponse(BaseModel):
 
 @users_router.get("/me", response_model=UserInfoResponse)
 async def get_user_info_endpoint(
-    token: Annotated[str, Depends(get_session_token)],
+    user: Annotated[User, Depends(get_session_user_with_read_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UserInfoResponse | None:
     try:
-        user = await crud.get_user_from_api_key(token)
         return UserInfoResponse(
             id=user.id,
             permissions=user.permissions,
@@ -97,10 +116,9 @@ async def get_user_info_endpoint(
 
 @users_router.delete("/me")
 async def delete_user_endpoint(
-    token: Annotated[str, Depends(get_session_token)],
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    user = await crud.get_user_from_api_key(token)
     await crud.delete_user(user.id)
     await send_delete_email(user.email)
     return True
@@ -108,7 +126,7 @@ async def delete_user_endpoint(
 
 @users_router.delete("/logout")
 async def logout_user_endpoint(
-    token: Annotated[str, Depends(get_session_token)],
+    token: Annotated[str, Depends(get_api_key_jwt)],
     crud: Annotated[Crud, Depends(Crud.get)],
     response: Response,
 ) -> bool:

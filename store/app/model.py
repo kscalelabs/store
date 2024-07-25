@@ -5,11 +5,13 @@ methods for converting from our input data into the format the database
 expects (for example, converting a UUID into a string).
 """
 
-from typing import Literal, Self
+from typing import Literal, Self, get_args
 
+import jwt
 from pydantic import BaseModel
 
-from store.app.crypto import new_uuid
+from store.settings import settings
+from store.utils import new_uuid
 
 
 class RobolistBaseModel(BaseModel):
@@ -57,6 +59,10 @@ APIKeySource = Literal["user", "oauth"]
 Permission = Literal["read", "write", "admin"]
 PermissionSet = set[Permission] | Literal["full"]
 
+# Store permissions as integers in JWTs to save space.
+PermissionToIndex = {p: i for i, p in enumerate(get_args(Permission))}
+IndexToPermission = {i: p for p, i in PermissionToIndex.items()}
+
 
 class APIKey(RobolistBaseModel):
     """The API key is used for querying the API.
@@ -85,6 +91,22 @@ class APIKey(RobolistBaseModel):
             source=source,
             permissions=permissions,
         )
+
+    def to_jwt(self) -> str:
+        return jwt.encode(
+            {"id": self.id},
+            settings.crypto.jwt_secret,
+            algorithm=settings.crypto.algorithm,
+        )
+
+    @classmethod
+    def from_jwt(cls, token: str) -> str:
+        data = jwt.decode(
+            token,
+            settings.crypto.jwt_secret,
+            algorithm=settings.crypto.algorithm,
+        )
+        return data["id"]
 
 
 class Bom(BaseModel):

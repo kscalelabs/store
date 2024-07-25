@@ -2,17 +2,11 @@
 
 import asyncio
 import warnings
-from datetime import datetime
 
 from store.app.crud.base import BaseCrud, GlobalSecondaryIndex
 from store.app.model import APIKey, APIKeySource, OAuthKey, PermissionSet, User
 from store.settings import settings
-from store.utils import LRUCache
-
-# This dictionary is used to locally cache the last time a token was validated
-# against the database. We give the tokens some buffer time to avoid hitting
-# the database too often.
-API_KEY_CACHE = LRUCache[str, tuple[datetime, APIKey]](2**20)
+from store.utils import cache_result
 
 
 def github_auth_key(github_id: str) -> str:
@@ -77,9 +71,14 @@ class UserCrud(BaseCrud):
     async def get_user_batch(self, ids: list[str]) -> list[User]:
         return await self._get_item_batch(ids, User)
 
-    async def get_user_from_api_key(self, key: str) -> User:
-        key = await self.get_api_key(key)
-        return await self._get_item(key.user_id, User, throw_if_missing=True)
+    async def get_user_from_api_key(
+        self,
+        *,
+        api_key_id: str | None = None,
+        api_key_jwt: str | None = None,
+    ) -> User:
+        api_key = await self.get_api_key(api_key_id=api_key_id, api_key_jwt=api_key_jwt)
+        return await self._get_item(api_key.user_id, User, throw_if_missing=True)
 
     async def delete_user(self, id: str) -> None:
         await self._delete_item(id)
@@ -91,15 +90,20 @@ class UserCrud(BaseCrud):
     async def get_user_count(self) -> int:
         return await self._count_items(User)
 
-    async def get_api_key(self, api_key_id: str) -> APIKey:
-        cur_time = datetime.now()
-        if api_key_id in API_KEY_CACHE:
-            last_time, api_key = API_KEY_CACHE[api_key_id]
-            if (cur_time - last_time).total_seconds() < settings.crypto.cache_token_db_result_seconds:
-                return api_key
-        api_key = await self._get_item(api_key_id, APIKey, throw_if_missing=True)
-        API_KEY_CACHE[api_key_id] = (cur_time, api_key)
-        return api_key
+    @cache_result(settings.crypto.cache_token_db_result_seconds)
+    async def get_api_key(
+        self,
+        *,
+        api_key_id: str | None = None,
+        api_key_jwt: str | None = None,
+    ) -> APIKey:
+        if api_key_id is not None and api_key_jwt is not None:
+            raise ValueError("Cannot provide both `api_key_id` and `api_key_jwt`")
+        if api_key_jwt is not None:
+            api_key_id = APIKey.from_jwt(api_key_jwt)
+        if api_key_id is not None:
+            return await self._get_item(api_key_id, APIKey, throw_if_missing=True)
+        raise ValueError("Must provide either `api_key_id` or `api_key_jwt`")
 
     async def add_api_key(
         self,
