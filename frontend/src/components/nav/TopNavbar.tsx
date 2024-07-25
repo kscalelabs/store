@@ -17,7 +17,7 @@ const TopNavbar = () => {
   useEffect(() => {
     (async () => {
       try {
-        // get code from query string to carry out oauth login
+        // Get the code from the query string to carry out OAuth login.
         const search = window.location.search;
         const params = new URLSearchParams(search);
         const code = params.get("code");
@@ -25,8 +25,8 @@ const TopNavbar = () => {
           const { email } = await auth_api.me();
           auth.setEmail(email);
         } else if (code) {
-          const res = await auth_api.login_github(code as string);
-          setLocalStorageAuth(res.username);
+          const res = await auth_api.loginGithub(code as string);
+          setLocalStorageAuth(res.api_key_id);
           auth.setIsAuthenticated(true);
         }
       } catch (error) {

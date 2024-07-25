@@ -8,7 +8,6 @@ from httpx import AsyncClient, Response as HttpxResponse
 from pydantic.main import BaseModel
 
 from store.app.db import Crud
-from store.app.model import UserPermission
 from store.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -47,7 +46,6 @@ async def github_email_req(headers: dict[str, str]) -> HttpxResponse:
 
 class GithubAuthResponse(BaseModel):
     api_key_id: str
-    permissions: set[UserPermission] | None
 
 
 @github_auth_router.get("/code/{code}", response_model=GithubAuthResponse)
@@ -94,4 +92,4 @@ async def github_code(
 
     response.set_cookie(key="session_token", value=api_key.id, httponly=True, samesite="lax")
 
-    return GithubAuthResponse(api_key_id=api_key.id, permissions=user.permissions)
+    return GithubAuthResponse(api_key_id=api_key.id)

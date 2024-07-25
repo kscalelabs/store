@@ -37,8 +37,12 @@ export interface Robot {
   packages: Package[];
 }
 
+interface GithubAuthResponse {
+  api_key_id: string;
+}
+
 interface MeResponse {
-  id: string;
+  user_id: string;
   email: string;
   username: string;
   admin: boolean;
@@ -55,7 +59,7 @@ export class api {
     this.api = api;
   }
 
-  public async send_register_github(): Promise<string> {
+  public async sendRegisterGithub(): Promise<string> {
     try {
       const res = await this.api.get("/users/github/login");
       return res.data;
@@ -72,9 +76,11 @@ export class api {
     }
   }
 
-  public async login_github(code: string): Promise<MeResponse> {
+  public async loginGithub(code: string): Promise<GithubAuthResponse> {
     try {
-      const res = await this.api.get(`/users/github/code/${code}`);
+      const res = await this.api.get<GithubAuthResponse>(
+        `/users/github/code/${code}`,
+      );
       return res.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -91,7 +97,7 @@ export class api {
 
   public async logout(): Promise<void> {
     try {
-      await this.api.delete("/users/logout/");
+      await this.api.delete<boolean>("/users/logout/");
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error("Error logging out:", error.response?.data);
@@ -105,7 +111,7 @@ export class api {
 
   public async me(): Promise<MeResponse> {
     try {
-      const res = await this.api.get("/users/me/");
+      const res = await this.api.get<MeResponse>("/users/me/");
       return res.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
