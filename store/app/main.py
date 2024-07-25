@@ -26,7 +26,7 @@ LOCALHOST_URLS = [
 if os.getenv("ROBOLIST_ENVIRONMENT") == "local":
     from dotenv import load_dotenv
 
-    load_dotenv(".env.local")
+    load_dotenv(".env")
 
 
 @asynccontextmanager

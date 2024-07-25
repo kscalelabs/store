@@ -81,42 +81,42 @@ pip install -e '.[dev]'  # Using vanilla pip
 Serve the FastAPI application in development mode:
 
 ```bash
-fastapi dev 'store/app/main.py' --port 8080  # On port 8080 to avoid conflicts with Docker
+ROBOLIST_ENVIRONMENT=local fastapi dev 'store/app/main.py' --port 8080  # On port 8080 to avoid conflicts with Docker
 ```
 
 ### Configuration
 
 Settings for the app backend live in the `store/settings/` directory. To configure which set of settings you are using, set `ROBOLIST_ENVIRONMENT`. It is the stem of one of the config files in the `store/settings/configs/` directory. When developing locally this should usually just be `local`
 
-To locally develop, setting the following environment variables will work (presuming you have set everything else up):
+To locally develop, put these following environment variables in .env file and when you run the server locally, uvicorn will pickup these variables automatically:
 
 ```
 # Specifies a local environment verses production environment.
 export ROBOLIST_ENVIRONMENT=local
 
 # For AWS
-export AWS_DEFAULT_REGION='us-east-1'
-export AWS_ACCESS_KEY_ID=test
-export AWS_SECRET_ACCESS_KEY=test
-export AWS_ENDPOINT_URL_DYNAMODB=http://127.0.0.1:4566
+AWS_DEFAULT_REGION='us-east-1'
+AWS_ACCESS_KEY_ID=test
+AWS_SECRET_ACCESS_KEY=test
+AWS_ENDPOINT_URL_DYNAMODB=http://127.0.0.1:4566
 
 # For letting the frontend know the backend URL.
-export REACT_APP_BACKEND_URL=http://127.0.0.1:8080
+REACT_APP_BACKEND_URL=http://127.0.0.1:8080
 
 # For SMTP
-export SMTP_HOST=smtp.gmail.com
-export SMTP_SENDER_EMAIL=
-export SMTP_PASSWORD=
-export SMTP_SENDER_NAME=
-export SMTP_USERNAME=
+SMTP_HOST=smtp.gmail.com
+SMTP_SENDER_EMAIL=
+SMTP_PASSWORD=
+SMTP_SENDER_NAME=
+SMTP_USERNAME=
 
 # For Github OAuth
-export GITHUB_CLIENT_ID=
-export GITHUB_CLIENT_SECRET=
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
 
 # For Google OAuth
-export GOOGLE_CLIENT_ID=
-export GOOGLE_CLIENT_SECRET=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
 ```
 
 ### Github OAuth Configuration
@@ -124,9 +124,8 @@ export GOOGLE_CLIENT_SECRET=
 To run Github OAuth locally, you must follow these steps:
 
 1. Create an OAuth App on [Github Developer Settings](https://github.com/settings/developers)
-2. Set both Homepage URL and Authorization callback URL to `http://127.0.0.1:3000` before you `Update application` on Github Oauth App configuration
+2. Set both Homepage URL and Authorization callback URL to `http://127.0.0.1:3000/login` before you `Update application` on Github Oauth App configuration
 3. Copy the Client ID and Client Secret from Github OAuth App configuration and set them in `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` respectively
-4. Run `source env.sh` in your Fast API terminal window to ensure it has access to the github environment variables
 
 ## React
 
