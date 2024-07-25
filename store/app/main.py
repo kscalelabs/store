@@ -1,6 +1,7 @@
 """Defines the main entrypoint for the FastAPI app."""
 
 import logging
+import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -20,6 +21,12 @@ LOCALHOST_URLS = [
     "http://127.0.0.1:3000",
     "http://localhost:3000",
 ]
+
+
+if os.getenv("ROBOLIST_ENVIRONMENT") == "local":
+    from dotenv import load_dotenv
+
+    load_dotenv(".env")
 
 
 @asynccontextmanager
