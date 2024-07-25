@@ -31,13 +31,14 @@ class UserCrud(BaseCrud):
     def get_gsis(cls) -> list[GlobalSecondaryIndex]:
         return super().get_gsis() + [
             ("emailIndex", "email", "S", "HASH"),
+            ("tokenIndex", "token", "S", "HASH"),
         ]
 
     @overload
-    async def get_user(self, id: str) -> User | None: ...
+    async def get_user(self, id: str, throw_if_missing: Literal[True]) -> User: ...
 
     @overload
-    async def get_user(self, id: str, throw_if_missing: Literal[True]) -> User: ...
+    async def get_user(self, id: str, throw_if_missing: bool = False) -> User | None: ...
 
     async def get_user(self, id: str, throw_if_missing: bool = False) -> User | None:
         return await self._get_item(id, User, throw_if_missing=throw_if_missing)
@@ -49,23 +50,42 @@ class UserCrud(BaseCrud):
         await self._add_item(key)
         return user
 
-    async def get_user_from_token(self, token: str) -> User | None:
-        key = await self._get_item(token, OAuthKey, throw_if_missing=False)
-        if key is None:
-            return None
-        return await self.get_user(key.user_id)
+    @overload
+    async def _get_oauth_key(self, token: str, throw_if_missing: Literal[True]) -> OAuthKey: ...
+
+    @overload
+    async def _get_oauth_key(self, token: str, throw_if_missing: bool = False) -> OAuthKey | None: ...
+
+    async def _get_oauth_key(self, token: str, throw_if_missing: bool = False) -> OAuthKey | None:
+        return await self._get_unique_item_from_secondary_index(
+            "tokenIndex",
+            "token",
+            token,
+            OAuthKey,
+            throw_if_missing=throw_if_missing,
+        )
+
+    async def _get_user_from_token(self, token: str) -> User | None:
+        key = await self._get_oauth_key(token)
+        return None if key is None else await self.get_user(key.user_id)
 
     async def create_user_from_github_token(self, github_id: str, email: str) -> User:
         return await self.create_user_from_token(github_auth_key(github_id), email)
 
+    async def get_user_from_github_token(self, token: str) -> User | None:
+        return await self._get_user_from_token(github_auth_key(token))
+
+    async def delete_github_token(self, github_id: str) -> None:
+        await self._delete_item(await self._get_oauth_key(github_auth_key(github_id), throw_if_missing=True))
+
     async def create_user_from_google_token(self, google_id: str, email: str) -> User:
         return await self.create_user_from_token(google_auth_key(google_id), email)
 
-    async def get_user_from_github_token(self, token: str) -> User | None:
-        return await self.get_user_from_token(github_auth_key(token))
-
     async def get_user_from_google_token(self, token: str) -> User | None:
-        return await self.get_user_from_token(google_auth_key(token))
+        return await self._get_user_from_token(google_auth_key(token))
+
+    async def delete_google_token(self, google_id: str) -> None:
+        await self._delete_item(await self._get_oauth_key(google_auth_key(google_id), throw_if_missing=True))
 
     async def get_user_from_email(self, email: str) -> User | None:
         return await self._get_unique_item_from_secondary_index("emailIndex", "email", email, User)
