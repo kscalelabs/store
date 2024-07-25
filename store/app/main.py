@@ -1,6 +1,7 @@
 """Defines the main entrypoint for the FastAPI app."""
 
 import logging
+import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -32,6 +33,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     finally:
         pass
 
+if os.getenv("ROBOLIST_ENVIRONMENT") == "local":
+    from dotenv import load_dotenv
+    load_dotenv(".env.local")
 
 app = FastAPI(lifespan=lifespan)
 

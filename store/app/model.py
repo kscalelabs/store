@@ -5,6 +5,7 @@ methods for converting from our input data into the format the database
 expects (for example, converting a UUID into a string).
 """
 
+from datetime import datetime, timedelta
 from typing import Literal, Self
 
 from pydantic import BaseModel
@@ -47,10 +48,12 @@ class OAuthKey(RobolistBaseModel):
 
     user_id: str
     user_token: str
+    ttl: int | None = None
 
     @classmethod
     def create(cls, user_token: str, user_id: str) -> Self:
-        return cls(id=str(new_uuid()), user_id=user_id, user_token=user_token)
+        ttl_timestamp = int((datetime.utcnow() + timedelta(days=90)).timestamp())
+        return cls(id=str(new_uuid()), user_id=user_id, user_token=user_token, ttl=ttl_timestamp)
 
 
 APIKeySource = Literal["user", "oauth"]
