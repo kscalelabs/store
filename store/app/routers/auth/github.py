@@ -84,14 +84,7 @@ async def github_code(
     github_id = oauth_response.json()["html_url"]
     email = next(entry["email"] for entry in oauth_email_response.json() if entry["primary"])
 
-    user = await crud.get_user_from_github_token(github_id)
-
-    # We create a new user if the user does not exist yet.
-    if user is None:
-        user = await crud.create_user_from_github_token(
-            email=email,
-            github_id=github_id,
-        )
+    user = await crud.get_user_from_github_token(github_id, email)
 
     api_key = await crud.add_api_key(
         user_id=user.id,

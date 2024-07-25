@@ -68,13 +68,19 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         if self.__s3 is not None:
             await self.__s3.__aexit__(exc_type, exc_val, exc_tb)
 
-    async def _add_item(self, item: RobolistBaseModel) -> None:
+    async def _add_item(self, item: RobolistBaseModel, unique_fields: list[str] | None = None) -> None:
         table = await self.db.Table(TABLE_NAME)
         item_data = item.model_dump()
         if "type" in item_data:
             raise ValueError("Cannot add item with 'type' attribute")
         item_data["type"] = item.__class__.__name__
-        await table.put_item(Item=item_data)
+        condition = "attribute_not_exists(id)"
+        if unique_fields:
+            condition += " AND " + " AND ".join(f"attribute_not_exists({field})" for field in unique_fields)
+        await table.put_item(
+            Item=item_data,
+            ConditionExpression=condition,
+        )
 
     async def _delete_item(self, item: RobolistBaseModel | str) -> None:
         table = await self.db.Table(TABLE_NAME)

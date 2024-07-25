@@ -23,8 +23,7 @@ class RobolistBaseModel(BaseModel):
     id: str
 
 
-class UserPermissions(BaseModel):
-    is_admin: bool = False
+UserPermission = Literal["is_admin"]
 
 
 class User(RobolistBaseModel):
@@ -36,11 +35,11 @@ class User(RobolistBaseModel):
     """
 
     email: str
-    permissions: UserPermissions = UserPermissions()
+    permissions: set[UserPermission]
 
     @classmethod
     def create(cls, email: str) -> Self:
-        return cls(id=str(new_uuid()), email=email)
+        return cls(id=str(new_uuid()), email=email, permissions=set())
 
 
 class OAuthKey(RobolistBaseModel):
