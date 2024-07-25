@@ -10,7 +10,7 @@ from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel as PydanticBaseModel
 
 from store.app.db import Crud
-from store.app.model import Permission, User, UserPermissions
+from store.app.model import APIKeyPermission, User, UserPermissions
 from store.app.routers.auth.github import github_auth_router
 from store.app.utils.email import send_delete_email
 
@@ -61,7 +61,7 @@ async def get_api_key_jwt(request: Request) -> str:
 
 
 async def get_session_user_with_permission(
-    permission: Permission,
+    permission: APIKeyPermission,
     crud: Annotated[Crud, Depends(Crud.get)],
     api_key_jwt: Annotated[str, Depends(get_api_key_jwt)],
 ) -> User:

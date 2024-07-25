@@ -5,7 +5,7 @@ methods for converting from our input data into the format the database
 expects (for example, converting a UUID into a string).
 """
 
-from typing import Literal, Self, get_args
+from typing import Literal, Self
 
 import jwt
 from pydantic import BaseModel
@@ -56,12 +56,8 @@ class OAuthKey(RobolistBaseModel):
 
 
 APIKeySource = Literal["user", "oauth"]
-Permission = Literal["read", "write", "admin"]
-PermissionSet = set[Permission] | Literal["full"]
-
-# Store permissions as integers in JWTs to save space.
-PermissionToIndex = {p: i for i, p in enumerate(get_args(Permission))}
-IndexToPermission = {i: p for p, i in PermissionToIndex.items()}
+APIKeyPermission = Literal["read", "write", "admin"]
+APIKeyPermissionSet = set[APIKeyPermission] | Literal["full"]
 
 
 class APIKey(RobolistBaseModel):
@@ -74,14 +70,14 @@ class APIKey(RobolistBaseModel):
 
     user_id: str
     source: APIKeySource
-    permissions: set[Permission]
+    permissions: set[APIKeyPermission]
 
     @classmethod
     def create(
         cls,
         user_id: str,
         source: APIKeySource,
-        permissions: PermissionSet,
+        permissions: APIKeyPermissionSet,
     ) -> Self:
         if permissions == "full":
             permissions = {"read", "write", "admin"}

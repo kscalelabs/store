@@ -4,7 +4,7 @@ import asyncio
 import warnings
 
 from store.app.crud.base import BaseCrud, GlobalSecondaryIndex
-from store.app.model import APIKey, APIKeySource, OAuthKey, PermissionSet, User
+from store.app.model import APIKey, APIKeyPermissionSet, APIKeySource, OAuthKey, User
 from store.settings import settings
 from store.utils import cache_result
 
@@ -109,7 +109,7 @@ class UserCrud(BaseCrud):
         self,
         user_id: str,
         source: APIKeySource,
-        permissions: PermissionSet,
+        permissions: APIKeyPermissionSet,
     ) -> APIKey:
         token = APIKey.create(user_id=user_id, source=source, permissions=permissions)
         await self._add_item(token)
