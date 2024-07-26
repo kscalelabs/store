@@ -50,6 +50,19 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
     withCredentials: true,
   });
 
+  if (id !== null) {
+    // Adds the API key to the request header.
+    api.interceptors.request.use(
+      (config) => {
+        config.headers.Authorization = `Bearer ${id}`;
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      },
+    );
+  }
+
   const login = useCallback((apiKeyId: string) => {
     (async () => {
       setLocalStorageAuth(apiKeyId);

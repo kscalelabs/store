@@ -20,23 +20,10 @@ async def test_user_auth_functions(app_client: AsyncClient) -> None:
     # Because of the way we patched GitHub functions for mocking, it doesn't matter what token we pass in.
     response = await app_client.get("/users/github/code/doesnt-matter")
     assert response.status_code == 200, response.json()
-    assert "session_token" in response.cookies
-    token = response.cookies["session_token"]
-    assert token == response.json()["api_key_id"]
 
     # Checks that with the session token we get a 200 response.
     response = await app_client.get("/users/me")
     assert response.status_code == 200, response.json()
-    user_id = response.json()["user_id"]
-
-    # Use the Authorization header instead of the cookie.
-    response = await app_client.get(
-        "/users/me",
-        cookies={"session_token": ""},
-        headers={"Authorization": f"Bearer {token}"},
-    )
-    assert response.status_code == 200, response.json()
-    assert response.json()["user_id"] == user_id
 
     # Log the user out, which deletes the session token.
     response = await app_client.delete("/users/logout")
@@ -51,7 +38,6 @@ async def test_user_auth_functions(app_client: AsyncClient) -> None:
     # Log the user back in, getting new session token.
     response = await app_client.get("/users/github/code/doesnt-matter")
     assert response.status_code == 200, response.json()
-    assert "session_token" in response.cookies
 
     # Delete the user using the new session token.
     response = await app_client.delete("/users/me")

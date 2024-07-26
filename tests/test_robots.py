@@ -11,7 +11,6 @@ async def test_robots(app_client: AsyncClient) -> None:
     # Register.
     response = await app_client.get("/users/github/code/doesnt-matter")
     assert response.status_code == 200, response.json()
-    assert "session_token" in response.cookies
 
     # Create a part.
     response = await app_client.post(

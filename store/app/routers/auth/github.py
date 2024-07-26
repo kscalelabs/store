@@ -94,6 +94,4 @@ async def github_code(
         permissions="full",  # OAuth tokens have full permissions.
     )
 
-    response.set_cookie(key="session_token", value=api_key.id, httponly=True, samesite="lax")
-
     return GithubAuthResponse(api_key_id=api_key.id)
