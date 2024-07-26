@@ -6,13 +6,12 @@ import { AlertQueue, AlertQueueProvider } from "hooks/alerts";
 import { AuthenticationProvider } from "hooks/auth";
 import { ThemeProvider } from "hooks/theme";
 import About from "pages/About";
-import EditPartForm from "pages/EditPartForm";
-import EditRobotForm from "pages/EditRobotForm";
+import EditListingForm from "pages/EditListingForm";
 import Home from "pages/Home";
 import Login from "pages/Login";
 import Logout from "pages/Logout";
 import MyParts from "pages/MyParts";
-import MyRobots from "pages/MyRobots";
+import MyRobots from "pages/MyListings";
 import NewPart from "pages/NewPart";
 import NewRobot from "pages/NewRobot";
 import NotFound from "pages/NotFound";
@@ -44,11 +43,10 @@ const App = () => {
                   <Route path="/robots/add" element={<NewRobot />} />
                   <Route path="/parts/add" element={<NewPart />} />
                   <Route path="/robot/:id" element={<RobotDetails />} />
-                  <Route path="/robot/edit/:id" element={<EditRobotForm />} />
                   <Route path="/images/test" element={<TestImages />} />
                   <Route path="/parts/:page" element={<Parts />} />
                   <Route path="/part/:id" element={<PartDetails />} />
-                  <Route path="/part/edit/:id" element={<EditPartForm />} />
+                  <Route path="/part/edit/:id" element={<EditListingForm />} />
                   <Route path="/robots/me/:page" element={<MyRobots />} />
                   <Route path="/parts/me/:page" element={<MyParts />} />
                   <Route path="/404" element={<NotFound />} />

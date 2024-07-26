@@ -7,6 +7,7 @@ export interface Image {
 
 export interface Listing {
   id: string;
+  name: string;
   user_id: string;
   child_ids: string[];
   artifact_ids: string[];
