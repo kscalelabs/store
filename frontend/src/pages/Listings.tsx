@@ -101,7 +101,7 @@ const Listings = () => {
       <Row className="mt-5">
         {partsData.map((part) => (
           <Col key={part.id} lg={2} md={3} sm={6} xs={12}>
-            <Card onClick={() => navigate(`/part/${part.id}`)}>
+            <Card onClick={() => navigate(`/listing/${part.id}`)}>
               {part.artifact_ids[0] && (
                 <div
                   style={{
@@ -149,12 +149,12 @@ const Listings = () => {
         <Row className="mt-3">
           {pageNumber > 1 && (
             <Col>
-              <Link to={"/parts/" + (pageNumber - 1)}>Previous Page</Link>
+              <Link to={"/listings/" + (pageNumber - 1)}>Previous Page</Link>
             </Col>
           )}
           {moreListings && (
             <Col className="text-end">
-              <Link to={"/parts/" + (pageNumber + 1)}>Next Page</Link>
+              <Link to={"/listings/" + (pageNumber + 1)}>Next Page</Link>
             </Col>
           )}
         </Row>

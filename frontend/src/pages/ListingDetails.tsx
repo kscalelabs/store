@@ -118,7 +118,7 @@ const ListingDetails = () => {
     <>
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
-        <Breadcrumb.Item onClick={() => navigate("/parts/1")}>
+        <Breadcrumb.Item onClick={() => navigate("/listings/1")}>
           Listings
         </Breadcrumb.Item>
         <Breadcrumb.Item active>{name}</Breadcrumb.Item>
@@ -170,7 +170,7 @@ const ListingDetails = () => {
                       width: "100%",
                     }}
                     onClick={() => {
-                      navigate(`/part/edit/${id}/`);
+                      navigate(`/listing/edit/${id}/`);
                     }}
                   >
                     Edit Listing
@@ -212,7 +212,7 @@ const ListingDetails = () => {
                     variant="danger"
                     onClick={async () => {
                       await auth_api.deleteListing(id);
-                      navigate(`/parts/me/1`);
+                      navigate(`/listings/me/1`);
                     }}
                   >
                     Delete Listing

@@ -14,7 +14,7 @@ async def test_robots(app_client: AsyncClient) -> None:
 
     # Create a part.
     response = await app_client.post(
-        "/parts/add",
+        "/listings/add",
         json={
             "name": "test part",
             "description": "test description",

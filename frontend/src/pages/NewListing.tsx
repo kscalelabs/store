@@ -33,7 +33,7 @@ const NewListing: React.FC = () => {
     try {
       await auth_api.addListing(newFormData);
       setMessage(`Listing added successfully.`);
-      navigate("/parts/me/1");
+      navigate("/listings/me/1");
     } catch (error) {
       setMessage("Error adding Listing ");
     }

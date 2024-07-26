@@ -66,7 +66,7 @@ const EditListingForm: React.FC = () => {
     try {
       await auth_api.editListing(newFormData);
       setMessage(`Listing edited successfully.`);
-      navigate(`/parts/me/1`);
+      navigate(`/listings/me/1`);
     } catch (error) {
       setMessage("Error adding part ");
     }
