@@ -89,6 +89,7 @@ const MyRobots = () => {
                 >
                   <ImageComponent
                     imageId={"mini" + robot.images[0].url + ".png"}
+                    size={"large"}
                     caption={robot.images[0].caption}
                   />
                 </div>

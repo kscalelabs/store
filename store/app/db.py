@@ -5,12 +5,14 @@ import asyncio
 import logging
 from typing import AsyncGenerator, Self
 
+from store.app.crud.artifacts import ArtifactsCrud
 from store.app.crud.base import TABLE_NAME, BaseCrud
 from store.app.crud.robots import RobotCrud
 from store.app.crud.users import UserCrud
 
 
 class Crud(
+    ArtifactsCrud,
     UserCrud,
     RobotCrud,
     BaseCrud,
@@ -37,12 +39,15 @@ async def create_tables(crud: Crud | None = None, deletion_protection: bool = Fa
             await create_tables(new_crud)
 
     else:
+        gsis_set = crud.get_gsis()
+        gsis = [(f"{g}Index", g, "S", "HASH") for g in gsis_set]
+
         await crud._create_dynamodb_table(
             name=TABLE_NAME,
             keys=[
                 ("id", "S", "HASH"),
             ],
-            gsis=crud.get_gsis(),
+            gsis=gsis,
             deletion_protection=deletion_protection,
         )
 

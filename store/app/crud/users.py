@@ -4,7 +4,7 @@ import asyncio
 import warnings
 from typing import Literal, overload
 
-from store.app.crud.base import BaseCrud, GlobalSecondaryIndex
+from store.app.crud.base import BaseCrud
 from store.app.model import APIKey, APIKeyPermissionSet, APIKeySource, OAuthKey, User
 from store.settings import settings
 from store.utils import cache_result
@@ -24,15 +24,9 @@ class UserNotFoundError(Exception):
 
 
 class UserCrud(BaseCrud):
-    def __init__(self) -> None:
-        super().__init__()
-
     @classmethod
-    def get_gsis(cls) -> list[GlobalSecondaryIndex]:
-        return super().get_gsis() + [
-            ("emailIndex", "email", "S", "HASH"),
-            ("userTokenIndex", "user_token", "S", "HASH"),
-        ]
+    def get_gsis(cls) -> set[str]:
+        return super().get_gsis().union({"user_id", "email", "user_token"})
 
     @overload
     async def get_user(self, id: str, throw_if_missing: Literal[True]) -> User: ...

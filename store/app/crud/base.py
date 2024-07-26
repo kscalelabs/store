@@ -1,8 +1,9 @@
 """Defines the base CRUD interface."""
 
+import io
 import itertools
 import logging
-from typing import Any, AsyncContextManager, Callable, Literal, Self, TypeVar, overload
+from typing import Any, AsyncContextManager, BinaryIO, Callable, Literal, Self, TypeVar, overload
 
 import aioboto3
 from boto3.dynamodb.conditions import Key
@@ -52,10 +53,8 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         return self.__s3
 
     @classmethod
-    def get_gsis(cls) -> list[GlobalSecondaryIndex]:
-        return [
-            ("typeIndex", "type", "S", "HASH"),
-        ]
+    def get_gsis(cls) -> set[str]:
+        return {"type"}
 
     async def __aenter__(self) -> Self:
         session = aioboto3.Session()
@@ -288,6 +287,22 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         await table.update_item(
             Key={"id": item_id},
             AttributeUpdates={k: {"Value": v, "Action": "PUT"} for k, v in new_values.items() if k != "id"},
+        )
+
+    async def _upload_to_s3(self, data: io.BytesIO | BinaryIO, filename: str, content_type: str) -> None:
+        """Uploads some data to S3.
+
+        Args:
+            data: The data to upload to S3.
+            filename: The resulting filename in S3 (should be unique).
+            content_type: The file content type, for CloudFront to provide
+                in the file header when the user retrieves it.
+        """
+        bucket = await self.s3.Bucket(settings.s3.bucket)
+        await bucket.upload_fileobj(
+            data,
+            f"{settings.s3.prefix}{filename}",
+            ExtraArgs={"ContentType": content_type},
         )
 
     async def _create_dynamodb_table(

@@ -14,8 +14,9 @@ export interface Bom {
 }
 
 export interface Image {
+  id: string;
+  user_id: string;
   caption: string;
-  url: string;
 }
 
 export interface Package {

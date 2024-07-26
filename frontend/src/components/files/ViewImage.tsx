@@ -3,14 +3,15 @@ import React from "react";
 
 interface ImageProps {
   imageId: string;
+  size: 'small' | 'large';
   caption: string;
 }
 
-const ImageComponent: React.FC<ImageProps> = ({ imageId, caption }) => {
+const ImageComponent: React.FC<ImageProps> = ({ imageId, size, caption }) => {
   return (
     <div style={{ width: "100%", paddingTop: "100%", position: "relative" }}>
       <img
-        src={new URL(`image/${imageId}`, BACKEND_URL).toString()}
+        src={new URL(`/image/${imageId}/${size}`, BACKEND_URL).toString()}
         alt={caption}
         className="d-block rounded-lg"
         style={{

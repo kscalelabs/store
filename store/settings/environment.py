@@ -38,6 +38,12 @@ class EmailSettings:
 
 
 @dataclass
+class ImageSettings:
+    max_bytes: int = field(default=1024 * 1024 * 25)
+    image_quality: int = field(default=80)
+
+
+@dataclass
 class S3Settings:
     bucket: str = field(default=II("oc.env:S3_BUCKET"))
     prefix: str = field(default=II("oc.env:S3_PREFIX"))
@@ -60,6 +66,7 @@ class EnvironmentSettings:
     user: UserSettings = field(default_factory=UserSettings)
     crypto: CryptoSettings = field(default_factory=CryptoSettings)
     email: EmailSettings = field(default_factory=EmailSettings)
+    image: ImageSettings = field(default_factory=ImageSettings)
     s3: S3Settings = field(default_factory=S3Settings)
     dynamo: DynamoSettings = field(default_factory=DynamoSettings)
     site: SiteSettings = field(default_factory=SiteSettings)
