@@ -39,7 +39,7 @@ const Login = () => {
       if (code) {
         setUseSpinner(true);
         const res = await auth_api.loginGithub(code as string);
-        auth.login(res.api_key_id);
+        auth.login(res.api_key);
       }
     })();
   }, []);

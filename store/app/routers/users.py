@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response,
 from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel as PydanticBaseModel
 
+from store.app.crud.base import ItemNotFoundError
 from store.app.db import Crud
 from store.app.model import User, UserPermission
 from store.app.routers.auth.github import github_auth_router
@@ -20,73 +21,75 @@ users_router = APIRouter()
 TOKEN_TYPE = "Bearer"
 
 
+class NotAuthenticatedError(Exception): ...
+
+
 class BaseModel(PydanticBaseModel):
     class Config:
         arbitrary_types_allowed = True
 
 
-def set_token_cookie(response: Response, token: str, key: str) -> None:
-    response.set_cookie(
-        key=key,
-        value=token,
-        httponly=True,
-        secure=False,
-        samesite="lax",
-    )
-
-
 async def get_request_api_key_id(request: Request) -> str:
-    api_key_id = request.cookies.get("session_token")
-    if not api_key_id:
-        authorization = request.headers.get("Authorization") or request.headers.get("authorization")
-        if authorization:
-            scheme, credentials = get_authorization_scheme_param(authorization)
-            if not (scheme and credentials):
-                raise HTTPException(
-                    status_code=status.HTTP_406_NOT_ACCEPTABLE,
-                    detail="Authorization header is invalid",
-                )
-            if scheme.lower() != TOKEN_TYPE.lower():
-                raise HTTPException(
-                    status_code=status.HTTP_406_NOT_ACCEPTABLE,
-                    detail="Authorization scheme is invalid",
-                )
-            return credentials
+    authorization = request.headers.get("Authorization") or request.headers.get("authorization")
+    if not authorization:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
         )
-    return api_key_id
+    scheme, credentials = get_authorization_scheme_param(authorization)
+    if not (scheme and credentials):
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail="Authorization header is invalid",
+        )
+    if scheme.lower() != TOKEN_TYPE.lower():
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail="Authorization scheme is invalid",
+        )
+    return credentials
 
 
 async def get_session_user_with_read_permission(
     crud: Annotated[Crud, Depends(Crud.get)],
     api_key_id: Annotated[str, Depends(get_request_api_key_id)],
 ) -> User:
-    api_key = await crud.get_api_key(api_key_id)
-    if api_key.permissions is None or "read" not in api_key.permissions:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
-    return await crud.get_user(api_key.user_id, throw_if_missing=True)
+    try:
+        api_key = await crud.get_api_key(api_key_id)
+        if api_key.permissions is None or "read" not in api_key.permissions:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+        try:
+            return await crud.get_user(api_key.user_id, throw_if_missing=True)
+        except ItemNotFoundError:
+            raise NotAuthenticatedError("Not authenticated")
+    except ItemNotFoundError:
+        raise NotAuthenticatedError("Not authenticated")
 
 
 async def get_session_user_with_write_permission(
     crud: Annotated[Crud, Depends(Crud.get)],
     api_key_id: Annotated[str, Depends(get_request_api_key_id)],
 ) -> User:
-    api_key = await crud.get_api_key(api_key_id)
-    if api_key.permissions is None or "write" not in api_key.permissions:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
-    return await crud.get_user(api_key.user_id, throw_if_missing=True)
+    try:
+        api_key = await crud.get_api_key(api_key_id)
+        if api_key.permissions is None or "write" not in api_key.permissions:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+        return await crud.get_user(api_key.user_id, throw_if_missing=True)
+    except ItemNotFoundError:
+        raise NotAuthenticatedError("Not authenticated")
 
 
 async def get_session_user_with_admin_permission(
     crud: Annotated[Crud, Depends(Crud.get)],
     api_key_id: Annotated[str, Depends(get_request_api_key_id)],
 ) -> User:
-    api_key = await crud.get_api_key(api_key_id)
-    if api_key.permissions is None or "admin" not in api_key.permissions:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
-    return await crud.get_user(api_key.user_id, throw_if_missing=True)
+    try:
+        api_key = await crud.get_api_key(api_key_id)
+        if api_key.permissions is None or "admin" not in api_key.permissions:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+        return await crud.get_user(api_key.user_id, throw_if_missing=True)
+    except ItemNotFoundError:
+        raise NotAuthenticatedError("Not authenticated")
 
 
 def validate_email(email: str) -> str:
@@ -140,7 +143,6 @@ async def logout_user_endpoint(
     response: Response,
 ) -> bool:
     await crud.delete_api_key(token)
-    response.delete_cookie("session_token")
     return True
 
 

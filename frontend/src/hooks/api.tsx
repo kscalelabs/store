@@ -38,7 +38,7 @@ export interface Robot {
 }
 
 interface GithubAuthResponse {
-  api_key_id: string;
+  api_key: string;
 }
 
 interface MeResponse {
