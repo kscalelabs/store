@@ -10,11 +10,12 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from store.app.crud.base import InternalError, ItemNotFoundError
 from store.app.db import create_tables
 from store.app.routers.image import image_router
 from store.app.routers.part import parts_router
 from store.app.routers.robot import robots_router
-from store.app.routers.users import users_router
+from store.app.routers.users import NotAuthenticatedError, users_router
 from store.settings import settings
 
 LOCALHOST_URLS = [
@@ -57,6 +58,30 @@ async def value_error_exception_handler(request: Request, exc: ValueError) -> JS
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
         content={"message": "The request was invalid.", "detail": str(exc)},
+    )
+
+
+@app.exception_handler(ItemNotFoundError)
+async def item_not_found_exception_handler(request: Request, exc: ItemNotFoundError) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"message": "Item not found.", "detail": str(exc)},
+    )
+
+
+@app.exception_handler(InternalError)
+async def internal_error_exception_handler(request: Request, exc: InternalError) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"message": "Internal error.", "detail": str(exc)},
+    )
+
+
+@app.exception_handler(NotAuthenticatedError)
+async def not_authenticated_exception_handler(request: Request, exc: NotAuthenticatedError) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        content={"message": "Not authenticated.", "detail": str(exc)},
     )
 
 

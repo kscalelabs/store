@@ -45,7 +45,7 @@ async def github_email_req(headers: dict[str, str]) -> HttpxResponse:
 
 
 class GithubAuthResponse(BaseModel):
-    api_key_id: str
+    api_key: str
 
 
 @github_auth_router.get("/code/{code}", response_model=GithubAuthResponse)
@@ -94,4 +94,4 @@ async def github_code(
         permissions="full",  # OAuth tokens have full permissions.
     )
 
-    return GithubAuthResponse(api_key_id=api_key.id)
+    return GithubAuthResponse(api_key=api_key.id)

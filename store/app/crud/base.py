@@ -27,6 +27,12 @@ TableKey = tuple[str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]
 GlobalSecondaryIndex = tuple[str, str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]
 
 
+class ItemNotFoundError(ValueError): ...
+
+
+class InternalError(RuntimeError): ...
+
+
 class BaseCrud(AsyncContextManager["BaseCrud"]):
     def __init__(self) -> None:
         super().__init__()
@@ -73,7 +79,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         table = await self.db.Table(TABLE_NAME)
         item_data = item.model_dump()
         if "type" in item_data:
-            raise ValueError("Cannot add item with 'type' attribute")
+            raise InternalError("Cannot add item with 'type' attribute")
         item_data["type"] = item.__class__.__name__
         condition = "attribute_not_exists(id)"
         if unique_fields:
@@ -173,7 +179,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
 
     def _validate_item(self, data: dict[str, Any], item_class: type[T]) -> T:
         if (item_type := data.pop("type")) != item_class.__name__:
-            raise ValueError(f"Item type {str(item_type)} is not a {item_class.__name__}")
+            raise InternalError(f"Item type {str(item_type)} is not a {item_class.__name__}")
         return item_class.model_validate(data)
 
     @overload
@@ -187,7 +193,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         item_dict = await table.get_item(Key={"id": item_id})
         if "Item" not in item_dict:
             if throw_if_missing:
-                raise ValueError("Item not found")
+                raise ItemNotFoundError
             return None
         item_data = item_dict["Item"]
         return self._validate_item(item_data, item_class)
@@ -256,7 +262,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         throw_if_missing: bool = False,
     ) -> T | None:
         if secondary_index_name not in item_class.model_fields:
-            raise ValueError(f"Field '{secondary_index_name}' not in model {item_class.__name__}")
+            raise InternalError(f"Field '{secondary_index_name}' not in model {item_class.__name__}")
         items = await self._get_items_from_secondary_index(
             secondary_index,
             secondary_index_name,
@@ -265,17 +271,17 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         )
         if len(items) == 0:
             if throw_if_missing:
-                raise ValueError(f"No items found with {secondary_index_name} {secondary_index_value}")
+                raise InternalError(f"No items found with {secondary_index_name} {secondary_index_value}")
             return None
         if len(items) > 1:
-            raise ValueError(f"Multiple items found with {secondary_index_name} {secondary_index_value}")
+            raise InternalError(f"Multiple items found with {secondary_index_name} {secondary_index_value}")
         return items[0]
 
     async def _update_item(self, item_id: str, item_class: type[T], new_values: dict[str, Any]) -> None:  # noqa: ANN401
         # Validates the new values.
-        for field_name, field_value in new_values.items():
+        for field_name in new_values.keys():
             if item_class.model_fields.get(field_name) is None:
-                raise ValueError(f"Field {field_name} not in model {item_class.__name__}")
+                raise InternalError(f"Field {field_name} not in model {item_class.__name__}")
 
         # Updates the table.
         table = await self.db.Table(TABLE_NAME)
