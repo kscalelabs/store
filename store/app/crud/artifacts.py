@@ -29,7 +29,7 @@ class ArtifactsCrud(BaseCrud):
     def get_gsis(cls) -> set[str]:
         return super().get_gsis().union({"user_id"})
 
-    async def _crop_image(self, image: Image.Image, size: tuple[int, int]) -> io.BytesIO:
+    def _crop_image(self, image: Image.Image, size: tuple[int, int]) -> io.BytesIO:
         image_bytes = io.BytesIO()
         image_resized = image.resize(size, resample=Image.Resampling.BICUBIC)
         image_resized.save(image_bytes, format="PNG", optimize=True, quality=settings.image.quality)
@@ -46,7 +46,7 @@ class ArtifactsCrud(BaseCrud):
         image: Image.Image,
         user_id: str,
         description: str | None = None,
-    ) -> None:
+    ) -> Artifact:
         artifact = Artifact.create(
             user_id=user_id,
             artifact_type="image",
@@ -70,12 +70,10 @@ class ArtifactsCrud(BaseCrud):
         self,
         file: io.BytesIO | BinaryIO,
         user_id: str,
-        name: str,
         description: str | None = None,
-    ) -> None:
+    ) -> Artifact:
         artifact = Artifact.create(
             user_id=user_id,
-            name=name,
             artifact_type="urdf",
             description=description,
         )
@@ -89,12 +87,10 @@ class ArtifactsCrud(BaseCrud):
         self,
         file: io.BytesIO | BinaryIO,
         user_id: str,
-        name: str,
         description: str | None = None,
-    ) -> None:
+    ) -> Artifact:
         artifact = Artifact.create(
             user_id=user_id,
-            name=name,
             artifact_type="urdf",
             description=description,
         )

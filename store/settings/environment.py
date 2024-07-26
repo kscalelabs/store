@@ -40,7 +40,7 @@ class EmailSettings:
 @dataclass
 class ImageSettings:
     max_bytes: int = field(default=1024 * 1024 * 25)
-    image_quality: int = field(default=80)
+    quality: int = field(default=80)
 
 
 @dataclass

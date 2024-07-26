@@ -26,7 +26,6 @@ async def get_listing(listing_id: str, crud: Annotated[Crud, Depends(Crud.get)])
 
 class NewListing(BaseModel):
     name: str
-    description: str
     child_ids: list[str]
     artifact_ids: list[str]
     description: str | None
@@ -39,7 +38,7 @@ async def list_my_listings(
     page: int = Query(description="Page number for pagination"),
     search_query: str = Query(None, description="Search query string"),
 ) -> tuple[list[Listing], bool]:
-    return await crud.list_user_listings(user.id, page, search_query=search_query)
+    return await crud.get_user_listings(user.id, page, search_query=search_query)
 
 
 @listings_router.post("/add/")
@@ -55,6 +54,7 @@ async def add_listing(
             description=new_listing.description,
             user_id=user.id,
             artifact_ids=new_listing.artifact_ids,
+            child_ids=new_listing.child_ids,
         )
     )
     return True
@@ -69,7 +69,7 @@ async def delete_listing(
     listing = await crud.get_listing(listing_id)
     if listing is None:
         raise HTTPException(status_code=404, detail="Listing not found")
-    if listing.owner != user.id:
+    if listing.user_id != user.id:
         raise HTTPException(status_code=403, detail="You do not own this listing")
     await crud.delete_listing(listing_id)
     return True
@@ -85,8 +85,8 @@ async def edit_listing(
     listing_info = await crud.get_listing(id)
     if listing_info is None:
         raise HTTPException(status_code=404, detail="Listing not found")
-    if listing_info.owner != user.id:
+    if listing_info.user_id != user.id:
         raise HTTPException(status_code=403, detail="You do not own this listing")
-    listing["owner"] = user.id
+    listing["user_id"] = user.id
     await crud._update_item(id, Listing, listing)
     return True

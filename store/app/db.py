@@ -3,7 +3,7 @@
 import argparse
 import asyncio
 import logging
-from typing import AsyncGenerator, Self
+from typing import AsyncGenerator, Literal, Self
 
 from store.app.crud.artifacts import ArtifactsCrud
 from store.app.crud.base import TABLE_NAME, BaseCrud
@@ -40,7 +40,9 @@ async def create_tables(crud: Crud | None = None, deletion_protection: bool = Fa
 
     else:
         gsis_set = crud.get_gsis()
-        gsis = [(f"{g}Index", g, "S", "HASH") for g in gsis_set]
+        gsis: list[tuple[str, str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]] = [
+            (f"{g}Index", g, "S", "HASH") for g in gsis_set
+        ]
 
         await crud._create_dynamodb_table(
             name=TABLE_NAME,
