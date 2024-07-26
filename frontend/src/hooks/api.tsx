@@ -137,7 +137,7 @@ export class api {
   public async currentUser(): Promise<string> {
     return this.callWrapper(async () => {
       const response = await this.api.get("/users/me");
-      return response.data.id;
+      return response.data.user_id;
     });
   }
 
