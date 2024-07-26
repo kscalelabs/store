@@ -2,7 +2,7 @@ import { InputerURDFComponent } from "components/files/InputerURDFLoader";
 import TCButton from "components/files/TCButton";
 import ImageComponent from "components/files/ViewImage";
 import { useAlertQueue } from "hooks/alerts";
-import { api, Bom, Package } from "hooks/api";
+import { api, Bom, Image, Package } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import {
@@ -23,7 +23,7 @@ interface RobotDetailsResponse {
   name: string;
   owner: string;
   description: string;
-  images: { url: string; caption: string }[];
+  images: Image[];
   urdf: string;
   packages: Package[];
   bom: Bom[];
@@ -318,7 +318,7 @@ const RobotDetails = () => {
                   <TCButton
                     variant="danger"
                     onClick={async () => {
-                      await auth_api.deleteRobot(id);
+                      await auth_api.deleteListing(id);
                       navigate(`/robots/me/1`);
                     }}
                   >
@@ -379,7 +379,8 @@ const RobotDetails = () => {
                       }}
                     >
                       <ImageComponent
-                        imageId={images[key].url + ".png"}
+                        imageId={images[key].id}
+                        size={"large"}
                         caption={images[key].caption}
                       />
                     </div>
@@ -428,7 +429,8 @@ const RobotDetails = () => {
             }}
           >
             <ImageComponent
-              imageId={images[imageIndex].url + ".png"}
+              imageId={images[imageIndex].id}
+              size={"large"}
               caption={images[imageIndex].caption}
             />
           </div>

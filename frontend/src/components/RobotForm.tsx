@@ -1,5 +1,5 @@
 import TCButton from "components/files/TCButton";
-import { Bom, Image, Package, Part } from "hooks/api";
+import { Image } from "hooks/api";
 import { Theme } from "hooks/theme";
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { Col, Form, Row } from "react-bootstrap";
@@ -19,16 +19,11 @@ interface RobotFormProps {
   setDof: Dispatch<SetStateAction<string>>;
   robot_description: string;
   setDescription: Dispatch<SetStateAction<string>>;
-  robot_bom: Bom[];
-  setBom: Dispatch<SetStateAction<Bom[]>>;
-  parts: Part[];
   handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
   robot_images: Image[];
   setImages: Dispatch<SetStateAction<Image[]>>;
   robotURDF: string;
   setURDF: Dispatch<SetStateAction<string>>;
-  robot_packages: Package[];
-  setPackages: Dispatch<SetStateAction<Package[]>>;
 }
 
 const RobotForm: React.FC<RobotFormProps> = ({
@@ -45,33 +40,12 @@ const RobotForm: React.FC<RobotFormProps> = ({
   setDof,
   robot_description,
   setDescription,
-  robot_bom,
-  setBom,
-  parts,
   handleSubmit,
   robot_images,
   setImages,
   robotURDF,
   setURDF,
-  robot_packages,
-  setPackages,
 }) => {
-  const handlePackageChange = (
-    index: number,
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    const newPackages = [...robot_packages];
-    newPackages[index][name as keyof Package] = value;
-    setPackages(newPackages);
-  };
-  const handleAddPackage = () => {
-    setPackages([...robot_packages, { name: "", url: "" }]);
-  };
-  const handleRemovePackage = (index: number) => {
-    const newPackages = robot_packages.filter((_, i) => i !== index);
-    setPackages(newPackages);
-  };
   const handleImageChange = (
     index: number,
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -83,12 +57,12 @@ const RobotForm: React.FC<RobotFormProps> = ({
   };
 
   const handleAddImage = () => {
-    setImages([...robot_images, { url: "", caption: "" }]);
+    setImages([...robot_images, { id: "", caption: "" }]);
   };
 
-  const handleImageUploadSuccess = (url: string, index: number) => {
+  const handleImageUploadSuccess = (image_id: string, index: number) => {
     const newImages = [...robot_images];
-    newImages[index].url = url;
+    newImages[index].id = image_id;
     setImages(newImages);
   };
 
@@ -97,34 +71,11 @@ const RobotForm: React.FC<RobotFormProps> = ({
     setImages(newImages);
   };
 
-  const handleBomChange = (
-    index: number,
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    const newBom = [...robot_bom];
-    if (name === "quantity") {
-      newBom[index][name as "quantity"] = Number(value);
-    } else {
-      newBom[index][name as "part_id"] = value;
-    }
-
-    setBom(newBom);
-  };
-
-  const handleAddBom = () => {
-    setBom([...robot_bom, { part_id: "", quantity: 0 }]);
-  };
-
-  const handleRemoveBom = (index: number) => {
-    const newBom = robot_bom.filter((_, i) => i !== index);
-    setBom(newBom);
-  };
-
   return (
     <>
       <h1>{title}</h1>
       {message && <p>{message}</p>}
+
       <Form onSubmit={handleSubmit} className="mb-3">
         <label htmlFor="name">Name</label>
         <Form.Control
@@ -194,57 +145,16 @@ const RobotForm: React.FC<RobotFormProps> = ({
           value={robotURDF}
         />
         <label htmlFor="packages">URDF Packages (Optional)</label>
-        {robot_packages &&
-          robot_packages.map((pkg, index) => (
-            <Row key={index} className="mb-3">
-              <Col md={12}>
-                <label htmlFor={"name-" + index}>Caption</label>
-                <Form.Control
-                  id={"name-" + index}
-                  className="mb-1"
-                  type="text"
-                  name="name"
-                  value={pkg.name}
-                  onChange={(e) => handlePackageChange(index, e)}
-                  required
-                />
-                <Form.Control
-                  id={"url-" + index}
-                  className="mb-1"
-                  type="text"
-                  name="url"
-                  value={pkg.url}
-                  onChange={(e) => handlePackageChange(index, e)}
-                  required
-                />
-              </Col>
-              <Col md={12}>
-                <TCButton
-                  className="mb-2 mt-2"
-                  variant="danger"
-                  onClick={() => handleRemovePackage(index)}
-                >
-                  Remove
-                </TCButton>
-              </Col>
-            </Row>
-          ))}
-        <Col>
-          <TCButton
-            className="mb-3"
-            variant={theme === "dark" ? "outline-light" : "outline-dark"}
-            onClick={handleAddPackage}
-          >
-            Add Package
-          </TCButton>
-        </Col>
 
         <h2>Images</h2>
+
         {robot_images.map((image, index) => (
           <Row key={index} className="mb-3">
             <Col md={12}>
               <ImageUploadComponent
-                onUploadSuccess={(url) => handleImageUploadSuccess(url, index)}
+                onUploadSuccess={(image_id) =>
+                  handleImageUploadSuccess(image_id, index)
+                }
               />
               <label htmlFor={"caption-" + index}>Caption</label>
               <Form.Control
@@ -268,6 +178,7 @@ const RobotForm: React.FC<RobotFormProps> = ({
             </Col>
           </Row>
         ))}
+
         <Col>
           <TCButton
             className="mb-3"
@@ -278,50 +189,7 @@ const RobotForm: React.FC<RobotFormProps> = ({
           </TCButton>
         </Col>
         <h2>Bill of Materials</h2>
-        {robot_bom.map((bom, index) => (
-          <Row key={index} className="mb-3">
-            <Col>
-              <label htmlFor={"part-" + index}>Part</label>
-              <Form.Control
-                id={"part-" + index}
-                className="mb-1"
-                as="select"
-                name="part_id"
-                value={bom.part_id}
-                onChange={(e) => handleBomChange(index, e)}
-                required
-              >
-                <option value="" disabled>
-                  Select a Part
-                </option>
-                {parts.map((part, index) => (
-                  <option key={index} value={part.id}>
-                    {part.name}
-                  </option>
-                ))}
-              </Form.Control>
-              <label htmlFor={"quantity-" + index}>Quantity</label>
-              <Form.Control
-                id={"quantity-" + index}
-                className="mb-1"
-                type="number"
-                name="quantity"
-                value={bom.quantity}
-                onChange={(e) => handleBomChange(index, e)}
-                required
-              />
-            </Col>
-            <Col md={12}>
-              <TCButton
-                className="mb-2 mt-2"
-                variant="danger"
-                onClick={() => handleRemoveBom(index)}
-              >
-                Remove
-              </TCButton>
-            </Col>
-          </Row>
-        ))}
+
         <Col>
           <TCButton
             className="mb-3"

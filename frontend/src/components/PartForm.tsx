@@ -41,7 +41,7 @@ const PartForm: React.FC<PartFormProps> = ({
   };
 
   const handleAddImage = () => {
-    setImages([...part_images, { url: "", caption: "" }]);
+    setImages([...part_images, { id: "", caption: "" }]);
   };
 
   const handleRemoveImage = (index: number) => {
@@ -49,9 +49,9 @@ const PartForm: React.FC<PartFormProps> = ({
     setImages(newImages);
   };
 
-  const handleImageUploadSuccess = (url: string, index: number) => {
+  const handleImageUploadSuccess = (image_id: string, index: number) => {
     const newImages = [...part_images];
-    newImages[index].url = url;
+    newImages[index].id = image_id;
     setImages(newImages);
   };
 
@@ -87,7 +87,9 @@ const PartForm: React.FC<PartFormProps> = ({
           <Row key={index} className="mb-3">
             <Col md={12}>
               <ImageUploadComponent
-                onUploadSuccess={(url) => handleImageUploadSuccess(url, index)}
+                onUploadSuccess={(image_id) =>
+                  handleImageUploadSuccess(image_id, index)
+                }
               />
               <label htmlFor={"caption-" + index}>Caption</label>
               <Form.Control

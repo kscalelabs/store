@@ -1,7 +1,7 @@
 import RobotForm from "components/RobotForm";
 import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
-import { api, Bom, Image, Package, Part, Robot } from "hooks/api";
+import { api, Bom, Image, Listing, Package, Part } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
 import React, { FormEvent, useEffect, useState } from "react";
@@ -60,7 +60,7 @@ const EditRobotForm: React.FC = () => {
       setMessage("Please upload at least one image.");
       return;
     }
-    const newFormData: Robot = {
+    const newFormData: Listing = {
       id: robot_id,
       name: robot_name,
       description: robot_description,
@@ -74,7 +74,7 @@ const EditRobotForm: React.FC = () => {
       degrees_of_freedom: robot_degrees_of_freedom,
     };
     try {
-      await auth_api.editRobot(newFormData);
+      await auth_api.editListing(newFormData);
       setMessage(`Robot edited successfully.`);
       navigate(`/robots/me/1`);
     } catch (error) {

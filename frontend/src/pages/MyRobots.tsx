@@ -1,6 +1,6 @@
 import ImageComponent from "components/files/ViewImage";
 import { useAlertQueue } from "hooks/alerts";
-import { api, Robot } from "hooks/api";
+import { api, Listing } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import {
@@ -17,7 +17,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 const MyRobots = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
-  const [robotsData, setRobot] = useState<Robot[] | null>([]);
+  const [robotsData, setRobot] = useState<Listing[] | null>([]);
   const [moreRobots, setMoreRobots] = useState<boolean>(false);
 
   const { addAlert } = useAlertQueue();
@@ -36,7 +36,7 @@ const MyRobots = () => {
   useEffect(() => {
     const fetchMyRobots = async () => {
       try {
-        const robotsQuery = await auth_api.getMyRobots(pageNumber);
+        const robotsQuery = await auth_api.getMyListings(pageNumber);
         setRobot(robotsQuery[0]);
         setMoreRobots(robotsQuery[1]);
       } catch (err) {
@@ -88,7 +88,7 @@ const MyRobots = () => {
                   }}
                 >
                   <ImageComponent
-                    imageId={"mini" + robot.images[0].url + ".png"}
+                    imageId={robot.images[0].id}
                     size={"large"}
                     caption={robot.images[0].caption}
                   />

@@ -31,6 +31,15 @@ class NewListing(BaseModel):
     description: str | None
 
 
+@listings_router.get("/")
+async def list_listings(
+    crud: Annotated[Crud, Depends(Crud.get)],
+    page: int = Query(description="Page number for pagination"),
+    search_query: str = Query(None, description="Search query string"),
+) -> tuple[list[Listing], bool]:
+    return await crud.get_listings(page, search_query=search_query)
+
+
 @listings_router.get("/me/")
 async def list_my_listings(
     crud: Annotated[Crud, Depends(Crud.get)],

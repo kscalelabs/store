@@ -1,41 +1,16 @@
 import { AxiosInstance } from "axios";
 
-export interface Part {
-  description: string;
-  owner: string;
-  images: Image[];
-  id: string;
-  name: string;
-}
-
-export interface Bom {
-  part_id: string;
-  quantity: number;
-}
-
 export interface Image {
   id: string;
-  user_id: string;
   caption: string;
 }
 
-export interface Package {
-  name: string;
-  url: string;
-}
-
-export interface Robot {
+export interface Listing {
   id: string;
-  name: string;
-  description: string;
-  owner: string;
-  bom: Bom[];
-  images: Image[];
-  height: string;
-  weight: string;
-  degrees_of_freedom: string;
-  urdf: string;
-  packages: Package[];
+  user_id: string;
+  child_ids: string[];
+  artifact_ids: string[];
+  description?: string;
 }
 
 interface GithubAuthResponse {
@@ -115,12 +90,12 @@ export class api {
     });
   }
 
-  public async getRobots(
+  public async getListings(
     page: number,
     searchQuery?: string,
-  ): Promise<[Robot[], boolean]> {
+  ): Promise<[Listing[], boolean]> {
     return this.callWrapper(async () => {
-      const response = await this.api.get("/robots/", {
+      const response = await this.api.get("/listings/", {
         params: { page, ...(searchQuery ? { search_query: searchQuery } : {}) },
       });
       return response.data;
@@ -142,25 +117,18 @@ export class api {
     });
   }
 
-  public async getMyRobots(page: number): Promise<[Robot[], boolean]> {
+  public async getMyListings(page: number): Promise<[Listing[], boolean]> {
     return this.callWrapper(async () => {
-      const response = await this.api.get("/robots/me/", {
+      const response = await this.api.get("/listings/me/", {
         params: { page },
       });
       return response.data;
     });
   }
 
-  public async getRobotById(robotId: string | undefined): Promise<Robot> {
+  public async getListingById(listingId: string | undefined): Promise<Listing> {
     return this.callWrapper(async () => {
-      const response = await this.api.get(`/robots/${robotId}`);
-      return response.data;
-    });
-  }
-
-  public async getPartById(partId: string | undefined): Promise<Part> {
-    return this.callWrapper(async () => {
-      const response = await this.api.get(`/parts/${partId}`);
+      const response = await this.api.get(`/listings/${listingId}`);
       return response.data;
     });
   }
@@ -172,72 +140,28 @@ export class api {
     });
   }
 
-  public async addRobot(robot: Robot): Promise<void> {
+  public async addListing(listing: Listing): Promise<void> {
     return this.callWrapper(async () => {
-      await this.api.post("/robots/add/", robot);
+      await this.api.post("/listings/add/", listing);
     });
   }
 
-  public async deleteRobot(id: string | undefined): Promise<void> {
+  public async deleteListing(id: string | undefined): Promise<void> {
     return this.callWrapper(async () => {
-      await this.api.delete(`robots/delete/${id}/`);
+      await this.api.delete(`/listings/delete/${id}/`);
     });
   }
 
-  public async editRobot(robot: Robot): Promise<void> {
+  public async editListing(listing: Listing): Promise<void> {
     return this.callWrapper(async () => {
-      await this.api.post(`/robots/edit/${robot.id}/`, robot);
-    });
-  }
-
-  public async dumpParts(): Promise<Part[]> {
-    return this.callWrapper(async () => {
-      const response = await this.api.get("/parts/dump/");
-      return response.data;
-    });
-  }
-
-  public async getParts(
-    page: number,
-    searchQuery?: string,
-  ): Promise<[Part[], boolean]> {
-    return this.callWrapper(async () => {
-      const response = await this.api.get("/parts/", {
-        params: { page, ...(searchQuery ? { search_query: searchQuery } : {}) },
-      });
-      return response.data;
-    });
-  }
-
-  public async getMyParts(page: number): Promise<[Part[], boolean]> {
-    return this.callWrapper(async () => {
-      const response = await this.api.get("/parts/me/", { params: { page } });
-      return response.data;
-    });
-  }
-
-  public async addPart(part: Part): Promise<void> {
-    return this.callWrapper(async () => {
-      await this.api.post("/parts/add/", part);
-    });
-  }
-
-  public async deletePart(id: string | undefined): Promise<void> {
-    return this.callWrapper(async () => {
-      await this.api.delete(`/parts/delete/${id}/`);
-    });
-  }
-
-  public async editPart(part: Part): Promise<void> {
-    return this.callWrapper(async () => {
-      await this.api.post<boolean>(`/parts/edit/${part.id}/`, part);
+      await this.api.post(`/listings/edit/${listing.id}/`, listing);
     });
   }
 
   public async uploadImage(formData: FormData): Promise<string> {
     return this.callWrapper(async () => {
       const res = await this.api.post<UploadImageResponse>(
-        "/image/upload/",
+        "/image/upload",
         formData,
         {
           headers: {

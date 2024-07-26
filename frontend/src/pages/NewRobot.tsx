@@ -1,5 +1,5 @@
 import RobotForm from "components/RobotForm";
-import { api, Bom, Image, Package, Part, Robot } from "hooks/api";
+import { api, Bom, Image, Listing, Package, Part } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
 import React, { FormEvent, useEffect, useState } from "react";
@@ -28,7 +28,7 @@ const NewRobot: React.FC = () => {
       setMessage("Please upload at least one image.");
       return;
     }
-    const newFormData: Robot = {
+    const newFormData: Listing = {
       id: "",
       name: robot_name,
       description: robot_description,
@@ -42,7 +42,7 @@ const NewRobot: React.FC = () => {
       packages: robot_packages,
     };
     try {
-      await auth_api.addRobot(newFormData);
+      await auth_api.addListing(newFormData);
       setMessage(`Robot added successfully.`);
       navigate(`/robots/me/1`);
     } catch (error) {

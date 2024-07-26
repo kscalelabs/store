@@ -1,7 +1,7 @@
 import ImageComponent from "components/files/ViewImage";
 import { SearchInput } from "components/ui/Search/SearchInput";
 import { useAlertQueue } from "hooks/alerts";
-import { api, Robot } from "hooks/api";
+import { api, Listing } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import {
@@ -18,7 +18,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 const Robots = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
-  const [robotsData, setRobot] = useState<Robot[] | null>([]);
+  const [robotsData, setRobot] = useState<Listing[] | null>([]);
   const [moreRobots, setMoreRobots] = useState<boolean>(false);
   const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
   const [searchQuery, setSearchQuery] = useState("");
@@ -49,7 +49,7 @@ const Robots = () => {
   useEffect(() => {
     const fetch_robots = async () => {
       try {
-        const robotsQuery = await auth_api.getRobots(pageNumber, searchQuery);
+        const robotsQuery = await auth_api.getListings(pageNumber, searchQuery);
         setMoreRobots(robotsQuery[1]);
         const robots = robotsQuery[0];
         setRobot(robots);
@@ -113,7 +113,8 @@ const Robots = () => {
                   }}
                 >
                   <ImageComponent
-                    imageId={"mini" + robot.images[0].url + ".png"}
+                    imageId={robot.images[0].id}
+                    size={"large"}
                     caption={robot.images[0].caption}
                   />
                 </div>

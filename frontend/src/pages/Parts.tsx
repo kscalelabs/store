@@ -113,7 +113,8 @@ const Parts = () => {
                   }}
                 >
                   <ImageComponent
-                    imageId={"mini" + part.images[0].url + ".png"}
+                    imageId={part.images[0].id}
+                    size={"small"}
                     caption={part.images[0].caption}
                   />
                 </div>

@@ -254,7 +254,8 @@ const PartDetails = () => {
                     }}
                   >
                     <ImageComponent
-                      imageId={images[key].url + ".png"}
+                      imageId={images[key].id}
+                      size={"large"}
                       caption={images[key].caption}
                     />
                   </div>
@@ -293,7 +294,8 @@ const PartDetails = () => {
         <Modal.Body>
           <div style={{ display: "flex", justifyContent: "center" }}>
             <ImageComponent
-              imageId={images[imageIndex].url + ".png"}
+              imageId={images[imageIndex].id}
+              size={"large"}
               caption={images[imageIndex].caption}
             />
           </div>
