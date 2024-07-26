@@ -17,19 +17,11 @@ const Home: React.FC = () => {
         <p className="lead">Buy and sell robots and robot parts</p>
       </Row>
       <Row className="row-two">
-        <Col md={6} sm={12}>
+        <Col sm={12}>
           <Card onClick={() => navigate(`/robots/1`)}>
             <Card.Body>
-              <Card.Title>Browse Robots</Card.Title>
-              <Card.Text>Buy and sell robots</Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={6} sm={12}>
-          <Card onClick={() => navigate(`/parts/1`)}>
-            <Card.Body>
               <Card.Title>Browse Listings</Card.Title>
-              <Card.Text>Buy and sell robot parts</Card.Text>
+              <Card.Text>Buy and sell robots or robot parts</Card.Text>
             </Card.Body>
           </Card>
         </Col>
@@ -39,7 +31,7 @@ const Home: React.FC = () => {
           <Row className="row-two">
             <Col md={6} sm={12}>
               <TCButton
-                variant={theme === "dark" ? "outline-light" : "outline-dark"}
+                variant="primary"
                 size="lg"
                 style={{
                   width: "100%",
