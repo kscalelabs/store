@@ -158,7 +158,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             response = await self._list_items(
                 item_class,
                 filter_expression="(contains(#p_name, :query) OR contains(description, :query)) AND #p_owner=:user_id",
-                expression_attribute_names={"#p_name": "name", "#p_owner": "owner"},
+                expression_attribute_names={"#p_name": "name", "#p_owner": "user_id"},
                 expression_attribute_values={":query": search_query, ":user_id": user_id},
             )
         else:
@@ -166,7 +166,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
                 item_class,
                 filter_expression="#p_owner=:user_id",
                 expression_attribute_values={":user_id": user_id},
-                expression_attribute_names={"#p_owner": "owner"},
+                expression_attribute_names={"#p_owner": "user_id"},
             )
         sorted_items = sorted(response, key=sort_key, reverse=True)
         return sorted_items[(page - 1) * ITEMS_PER_PAGE : page * ITEMS_PER_PAGE], page * ITEMS_PER_PAGE < len(response)
