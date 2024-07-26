@@ -59,6 +59,16 @@ const ListingForm: React.FC<ListingFormProps> = ({
     setArtifacts(newImages);
   };
 
+  const handleChildrenChange = (
+    index: number,
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { value } = e.target;
+    const newChildren = [...child_ids];
+    newChildren[index] = value;
+    setChildIds(newChildren);
+  };
+
   return (
     <>
       <h1>{title}</h1>
@@ -129,7 +139,16 @@ const ListingForm: React.FC<ListingFormProps> = ({
         <h2>Children</h2>
         {child_ids.map((id, index) => (
           <Row key={index} className="mb-3">
-            {id}
+            <label htmlFor={"child-" + index}>Part</label>
+            <Form.Control
+              id={"child-" + index}
+              className="mb-1"
+              as="select"
+              name="child_id"
+              value={id}
+              onChange={(e) => handleChildrenChange(index, e)}
+              required
+            ></Form.Control>
           </Row>
         ))}
         <Col md={12}>
