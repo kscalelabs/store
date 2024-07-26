@@ -32,7 +32,7 @@ export interface Robot {
   images: Image[];
   height: string;
   weight: string;
-  degrees_of_freedom: string;
+  degrees_of_freedom: string | undefined;
   urdf: string;
   packages: Package[];
 }

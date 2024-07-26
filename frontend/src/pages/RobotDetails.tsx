@@ -29,7 +29,7 @@ interface RobotDetailsResponse {
   bom: Bom[];
   height: string;
   weight: string;
-  degrees_of_freedom: string;
+  degrees_of_freedom: string | undefined;
 }
 
 interface ExtendedBom {

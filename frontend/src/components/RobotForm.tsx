@@ -15,8 +15,8 @@ interface RobotFormProps {
   setHeight: Dispatch<SetStateAction<string>>;
   robot_weight: string;
   setWeight: Dispatch<SetStateAction<string>>;
-  robot_degrees_of_freedom: string;
-  setDof: Dispatch<SetStateAction<string>>;
+  robot_degrees_of_freedom: string | undefined;
+  setDof: Dispatch<SetStateAction<string| undefined>>;
   robot_description: string;
   setDescription: Dispatch<SetStateAction<string>>;
   robot_bom: Bom[];
