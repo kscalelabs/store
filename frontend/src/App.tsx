@@ -34,11 +34,11 @@ const App = () => {
                   <Route path="/about" element={<About />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/logout" element={<Logout />} />
-                  <Route path="/parts/add" element={<NewListing />} />
-                  <Route path="/parts/:page" element={<Listings />} />
-                  <Route path="/part/:id" element={<ListingDetails />} />
-                  <Route path="/part/edit/:id" element={<EditListingForm />} />
-                  <Route path="/parts/me/:page" element={<MyListings />} />
+                  <Route path="/listings/add" element={<NewListing />} />
+                  <Route path="/listings/:page" element={<Listings />} />
+                  <Route path="/listings/:id" element={<ListingDetails />} />
+                  <Route path="/listings/edit/:id" element={<EditListingForm />} />
+                  <Route path="/listings/me/:page" element={<MyListings />} />
                   <Route path="/404" element={<NotFound />} />
                   <Route path="*" element={<NotFoundRedirect />} />
                 </Routes>

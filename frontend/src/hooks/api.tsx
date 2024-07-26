@@ -162,7 +162,7 @@ export class api {
   public async uploadImage(formData: FormData): Promise<string> {
     return this.callWrapper(async () => {
       const res = await this.api.post<UploadImageResponse>(
-        "/image/upload",
+        "/images/upload",
         formData,
         {
           headers: {
