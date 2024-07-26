@@ -110,7 +110,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         table = await self.db.Table(TABLE_NAME)
 
         query_params = {
-            "IndexName": "typeIndex",
+            "IndexName": "type_index",
             "KeyConditionExpression": Key("type").eq(item_class.__name__),
             "Limit": limit,
         }
@@ -174,7 +174,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     async def _count_items(self, item_class: type[T]) -> int:
         table = await self.db.Table(TABLE_NAME)
         item_dict = await table.scan(
-            IndexName="typeIndex",
+            IndexName="type_index",
             Select="COUNT",
             FilterExpression=Key("type").eq(item_class.__name__),
         )
