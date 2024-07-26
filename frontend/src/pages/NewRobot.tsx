@@ -14,7 +14,9 @@ const NewRobot: React.FC = () => {
   const [robot_height, setHeight] = useState<string>("");
   const [robot_weight, setWeight] = useState<string>("");
   const [robot_urdf, setURDF] = useState<string>("");
-  const [robot_degrees_of_freedom, setDof] = useState<string | undefined>(undefined);
+  const [robot_degrees_of_freedom, setDof] = useState<string | undefined>(
+    undefined,
+  );
   const [robot_description, setDescription] = useState<string>("");
   const [robot_packages, setPackages] = useState<Package[]>([]);
   const [robot_bom, setBom] = useState<Bom[]>([]);

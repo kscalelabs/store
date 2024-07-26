@@ -23,7 +23,9 @@ const EditRobotForm: React.FC = () => {
   const [robot_weight, setWeight] = useState<string>("");
   const [urdf, setURDF] = useState<string>("");
   const [packages, setPackages] = useState<Package[]>([]);
-  const [robot_degrees_of_freedom, setDof] = useState<string | undefined>(undefined);
+  const [robot_degrees_of_freedom, setDof] = useState<string | undefined>(
+    undefined,
+  );
   const [robot_bom, setBom] = useState<Bom[]>([]);
   const [robot_images, setImages] = useState<Image[]>([]);
   const [parts, setParts] = useState<Part[]>([]);
