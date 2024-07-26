@@ -56,6 +56,10 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     def get_gsis(cls) -> set[str]:
         return {"type"}
 
+    @classmethod
+    def get_gsi_index_name(cls, colname: str) -> str:
+        return f"{colname}_index"
+
     async def __aenter__(self) -> Self:
         session = aioboto3.Session()
         db = session.resource("dynamodb")
@@ -219,14 +223,13 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
 
     async def _get_items_from_secondary_index(
         self,
-        secondary_index: str,
         secondary_index_name: str,
         secondary_index_value: str,
         item_class: type[T],
     ) -> list[T]:
         table = await self.db.Table(TABLE_NAME)
         item_dict = await table.query(
-            IndexName=secondary_index,
+            IndexName=self.get_gsi_index_name(secondary_index_name),
             KeyConditionExpression=Key(secondary_index_name).eq(secondary_index_value),
         )
         items = item_dict["Items"]
@@ -235,7 +238,6 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     @overload
     async def _get_unique_item_from_secondary_index(
         self,
-        secondary_index: str,
         secondary_index_name: str,
         secondary_index_value: str,
         item_class: type[T],
@@ -245,7 +247,6 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     @overload
     async def _get_unique_item_from_secondary_index(
         self,
-        secondary_index: str,
         secondary_index_name: str,
         secondary_index_value: str,
         item_class: type[T],
@@ -254,7 +255,6 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
 
     async def _get_unique_item_from_secondary_index(
         self,
-        secondary_index: str,
         secondary_index_name: str,
         secondary_index_value: str,
         item_class: type[T],
@@ -263,7 +263,6 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         if secondary_index_name not in item_class.model_fields:
             raise InternalError(f"Field '{secondary_index_name}' not in model {item_class.__name__}")
         items = await self._get_items_from_secondary_index(
-            secondary_index,
             secondary_index_name,
             secondary_index_value,
             item_class,
@@ -304,6 +303,15 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             f"{settings.s3.prefix}{filename}",
             ExtraArgs={"ContentType": content_type},
         )
+
+    async def _create_s3_bucket(self) -> None:
+        """Creates an S3 bucket if it does not already exist."""
+        try:
+            await self.s3.meta.client.head_bucket(Bucket=settings.s3.bucket)
+            logger.info("Found existing bucket %s", settings.s3.bucket)
+        except ClientError:
+            logger.info("Creating %s bucket", settings.s3.bucket)
+            await self.s3.create_bucket(Bucket=settings.s3.bucket)
 
     async def _create_dynamodb_table(
         self,

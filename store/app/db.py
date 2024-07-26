@@ -41,16 +41,19 @@ async def create_tables(crud: Crud | None = None, deletion_protection: bool = Fa
     else:
         gsis_set = crud.get_gsis()
         gsis: list[tuple[str, str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]] = [
-            (f"{g}Index", g, "S", "HASH") for g in gsis_set
+            (Crud.get_gsi_index_name(g), g, "S", "HASH") for g in gsis_set
         ]
 
-        await crud._create_dynamodb_table(
-            name=TABLE_NAME,
-            keys=[
-                ("id", "S", "HASH"),
-            ],
-            gsis=gsis,
-            deletion_protection=deletion_protection,
+        await asyncio.gather(
+            crud._create_dynamodb_table(
+                name=TABLE_NAME,
+                keys=[
+                    ("id", "S", "HASH"),
+                ],
+                gsis=gsis,
+                deletion_protection=deletion_protection,
+            ),
+            crud._create_s3_bucket(),
         )
 
 

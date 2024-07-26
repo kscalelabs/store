@@ -11,9 +11,7 @@ from pydantic.main import BaseModel
 from store.app.crud.artifacts import get_image_name
 from store.app.db import Crud
 from store.app.model import ArtifactSize, User
-from store.app.routers.users import (
-    get_session_user_with_write_permission,
-)
+from store.app.routers.users import get_session_user_with_write_permission
 from store.settings import settings
 from store.utils import new_uuid
 
@@ -26,7 +24,7 @@ class UserInfoResponse(BaseModel):
     image_id: str
 
 
-@image_router.post("/upload/")
+@image_router.post("/upload")
 async def upload_image(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],

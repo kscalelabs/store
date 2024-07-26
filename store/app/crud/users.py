@@ -56,7 +56,6 @@ class UserCrud(BaseCrud):
 
     async def _get_oauth_key(self, token: str, throw_if_missing: bool = False) -> OAuthKey | None:
         return await self._get_unique_item_from_secondary_index(
-            "userTokenIndex",
             "user_token",
             token,
             OAuthKey,
@@ -88,7 +87,7 @@ class UserCrud(BaseCrud):
         await self._delete_item(await self._get_oauth_key(google_auth_key(google_id), throw_if_missing=True))
 
     async def get_user_from_email(self, email: str) -> User | None:
-        return await self._get_unique_item_from_secondary_index("emailIndex", "email", email, User)
+        return await self._get_unique_item_from_secondary_index("email", email, User)
 
     async def get_user_batch(self, ids: list[str]) -> list[User]:
         return await self._get_item_batch(ids, User)

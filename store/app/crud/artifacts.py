@@ -31,7 +31,25 @@ class ArtifactsCrud(BaseCrud):
 
     def _crop_image(self, image: Image.Image, size: tuple[int, int]) -> io.BytesIO:
         image_bytes = io.BytesIO()
-        image_resized = image.resize(size, resample=Image.Resampling.BICUBIC)
+
+        # Simply squashes the image to the desired size.
+        # image_resized = image.resize(size, resample=Image.Resampling.BICUBIC)
+        # Finds a bounding box of the image and crops it to the desired size.
+        image_ratio, size_ratio = image.width / image.height, size[0] / size[1]
+        if image_ratio > size_ratio:
+            new_width = int(image.height * size_ratio)
+            new_height = image.height
+            left = (image.width - new_width) // 2
+            upper = 0
+        else:
+            new_width = image.width
+            new_height = int(image.width / size_ratio)
+            left = 0
+            upper = (image.height - new_height) // 2
+        right = left + new_width
+        lower = upper + new_height
+        image_resized = image.crop((left, upper, right, lower))
+
         image_resized.save(image_bytes, format="PNG", optimize=True, quality=settings.image.quality)
         image_bytes.seek(0)
         return image_bytes

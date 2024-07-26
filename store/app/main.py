@@ -91,7 +91,7 @@ async def read_root() -> bool:
 
 app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(listings_router, prefix="/listings", tags=["listings"])
-app.include_router(image_router, prefix="/image", tags=["image"])
+app.include_router(image_router, prefix="/images", tags=["images"])
 
 # For running with debugger
 if __name__ == "__main__":
