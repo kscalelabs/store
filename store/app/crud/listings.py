@@ -17,14 +17,14 @@ class ListingsCrud(BaseCrud):
         return await self._get_item(listing_id, Listing, throw_if_missing=False)
 
     async def get_listings(self, page: int, search_query: str | None = None) -> tuple[list[Listing], bool]:
-        # x.id is a placeholder sorting function.
+        # 0 is a placeholder sorting function.
         # We might need to add timestamp back to show the most recent 12 entries.
         # Or we define some other sort of metric later like popularity.
         # (Or perhaps we even take in a function as an argument that tells us how to sort?!)
-        return await self._list(Listing, page, lambda x: x.id, search_query)
+        return await self._list(Listing, page, lambda x: 0, search_query)
 
     async def get_user_listings(self, user_id: str, page: int, search_query: str) -> tuple[list[Listing], bool]:
-        return await self._list_me(Listing, user_id, page, lambda x: x.id, search_query)
+        return await self._list_me(Listing, user_id, page, lambda x: 0, search_query)
 
     async def add_listing(self, listing: Listing) -> None:
         await self._add_item(listing)
