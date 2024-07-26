@@ -11,7 +11,7 @@ __pycache__/
 .ruff_cache/
 .dmypy.json
 .venv/
-
+.env
 # Databases
 *.db
 
@@ -25,3 +25,4 @@ out*/
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+.flox

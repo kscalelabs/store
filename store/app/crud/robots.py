@@ -50,5 +50,5 @@ class RobotCrud(BaseCrud):
         await bucket.upload_fileobj(
             file.file,
             f"{settings.s3.prefix}{file.filename}",
-            ExtraArgs={"ContentType": file.content_type},
+            ExtraArgs={"ContentType": "image/png"},
         )
