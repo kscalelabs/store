@@ -30,7 +30,9 @@ async def upload_image(crud: Annotated[Crud, Depends(Crud.get)], file: UploadFil
         if len(await file.read()) > 1024 * 1024 * 25:
             raise HTTPException(status_code=400, detail="Image is too large")
         image_id = str(new_uuid())
-        ext = file.filename.split(".")[-1]
+        ext = "png"
+        if file:
+            ext = file.filename.split(".")[-1]
         file.filename = image_id + f".{ext}"
         file.file.seek(0)
         await crud.upload_image(file)
