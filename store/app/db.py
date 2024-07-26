@@ -7,14 +7,14 @@ from typing import AsyncGenerator, Self
 
 from store.app.crud.artifacts import ArtifactsCrud
 from store.app.crud.base import TABLE_NAME, BaseCrud
-from store.app.crud.robots import RobotCrud
+from store.app.crud.listings import ListingsCrud
 from store.app.crud.users import UserCrud
 
 
 class Crud(
     ArtifactsCrud,
     UserCrud,
-    RobotCrud,
+    ListingsCrud,
     BaseCrud,
 ):
     """Composes the various CRUD classes into a single class."""
