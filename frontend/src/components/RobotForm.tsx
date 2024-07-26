@@ -188,17 +188,6 @@ const RobotForm: React.FC<RobotFormProps> = ({
             Add Image
           </TCButton>
         </Col>
-        <h2>Bill of Materials</h2>
-
-        <Col>
-          <TCButton
-            className="mb-3"
-            variant={theme === "dark" ? "outline-light" : "outline-dark"}
-            onClick={handleAddBom}
-          >
-            Add Part
-          </TCButton>
-        </Col>
         <Col>
           <TCButton type="submit">Submit</TCButton>
         </Col>
