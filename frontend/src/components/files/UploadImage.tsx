@@ -3,12 +3,11 @@ import TCButton from "components/files/TCButton";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
-import React, { useState, useRef, useEffect } from "react";
-import { Alert, Col } from "react-bootstrap";
-import { useDropzone, FileWithPath } from "react-dropzone";
-import { Modal } from "react-bootstrap";
-import ReactCrop, { type Crop } from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
+import React, { useEffect, useRef, useState } from "react";
+import { Alert, Col, Modal } from "react-bootstrap";
+import { FileWithPath, useDropzone } from "react-dropzone";
+import ReactCrop, { type Crop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
 
 interface ImageUploadProps {
   onUploadSuccess: (url: string) => void;
@@ -29,7 +28,7 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
   const [showModal, setShowModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const [crop, setCrop] = useState<Crop>()
+  const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<Crop | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
 
@@ -53,7 +52,11 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
     }
 
     try {
-      const thecompressedFile = await imageCompression(file, { maxSizeMB: 0.2, maxWidthOrHeight: 800, useWebWorker: true });
+      const thecompressedFile = await imageCompression(file, {
+        maxSizeMB: 0.2,
+        maxWidthOrHeight: 800,
+        useWebWorker: true,
+      });
       setCompressedFile(thecompressedFile);
       setSelectedFile(file);
       setFileError(null);
@@ -116,13 +119,21 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
     setShowModal(false);
   };
 
-  const [initialSetter, setInitialSetter] = useState(false)
+  const [initialSetter, setInitialSetter] = useState(false);
 
-  const handleImageLoaded = (event: React.SyntheticEvent<HTMLImageElement, Event>) => {
+  const handleImageLoaded = (
+    event: React.SyntheticEvent<HTMLImageElement, Event>,
+  ) => {
     imgRef.current = event.currentTarget;
-    if(event.currentTarget && initialSetter) {
-      setInitialSetter(false)
-      setCrop({height: imgRef.current.height, unit: "px", width: imgRef.current.width, x: 0, y: 0})
+    if (event.currentTarget && initialSetter) {
+      setInitialSetter(false);
+      setCrop({
+        height: imgRef.current.height,
+        unit: "px",
+        width: imgRef.current.width,
+        x: 0,
+        y: 0,
+      });
     }
   };
 
@@ -138,13 +149,16 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
     }
   };
 
-  const getCroppedImg = (image: HTMLImageElement, crop: Crop): Promise<File> => {
-    const canvas = document.createElement('canvas');
+  const getCroppedImg = (
+    image: HTMLImageElement,
+    crop: Crop,
+  ): Promise<File> => {
+    const canvas = document.createElement("canvas");
     const scaleX = image.naturalWidth / image.width;
     const scaleY = image.naturalHeight / image.height;
     canvas.width = crop.width;
     canvas.height = crop.height;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
 
     if (ctx) {
       ctx.drawImage(
@@ -156,28 +170,28 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
         0,
         0,
         crop.width,
-        crop.height
+        crop.height,
       );
     }
 
     return new Promise((resolve, reject) => {
       canvas.toBlob((blob) => {
         if (!blob) {
-          console.error('Canvas is empty');
-          reject()
+          console.error("Canvas is empty");
+          reject();
           return;
         }
         const file = new File([blob], selectedFile!.name, {
           type: selectedFile!.type,
         });
         resolve(file);
-      }, 'image/jpeg');
+      }, "image/jpeg");
     });
   };
 
   useEffect(() => {
-    if(selectedFile) setInitialSetter(true)
-  }, [showModal])
+    if (selectedFile) setInitialSetter(true);
+  }, [showModal]);
 
   return (
     <Col md="6">
@@ -188,8 +202,8 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
               <ReactCrop
                 crop={crop}
                 onChange={(c) => {
-                  console.log(c)
-                  setCrop(c)
+                  console.log(c);
+                  setCrop(c);
                 }}
                 onComplete={handleCropComplete}
               >
@@ -200,8 +214,16 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
                 />
               </ReactCrop>
               <div className="d-flex justify-content-end mt-3">
-                <TCButton onClick={onModalHide} variant="secondary" className="mr-2">Close</TCButton>
-                <TCButton onClick={handleDone} variant="primary">Done</TCButton>
+                <TCButton
+                  onClick={onModalHide}
+                  variant="secondary"
+                  className="mr-2"
+                >
+                  Close
+                </TCButton>
+                <TCButton onClick={handleDone} variant="primary">
+                  Done
+                </TCButton>
               </div>
             </>
           ) : (
@@ -218,7 +240,11 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
         }}
         className="m-0"
       >
-        <input {...getInputProps()} ref={fileInputRef} style={{ display: "none" }} />
+        <input
+          {...getInputProps()}
+          ref={fileInputRef}
+          style={{ display: "none" }}
+        />
         <div
           style={{
             height: "200px",
@@ -229,7 +255,7 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
             alignItems: "center",
             marginBottom: "10px",
             overflow: "hidden",
-            cursor: selectedFile ? 'pointer' : 'default'
+            cursor: selectedFile ? "pointer" : "default",
           }}
           onClick={handleClick}
         >
@@ -243,41 +269,53 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
             <p>No file selected</p>
           )}
         </div>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between'
-        }}>
         <div
-          onClick={(event) => {
-            event.stopPropagation();
-          }}
           style={{
-            minWidth: '100px',
-            width: '20%',
-            marginRight: '15px'
+            display: "flex",
+            justifyContent: "space-between",
           }}
         >
-          <TCButton
+          <div
             onClick={(event) => {
               event.stopPropagation();
-              setShowModal(true)
             }}
-            disabled={(selectedFile ? false : true)}
+            style={{
+              minWidth: "100px",
+              width: "20%",
+              marginRight: "15px",
+            }}
+          >
+            <TCButton
+              onClick={(event) => {
+                event.stopPropagation();
+                setShowModal(true);
+              }}
+              disabled={selectedFile ? false : true}
+              variant={theme === "dark" ? "outline-light" : "outline-dark"}
+            >
+              Edit
+            </TCButton>
+          </div>
+          <TCButton
+            onClick={triggerFileInput}
             variant={theme === "dark" ? "outline-light" : "outline-dark"}
           >
-            Edit
+            {" "}
+            Select Image{" "}
           </TCButton>
-        </div>
-        <TCButton onClick={triggerFileInput} variant={theme === "dark" ? "outline-light" : "outline-dark"} > Select Image </TCButton>
         </div>
         {fileError && <Alert variant="danger">{fileError}</Alert>}
       </div>
-      <TCButton onClick={handleUpload} disabled={!selectedFile} className="my-3">Upload</TCButton>
+      <TCButton
+        onClick={handleUpload}
+        disabled={!selectedFile}
+        className="my-3"
+      >
+        Upload
+      </TCButton>
       {uploadStatus && (
         <Alert
-          variant={
-            uploadStatus.includes("successfully") ? "success" : "danger"
-          }
+          variant={uploadStatus.includes("successfully") ? "success" : "danger"}
           className="mt-3"
         >
           {uploadStatus}
