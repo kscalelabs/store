@@ -31,7 +31,7 @@ class ArtifactsCrud(BaseCrud):
 
     async def _crop_image(self, image: Image.Image, size: tuple[int, int]) -> io.BytesIO:
         image_bytes = io.BytesIO()
-        image_resized = image.resize(size, resample=Image.BICUBIC)
+        image_resized = image.resize(size, resample=Image.Resampling.BICUBIC)
         image_resized.save(image_bytes, format="PNG", optimize=True, quality=settings.image.quality)
         image_bytes.seek(0)
         return image_bytes
