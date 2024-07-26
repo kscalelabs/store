@@ -55,7 +55,7 @@ const Listings = () => {
         setListings(parts);
         const ids = new Set<string>();
         parts.forEach((part) => {
-          ids.add(part.owner);
+          ids.add(part.user_id);
         });
         if (ids.size > 0)
           setIdMap(await auth_api.getUserBatch(Array.from(ids)));
@@ -102,7 +102,7 @@ const Listings = () => {
         {partsData.map((part) => (
           <Col key={part.id} lg={2} md={3} sm={6} xs={12}>
             <Card onClick={() => navigate(`/part/${part.id}`)}>
-              {part.images[0] && (
+              {part.artifact_ids[0] && (
                 <div
                   style={{
                     aspectRatio: "1/1",
@@ -113,16 +113,16 @@ const Listings = () => {
                   }}
                 >
                   <ImageComponent
-                    imageId={part.images[0].id}
+                    imageId={part.artifact_ids[0]}
                     size={"small"}
-                    caption={part.images[0].caption}
+                    caption={part.artifact_ids[0]}
                   />
                 </div>
               )}
               <Card.Body>
                 <Card.Title>{part.name}</Card.Title>
                 <Card.Subtitle className="mb-2 text-muted">
-                  {idMap.get(part.owner) || "Unknown"}
+                  {idMap.get(part.user_id) || "Unknown"}
                 </Card.Subtitle>
                 <Card.Text>
                   <Markdown

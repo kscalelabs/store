@@ -3,7 +3,7 @@ import React from "react";
 
 interface ImageProps {
   imageId: string;
-  size: 'small' | 'large';
+  size: "small" | "large";
   caption: string;
 }
 

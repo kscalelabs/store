@@ -1,5 +1,5 @@
 import TCButton from "components/files/TCButton";
-import { Image } from "hooks/api";
+import { Artifact } from "hooks/api";
 import { Theme } from "hooks/theme";
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { Col, Form, Row } from "react-bootstrap";
@@ -11,10 +11,12 @@ interface ListingFormProps {
   message: string;
   name: string;
   setName: Dispatch<SetStateAction<string>>;
-  part_description: string;
+  description: string;
   setDescription: Dispatch<SetStateAction<string>>;
-  artifacts: Image[];
-  setArtifacts: Dispatch<SetStateAction<Image[]>>;
+  artifacts: Artifact[];
+  setArtifacts: Dispatch<SetStateAction<Artifact[]>>;
+  child_ids: string[];
+  setChildIds: Dispatch<SetStateAction<string[]>>;
   handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }
 
@@ -24,10 +26,12 @@ const ListingForm: React.FC<ListingFormProps> = ({
   message,
   name,
   setName,
-  part_description,
+  description,
   setDescription,
   artifacts,
   setArtifacts,
+  child_ids,
+  setChildIds,
   handleSubmit,
 }) => {
   const handleImageChange = (
@@ -36,7 +40,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
   ) => {
     const { name, value } = e.target;
     const newImages = [...artifacts];
-    newImages[index][name as keyof Image] = value;
+    newImages[index][name as keyof Artifact] = value;
     setArtifacts(newImages);
   };
 
@@ -79,7 +83,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
           onChange={(e) => {
             setDescription(e.target.value);
           }}
-          value={part_description}
+          value={description}
           required
         />
         <h2>Images</h2>
@@ -122,6 +126,12 @@ const ListingForm: React.FC<ListingFormProps> = ({
             Add Image
           </TCButton>
         </Col>
+        <h2>Children</h2>
+        {child_ids.map((id, index) => (
+          <Row key={index} className="mb-3">
+            {id}
+          </Row>
+        ))}
         <Col md={12}>
           <TCButton type="submit">Submit</TCButton>
         </Col>

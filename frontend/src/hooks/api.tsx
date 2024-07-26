@@ -1,6 +1,6 @@
 import { AxiosInstance } from "axios";
 
-export interface Image {
+export interface Artifact {
   id: string;
   caption: string;
 }

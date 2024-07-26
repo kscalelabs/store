@@ -1,7 +1,7 @@
 import ListingForm from "components/ListingForm";
 import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
-import { api, Listing } from "hooks/api";
+import { api, Artifact, Listing } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
 import React, { FormEvent, useEffect, useState } from "react";
@@ -19,8 +19,9 @@ const EditListingForm: React.FC = () => {
   const [message, setMessage] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [Listing_description, setDescription] = useState<string>("");
-  const [Listing_images, setImages] = useState<string[]>([]);
+  const [artifacts, setArtifacts] = useState<Artifact[]>([]);
   const [Listing_id, setListingId] = useState<string>("");
+  const [child_ids, setChildIds] = useState<string[]>([]);
 
   const { addAlert } = useAlertQueue();
 
@@ -30,7 +31,15 @@ const EditListingForm: React.FC = () => {
         const ListingData = await auth_api.getListingById(id);
         setName(ListingData.name);
         setDescription(ListingData.description || "");
-        setImages(ListingData.artifact_ids);
+        const artifacts: Artifact[] = [];
+        ListingData.artifact_ids.forEach((id) => {
+          const artifact: Artifact = {
+            id,
+            caption: "hi",
+          };
+          artifacts.push(artifact);
+        });
+        setArtifacts(artifacts);
         setListingId(ListingData.id);
       } catch (err) {
         addAlert(humanReadableError(err), "error");
@@ -42,7 +51,7 @@ const EditListingForm: React.FC = () => {
   const navigate = useNavigate();
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (Listing_images.length === 0) {
+    if (artifacts.length === 0) {
       setMessage("Please upload at least one image.");
       return;
     }
@@ -70,10 +79,12 @@ const EditListingForm: React.FC = () => {
       message={message}
       name={name}
       setName={setName}
-      part_description={Listing_description}
+      description={Listing_description}
       setDescription={setDescription}
-      part_artifacts={Listing_images}
+      artifacts={artifacts}
       setArtifacts={setArtifacts}
+      child_ids={child_ids}
+      setChildIds={setChildIds}
       handleSubmit={handleSubmit}
     />
   );

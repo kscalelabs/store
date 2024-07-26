@@ -77,7 +77,7 @@ const MyListings = () => {
         {partsData.map((part) => (
           <Col key={part.id} lg={2} md={3} sm={6} xs={12}>
             <Card onClick={() => navigate(`/part/${part.id}`)}>
-              {part.images[0] && (
+              {part.artifact_ids[0] && (
                 <div
                   style={{
                     aspectRatio: "1/1",
@@ -88,9 +88,9 @@ const MyListings = () => {
                   }}
                 >
                   <ImageComponent
-                    imageId={part.images[0].id}
+                    imageId={part.artifact_ids[0]}
                     size={"small"}
-                    caption={part.images[0].caption}
+                    caption={part.artifact_ids[0]}
                   />
                 </div>
               )}

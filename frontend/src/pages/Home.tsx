@@ -48,39 +48,10 @@ const Home: React.FC = () => {
                   navigate("/robots/me/1");
                 }}
               >
-                View My Robots
-              </TCButton>
-            </Col>
-            <Col md={6} sm={12}>
-              <TCButton
-                variant={theme === "dark" ? "outline-light" : "outline-dark"}
-                size="lg"
-                style={{
-                  width: "100%",
-                }}
-                onClick={() => {
-                  navigate("/parts/me/1");
-                }}
-              >
                 View My Listings
               </TCButton>
             </Col>
-          </Row>
-          <Row className="row-two">
-            <Col md={6} sm={12}>
-              <TCButton
-                variant="primary"
-                size="lg"
-                style={{
-                  width: "100%",
-                }}
-                onClick={() => {
-                  navigate("/robots/add");
-                }}
-              >
-                Make a Robot
-              </TCButton>
-            </Col>
+
             <Col md={6} sm={12}>
               <TCButton
                 variant="primary"

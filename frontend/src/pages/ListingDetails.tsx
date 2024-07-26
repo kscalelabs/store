@@ -1,6 +1,6 @@
 import TCButton from "components/files/TCButton";
 import { useAlertQueue } from "hooks/alerts";
-import { api, Image } from "hooks/api";
+import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import {
@@ -18,9 +18,10 @@ import { useNavigate, useParams } from "react-router-dom";
 
 interface ListingDetailsResponse {
   name: string;
-  owner: string;
-  description: string;
-  images: Image[];
+  user_id: string;
+  description?: string;
+  artifact_ids: string[];
+  child_ids: string[];
 }
 
 import ImageComponent from "components/files/ViewImage";
@@ -34,7 +35,7 @@ const ListingDetails = () => {
   const [show, setShow] = useState(false);
   const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
   const [part, setListing] = useState<ListingDetailsResponse | null>(null);
-  const [imageIndex, setImageIndex] = useState(0);
+  const [imageIndex, setArtifactIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [showDelete, setShowDelete] = useState(false);
 
@@ -49,7 +50,7 @@ const ListingDetails = () => {
       try {
         const partData = await auth_api.getListingById(id);
         setListing(partData);
-        const ownerEmail = await auth_api.getUserById(partData.owner);
+        const ownerEmail = await auth_api.getUserById(partData.user_id);
         setOwnerEmail(ownerEmail);
       } catch (err) {
         if (err instanceof Error) {
@@ -106,11 +107,12 @@ const ListingDetails = () => {
 
   const response: ListingDetailsResponse = {
     name: part.name,
-    owner: part.owner,
+    user_id: part.user_id,
     description: part.description,
-    images: part.images,
+    artifact_ids: part.artifact_ids,
+    child_ids: part.child_ids,
   };
-  const { name, description, images } = response;
+  const { name, description, artifact_ids } = response;
 
   return (
     <>
@@ -154,7 +156,7 @@ const ListingDetails = () => {
               </Markdown>
             </Col>
           </Row>
-          {part.owner === userId && (
+          {part.user_id === userId && (
             <>
               <Row className="mt-2 row-two">
                 <Col md={6} sm={12}>
@@ -231,16 +233,16 @@ const ListingDetails = () => {
 
         <Col lg={1} md={0} />
 
-        {images && (
+        {artifact_ids && (
           <Col lg={5} md={12}>
             <Carousel
               indicators
               data-bs-theme="dark"
               style={{ border: "1px solid #ccc" }}
               interval={null}
-              controls={images.length > 1}
+              controls={artifact_ids.length > 1}
             >
-              {images.map((image, key) => (
+              {artifact_ids.map((id, key) => (
                 <Carousel.Item key={key}>
                   <div
                     style={{
@@ -254,9 +256,9 @@ const ListingDetails = () => {
                     }}
                   >
                     <ImageComponent
-                      imageId={images[key].id}
+                      imageId={id}
                       size={"large"}
-                      caption={images[key].caption}
+                      caption={"caption"}
                     />
                   </div>
                   <Carousel.Caption
@@ -269,7 +271,7 @@ const ListingDetails = () => {
                       bottom: "unset",
                     }}
                   >
-                    {image.caption}
+                    {"caption"}
                   </Carousel.Caption>
                 </Carousel.Item>
               ))}
@@ -288,26 +290,29 @@ const ListingDetails = () => {
       >
         <Modal.Header closeButton>
           <Modal.Title>
-            {images[imageIndex].caption} ({imageIndex + 1} of {images.length})
+            {/* TO-DO: This supposed to be the caption */}
+            {artifact_ids[imageIndex]} ({imageIndex + 1} of{" "}
+            {artifact_ids.length})
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div style={{ display: "flex", justifyContent: "center" }}>
             <ImageComponent
-              imageId={images[imageIndex].id}
+              imageId={artifact_ids[imageIndex]}
               size={"large"}
-              caption={images[imageIndex].caption}
+              caption={artifact_ids[imageIndex]}
             />
           </div>
         </Modal.Body>
         <Modal.Footer>
-          {images.length > 1 && (
+          {artifact_ids.length > 1 && (
             <ButtonGroup>
               <TCButton
                 variant="primary"
                 onClick={() => {
-                  setImageIndex(
-                    (imageIndex - 1 + images.length) % images.length,
+                  setArtifactIndex(
+                    (imageIndex - 1 + artifact_ids.length) %
+                      artifact_ids.length,
                   );
                 }}
               >
@@ -316,7 +321,7 @@ const ListingDetails = () => {
               <TCButton
                 variant="primary"
                 onClick={() => {
-                  setImageIndex((imageIndex + 1) % images.length);
+                  setArtifactIndex((imageIndex + 1) % artifact_ids.length);
                 }}
               >
                 Next
