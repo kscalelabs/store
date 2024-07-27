@@ -48,12 +48,10 @@ class OAuthKey(RobolistBaseModel):
 
     user_id: str
     user_token: str
-    ttl: int | None = None
 
     @classmethod
     def create(cls, user_token: str, user_id: str) -> Self:
-        ttl_timestamp = int((datetime.utcnow() + timedelta(days=90)).timestamp())
-        return cls(id=str(new_uuid()), user_id=user_id, user_token=user_token, ttl=ttl_timestamp)
+        return cls(id=str(new_uuid()), user_id=user_id, user_token=user_token)
 
 
 APIKeySource = Literal["user", "oauth"]
@@ -72,6 +70,7 @@ class APIKey(RobolistBaseModel):
     user_id: str
     source: APIKeySource
     permissions: set[APIKeyPermission] | None = None
+    ttl: int | None = None
 
     @classmethod
     def create(
@@ -82,11 +81,13 @@ class APIKey(RobolistBaseModel):
     ) -> Self:
         if permissions == "full":
             permissions = {"read", "write", "admin"}
+        ttl_timestamp = int((datetime.utcnow() + timedelta(days=90)).timestamp())
         return cls(
             id=str(new_uuid()),
             user_id=user_id,
             source=source,
             permissions=permissions,
+            ttl=ttl_timestamp
         )
 
 
