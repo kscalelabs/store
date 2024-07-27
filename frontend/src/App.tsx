@@ -37,7 +37,10 @@ const App = () => {
                   <Route path="/listings/add" element={<NewListing />} />
                   <Route path="/listings/:page" element={<Listings />} />
                   <Route path="/listing/:id" element={<ListingDetails />} />
-                  <Route path="/listing/edit/:id" element={<EditListingForm />} />
+                  <Route
+                    path="/listing/edit/:id"
+                    element={<EditListingForm />}
+                  />
                   <Route path="/listings/me/:page" element={<MyListings />} />
                   <Route path="/404" element={<NotFound />} />
                   <Route path="*" element={<NotFoundRedirect />} />
