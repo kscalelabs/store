@@ -39,9 +39,9 @@ class EmailSettings:
 
 @dataclass
 class ImageSettings:
-    large_size: tuple[int, int] = field(default=(2048, 2048))
+    large_size: tuple[int, int] = field(default=(1536, 1536))
     small_size: tuple[int, int] = field(default=(256, 256))
-    max_bytes: int = field(default=2048 * 2048 * 25)
+    max_bytes: int = field(default=1536 * 1536 * 25)
     quality: int = field(default=80)
 
 

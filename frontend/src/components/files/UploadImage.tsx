@@ -9,7 +9,7 @@ import { FileWithPath, useDropzone } from "react-dropzone";
 import ReactCrop, { type Crop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 
-const MAX_FILE_SIZE = 25 * 2048 * 2048;
+const MAX_FILE_SIZE = 25 * 1536 * 1536;
 const MAX_FILE_MB = MAX_FILE_SIZE / 1024 / 1024;
 
 interface ImageUploadProps {
