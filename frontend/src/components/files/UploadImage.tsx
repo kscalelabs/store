@@ -9,6 +9,9 @@ import { FileWithPath, useDropzone } from "react-dropzone";
 import ReactCrop, { type Crop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 
+const MAX_FILE_SIZE = 25 * 2048 * 2048;
+const MAX_FILE_MB = MAX_FILE_SIZE / 1024 / 1024;
+
 interface ImageUploadProps {
   onUploadSuccess: (url: string) => void;
 }
@@ -23,7 +26,6 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const { theme } = useTheme();
-  const MAX_FILE_SIZE = 25 * 1024 * 1024;
   const validFileTypes = ["image/png", "image/jpeg", "image/jpg"];
   const [showModal, setShowModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -44,9 +46,7 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
 
     // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      setFileError(
-        `File size should not exceed ${MAX_FILE_SIZE / 1024 / 1024} MB`,
-      );
+      setFileError(`File size should not exceed ${MAX_FILE_MB} MB`);
       setSelectedFile(null);
       return;
     }
