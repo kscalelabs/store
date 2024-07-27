@@ -47,15 +47,15 @@ async def upload_image(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Image is too large",
             )
-        image_id = str(new_uuid())
+
         image = Image.open(file.file)
-        await crud.upload_image(
+        artifact = await crud.upload_image(
             image=image,
             user_id=user.id,
             description=description,
         )
 
-        return UserInfoResponse(image_id=image_id)
+        return UserInfoResponse(image_id=artifact.id)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 

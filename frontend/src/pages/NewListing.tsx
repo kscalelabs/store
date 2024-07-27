@@ -1,5 +1,5 @@
 import ListingForm from "components/ListingForm";
-import { api, Artifact, Listing } from "hooks/api";
+import { api, Artifact } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
 import React, { FormEvent, useState } from "react";
@@ -22,16 +22,14 @@ const NewListing: React.FC = () => {
       setMessage("Please upload at least one image.");
       return;
     }
-    const newFormData: Listing = {
-      id: "",
-      name,
-      description: description,
-      user_id: "",
-      artifact_ids: artifacts.map((artifact) => artifact.id),
-      child_ids,
-    };
+
     try {
-      await auth_api.addListing(newFormData);
+      await auth_api.addListing({
+        name,
+        description: description,
+        artifact_ids: artifacts.map((artifact) => artifact.id),
+        child_ids,
+      });
       setMessage(`Listing added successfully.`);
       navigate("/listings/me/1");
     } catch (error) {

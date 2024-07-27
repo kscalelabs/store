@@ -1,4 +1,5 @@
 import TCButton from "components/files/TCButton";
+import ImageComponent from "components/files/ViewImage";
 import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
@@ -23,8 +24,6 @@ interface ListingDetailsResponse {
   artifact_ids: string[];
   child_ids: string[];
 }
-
-import ImageComponent from "components/files/ViewImage";
 
 const ListingDetails = () => {
   const { addAlert } = useAlertQueue();
@@ -105,14 +104,9 @@ const ListingDetails = () => {
     );
   }
 
-  const response: ListingDetailsResponse = {
-    name: part.name,
-    user_id: part.user_id,
-    description: part.description,
-    artifact_ids: part.artifact_ids,
-    child_ids: part.child_ids,
-  };
-  const { name, description, artifact_ids } = response;
+  const { name, description, artifact_ids } = part;
+
+  console.log("artifact_ids", artifact_ids);
 
   return (
     <>
@@ -230,54 +224,50 @@ const ListingDetails = () => {
             </>
           )}
         </Col>
-
         <Col lg={1} md={0} />
-
-        {artifact_ids && (
-          <Col lg={5} md={12}>
-            <Carousel
-              indicators
-              data-bs-theme="dark"
-              style={{ border: "1px solid #ccc" }}
-              interval={null}
-              controls={artifact_ids.length > 1}
-            >
-              {artifact_ids.map((id, key) => (
-                <Carousel.Item key={key}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      overflow: "hidden",
-                    }}
-                    onClick={() => {
-                      handleShow();
-                    }}
-                  >
-                    <ImageComponent
-                      imageId={id}
-                      size={"large"}
-                      caption={"caption"}
-                    />
-                  </div>
-                  <Carousel.Caption
-                    style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.5)",
-                      color: "black",
-                      padding: "0.1rem",
-                      // Put the caption at the top
-                      top: 10,
-                      bottom: "unset",
-                    }}
-                  >
-                    {"caption"}
-                  </Carousel.Caption>
-                </Carousel.Item>
-              ))}
-            </Carousel>
-          </Col>
-        )}
+        <Col lg={5} md={12}>
+          <Carousel
+            indicators
+            data-bs-theme="dark"
+            style={{ border: "1px solid #ccc" }}
+            interval={null}
+            controls={artifact_ids.length > 1}
+          >
+            {artifact_ids.map((id, key) => (
+              <Carousel.Item key={key}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                  }}
+                  onClick={() => {
+                    handleShow();
+                  }}
+                >
+                  <ImageComponent
+                    imageId={id}
+                    size={"large"}
+                    caption={"caption"}
+                  />
+                </div>
+                <Carousel.Caption
+                  style={{
+                    backgroundColor: "rgba(255, 255, 255, 0.5)",
+                    color: "black",
+                    padding: "0.1rem",
+                    // Put the caption at the top
+                    top: 10,
+                    bottom: "unset",
+                  }}
+                >
+                  {"caption"}
+                </Carousel.Caption>
+              </Carousel.Item>
+            ))}
+          </Carousel>
+        </Col>
       </Row>
 
       <Modal

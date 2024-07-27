@@ -201,6 +201,7 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
             <>
               <ReactCrop
                 crop={crop}
+                aspect={1}
                 onChange={(c) => {
                   console.log(c);
                   setCrop(c);

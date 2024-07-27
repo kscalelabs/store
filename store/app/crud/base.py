@@ -134,6 +134,18 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         sort_key: Callable[[T], int],
         search_query: str | None = None,
     ) -> tuple[list[T], bool]:
+        """Lists items of a given class.
+
+        Args:
+            item_class: The class of the items to list.
+            page: The page number to list.
+            sort_key: A function that returns the sort key for an item.
+            search_query: A query string to filter items by.
+
+        Returns:
+            A tuple of the items on the page and a boolean indicating whether
+            there are more pages.
+        """
         if search_query:
             response = await self._list_items(
                 item_class,

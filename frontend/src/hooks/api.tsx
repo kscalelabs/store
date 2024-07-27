@@ -14,6 +14,13 @@ export interface Listing {
   description?: string;
 }
 
+export interface NewListing {
+  name: string;
+  description?: string;
+  artifact_ids: string[];
+  child_ids: string[];
+}
+
 interface GithubAuthResponse {
   api_key: string;
 }
@@ -73,13 +80,13 @@ export class api {
 
   public async logout(): Promise<void> {
     return this.callWrapper(async () => {
-      await this.api.delete<boolean>("/users/logout/");
+      await this.api.delete<boolean>("/users/logout");
     });
   }
 
   public async me(): Promise<MeResponse> {
     return this.callWrapper(async () => {
-      const res = await this.api.get<MeResponse>("/users/me/");
+      const res = await this.api.get<MeResponse>("/users/me");
       return res.data;
     });
   }
@@ -96,7 +103,7 @@ export class api {
     searchQuery?: string,
   ): Promise<[Listing[], boolean]> {
     return this.callWrapper(async () => {
-      const response = await this.api.get("/listings/", {
+      const response = await this.api.get("/listings/search", {
         params: { page, ...(searchQuery ? { search_query: searchQuery } : {}) },
       });
       return response.data;
@@ -107,7 +114,7 @@ export class api {
     return this.callWrapper(async () => {
       const params = new URLSearchParams();
       userIds.forEach((id) => params.append("ids", id));
-      const response = await this.api.get("/users/batch/", {
+      const response = await this.api.get("/users/batch", {
         params,
       });
       const map = new Map();
@@ -120,7 +127,7 @@ export class api {
 
   public async getMyListings(page: number): Promise<[Listing[], boolean]> {
     return this.callWrapper(async () => {
-      const response = await this.api.get("/listings/me/", {
+      const response = await this.api.get("/listings/me", {
         params: { page },
       });
       return response.data;
@@ -141,21 +148,21 @@ export class api {
     });
   }
 
-  public async addListing(listing: Listing): Promise<void> {
+  public async addListing(listing: NewListing): Promise<void> {
     return this.callWrapper(async () => {
-      await this.api.post("/listings/add/", listing);
+      await this.api.post("/listings/add", listing);
     });
   }
 
   public async deleteListing(id: string | undefined): Promise<void> {
     return this.callWrapper(async () => {
-      await this.api.delete(`/listings/delete/${id}/`);
+      await this.api.delete(`/listings/delete/${id}`);
     });
   }
 
   public async editListing(listing: Listing): Promise<void> {
     return this.callWrapper(async () => {
-      await this.api.post(`/listings/edit/${listing.id}/`, listing);
+      await this.api.post(`/listings/edit/${listing.id}`, listing);
     });
   }
 
