@@ -1,9 +1,10 @@
 """Defines CRUD interface for managing listings."""
 
+import asyncio
 import logging
 
-from store.app.crud.base import BaseCrud
-from store.app.model import Listing, ListingTag
+from store.app.crud.base import BaseCrud, ItemNotFoundError
+from store.app.model import Artifact, Listing, ListingTag
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,13 @@ class ListingsCrud(BaseCrud):
         return await self._list_me(Listing, user_id, page, lambda x: 0, search_query)
 
     async def add_listing(self, listing: Listing) -> None:
+        try:
+            await asyncio.gather(
+                *[self._get_item(artifact_id, Artifact, throw_if_missing=True) for artifact_id in listing.artifact_ids],
+                *[self._get_item(child_id, Listing, throw_if_missing=True) for child_id in listing.child_ids],
+            )
+        except ItemNotFoundError:
+            raise ValueError("One or more artifact or child IDs is invalid")
         await self._add_item(listing)
 
     async def delete_listing(self, listing_id: str) -> None:

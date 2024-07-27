@@ -19,11 +19,6 @@ listings_router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-@listings_router.get("/{listing_id}")
-async def get_listing(listing_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> Listing | None:
-    return await crud.get_listing(listing_id)
-
-
 class NewListing(BaseModel):
     name: str
     child_ids: list[str]
@@ -31,7 +26,7 @@ class NewListing(BaseModel):
     description: str | None
 
 
-@listings_router.get("/")
+@listings_router.get("/search")
 async def list_listings(
     crud: Annotated[Crud, Depends(Crud.get)],
     page: int = Query(description="Page number for pagination"),
@@ -40,7 +35,7 @@ async def list_listings(
     return await crud.get_listings(page, search_query=search_query)
 
 
-@listings_router.get("/me/")
+@listings_router.get("/me")
 async def list_my_listings(
     crud: Annotated[Crud, Depends(Crud.get)],
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
@@ -50,7 +45,7 @@ async def list_my_listings(
     return await crud.get_user_listings(user.id, page, search_query=search_query)
 
 
-@listings_router.post("/add/")
+@listings_router.post("/add")
 async def add_listing(
     new_listing: NewListing,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
@@ -69,7 +64,7 @@ async def add_listing(
     return True
 
 
-@listings_router.delete("/delete/{listing_id}/")
+@listings_router.delete("/delete/{listing_id}")
 async def delete_listing(
     listing_id: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
@@ -84,7 +79,7 @@ async def delete_listing(
     return True
 
 
-@listings_router.post("/edit/{id}/")
+@listings_router.post("/edit/{id}")
 async def edit_listing(
     id: str,
     listing: dict[str, Any],
@@ -99,3 +94,8 @@ async def edit_listing(
     listing["user_id"] = user.id
     await crud._update_item(id, Listing, listing)
     return True
+
+
+@listings_router.get("/{id}")
+async def get_listing(id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> Listing | None:
+    return await crud.get_listing(id)

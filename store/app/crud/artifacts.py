@@ -14,8 +14,8 @@ from store.settings import settings
 logger = logging.getLogger(__name__)
 
 SizeMapping: dict[ArtifactSize, tuple[int, int]] = {
-    "large": (1024, 1024),
-    "small": (256, 256),
+    "large": settings.image.large_size,
+    "small": settings.image.small_size,
 }
 
 

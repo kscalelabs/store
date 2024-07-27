@@ -1,4 +1,6 @@
 import TCButton from "components/files/TCButton";
+import ImageComponent from "components/files/ViewImage";
+import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
@@ -24,46 +26,31 @@ interface ListingDetailsResponse {
   child_ids: string[];
 }
 
-import ImageComponent from "components/files/ViewImage";
-
-const ListingDetails = () => {
+const RenderListing = ({
+  listing,
+  id,
+}: {
+  listing: ListingDetailsResponse;
+  id: string;
+}) => {
   const { addAlert } = useAlertQueue();
+  const navigate = useNavigate();
+
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
+
   const [userId, setUserId] = useState<string | null>(null);
-  const { id } = useParams();
   const [show, setShow] = useState(false);
   const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
-  const [part, setListing] = useState<ListingDetailsResponse | null>(null);
   const [imageIndex, setArtifactIndex] = useState(0);
-  const [error, setError] = useState<string | null>(null);
   const [showDelete, setShowDelete] = useState(false);
 
   const handleClose = () => setShow(false);
-
   const handleShow = () => setShow(true);
   const handleShowDelete = () => setShowDelete(true);
   const handleCloseDelete = () => setShowDelete(false);
 
-  useEffect(() => {
-    const fetchListing = async () => {
-      try {
-        const partData = await auth_api.getListingById(id);
-        setListing(partData);
-        const ownerEmail = await auth_api.getUserById(partData.user_id);
-        setOwnerEmail(ownerEmail);
-      } catch (err) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("An unexpected error occurred");
-        }
-      }
-    };
-    fetchListing();
-  }, [id]);
-
-  const navigate = useNavigate();
+  const { name, user_id, description, artifact_ids } = listing;
 
   useEffect(() => {
     if (auth.isAuthenticated) {
@@ -74,56 +61,25 @@ const ListingDetails = () => {
         };
         fetchUserId();
       } catch (err) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("An unexpected error occurred");
-        }
+        addAlert(humanReadableError(err), "error");
       }
     }
   }, [auth.isAuthenticated]);
 
   useEffect(() => {
-    if (error) {
-      addAlert(error, "error");
-    }
-  }, [error]);
-
-  if (!part) {
-    return (
-      <Container
-        fluid
-        className="d-flex justify-content-center align-items-center"
-        style={{ height: "100vh" }}
-      >
-        <Row className="w-100">
-          <Col className="d-flex justify-content-center align-items-center">
-            <Spinner animation="border" />
-          </Col>
-        </Row>
-      </Container>
-    );
-  }
-
-  const response: ListingDetailsResponse = {
-    name: part.name,
-    user_id: part.user_id,
-    description: part.description,
-    artifact_ids: part.artifact_ids,
-    child_ids: part.child_ids,
-  };
-  const { name, description, artifact_ids } = response;
+    const fetchListing = async () => {
+      try {
+        const ownerEmail = await auth_api.getUserById(user_id);
+        setOwnerEmail(ownerEmail);
+      } catch (err) {
+        addAlert(humanReadableError(err), "error");
+      }
+    };
+    fetchListing();
+  }, [user_id]);
 
   return (
     <>
-      <Breadcrumb>
-        <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
-        <Breadcrumb.Item onClick={() => navigate("/listings/1")}>
-          Listings
-        </Breadcrumb.Item>
-        <Breadcrumb.Item active>{name}</Breadcrumb.Item>
-      </Breadcrumb>
-
       <Row className="mt-3">
         <Col lg={6} md={12} className="mb-5">
           <Row>
@@ -156,7 +112,7 @@ const ListingDetails = () => {
               </Markdown>
             </Col>
           </Row>
-          {part.user_id === userId && (
+          {user_id === userId && (
             <>
               <Row className="mt-2 row-two">
                 <Col md={6} sm={12}>
@@ -230,54 +186,50 @@ const ListingDetails = () => {
             </>
           )}
         </Col>
-
         <Col lg={1} md={0} />
-
-        {artifact_ids && (
-          <Col lg={5} md={12}>
-            <Carousel
-              indicators
-              data-bs-theme="dark"
-              style={{ border: "1px solid #ccc" }}
-              interval={null}
-              controls={artifact_ids.length > 1}
-            >
-              {artifact_ids.map((id, key) => (
-                <Carousel.Item key={key}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      overflow: "hidden",
-                    }}
-                    onClick={() => {
-                      handleShow();
-                    }}
-                  >
-                    <ImageComponent
-                      imageId={id}
-                      size={"large"}
-                      caption={"caption"}
-                    />
-                  </div>
-                  <Carousel.Caption
-                    style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.5)",
-                      color: "black",
-                      padding: "0.1rem",
-                      // Put the caption at the top
-                      top: 10,
-                      bottom: "unset",
-                    }}
-                  >
-                    {"caption"}
-                  </Carousel.Caption>
-                </Carousel.Item>
-              ))}
-            </Carousel>
-          </Col>
-        )}
+        <Col lg={5} md={12}>
+          <Carousel
+            indicators
+            data-bs-theme="dark"
+            style={{ border: "1px solid #ccc" }}
+            interval={null}
+            controls={artifact_ids.length > 1}
+          >
+            {artifact_ids.map((id, key) => (
+              <Carousel.Item key={key}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                  }}
+                  onClick={() => {
+                    handleShow();
+                  }}
+                >
+                  <ImageComponent
+                    imageId={id}
+                    size={"large"}
+                    caption={"caption"}
+                  />
+                </div>
+                <Carousel.Caption
+                  style={{
+                    backgroundColor: "rgba(255, 255, 255, 0.5)",
+                    color: "black",
+                    padding: "0.1rem",
+                    // Put the caption at the top
+                    top: 10,
+                    bottom: "unset",
+                  }}
+                >
+                  {"caption"}
+                </Carousel.Caption>
+              </Carousel.Item>
+            ))}
+          </Carousel>
+        </Col>
       </Row>
 
       <Modal
@@ -330,6 +282,56 @@ const ListingDetails = () => {
           )}
         </Modal.Footer>
       </Modal>
+    </>
+  );
+};
+
+const ListingDetails = () => {
+  const { addAlert } = useAlertQueue();
+  const auth = useAuthentication();
+  const auth_api = new api(auth.api);
+  const { id } = useParams();
+  const [listing, setListing] = useState<ListingDetailsResponse | null>(null);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchListing = async () => {
+      try {
+        const partData = await auth_api.getListingById(id);
+        setListing(partData);
+      } catch (err) {
+        addAlert(humanReadableError(err), "error");
+      }
+    };
+    fetchListing();
+  }, [id]);
+
+  return (
+    <>
+      <Breadcrumb>
+        <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
+        <Breadcrumb.Item onClick={() => navigate("/listings/1")}>
+          Listings
+        </Breadcrumb.Item>
+        {listing && <Breadcrumb.Item active>{listing.name}</Breadcrumb.Item>}
+      </Breadcrumb>
+
+      {listing && id ? (
+        <RenderListing listing={listing} id={id} />
+      ) : (
+        <Container
+          fluid
+          className="d-flex justify-content-center align-items-center"
+          style={{ height: "100vh" }}
+        >
+          <Row className="w-100">
+            <Col className="d-flex justify-content-center align-items-center">
+              <Spinner animation="border" />
+            </Col>
+          </Row>
+        </Container>
+      )}
     </>
   );
 };
