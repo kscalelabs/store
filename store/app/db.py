@@ -71,6 +71,7 @@ async def delete_tables(crud: Crud | None = None) -> None:
 
     else:
         await crud._delete_dynamodb_table(TABLE_NAME)
+        await crud._delete_s3_bucket()
 
 
 async def populate_with_dummy_data(crud: Crud | None = None) -> None:

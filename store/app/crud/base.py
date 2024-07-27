@@ -313,6 +313,13 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             logger.info("Creating %s bucket", settings.s3.bucket)
             await self.s3.create_bucket(Bucket=settings.s3.bucket)
 
+    async def _delete_s3_bucket(self) -> None:
+        """Deletes an S3 bucket."""
+        bucket = await self.s3.Bucket(settings.s3.bucket)
+        async for obj in bucket.objects.all():
+            await obj.delete()
+        await bucket.delete()
+
     async def _create_dynamodb_table(
         self,
         name: str,
