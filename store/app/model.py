@@ -82,13 +82,7 @@ class APIKey(RobolistBaseModel):
         if permissions == "full":
             permissions = {"read", "write", "admin"}
         ttl_timestamp = int((datetime.utcnow() + timedelta(days=90)).timestamp())
-        return cls(
-            id=str(new_uuid()),
-            user_id=user_id,
-            source=source,
-            permissions=permissions,
-            ttl=ttl_timestamp
-        )
+        return cls(id=str(new_uuid()), user_id=user_id, source=source, permissions=permissions, ttl=ttl_timestamp)
 
 
 ArtifactSize = Literal["small", "large"]
