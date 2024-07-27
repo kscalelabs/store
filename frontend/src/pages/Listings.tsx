@@ -1,7 +1,7 @@
 import ImageComponent from "components/files/ViewImage";
 import { SearchInput } from "components/ui/Search/SearchInput";
 import { useAlertQueue } from "hooks/alerts";
-import { api, Part } from "hooks/api";
+import { api, Listing } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import {
@@ -15,11 +15,11 @@ import {
 import Markdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-const Parts = () => {
+const Listings = () => {
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
-  const [partsData, setParts] = useState<Part[] | null>(null);
-  const [moreParts, setMoreParts] = useState<boolean>(false);
+  const [partsData, setListings] = useState<Listing[] | null>(null);
+  const [moreListings, setMoreListings] = useState<boolean>(false);
   const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleSearchBarInput, setVisibleSearchBarInput] = useState("");
@@ -30,7 +30,7 @@ const Parts = () => {
   if (isNaN(pageNumber) || pageNumber < 0) {
     return (
       <>
-        <h1>Parts</h1>
+        <h1>Listings</h1>
         <p>Invalid page number in URL.</p>
       </>
     );
@@ -49,13 +49,13 @@ const Parts = () => {
   useEffect(() => {
     const fetch_robots = async () => {
       try {
-        const partsQuery = await auth_api.getParts(pageNumber, searchQuery);
-        setMoreParts(partsQuery[1]);
+        const partsQuery = await auth_api.getListings(pageNumber, searchQuery);
+        setMoreListings(partsQuery[1]);
         const parts = partsQuery[0];
-        setParts(parts);
+        setListings(parts);
         const ids = new Set<string>();
         parts.forEach((part) => {
-          ids.add(part.owner);
+          ids.add(part.user_id);
         });
         if (ids.size > 0)
           setIdMap(await auth_api.getUserBatch(Array.from(ids)));
@@ -90,7 +90,7 @@ const Parts = () => {
     <>
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
-        <Breadcrumb.Item active>Parts</Breadcrumb.Item>
+        <Breadcrumb.Item active>Listings</Breadcrumb.Item>
       </Breadcrumb>
       <SearchInput
         userInput={visibleSearchBarInput}
@@ -101,8 +101,8 @@ const Parts = () => {
       <Row className="mt-5">
         {partsData.map((part) => (
           <Col key={part.id} lg={2} md={3} sm={6} xs={12}>
-            <Card onClick={() => navigate(`/part/${part.id}`)}>
-              {part.images[0] && (
+            <Card onClick={() => navigate(`/listing/${part.id}`)}>
+              {part.artifact_ids[0] && (
                 <div
                   style={{
                     aspectRatio: "1/1",
@@ -113,15 +113,16 @@ const Parts = () => {
                   }}
                 >
                   <ImageComponent
-                    imageId={"mini" + part.images[0].url + ".png"}
-                    caption={part.images[0].caption}
+                    imageId={part.artifact_ids[0]}
+                    size={"small"}
+                    caption={part.artifact_ids[0]}
                   />
                 </div>
               )}
               <Card.Body>
                 <Card.Title>{part.name}</Card.Title>
                 <Card.Subtitle className="mb-2 text-muted">
-                  {idMap.get(part.owner) || "Unknown"}
+                  {idMap.get(part.user_id) || "Unknown"}
                 </Card.Subtitle>
                 <Card.Text>
                   <Markdown
@@ -144,16 +145,16 @@ const Parts = () => {
           </Col>
         ))}
       </Row>
-      {(pageNumber > 1 || moreParts) && (
+      {(pageNumber > 1 || moreListings) && (
         <Row className="mt-3">
           {pageNumber > 1 && (
             <Col>
-              <Link to={"/parts/" + (pageNumber - 1)}>Previous Page</Link>
+              <Link to={"/listings/" + (pageNumber - 1)}>Previous Page</Link>
             </Col>
           )}
-          {moreParts && (
+          {moreListings && (
             <Col className="text-end">
-              <Link to={"/parts/" + (pageNumber + 1)}>Next Page</Link>
+              <Link to={"/listings/" + (pageNumber + 1)}>Next Page</Link>
             </Col>
           )}
         </Row>
@@ -162,4 +163,4 @@ const Parts = () => {
   );
 };
 
-export default Parts;
+export default Listings;

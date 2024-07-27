@@ -1,33 +1,37 @@
 import TCButton from "components/files/TCButton";
-import { Image } from "hooks/api";
+import { Artifact } from "hooks/api";
 import { Theme } from "hooks/theme";
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { Col, Form, Row } from "react-bootstrap";
 import ImageUploadComponent from "./files/UploadImage";
 
-interface PartFormProps {
+interface ListingFormProps {
   theme: Theme;
   title: string;
   message: string;
   name: string;
   setName: Dispatch<SetStateAction<string>>;
-  part_description: string;
+  description: string;
   setDescription: Dispatch<SetStateAction<string>>;
-  part_images: Image[];
-  setImages: Dispatch<SetStateAction<Image[]>>;
+  artifacts: Artifact[];
+  setArtifacts: Dispatch<SetStateAction<Artifact[]>>;
+  child_ids: string[];
+  setChildIds: Dispatch<SetStateAction<string[]>>;
   handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }
 
-const PartForm: React.FC<PartFormProps> = ({
+const ListingForm: React.FC<ListingFormProps> = ({
   theme,
   title,
   message,
   name,
   setName,
-  part_description,
+  description,
   setDescription,
-  part_images,
-  setImages,
+  artifacts,
+  setArtifacts,
+  child_ids,
+  setChildIds,
   handleSubmit,
 }) => {
   const handleImageChange = (
@@ -35,24 +39,34 @@ const PartForm: React.FC<PartFormProps> = ({
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    const newImages = [...part_images];
-    newImages[index][name as keyof Image] = value;
-    setImages(newImages);
+    const newImages = [...artifacts];
+    newImages[index][name as keyof Artifact] = value;
+    setArtifacts(newImages);
   };
 
   const handleAddImage = () => {
-    setImages([...part_images, { url: "", caption: "" }]);
+    setArtifacts([...artifacts, { id: "", caption: "" }]);
   };
 
   const handleRemoveImage = (index: number) => {
-    const newImages = part_images.filter((_, i) => i !== index);
-    setImages(newImages);
+    const newImages = artifacts.filter((_, i) => i !== index);
+    setArtifacts(newImages);
   };
 
-  const handleImageUploadSuccess = (url: string, index: number) => {
-    const newImages = [...part_images];
-    newImages[index].url = url;
-    setImages(newImages);
+  const handleImageUploadSuccess = (image_id: string, index: number) => {
+    const newImages = [...artifacts];
+    newImages[index].id = image_id;
+    setArtifacts(newImages);
+  };
+
+  const handleChildrenChange = (
+    index: number,
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { value } = e.target;
+    const newChildren = [...child_ids];
+    newChildren[index] = value;
+    setChildIds(newChildren);
   };
 
   return (
@@ -79,15 +93,17 @@ const PartForm: React.FC<PartFormProps> = ({
           onChange={(e) => {
             setDescription(e.target.value);
           }}
-          value={part_description}
+          value={description}
           required
         />
         <h2>Images</h2>
-        {part_images.map((image, index) => (
+        {artifacts.map((image, index) => (
           <Row key={index} className="mb-3">
             <Col md={12}>
               <ImageUploadComponent
-                onUploadSuccess={(url) => handleImageUploadSuccess(url, index)}
+                onUploadSuccess={(image_id) =>
+                  handleImageUploadSuccess(image_id, index)
+                }
               />
               <label htmlFor={"caption-" + index}>Caption</label>
               <Form.Control
@@ -120,6 +136,21 @@ const PartForm: React.FC<PartFormProps> = ({
             Add Image
           </TCButton>
         </Col>
+        <h2>Children</h2>
+        {child_ids.map((id, index) => (
+          <Row key={index} className="mb-3">
+            <label htmlFor={"child-" + index}>Part</label>
+            <Form.Control
+              id={"child-" + index}
+              className="mb-1"
+              as="select"
+              name="child_id"
+              value={id}
+              onChange={(e) => handleChildrenChange(index, e)}
+              required
+            ></Form.Control>
+          </Row>
+        ))}
         <Col md={12}>
           <TCButton type="submit">Submit</TCButton>
         </Col>
@@ -128,4 +159,4 @@ const PartForm: React.FC<PartFormProps> = ({
   );
 };
 
-export default PartForm;
+export default ListingForm;

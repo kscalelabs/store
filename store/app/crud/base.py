@@ -1,8 +1,9 @@
 """Defines the base CRUD interface."""
 
+import io
 import itertools
 import logging
-from typing import Any, AsyncContextManager, Callable, Literal, Self, TypeVar, overload
+from typing import Any, AsyncContextManager, BinaryIO, Callable, Literal, Self, TypeVar, overload
 
 import aioboto3
 from boto3.dynamodb.conditions import Key
@@ -52,10 +53,12 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         return self.__s3
 
     @classmethod
-    def get_gsis(cls) -> list[GlobalSecondaryIndex]:
-        return [
-            ("typeIndex", "type", "S", "HASH"),
-        ]
+    def get_gsis(cls) -> set[str]:
+        return {"type"}
+
+    @classmethod
+    def get_gsi_index_name(cls, colname: str) -> str:
+        return f"{colname}_index"
 
     async def __aenter__(self) -> Self:
         session = aioboto3.Session()
@@ -107,7 +110,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         table = await self.db.Table(TABLE_NAME)
 
         query_params = {
-            "IndexName": "typeIndex",
+            "IndexName": "type_index",
             "KeyConditionExpression": Key("type").eq(item_class.__name__),
             "Limit": limit,
         }
@@ -155,7 +158,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             response = await self._list_items(
                 item_class,
                 filter_expression="(contains(#p_name, :query) OR contains(description, :query)) AND #p_owner=:user_id",
-                expression_attribute_names={"#p_name": "name", "#p_owner": "owner"},
+                expression_attribute_names={"#p_name": "name", "#p_owner": "user_id"},
                 expression_attribute_values={":query": search_query, ":user_id": user_id},
             )
         else:
@@ -163,7 +166,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
                 item_class,
                 filter_expression="#p_owner=:user_id",
                 expression_attribute_values={":user_id": user_id},
-                expression_attribute_names={"#p_owner": "owner"},
+                expression_attribute_names={"#p_owner": "user_id"},
             )
         sorted_items = sorted(response, key=sort_key, reverse=True)
         return sorted_items[(page - 1) * ITEMS_PER_PAGE : page * ITEMS_PER_PAGE], page * ITEMS_PER_PAGE < len(response)
@@ -171,7 +174,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     async def _count_items(self, item_class: type[T]) -> int:
         table = await self.db.Table(TABLE_NAME)
         item_dict = await table.scan(
-            IndexName="typeIndex",
+            IndexName="type_index",
             Select="COUNT",
             FilterExpression=Key("type").eq(item_class.__name__),
         )
@@ -220,14 +223,13 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
 
     async def _get_items_from_secondary_index(
         self,
-        secondary_index: str,
         secondary_index_name: str,
         secondary_index_value: str,
         item_class: type[T],
     ) -> list[T]:
         table = await self.db.Table(TABLE_NAME)
         item_dict = await table.query(
-            IndexName=secondary_index,
+            IndexName=self.get_gsi_index_name(secondary_index_name),
             KeyConditionExpression=Key(secondary_index_name).eq(secondary_index_value),
         )
         items = item_dict["Items"]
@@ -236,7 +238,6 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     @overload
     async def _get_unique_item_from_secondary_index(
         self,
-        secondary_index: str,
         secondary_index_name: str,
         secondary_index_value: str,
         item_class: type[T],
@@ -246,7 +247,6 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     @overload
     async def _get_unique_item_from_secondary_index(
         self,
-        secondary_index: str,
         secondary_index_name: str,
         secondary_index_value: str,
         item_class: type[T],
@@ -255,7 +255,6 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
 
     async def _get_unique_item_from_secondary_index(
         self,
-        secondary_index: str,
         secondary_index_name: str,
         secondary_index_value: str,
         item_class: type[T],
@@ -264,7 +263,6 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         if secondary_index_name not in item_class.model_fields:
             raise InternalError(f"Field '{secondary_index_name}' not in model {item_class.__name__}")
         items = await self._get_items_from_secondary_index(
-            secondary_index,
             secondary_index_name,
             secondary_index_value,
             item_class,
@@ -289,6 +287,38 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             Key={"id": item_id},
             AttributeUpdates={k: {"Value": v, "Action": "PUT"} for k, v in new_values.items() if k != "id"},
         )
+
+    async def _upload_to_s3(self, data: io.BytesIO | BinaryIO, filename: str, content_type: str) -> None:
+        """Uploads some data to S3.
+
+        Args:
+            data: The data to upload to S3.
+            filename: The resulting filename in S3 (should be unique).
+            content_type: The file content type, for CloudFront to provide
+                in the file header when the user retrieves it.
+        """
+        bucket = await self.s3.Bucket(settings.s3.bucket)
+        await bucket.upload_fileobj(
+            data,
+            f"{settings.s3.prefix}{filename}",
+            ExtraArgs={"ContentType": content_type},
+        )
+
+    async def _create_s3_bucket(self) -> None:
+        """Creates an S3 bucket if it does not already exist."""
+        try:
+            await self.s3.meta.client.head_bucket(Bucket=settings.s3.bucket)
+            logger.info("Found existing bucket %s", settings.s3.bucket)
+        except ClientError:
+            logger.info("Creating %s bucket", settings.s3.bucket)
+            await self.s3.create_bucket(Bucket=settings.s3.bucket)
+
+    async def _delete_s3_bucket(self) -> None:
+        """Deletes an S3 bucket."""
+        bucket = await self.s3.Bucket(settings.s3.bucket)
+        async for obj in bucket.objects.all():
+            await obj.delete()
+        await bucket.delete()
 
     async def _create_dynamodb_table(
         self,

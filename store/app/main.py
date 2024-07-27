@@ -13,8 +13,7 @@ from fastapi.responses import JSONResponse
 from store.app.crud.base import InternalError, ItemNotFoundError
 from store.app.db import create_tables
 from store.app.routers.image import image_router
-from store.app.routers.part import parts_router
-from store.app.routers.robot import robots_router
+from store.app.routers.listings import listings_router
 from store.app.routers.users import NotAuthenticatedError, users_router
 from store.settings import settings
 
@@ -91,9 +90,8 @@ async def read_root() -> bool:
 
 
 app.include_router(users_router, prefix="/users", tags=["users"])
-app.include_router(robots_router, prefix="/robots", tags=["robots"])
-app.include_router(parts_router, prefix="/parts", tags=["parts"])
-app.include_router(image_router, prefix="/image", tags=["image"])
+app.include_router(listings_router, prefix="/listings", tags=["listings"])
+app.include_router(image_router, prefix="/images", tags=["images"])
 
 # For running with debugger
 if __name__ == "__main__":

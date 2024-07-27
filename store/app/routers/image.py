@@ -1,15 +1,17 @@
 """Defines all robot related API endpoints."""
 
-import io
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.responses import RedirectResponse
 from PIL import Image
 from pydantic.main import BaseModel
 
+from store.app.crud.artifacts import get_image_name
 from store.app.db import Crud
+from store.app.model import ArtifactSize, User
+from store.app.routers.users import get_session_user_with_write_permission
 from store.settings import settings
 from store.utils import new_uuid
 
@@ -22,31 +24,44 @@ class UserInfoResponse(BaseModel):
     image_id: str
 
 
-@image_router.post("/upload/")
-async def upload_image(crud: Annotated[Crud, Depends(Crud.get)], file: UploadFile) -> UserInfoResponse:
+@image_router.post("/upload")
+async def upload_image(
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+    file: UploadFile,
+    description: str | None = None,
+) -> UserInfoResponse:
     try:
-        if file.content_type in ["image/png", "image/jpeg", "image/jpg"]:
-            raise HTTPException(status_code=400, detail="Only PNG images are supported")
-        if len(await file.read()) > 1024 * 1024 * 2:
-            raise HTTPException(status_code=400, detail="Image is too large")
+        if file.content_type not in ["image/png", "image/jpeg", "image/jpg"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Only PNG and JPEG images are supported",
+            )
+        if file.size is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Image size was not provided",
+            )
+        if file.size > settings.image.max_bytes:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Image is too large",
+            )
         image_id = str(new_uuid())
-        file.filename = image_id + ".png"
-        file.file.seek(0)
-        await crud.upload_image(file)
-
         image = Image.open(file.file)
-        compressed_image_io = io.BytesIO()
-        image.save(compressed_image_io, format="PNG", optimize=True, quality=30)
-        compressed_image_io.seek(0)
-        upload = UploadFile(filename="mini" + image_id + ".png", file=compressed_image_io)
-        await crud.upload_image(upload)
+        await crud.upload_image(
+            image=image,
+            user_id=user.id,
+            description=description,
+        )
 
         return UserInfoResponse(image_id=image_id)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-@image_router.get("/{image_fname}")
-async def image_url(image_fname: str) -> RedirectResponse:
-    image_url = f"{settings.site.image_base_url}/{image_fname}"
+@image_router.get("/{image_id}/{size}")
+async def image_url(image_id: str, size: ArtifactSize) -> RedirectResponse:
+    # TODO: Use CloudFront API to return a signed CloudFront URL.
+    image_url = f"{settings.site.image_base_url}/{get_image_name(image_id, size)}"
     return RedirectResponse(url=image_url)

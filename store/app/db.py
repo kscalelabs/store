@@ -3,16 +3,18 @@
 import argparse
 import asyncio
 import logging
-from typing import AsyncGenerator, Self
+from typing import AsyncGenerator, Literal, Self
 
+from store.app.crud.artifacts import ArtifactsCrud
 from store.app.crud.base import TABLE_NAME, BaseCrud
-from store.app.crud.robots import RobotCrud
+from store.app.crud.listings import ListingsCrud
 from store.app.crud.users import UserCrud
 
 
 class Crud(
+    ArtifactsCrud,
     UserCrud,
-    RobotCrud,
+    ListingsCrud,
     BaseCrud,
 ):
     """Composes the various CRUD classes into a single class."""
@@ -37,13 +39,21 @@ async def create_tables(crud: Crud | None = None, deletion_protection: bool = Fa
             await create_tables(new_crud)
 
     else:
-        await crud._create_dynamodb_table(
-            name=TABLE_NAME,
-            keys=[
-                ("id", "S", "HASH"),
-            ],
-            gsis=crud.get_gsis(),
-            deletion_protection=deletion_protection,
+        gsis_set = crud.get_gsis()
+        gsis: list[tuple[str, str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]] = [
+            (Crud.get_gsi_index_name(g), g, "S", "HASH") for g in gsis_set
+        ]
+
+        await asyncio.gather(
+            crud._create_dynamodb_table(
+                name=TABLE_NAME,
+                keys=[
+                    ("id", "S", "HASH"),
+                ],
+                gsis=gsis,
+                deletion_protection=deletion_protection,
+            ),
+            crud._create_s3_bucket(),
         )
 
 
@@ -61,6 +71,7 @@ async def delete_tables(crud: Crud | None = None) -> None:
 
     else:
         await crud._delete_dynamodb_table(TABLE_NAME)
+        await crud._delete_s3_bucket()
 
 
 async def populate_with_dummy_data(crud: Crud | None = None) -> None:

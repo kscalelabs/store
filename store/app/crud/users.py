@@ -4,7 +4,7 @@ import asyncio
 import warnings
 from typing import Literal, overload
 
-from store.app.crud.base import BaseCrud, GlobalSecondaryIndex
+from store.app.crud.base import BaseCrud
 from store.app.model import APIKey, APIKeyPermissionSet, APIKeySource, OAuthKey, User
 from store.settings import settings
 from store.utils import cache_result
@@ -24,15 +24,9 @@ class UserNotFoundError(Exception):
 
 
 class UserCrud(BaseCrud):
-    def __init__(self) -> None:
-        super().__init__()
-
     @classmethod
-    def get_gsis(cls) -> list[GlobalSecondaryIndex]:
-        return super().get_gsis() + [
-            ("emailIndex", "email", "S", "HASH"),
-            ("userTokenIndex", "user_token", "S", "HASH"),
-        ]
+    def get_gsis(cls) -> set[str]:
+        return super().get_gsis().union({"user_id", "email", "user_token"})
 
     @overload
     async def get_user(self, id: str, throw_if_missing: Literal[True]) -> User: ...
@@ -62,7 +56,6 @@ class UserCrud(BaseCrud):
 
     async def _get_oauth_key(self, token: str, throw_if_missing: bool = False) -> OAuthKey | None:
         return await self._get_unique_item_from_secondary_index(
-            "userTokenIndex",
             "user_token",
             token,
             OAuthKey,
@@ -94,7 +87,7 @@ class UserCrud(BaseCrud):
         await self._delete_item(await self._get_oauth_key(google_auth_key(google_id), throw_if_missing=True))
 
     async def get_user_from_email(self, email: str) -> User | None:
-        return await self._get_unique_item_from_secondary_index("emailIndex", "email", email, User)
+        return await self._get_unique_item_from_secondary_index("email", email, User)
 
     async def get_user_batch(self, ids: list[str]) -> list[User]:
         return await self._get_item_batch(ids, User)

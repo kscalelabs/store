@@ -90,38 +90,65 @@ class APIKey(RobolistBaseModel):
         )
 
 
-class Bom(BaseModel):
-    part_id: str
-    quantity: int
+ArtifactSize = Literal["small", "large"]
+ArtifactType = Literal["image", "urdf", "mjcf"]
 
 
-class Image(BaseModel):
-    caption: str
-    url: str
+class Artifact(RobolistBaseModel):
+    """Defines an artifact that some user owns, like an image or uploaded file.
+
+    Artifacts are stored in S3 and are accessible through CloudFront.
+
+    Artifacts are associated to a given user and can come in different sizes;
+    for example, the same image may have multiple possible sizes available.
+    """
+
+    user_id: str
+    artifact_type: ArtifactType
+    sizes: list[ArtifactSize] | None = None
+    description: str | None = None
+
+    @classmethod
+    def create(
+        cls,
+        user_id: str,
+        artifact_type: ArtifactType,
+        sizes: list[ArtifactSize] | None = None,
+        description: str | None = None,
+    ) -> Self:
+        return cls(
+            id=str(new_uuid()),
+            user_id=user_id,
+            artifact_type=artifact_type,
+            sizes=sizes,
+            description=description,
+        )
 
 
-class Package(BaseModel):
+class Listing(RobolistBaseModel):
+    """Defines a recursively-defined listing.
+
+    Listings can have sub-listings with their component parts. They can also
+    have associated user-uploaded artifacts like images and URDFs.
+    """
+
+    user_id: str
     name: str
-    url: str
+    child_ids: list[str]
+    artifact_ids: list[str]
+    description: str | None
 
 
-class Robot(RobolistBaseModel):
-    owner: str
+class ListingTag(RobolistBaseModel):
+    """Marks a listing as having a given tag."""
+
+    listing_id: str
     name: str
-    description: str
-    bom: list[Bom]
-    images: list[Image]
-    height: str | None = None
-    weight: str | None = None
-    degrees_of_freedom: int | None = None
-    timestamp: int
-    urdf: str
-    packages: list[Package]
 
-
-class Part(RobolistBaseModel):
-    name: str
-    owner: str
-    description: str
-    images: list[Image]
-    timestamp: int
+    @classmethod
+    def create(cls, listing_id: str, tag: str) -> Self:
+        return cls(
+            id=str(new_uuid()),
+            listing_id=listing_id,
+            name=tag,
+        )
