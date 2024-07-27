@@ -13,7 +13,6 @@ from store.app.db import Crud
 from store.app.model import ArtifactSize, User
 from store.app.routers.users import get_session_user_with_write_permission
 from store.settings import settings
-from store.utils import new_uuid
 
 image_router = APIRouter()
 

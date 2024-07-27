@@ -50,7 +50,7 @@ const RenderListing = ({
   const handleShowDelete = () => setShowDelete(true);
   const handleCloseDelete = () => setShowDelete(false);
 
-  const { name, user_id, description, artifact_ids, child_ids } = listing;
+  const { name, user_id, description, artifact_ids } = listing;
 
   useEffect(() => {
     if (auth.isAuthenticated) {
