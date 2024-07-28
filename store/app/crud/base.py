@@ -1,5 +1,6 @@
 """Defines the base CRUD interface."""
 
+import asyncio
 import io
 import itertools
 import logging
@@ -39,6 +40,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         super().__init__()
 
         self.__db: DynamoDBServiceResource | None = None
+        self.__s3: S3ServiceResource | None = None
 
     @property
     def db(self) -> DynamoDBServiceResource:
@@ -63,20 +65,19 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     async def __aenter__(self) -> Self:
         session = aioboto3.Session()
         db = session.resource("dynamodb")
-        db = await db.__aenter__()
-        self.__db = db
-
         s3 = session.resource("s3")
-        s3 = await s3.__aenter__()
+        db, s3 = await asyncio.gather(db.__aenter__(), s3.__aenter__())
+        self.__db = db
         self.__s3 = s3
-
         return self
 
     async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:  # noqa: ANN401
+        to_close = []
         if self.__db is not None:
-            await self.__db.__aexit__(exc_type, exc_val, exc_tb)
+            to_close.append(self.__db)
         if self.__s3 is not None:
-            await self.__s3.__aexit__(exc_type, exc_val, exc_tb)
+            to_close.append(self.__s3)
+        await asyncio.gather(*(resource.__aexit__(exc_type, exc_val, exc_tb) for resource in to_close))
 
     async def _add_item(self, item: RobolistBaseModel, unique_fields: list[str] | None = None) -> None:
         table = await self.db.Table(TABLE_NAME)
