@@ -14,6 +14,7 @@ const NewListing: React.FC = () => {
   const [description, setDescription] = useState<string>("");
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
   const [child_ids, setChildIds] = useState<string[]>([]);
+  const [URDFId, setURDFId] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -23,10 +24,15 @@ const NewListing: React.FC = () => {
       return;
     }
 
+    const artifact_ids = artifacts.map((artifact) => artifact.id);
+    if (URDFId != null) {
+      artifact_ids.push(URDFId)
+    }
+
     try {
       await auth_api.addListing({
         name,
-        description: description,
+        description,
         artifact_ids: artifacts.map((artifact) => artifact.id),
         child_ids,
       });
@@ -51,6 +57,7 @@ const NewListing: React.FC = () => {
       child_ids={child_ids}
       setChildIds={setChildIds}
       handleSubmit={handleSubmit}
+      setURDFId={setURDFId}
     />
   );
 };

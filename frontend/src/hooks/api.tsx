@@ -2,7 +2,7 @@ import { AxiosInstance } from "axios";
 
 export interface Artifact {
   id: string;
-  caption: string;
+  caption?: string;
 }
 
 export interface Listing {
@@ -19,6 +19,11 @@ export interface NewListing {
   description?: string;
   artifact_ids: string[];
   child_ids: string[];
+}
+
+export interface Package {
+  name: string;
+  url: string;
 }
 
 interface GithubAuthResponse {
@@ -170,6 +175,21 @@ export class api {
     return this.callWrapper(async () => {
       const res = await this.api.post<UploadImageResponse>(
         "/images/upload",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
+      );
+      return res.data.image_id;
+    });
+  }
+
+  public async uploadURDF(formData: FormData): Promise<string> {
+    return this.callWrapper(async () => {
+      const res = await this.api.post<UploadImageResponse>(
+        "/urdf/upload",
         formData,
         {
           headers: {
