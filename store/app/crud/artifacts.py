@@ -113,7 +113,7 @@ class ArtifactsCrud(BaseCrud):
     ) -> Artifact:
         artifact = Artifact.create(
             user_id=user_id,
-            artifact_type="urdf",
+            artifact_type="mjcf",
             description=description,
         )
         await asyncio.gather(
