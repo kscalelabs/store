@@ -33,7 +33,7 @@ const NewListing: React.FC = () => {
       await auth_api.addListing({
         name,
         description,
-        artifact_ids: artifacts.map((artifact) => artifact.id),
+        artifact_ids,
         child_ids,
       });
       setMessage("Listing added successfully.");

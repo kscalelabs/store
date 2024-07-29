@@ -41,6 +41,10 @@ interface UploadImageResponse {
   image_id: string;
 }
 
+interface UploadURDFResponse {
+  urdf_id: string;
+}
+
 export class api {
   public api: AxiosInstance;
   public onError: (error: Error) => void;
@@ -188,7 +192,7 @@ export class api {
 
   public async uploadURDF(formData: FormData): Promise<string> {
     return this.callWrapper(async () => {
-      const res = await this.api.post<UploadImageResponse>(
+      const res = await this.api.post<UploadURDFResponse>(
         "/urdf/upload",
         formData,
         {
@@ -197,7 +201,7 @@ export class api {
           },
         },
       );
-      return res.data.image_id;
+      return res.data.urdf_id;
     });
   }
 }
