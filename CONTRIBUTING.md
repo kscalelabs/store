@@ -41,10 +41,10 @@ Initialize the test databases by running the creation script:
 python -m store.app.db create
 ```
 
-And initialize the image bucket:
+And initialize the artifact bucket:
 
 ```
-aws s3api create-bucket --bucket images
+aws s3api create-bucket --bucket artifacts
 ```
 
 #### Admin Panel
