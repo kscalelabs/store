@@ -63,7 +63,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
   };
 
   const handleURDFUploadSuccess = (id: string) => {
-    setURDFId(id)
+    setURDFId(id);
   };
 
   const handleChildrenChange = (
