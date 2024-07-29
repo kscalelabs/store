@@ -4,11 +4,14 @@ import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi.responses import RedirectResponse
 from pydantic.main import BaseModel
 
+from store.app.crud.artifacts import get_urdf_name
 from store.app.db import Crud
 from store.app.model import User
 from store.app.routers.users import get_session_user_with_write_permission
+from store.settings import settings
 
 urdf_router = APIRouter()
 
@@ -37,9 +40,13 @@ async def upload_urdf(
     return UserInfoResponse(urdf_id=artifact.id)
 
 
-@urdf_router.get("/{urdf_id}")
-async def urdf_url(
-    urdf_id: str,
+@urdf_router.get("/{listing_id}")
+async def listing_urdf(
+    listing_id: str,
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> str:
-    raise NotImplementedError
+) -> RedirectResponse:
+    urdf_id = await crud.get_urdf_id(listing_id)
+    if urdf_id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    urdf_url = f"{settings.site.urdf_base_url}/{get_urdf_name(urdf_id)}"
+    return RedirectResponse(url=urdf_url)

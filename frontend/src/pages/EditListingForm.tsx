@@ -35,7 +35,7 @@ const EditListingForm: React.FC = () => {
         const artifacts: Artifact[] = [];
         ListingData.artifact_ids.forEach((id) => {
           const artifact: Artifact = {
-            id
+            id,
           };
           artifacts.push(artifact);
         });
@@ -55,9 +55,9 @@ const EditListingForm: React.FC = () => {
       setMessage("Please upload at least one image.");
       return;
     }
-    const artifact_ids = artifacts.map((artifact) => artifact.id)
+    const artifact_ids = artifacts.map((artifact) => artifact.id);
     if (URDFId != null) {
-      artifact_ids.push(URDFId)
+      artifact_ids.push(URDFId);
     }
     const newFormData: Listing = {
       id: Listing_id,

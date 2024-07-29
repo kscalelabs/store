@@ -26,7 +26,7 @@ const NewListing: React.FC = () => {
 
     const artifact_ids = artifacts.map((artifact) => artifact.id);
     if (URDFId != null) {
-      artifact_ids.push(URDFId)
+      artifact_ids.push(URDFId);
     }
 
     try {

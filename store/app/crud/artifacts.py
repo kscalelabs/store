@@ -24,6 +24,10 @@ def get_image_name(image_id: str, size: ArtifactSize) -> str:
     return f"{image_id}_{size}_{height}x{width}.png"
 
 
+def get_urdf_name(urdf_id: str) -> str:
+    return f"{urdf_id}.tar.gz"
+
+
 class ArtifactsCrud(BaseCrud):
     @classmethod
     def get_gsis(cls) -> set[str]:
