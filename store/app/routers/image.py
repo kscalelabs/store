@@ -62,5 +62,5 @@ async def upload_image(
 @image_router.get("/{image_id}/{size}")
 async def image_url(image_id: str, size: ArtifactSize) -> RedirectResponse:
     # TODO: Use CloudFront API to return a signed CloudFront URL.
-    image_url = f"{settings.site.image_base_url}/{get_image_name(image_id, size)}"
+    image_url = f"{settings.site.artifact_base_url}/{get_image_name(image_id, size)}"
     return RedirectResponse(url=image_url)

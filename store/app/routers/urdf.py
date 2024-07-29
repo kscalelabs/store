@@ -48,5 +48,5 @@ async def listing_urdf(
     urdf_id = await crud.get_urdf_id(listing_id)
     if urdf_id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    urdf_url = f"{settings.site.urdf_base_url}/{get_urdf_name(urdf_id)}"
+    urdf_url = f"{settings.site.artifact_base_url}/{get_urdf_name(urdf_id)}"
     return RedirectResponse(url=urdf_url)
