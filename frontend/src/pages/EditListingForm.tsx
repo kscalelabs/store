@@ -22,6 +22,7 @@ const EditListingForm: React.FC = () => {
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
   const [Listing_id, setListingId] = useState<string>("");
   const [child_ids, setChildIds] = useState<string[]>([]);
+  const [URDFId, setURDFId] = useState<string | null>(null);
 
   const { addAlert } = useAlertQueue();
 
@@ -34,8 +35,7 @@ const EditListingForm: React.FC = () => {
         const artifacts: Artifact[] = [];
         ListingData.artifact_ids.forEach((id) => {
           const artifact: Artifact = {
-            id,
-            caption: "hi",
+            id
           };
           artifacts.push(artifact);
         });
@@ -55,13 +55,17 @@ const EditListingForm: React.FC = () => {
       setMessage("Please upload at least one image.");
       return;
     }
+    const artifact_ids = artifacts.map((artifact) => artifact.id)
+    if (URDFId != null) {
+      artifact_ids.push(URDFId)
+    }
     const newFormData: Listing = {
       id: Listing_id,
       name: name,
       description: Listing_description,
       user_id: "",
-      artifact_ids: [],
-      child_ids: [],
+      artifact_ids: artifact_ids,
+      child_ids: child_ids,
     };
     try {
       await auth_api.editListing(newFormData);
@@ -86,6 +90,7 @@ const EditListingForm: React.FC = () => {
       child_ids={child_ids}
       setChildIds={setChildIds}
       handleSubmit={handleSubmit}
+      setURDFId={setURDFId}
     />
   );
 };

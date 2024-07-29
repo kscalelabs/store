@@ -4,6 +4,7 @@ import { Theme } from "hooks/theme";
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { Col, Form, Row } from "react-bootstrap";
 import ImageUploadComponent from "./files/UploadImage";
+import URDFUploadComponent from "./files/UploadURDF";
 
 interface ListingFormProps {
   theme: Theme;
@@ -18,6 +19,7 @@ interface ListingFormProps {
   child_ids: string[];
   setChildIds: Dispatch<SetStateAction<string[]>>;
   handleSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  setURDFId: Dispatch<SetStateAction<string | null>>;
 }
 
 const ListingForm: React.FC<ListingFormProps> = ({
@@ -32,6 +34,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
   setArtifacts,
   child_ids,
   setChildIds,
+  setURDFId,
   handleSubmit,
 }) => {
   const handleImageChange = (
@@ -57,6 +60,10 @@ const ListingForm: React.FC<ListingFormProps> = ({
     const newImages = [...artifacts];
     newImages[index].id = image_id;
     setArtifacts(newImages);
+  };
+
+  const handleURDFUploadSuccess = (id: string) => {
+    setURDFId(id)
   };
 
   const handleChildrenChange = (
@@ -136,6 +143,11 @@ const ListingForm: React.FC<ListingFormProps> = ({
             Add Image
           </TCButton>
         </Col>
+        <h2>URDF (Optional)</h2>
+        <URDFUploadComponent
+          onUploadSuccess={(id) => handleURDFUploadSuccess(id)}
+        />
+
         <h2>Children</h2>
         {child_ids.map((id, index) => (
           <Row key={index} className="mb-3">
