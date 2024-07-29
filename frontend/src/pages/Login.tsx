@@ -1,12 +1,20 @@
-import { faGithub } from "@fortawesome/free-brands-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import TCButton from "components/files/TCButton";
+import Button from "components/ui/Button/Button";
+import { Input } from "components/ui/Input/Input";
 import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { FormEvent, useEffect, useState } from "react";
-import { Form, Spinner } from "react-bootstrap";
+import { Spinner } from "react-bootstrap";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/Card/Card";
+import styles from "./Login.module.css";
 
 const Login = () => {
   const auth = useAuthentication();
@@ -51,16 +59,21 @@ const Login = () => {
         <Spinner animation="border" />
       ) : (
         <>
-          <p>
-            If you do not already have an account, authenticating will
-            automatically create an account for you.
-          </p>
-          <Form onSubmit={handleGithubSubmit}>
-            <TCButton type="submit">
-              <FontAwesomeIcon icon={faGithub} style={{ marginRight: 15 }} />
-              Login with Github
-            </TCButton>
-          </Form>
+          <div className={styles.container}>
+            <Card className="custom-card">
+              <CardHeader>
+                <CardTitle>Welcome to KScaleLabs</CardTitle>
+                <CardDescription>Login</CardDescription>
+              </CardHeader>
+              <CardContent className={styles.content}>
+                <Input placeholder="Email" type="text" />
+                <Input placeholder="Password" type="password" />
+              </CardContent>
+              <CardFooter>
+                <Button>Submit</Button>
+              </CardFooter>
+            </Card>
+          </div>
         </>
       )}
     </div>
