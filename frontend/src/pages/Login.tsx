@@ -1,4 +1,5 @@
-import Button from "components/ui/Button/Button";
+import { Button } from "components/ui/Button/Button";
+import CardWrapper from "components/ui/Card/CardWrapper";
 import { Input } from "components/ui/Input/Input";
 import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
@@ -6,15 +7,6 @@ import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { FormEvent, useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/Card/Card";
-import styles from "./Login.module.css";
 
 const Login = () => {
   const auth = useAuthentication();
@@ -54,27 +46,29 @@ const Login = () => {
 
   return (
     <div>
-      <h1 className="mb-4">Login</h1>
       {useSpinner ? (
         <Spinner animation="border" />
       ) : (
-        <>
-          <div>
-            <Card className="custom-card">
-              <CardHeader>
-                <CardTitle>Welcome to RoboList</CardTitle>
-                <CardDescription>Login</CardDescription>
-              </CardHeader>
-              <CardContent className={styles.content}>
-                <Input placeholder="Email" type="text" />
-                <Input placeholder="Password" type="password" />
-              </CardContent>
-              <CardFooter>
-                <Button>Submit</Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </>
+        <div className="flex justify-center items-center min-h-svh">
+          <CardWrapper
+            backButtonHref="/signup"
+            headerLabel="Welcome Back!"
+            showProvider
+            backButtonLabel="Not having an account? Create New account"
+          >
+            <form action="" className="grid grid-cols-1 space-y-6">
+              <Input placeholder="Email" />
+              <Input placeholder="password" />
+              <Button
+                // disabled={isPen}
+                type="submit"
+                className="w-full"
+              >
+                Login
+              </Button>
+            </form>
+          </CardWrapper>
+        </div>
       )}
     </div>
   );

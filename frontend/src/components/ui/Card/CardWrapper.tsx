@@ -1,12 +1,12 @@
-import React from "react";
-import { CardFooter, CardHeader } from "react-bootstrap";
-import AuthProvider from "../AuthProvider";
 import BackButton from "../Button/BackButton";
-import { Card, CardContent } from "./Card";
+import { Card, CardContent, CardFooter, CardHeader } from "../Card/Card";
+// import Header from
+import AuthProvider from "../AuthProvider";
+import Header from "../Header";
 
 interface CardWrapperProps {
   children: React.ReactNode;
-  title: string;
+  headerLabel: string;
   backButtonLabel: string;
   backButtonHref: string;
   showProvider?: boolean;
@@ -14,15 +14,15 @@ interface CardWrapperProps {
 
 const CardWrapper = ({
   children,
-  title,
-  backButtonHref,
+  headerLabel,
   backButtonLabel,
+  backButtonHref,
   showProvider,
 }: CardWrapperProps) => {
   return (
-    <Card className="w-[400px] shadow-md">
+    <Card className="w-[400px] shadow-md h-full mb-40">
       <CardHeader>
-        <p>{title}</p>
+        <Header label={headerLabel} />
       </CardHeader>
       <CardContent>{children}</CardContent>
       {showProvider && (
