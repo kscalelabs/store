@@ -3,7 +3,7 @@
 import asyncio
 import logging
 
-from store.app.crud.base import BaseCrud, InternalError, ItemNotFoundError
+from store.app.crud.base import BaseCrud, ItemNotFoundError
 from store.app.model import Artifact, Listing, ListingTag
 
 logger = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ class ListingsCrud(BaseCrud):
         listing_tag = ListingTag.create(listing_id=listing_id, tag=tag)
         return await self._delete_item(listing_tag)
 
-    async def get_urdf_id(
+    async def get_latest_urdf_id(
         self,
         listing_id: str,
     ) -> str | None:
@@ -63,9 +63,4 @@ class ListingsCrud(BaseCrud):
         urdfs = [artifact for artifact in artifacts if artifact.artifact_type == "urdf"]
         if len(urdfs) == 0:
             return None
-        if len(urdfs) > 1:
-            raise InternalError(
-                f"""More than one URDF found for listing {listing_id}.
-                This is due to incorrect data in the database, likely caused by a bug."""
-            )
-        return urdfs[0].id
+        return max(urdfs, key=lambda urdf: urdf.timestamp)

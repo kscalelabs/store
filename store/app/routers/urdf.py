@@ -54,12 +54,12 @@ async def upload_urdf(
     return UserInfoResponse(urdf_id=artifact.id)
 
 
-@urdf_router.get("/{listing_id}")
+@urdf_router.get("/latest/{listing_id}")
 async def listing_urdf(
     listing_id: str,
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> RedirectResponse:
-    urdf_id = await crud.get_urdf_id(listing_id)
+    urdf_id = await crud.get_latest_urdf_id(listing_id)
     if urdf_id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     urdf_url = f"{settings.site.artifact_base_url}/{get_urdf_name(urdf_id)}"
