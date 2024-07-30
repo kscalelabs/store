@@ -1,5 +1,6 @@
 import imageCompression from "browser-image-compression";
 import TCButton from "components/files/TCButton";
+import { BACKEND_URL } from "constants/backend";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
@@ -8,7 +9,6 @@ import { Alert, Col, Modal } from "react-bootstrap";
 import { FileWithPath, useDropzone } from "react-dropzone";
 import ReactCrop, { type Crop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
-import { BACKEND_URL } from "constants/backend";
 
 const MAX_FILE_SIZE = 25 * 1536 * 1536;
 const MAX_FILE_MB = MAX_FILE_SIZE / 1024 / 1024;
@@ -38,12 +38,13 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
   const imgRef = useRef<HTMLImageElement | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>();
   useEffect(() => {
-    if(selectedFile) setImageUrl(URL.createObjectURL(selectedFile))
-  }, [selectedFile])
+    if (selectedFile) setImageUrl(URL.createObjectURL(selectedFile));
+  }, [selectedFile]);
 
   useEffect(() => {
-    if(imageId) setImageUrl(new URL(`/images/${imageId}/large`, BACKEND_URL).toString())
-  }, [])
+    if (imageId)
+      setImageUrl(new URL(`/images/${imageId}/large`, BACKEND_URL).toString());
+  }, []);
   const handleFileChange = async (file: File) => {
     setUploadStatus(null);
 
@@ -233,7 +234,11 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
                 >
                   Close
                 </TCButton>
-                <TCButton style={{marginLeft: "1em"}} onClick={handleDone} variant="primary">
+                <TCButton
+                  style={{ marginLeft: "1em" }}
+                  onClick={handleDone}
+                  variant="primary"
+                >
                   Done
                 </TCButton>
               </div>
@@ -318,11 +323,7 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
         </div>
         {fileError && <Alert variant="danger">{fileError}</Alert>}
       </div>
-      <TCButton
-        onClick={handleUpload}
-        disabled={!imageUrl}
-        className="my-3"
-      >
+      <TCButton onClick={handleUpload} disabled={!imageUrl} className="my-3">
         Upload
       </TCButton>
       {uploadStatus && (
