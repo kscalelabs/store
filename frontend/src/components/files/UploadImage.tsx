@@ -65,6 +65,7 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
       setFileError("Error compressing the image");
       setSelectedFile(null);
     }
+    setShowModal(true);
   };
 
   const onDrop = (acceptedFiles: FileWithPath[]) => {
@@ -222,7 +223,7 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
                 >
                   Close
                 </TCButton>
-                <TCButton onClick={handleDone} variant="primary">
+                <TCButton style={{marginLeft: "1em"}} onClick={handleDone} variant="primary">
                   Done
                 </TCButton>
               </div>

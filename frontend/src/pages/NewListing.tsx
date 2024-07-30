@@ -30,7 +30,7 @@ const NewListing: React.FC = () => {
         artifact_ids: artifacts.map((artifact) => artifact.id),
         child_ids,
       });
-      setMessage(`Listing added successfully.`);
+      setMessage('Listing added successfully.');
       navigate("/listings/me/1");
     } catch (error) {
       setMessage("Error adding Listing ");
