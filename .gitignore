@@ -1,5 +1,9 @@
 # .gitignore
 
+#environment varibles
+.env
+env.sh
+
 # Python
 *.py[oc]
 __pycache__/
