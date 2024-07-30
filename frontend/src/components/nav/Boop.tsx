@@ -1,4 +1,4 @@
-import useBoop from "hooks/useBoop";
+import boop from "hooks/boop";
 import React from "react";
 import { animated } from "react-spring";
 
@@ -19,7 +19,7 @@ const Boop: React.FC<BoopProps> = ({
   timing = 3000,
   children,
 }) => {
-  const [style, trigger] = useBoop({ x, y, rotation, scale, timing });
+  const [style, trigger] = boop({ x, y, rotation, scale, timing });
 
   return (
     <animated.span onMouseEnter={trigger} style={style}>

@@ -12,6 +12,7 @@ from botocore.exceptions import ClientError
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 from types_aiobotocore_s3.service_resource import S3ServiceResource
 
+from store.app.errors import InternalError, ItemNotFoundError
 from store.app.model import RobolistBaseModel
 from store.settings import settings
 
@@ -27,12 +28,6 @@ ITEMS_PER_PAGE = 12
 
 TableKey = tuple[str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]
 GlobalSecondaryIndex = tuple[str, str, Literal["S", "N", "B"], Literal["HASH", "RANGE"]]
-
-
-class ItemNotFoundError(ValueError): ...
-
-
-class InternalError(RuntimeError): ...
 
 
 class BaseCrud(AsyncContextManager["BaseCrud"]):
@@ -132,7 +127,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         self,
         item_class: type[T],
         page: int,
-        sort_key: Callable[[T], int],
+        sort_key: Callable[[T], int] | None = None,
         search_query: str | None = None,
     ) -> tuple[list[T], bool]:
         """Lists items of a given class.
@@ -156,8 +151,9 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             )
         else:
             response = await self._list_items(item_class)
-        sorted_items = sorted(response, key=sort_key, reverse=True)
-        return sorted_items[(page - 1) * ITEMS_PER_PAGE : page * ITEMS_PER_PAGE], page * ITEMS_PER_PAGE < len(response)
+        if sort_key is not None:
+            response = sorted(response, key=sort_key, reverse=True)
+        return response[(page - 1) * ITEMS_PER_PAGE : page * ITEMS_PER_PAGE], page * ITEMS_PER_PAGE < len(response)
 
     async def _list_me(
         self,
@@ -316,6 +312,15 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             f"{settings.s3.prefix}{filename}",
             ExtraArgs={"ContentType": content_type},
         )
+
+    async def _delete_from_s3(self, filename: str) -> None:
+        """Deletes an object from S3.
+
+        Args:
+            filename: The filename of the object to delete.
+        """
+        bucket = await self.s3.Bucket(settings.s3.bucket)
+        await bucket.delete_objects(Delete={"Objects": [{"Key": f"{settings.s3.prefix}{filename}"}]})
 
     async def _create_s3_bucket(self) -> None:
         """Creates an S3 bucket if it does not already exist."""

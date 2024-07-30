@@ -90,6 +90,30 @@ ArtifactSize = Literal["small", "large"]
 ArtifactType = Literal["image", "urdf", "mjcf"]
 
 
+def get_artifact_name(id: str, artifact_type: ArtifactType) -> str:
+    match artifact_type:
+        case "image":
+            raise ValueError("Image artifacts should have a size")
+        case "urdf":
+            return f"{id}.tar.gz"
+        case "mjcf":
+            return f"{id}.xml"
+        case _:
+            raise ValueError(f"Unknown artifact type: {artifact_type}")
+
+
+def get_content_type(artifact_type: ArtifactType) -> str:
+    match artifact_type:
+        case "image":
+            return "image/png"
+        case "urdf":
+            return "application/gzip"
+        case "mjcf":
+            return "text/xml"
+        case _:
+            raise ValueError(f"Unknown artifact type: {artifact_type}")
+
+
 class Artifact(RobolistBaseModel):
     """Defines an artifact that some user owns, like an image or uploaded file.
 
@@ -100,6 +124,7 @@ class Artifact(RobolistBaseModel):
     """
 
     user_id: str
+    listing_id: str
     name: str
     artifact_type: ArtifactType
     sizes: list[ArtifactSize] | None = None
@@ -110,6 +135,7 @@ class Artifact(RobolistBaseModel):
     def create(
         cls,
         user_id: str,
+        listing_id: str,
         name: str,
         artifact_type: ArtifactType,
         sizes: list[ArtifactSize] | None = None,
@@ -117,8 +143,9 @@ class Artifact(RobolistBaseModel):
     ) -> Self:
         return cls(
             id=str(new_uuid()),
-            name=name,
             user_id=user_id,
+            listing_id=listing_id,
+            name=name,
             artifact_type=artifact_type,
             sizes=sizes,
             description=description,
@@ -136,12 +163,16 @@ class Listing(RobolistBaseModel):
     user_id: str
     name: str
     child_ids: list[str]
-    artifact_ids: list[str]
     description: str | None
 
 
 class ListingTag(RobolistBaseModel):
-    """Marks a listing as having a given tag."""
+    """Marks a listing as having a given tag.
+
+    This is useful for tagging listings with metadata, like "robot", "gripper",
+    or "actuator". Tags are used to categorize listings and make them easier to
+    search for.
+    """
 
     listing_id: str
     name: str

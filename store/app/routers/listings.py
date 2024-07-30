@@ -3,7 +3,7 @@
 import logging
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
 from store.app.db import Crud
@@ -11,6 +11,7 @@ from store.app.model import Listing, User
 from store.app.routers.users import (
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
+    maybe_get_user_from_api_key,
 )
 from store.utils import new_uuid
 
@@ -22,7 +23,6 @@ logger = logging.getLogger(__name__)
 class NewListing(BaseModel):
     name: str
     child_ids: list[str]
-    artifact_ids: list[str]
     description: str | None
 
 
@@ -72,7 +72,6 @@ async def add_listing(
             name=new_listing.name,
             description=new_listing.description,
             user_id=user.id,
-            artifact_ids=new_listing.artifact_ids,
             child_ids=new_listing.child_ids,
         )
     )
@@ -87,10 +86,10 @@ async def delete_listing(
 ) -> bool:
     listing = await crud.get_listing(listing_id)
     if listing is None:
-        raise HTTPException(status_code=404, detail="Listing not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
     if listing.user_id != user.id:
-        raise HTTPException(status_code=403, detail="You do not own this listing")
-    await crud.delete_listing(listing_id)
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this listing")
+    await crud.delete_listing(listing)
     return True
 
 
@@ -103,14 +102,34 @@ async def edit_listing(
 ) -> bool:
     listing_info = await crud.get_listing(id)
     if listing_info is None:
-        raise HTTPException(status_code=404, detail="Listing not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
     if listing_info.user_id != user.id:
-        raise HTTPException(status_code=403, detail="You do not own this listing")
-    listing["user_id"] = user.id
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this listing")
     await crud._update_item(id, Listing, listing)
     return True
 
 
-@listings_router.get("/{id}")
-async def get_listing(id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> Listing | None:
-    return await crud.get_listing(id)
+class GetListingResponse(BaseModel):
+    id: str
+    name: str
+    description: str | None
+    child_ids: list[str]
+    owner_is_user: bool
+
+
+@listings_router.get("/{id}", response_model=GetListingResponse)
+async def get_listing(
+    id: str,
+    user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> GetListingResponse | None:
+    listing = await crud.get_listing(id)
+    if listing is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
+    return GetListingResponse(
+        id=listing.id,
+        name=listing.name,
+        description=listing.description,
+        child_ids=listing.child_ids,
+        owner_is_user=user is not None and user.id == listing.user_id,
+    )

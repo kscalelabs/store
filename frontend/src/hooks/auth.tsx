@@ -28,7 +28,7 @@ interface AuthenticationContextProps {
   login: (apiKeyId: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
-  id: string | null;
+  apiKeyId: string | null;
   api: AxiosInstance;
 }
 
@@ -43,18 +43,20 @@ interface AuthenticationProviderProps {
 export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
   const { children } = props;
   const navigate = useNavigate();
-  const [id, setId] = useState<string | null>(getLocalStorageAuth());
+  const [apiKeyId, setApiKeyId] = useState<string | null>(
+    getLocalStorageAuth(),
+  );
 
   const api = axios.create({
     baseURL: BACKEND_URL,
     withCredentials: true,
   });
 
-  if (id !== null) {
+  if (apiKeyId !== null) {
     // Adds the API key to the request header.
     api.interceptors.request.use(
       (config) => {
-        config.headers.Authorization = `Bearer ${id}`;
+        config.headers.Authorization = `Bearer ${apiKeyId}`;
         return config;
       },
       (error) => {
@@ -66,7 +68,7 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
   const login = useCallback((apiKeyId: string) => {
     (async () => {
       setLocalStorageAuth(apiKeyId);
-      setId(apiKeyId);
+      setApiKeyId(apiKeyId);
       navigate("/");
     })();
   }, []);
@@ -74,12 +76,12 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
   const logout = useCallback(() => {
     (async () => {
       deleteLocalStorageAuth();
-      setId(null);
+      setApiKeyId(null);
       navigate("/");
     })();
   }, [navigate]);
 
-  const isAuthenticated = id !== null;
+  const isAuthenticated = apiKeyId !== null;
 
   return (
     <AuthenticationContext.Provider
@@ -87,7 +89,7 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
         login,
         logout,
         isAuthenticated,
-        id,
+        apiKeyId: apiKeyId,
         api,
       }}
     >

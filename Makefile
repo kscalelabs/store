@@ -26,7 +26,7 @@ all:
 #          Serve           #
 # ------------------------ #
 
-start-fastapi:
+start-backend:
 	@fastapi dev 'store/app/main.py' --port 8080
 
 start-frontend:

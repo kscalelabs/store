@@ -46,6 +46,11 @@ async def upload_image(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Image is too large",
             )
+        if file.filename is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Image filename was not provided",
+            )
 
         image = Image.open(file.file)
         artifact = await crud.upload_image(

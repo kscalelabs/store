@@ -10,6 +10,7 @@ from pydantic.main import BaseModel as PydanticBaseModel
 
 from store.app.crud.base import ItemNotFoundError
 from store.app.db import Crud
+from store.app.errors import NotAuthenticatedError
 from store.app.model import User, UserPermission
 from store.app.routers.auth.github import github_auth_router
 from store.app.utils.email import send_delete_email
@@ -19,9 +20,6 @@ logger = logging.getLogger(__name__)
 users_router = APIRouter()
 
 TOKEN_TYPE = "Bearer"
-
-
-class NotAuthenticatedError(Exception): ...
 
 
 class BaseModel(PydanticBaseModel):
@@ -90,6 +88,14 @@ async def get_session_user_with_admin_permission(
         return await crud.get_user(api_key.user_id, throw_if_missing=True)
     except ItemNotFoundError:
         raise NotAuthenticatedError("Not authenticated")
+
+
+async def maybe_get_user_from_api_key(
+    crud: Annotated[Crud, Depends(Crud.get)],
+    api_key_id: Annotated[str, Depends(get_request_api_key_id)],
+) -> User | None:
+    api_key = await crud.get_api_key(api_key_id)
+    return await crud.get_user(api_key.user_id, throw_if_missing=False)
 
 
 def validate_email(email: str) -> str:

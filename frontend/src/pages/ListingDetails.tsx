@@ -22,7 +22,6 @@ interface ListingDetailsResponse {
   name: string;
   user_id: string;
   description?: string;
-  artifact_ids: string[];
   child_ids: string[];
 }
 
@@ -44,7 +43,6 @@ const RenderListing = ({
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
 
-  const [userId, setUserId] = useState<string | null>(null);
   const [show, setShow] = useState(false);
   const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
   const [imageIndex, setArtifactIndex] = useState<number>(0);
@@ -57,29 +55,15 @@ const RenderListing = ({
   const handleShowDelete = () => setShowDelete(true);
   const handleCloseDelete = () => setShowDelete(false);
 
-  const { name, user_id, description, artifact_ids } = listing;
+  const { name, user_id, description } = listing;
 
-  useEffect(() => {
-    if (auth.isAuthenticated) {
-      try {
-        const fetchUserId = async () => {
-          const id = await auth_api.currentUser();
-          setUserId(id);
-        };
-        fetchUserId();
-      } catch (err) {
-        addAlert(humanReadableError(err), "error");
-      }
-    }
-  }, [auth.isAuthenticated]);
+  console.log("user_id:", user_id);
 
   useEffect(() => {
     const fetchListing = async () => {
       try {
         const ownerEmail = await auth_api.getUserById(user_id);
         setOwnerEmail(ownerEmail);
-        const images = await auth_api.getImages(artifact_ids);
-        setImages(images);
       } catch (err) {
         addAlert(humanReadableError(err), "error");
       }
@@ -151,7 +135,7 @@ const RenderListing = ({
               </Markdown>
             </Col>
           </Row>
-          {user_id === userId && (
+          {user_id === current_user_id && (
             <>
               <Row className="mt-2 row-two">
                 <Col md={6} sm={12}>

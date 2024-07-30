@@ -1,7 +1,7 @@
 import React from "react";
 import { SpringConfig, useSpring } from "react-spring";
 
-interface UseBoopProps {
+interface BoopProps {
   x?: number;
   y?: number;
   rotation?: number;
@@ -10,7 +10,7 @@ interface UseBoopProps {
   springConfig?: SpringConfig;
 }
 
-function useBoop({
+function boop({
   x = 100,
   y = 100,
   rotation = 0,
@@ -20,7 +20,7 @@ function useBoop({
     tension: 300,
     friction: 10,
   },
-}: UseBoopProps) {
+}: BoopProps) {
   const [isBooped, setIsBooped] = React.useState(false);
 
   const style = useSpring({
@@ -57,4 +57,4 @@ function useBoop({
   return [appliedStyle, trigger] as const;
 }
 
-export default useBoop;
+export default boop;

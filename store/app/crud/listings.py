@@ -3,13 +3,14 @@
 import asyncio
 import logging
 
+from store.app.crud.artifacts import ArtifactsCrud
 from store.app.crud.base import BaseCrud, ItemNotFoundError
-from store.app.model import Artifact, Listing, ListingTag
+from store.app.model import Listing, ListingTag
 
 logger = logging.getLogger(__name__)
 
 
-class ListingsCrud(BaseCrud):
+class ListingsCrud(ArtifactsCrud, BaseCrud):
     @classmethod
     def get_gsis(cls) -> set[str]:
         return super().get_gsis().union({"listing_id", "name"})
@@ -33,15 +34,21 @@ class ListingsCrud(BaseCrud):
     async def add_listing(self, listing: Listing) -> None:
         try:
             await asyncio.gather(
-                *[self._get_item(artifact_id, Artifact, throw_if_missing=True) for artifact_id in listing.artifact_ids],
-                *[self._get_item(child_id, Listing, throw_if_missing=True) for child_id in listing.child_ids],
+                *(self._get_item(child_id, Listing, throw_if_missing=True) for child_id in listing.child_ids),
             )
         except ItemNotFoundError:
             raise ValueError("One or more artifact or child IDs is invalid")
         await self._add_item(listing)
 
-    async def delete_listing(self, listing_id: str) -> None:
-        await self._delete_item(listing_id)
+    async def _delete_listing_artifacts(self, listing: Listing) -> None:
+        artifacts = await self.get_listing_artifacts(listing.id)
+        await asyncio.gather(*[self.remove_artifact(artifact, listing.user_id) for artifact in artifacts])
+
+    async def delete_listing(self, listing: Listing) -> None:
+        await asyncio.gather(
+            self._delete_item(listing),
+            self._delete_listing_artifacts(listing),
+        )
 
     async def get_listing_tag(self, listing_tag_id: str) -> ListingTag | None:
         return await self._get_item(listing_tag_id, ListingTag, throw_if_missing=False)
@@ -53,14 +60,3 @@ class ListingsCrud(BaseCrud):
     async def delete_tag(self, listing_id: str, tag: str) -> None:
         listing_tag = ListingTag.create(listing_id=listing_id, tag=tag)
         return await self._delete_item(listing_tag)
-
-    async def get_latest_urdf_id(
-        self,
-        listing_id: str,
-    ) -> str | None:
-        listing = await self._get_item(listing_id, Listing, throw_if_missing=True)
-        artifacts = await self._get_item_batch(listing.artifact_ids, Artifact)
-        urdfs = [artifact for artifact in artifacts if artifact.artifact_type == "urdf"]
-        if len(urdfs) == 0:
-            return None
-        return max(urdfs, key=lambda urdf: urdf.timestamp)

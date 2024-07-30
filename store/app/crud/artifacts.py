@@ -8,7 +8,8 @@ from typing import BinaryIO
 from PIL import Image
 
 from store.app.crud.base import BaseCrud
-from store.app.model import Artifact, ArtifactSize
+from store.app.errors import NotAuthorizedError
+from store.app.model import Artifact, ArtifactSize, ArtifactType, Listing, get_artifact_name, get_content_type
 from store.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -24,14 +25,10 @@ def get_image_name(image_id: str, size: ArtifactSize) -> str:
     return f"{image_id}_{size}_{height}x{width}.png"
 
 
-def get_urdf_name(urdf_id: str) -> str:
-    return f"{urdf_id}.tar.gz"
-
-
 class ArtifactsCrud(BaseCrud):
     @classmethod
     def get_gsis(cls) -> set[str]:
-        return super().get_gsis().union({"user_id"})
+        return super().get_gsis().union({"user_id", "listing_id"})
 
     def _crop_image(self, image: Image.Image, size: tuple[int, int]) -> io.BytesIO:
         image_bytes = io.BytesIO()
@@ -68,10 +65,12 @@ class ArtifactsCrud(BaseCrud):
         name: str,
         image: Image.Image,
         user_id: str,
+        listing_id: str,
         description: str | None = None,
     ) -> Artifact:
         artifact = Artifact.create(
             user_id=user_id,
+            listing_id=listing_id,
             name=name,
             artifact_type="image",
             sizes=list(SizeMapping.keys()),
@@ -90,40 +89,56 @@ class ArtifactsCrud(BaseCrud):
         )
         return artifact
 
-    async def upload_urdf(
+    async def remove_image(self, artifact: Artifact, user_id: str) -> None:
+        if artifact.user_id != user_id:
+            raise NotAuthorizedError("User does not have permission to delete this image")
+        await asyncio.gather(
+            *(self._delete_from_s3(get_image_name(artifact.id, size)) for size in SizeMapping.keys()),
+            self._delete_item(artifact),
+        )
+
+    async def get_raw_artifact(self, artifact_id: str) -> Artifact | None:
+        return await self._get_item(artifact_id, Artifact)
+
+    async def upload_raw_artifact(
         self,
         name: str,
         file: io.BytesIO | BinaryIO,
+        listing: Listing,
         user_id: str,
+        artifact_type: ArtifactType,
         description: str | None = None,
     ) -> Artifact:
+        if listing.user_id != user_id:
+            raise NotAuthorizedError("User does not have permission to upload artifacts to this listing")
+        content_type = get_content_type(artifact_type)
         artifact = Artifact.create(
             user_id=user_id,
+            listing_id=listing.id,
             name=name,
-            artifact_type="urdf",
+            artifact_type=artifact_type,
             description=description,
         )
         await asyncio.gather(
-            self._upload_to_s3(file, get_urdf_name(artifact.id), "application/gzip"),
+            self._upload_to_s3(file, get_artifact_name(artifact.id, artifact_type), content_type),
             self._add_item(artifact),
         )
         return artifact
 
-    async def upload_mjcf(
-        self,
-        name: str,
-        file: io.BytesIO | BinaryIO,
-        user_id: str,
-        description: str | None = None,
-    ) -> Artifact:
-        artifact = Artifact.create(
-            user_id=user_id,
-            name=name,
-            artifact_type="mjcf",
-            description=description,
-        )
+    async def remove_raw_artifact(self, artifact: Artifact, user_id: str) -> None:
+        if artifact.user_id != user_id:
+            raise NotAuthorizedError("User does not have permission to delete this artifact")
         await asyncio.gather(
-            self._upload_to_s3(file, artifact.id, "text/xml"),
-            self._add_item(artifact),
+            self._delete_from_s3(get_artifact_name(artifact.id, artifact.artifact_type)),
+            self._delete_item(artifact),
         )
-        return artifact
+
+    async def remove_artifact(self, artifact: Artifact, user_id: str) -> None:
+        match artifact.artifact_type:
+            case "image":
+                await self.remove_image(artifact, user_id)
+            case _:
+                await self.remove_raw_artifact(artifact, user_id)
+
+    async def get_listing_artifacts(self, listing_id: str) -> list[Artifact]:
+        return await self._get_items_from_secondary_index("listing_id", listing_id, Artifact)

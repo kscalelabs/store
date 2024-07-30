@@ -10,14 +10,17 @@ export interface Listing {
   name: string;
   user_id: string;
   child_ids: string[];
-  artifact_ids: string[];
   description?: string;
+}
+
+export interface GetListingResponse {
+  id: string;
+  name: string;
 }
 
 export interface NewListing {
   name: string;
   description?: string;
-  artifact_ids: string[];
   child_ids: string[];
 }
 

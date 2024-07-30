@@ -1,4 +1,3 @@
-import ImageComponent from "components/files/ViewImage";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Listing } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
@@ -77,23 +76,6 @@ const MyListings = () => {
         {partsData.map((part) => (
           <Col key={part.id} lg={2} md={3} sm={6} xs={12}>
             <Card onClick={() => navigate(`/listing/${part.id}`)}>
-              {part.artifact_ids[0] && (
-                <div
-                  style={{
-                    aspectRatio: "1/1",
-                    width: "100%",
-                    overflow: "hidden",
-                    borderTopLeftRadius: ".25rem",
-                    borderTopRightRadius: ".25rem",
-                  }}
-                >
-                  <ImageComponent
-                    imageId={part.artifact_ids[0]}
-                    size={"small"}
-                    caption={part.artifact_ids[0]}
-                  />
-                </div>
-              )}
               <Card.Body>
                 <Card.Title>{part.name}</Card.Title>
                 <Card.Text>
