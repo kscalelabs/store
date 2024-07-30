@@ -2,7 +2,7 @@ import TCButton from "components/files/TCButton";
 import ImageComponent from "components/files/ViewImage";
 import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
-import { api } from "hooks/api";
+import { api, Artifact } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import {
@@ -16,7 +16,7 @@ import {
   Spinner,
 } from "react-bootstrap";
 import Markdown from "react-markdown";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 interface ListingDetailsResponse {
   name: string;
@@ -24,6 +24,11 @@ interface ListingDetailsResponse {
   description?: string;
   artifact_ids: string[];
   child_ids: string[];
+}
+
+interface Child {
+  id: string;
+  name: string;
 }
 
 const RenderListing = ({
@@ -42,8 +47,10 @@ const RenderListing = ({
   const [userId, setUserId] = useState<string | null>(null);
   const [show, setShow] = useState(false);
   const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
-  const [imageIndex, setArtifactIndex] = useState(0);
+  const [imageIndex, setArtifactIndex] = useState<number>(0);
   const [showDelete, setShowDelete] = useState(false);
+  const [children, setChildren] = useState<Child[] | null>(null);
+  const [images, setImages] = useState<Artifact[]>([]);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -71,12 +78,30 @@ const RenderListing = ({
       try {
         const ownerEmail = await auth_api.getUserById(user_id);
         setOwnerEmail(ownerEmail);
+        const images = await auth_api.getImages(artifact_ids);
+        setImages(images);
       } catch (err) {
         addAlert(humanReadableError(err), "error");
       }
     };
     fetchListing();
   }, [user_id]);
+
+  useEffect(() => {
+    const fetchChildren = async () => {
+      try {
+        const children = await auth_api.getListingsBatch(listing.child_ids);
+        setChildren(
+          children.map((child) => ({ id: child.id, name: child.name })),
+        );
+      } catch (err) {
+        addAlert(humanReadableError(err), "error");
+      }
+    };
+    if (listing.child_ids.length > 0) {
+      fetchChildren();
+    }
+  }, []);
 
   return (
     <>
@@ -93,6 +118,20 @@ const RenderListing = ({
               </em>
             </Col>
           </Row>
+          {children && (
+            <Row>
+              <Col>
+                <p>This listing depends on the following listings:</p>
+                <ul>
+                  {children.map((child, id) => (
+                    <li key={"child-" + id}>
+                      <Link to={"/listing/" + child.id}>{child.name}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </Col>
+            </Row>
+          )}
           <hr />
           <Row>
             <Col>
@@ -193,9 +232,9 @@ const RenderListing = ({
             data-bs-theme="dark"
             style={{ border: "1px solid #ccc" }}
             interval={null}
-            controls={artifact_ids.length > 1}
+            controls={images.length > 1}
           >
-            {artifact_ids.map((id, key) => (
+            {images.map((image, key) => (
               <Carousel.Item key={key}>
                 <div
                   style={{
@@ -209,79 +248,82 @@ const RenderListing = ({
                   }}
                 >
                   <ImageComponent
-                    imageId={id}
+                    imageId={image.id}
                     size={"large"}
-                    caption={"caption"}
+                    caption={image.caption}
                   />
                 </div>
-                <Carousel.Caption
-                  style={{
-                    backgroundColor: "rgba(255, 255, 255, 0.5)",
-                    color: "black",
-                    padding: "0.1rem",
-                    // Put the caption at the top
-                    top: 10,
-                    bottom: "unset",
-                  }}
-                >
-                  {"caption"}
-                </Carousel.Caption>
+                {image.caption && (
+                  <Carousel.Caption
+                    style={{
+                      backgroundColor: "rgba(255, 255, 255, 0.5)",
+                      color: "black",
+                      padding: "0.1rem",
+                      // Put the caption at the top
+                      top: 10,
+                      bottom: "unset",
+                    }}
+                  >
+                    {image.caption}
+                  </Carousel.Caption>
+                )}
               </Carousel.Item>
             ))}
           </Carousel>
         </Col>
       </Row>
 
-      <Modal
-        show={show}
-        onHide={handleClose}
-        fullscreen="md-down"
-        centered
-        size="lg"
-        scrollable
-      >
-        <Modal.Header closeButton>
-          <Modal.Title>
-            {/* TO-DO: This supposed to be the caption */}
-            {artifact_ids[imageIndex]} ({imageIndex + 1} of{" "}
-            {artifact_ids.length})
-          </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <ImageComponent
-              imageId={artifact_ids[imageIndex]}
-              size={"large"}
-              caption={artifact_ids[imageIndex]}
-            />
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          {artifact_ids.length > 1 && (
-            <ButtonGroup>
-              <TCButton
-                variant="primary"
-                onClick={() => {
-                  setArtifactIndex(
-                    (imageIndex - 1 + artifact_ids.length) %
-                      artifact_ids.length,
-                  );
-                }}
-              >
-                Previous
-              </TCButton>
-              <TCButton
-                variant="primary"
-                onClick={() => {
-                  setArtifactIndex((imageIndex + 1) % artifact_ids.length);
-                }}
-              >
-                Next
-              </TCButton>
-            </ButtonGroup>
-          )}
-        </Modal.Footer>
-      </Modal>
+      {images.length > 0 && (
+        <Modal
+          show={show}
+          onHide={handleClose}
+          fullscreen="md-down"
+          centered
+          size="lg"
+          scrollable
+        >
+          <Modal.Header closeButton>
+            <Modal.Title>
+              {images[imageIndex].caption} ({imageIndex + 1} of {images.length})
+            </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <ImageComponent
+                imageId={images[imageIndex].id}
+                size={"large"}
+                {...(images[imageIndex].caption && {
+                  caption: images[imageIndex].caption,
+                })}
+              />
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            {images.length > 1 && (
+              <ButtonGroup>
+                <TCButton
+                  variant="primary"
+                  onClick={() => {
+                    setArtifactIndex(
+                      (imageIndex - 1 + images.length) % images.length,
+                    );
+                  }}
+                >
+                  Previous
+                </TCButton>
+                <TCButton
+                  variant="primary"
+                  onClick={() => {
+                    setArtifactIndex((imageIndex + 1) % images.length);
+                  }}
+                >
+                  Next
+                </TCButton>
+              </ButtonGroup>
+            )}
+          </Modal.Footer>
+        </Modal>
+      )}
     </>
   );
 };

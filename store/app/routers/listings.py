@@ -35,6 +35,21 @@ async def list_listings(
     return await crud.get_listings(page, search_query=search_query)
 
 
+@listings_router.get("/batch")
+async def get_batch(
+    crud: Annotated[Crud, Depends(Crud.get)],
+    ids: list[str] = Query(description="List of part ids"),
+) -> list[Listing]:
+    return await crud._get_item_batch(ids, Listing)
+
+
+@listings_router.get("/dump")
+async def dump_listings(
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> list[Listing]:
+    return await crud.dump_listings()
+
+
 @listings_router.get("/me")
 async def list_my_listings(
     crud: Annotated[Crud, Depends(Crud.get)],

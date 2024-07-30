@@ -65,12 +65,14 @@ class ArtifactsCrud(BaseCrud):
 
     async def upload_image(
         self,
+        name: str,
         image: Image.Image,
         user_id: str,
         description: str | None = None,
     ) -> Artifact:
         artifact = Artifact.create(
             user_id=user_id,
+            name=name,
             artifact_type="image",
             sizes=list(SizeMapping.keys()),
             description=description,
@@ -90,12 +92,14 @@ class ArtifactsCrud(BaseCrud):
 
     async def upload_urdf(
         self,
+        name: str,
         file: io.BytesIO | BinaryIO,
         user_id: str,
         description: str | None = None,
     ) -> Artifact:
         artifact = Artifact.create(
             user_id=user_id,
+            name=name,
             artifact_type="urdf",
             description=description,
         )
@@ -107,12 +111,14 @@ class ArtifactsCrud(BaseCrud):
 
     async def upload_mjcf(
         self,
+        name: str,
         file: io.BytesIO | BinaryIO,
         user_id: str,
         description: str | None = None,
     ) -> Artifact:
         artifact = Artifact.create(
             user_id=user_id,
+            name=name,
             artifact_type="mjcf",
             description=description,
         )

@@ -1,5 +1,5 @@
 import TCButton from "components/files/TCButton";
-import { Artifact } from "hooks/api";
+import { Artifact, Listing } from "hooks/api";
 import { Theme } from "hooks/theme";
 import { ChangeEvent, Dispatch, FormEvent, SetStateAction } from "react";
 import { Col, Form, Row } from "react-bootstrap";
@@ -8,6 +8,7 @@ import URDFUploadComponent from "./files/UploadURDF";
 
 interface ListingFormProps {
   theme: Theme;
+  listings: Listing[];
   title: string;
   message: string;
   name: string;
@@ -24,6 +25,7 @@ interface ListingFormProps {
 
 const ListingForm: React.FC<ListingFormProps> = ({
   theme,
+  listings,
   title,
   message,
   name,
@@ -73,6 +75,15 @@ const ListingForm: React.FC<ListingFormProps> = ({
     const { value } = e.target;
     const newChildren = [...child_ids];
     newChildren[index] = value;
+    setChildIds(newChildren);
+  };
+
+  const handleAddChild = () => {
+    setChildIds([...child_ids, ""]);
+  };
+
+  const handleRemoveChild = (index: number) => {
+    const newChildren = child_ids.filter((_, i) => i !== index);
     setChildIds(newChildren);
   };
 
@@ -152,18 +163,47 @@ const ListingForm: React.FC<ListingFormProps> = ({
         <h2>Children</h2>
         {child_ids.map((id, index) => (
           <Row key={index} className="mb-3">
-            <label htmlFor={"child-" + index}>Part</label>
-            <Form.Control
-              id={"child-" + index}
-              className="mb-1"
-              as="select"
-              name="child_id"
-              value={id}
-              onChange={(e) => handleChildrenChange(index, e)}
-              required
-            ></Form.Control>
+            <Col>
+              <label htmlFor={"child-" + index}>Listing</label>
+              <Form.Control
+                id={"child-" + index}
+                className="mb-1"
+                as="select"
+                name="child_id"
+                value={id}
+                onChange={(e) => handleChildrenChange(index, e)}
+                required
+              >
+                <option value="" disabled>
+                  Select a Child
+                </option>
+                {listings.map((listing, index) => (
+                  <option key={index} value={listing.id}>
+                    {listing.name} ({listing.id})
+                  </option>
+                ))}
+              </Form.Control>
+            </Col>
+            <Col md={12}>
+              <TCButton
+                className="mb-2 mt-2"
+                variant="danger"
+                onClick={() => handleRemoveChild(index)}
+              >
+                Remove
+              </TCButton>
+            </Col>
           </Row>
         ))}
+        <Col>
+          <TCButton
+            className="mb-3"
+            variant={theme === "dark" ? "outline-light" : "outline-dark"}
+            onClick={handleAddChild}
+          >
+            Add Child
+          </TCButton>
+        </Col>
         <Col md={12}>
           <TCButton type="submit">Submit</TCButton>
         </Col>

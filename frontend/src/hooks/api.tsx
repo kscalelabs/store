@@ -119,6 +119,22 @@ export class api {
     });
   }
 
+  public async getListingsBatch(ids: string[]): Promise<Listing[]> {
+    return this.callWrapper(async () => {
+      const response = await this.api.get("/listings/batch", {
+        params: { ids: ids.join(",") },
+      });
+      return response.data;
+    });
+  }
+
+  public async dumpListings(): Promise<Listing[]> {
+    return this.callWrapper(async () => {
+      const response = await this.api.get("/listings/dump");
+      return response.data;
+    });
+  }
+
   public async getUserBatch(userIds: string[]): Promise<Map<string, string>> {
     return this.callWrapper(async () => {
       const params = new URLSearchParams();
@@ -172,6 +188,15 @@ export class api {
   public async editListing(listing: Listing): Promise<void> {
     return this.callWrapper(async () => {
       await this.api.post(`/listings/edit/${listing.id}`, listing);
+    });
+  }
+
+  public async getImages(ids: string[]): Promise<Artifact[]> {
+    return this.callWrapper(async () => {
+      const response = await this.api.get("/images/batch", {
+        params: { ids: ids.join(",") },
+      });
+      return response.data;
     });
   }
 

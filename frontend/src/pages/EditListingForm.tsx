@@ -23,6 +23,7 @@ const EditListingForm: React.FC = () => {
   const [Listing_id, setListingId] = useState<string>("");
   const [child_ids, setChildIds] = useState<string[]>([]);
   const [URDFId, setURDFId] = useState<string | null>(null);
+  const [listings, setListings] = useState<Listing[]>([]);
 
   const { addAlert } = useAlertQueue();
 
@@ -76,9 +77,22 @@ const EditListingForm: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        const listings = await auth_api.dumpListings();
+        setListings(listings);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchListings();
+  }, []);
+
   return (
     <ListingForm
       theme={theme}
+      listings={listings}
       title="Edit Listing"
       message={message}
       name={name}

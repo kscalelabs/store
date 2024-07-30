@@ -5,6 +5,7 @@ methods for converting from our input data into the format the database
 expects (for example, converting a UUID into a string).
 """
 
+import time
 from datetime import datetime, timedelta
 from typing import Literal, Self
 
@@ -99,24 +100,29 @@ class Artifact(RobolistBaseModel):
     """
 
     user_id: str
+    name: str
     artifact_type: ArtifactType
     sizes: list[ArtifactSize] | None = None
     description: str | None = None
+    timestamp: int
 
     @classmethod
     def create(
         cls,
         user_id: str,
+        name: str,
         artifact_type: ArtifactType,
         sizes: list[ArtifactSize] | None = None,
         description: str | None = None,
     ) -> Self:
         return cls(
             id=str(new_uuid()),
+            name=name,
             user_id=user_id,
             artifact_type=artifact_type,
             sizes=sizes,
             description=description,
+            timestamp=int(time.time()),
         )
 
 

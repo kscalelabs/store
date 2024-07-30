@@ -3,14 +3,14 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status
 from fastapi.responses import RedirectResponse
 from PIL import Image
 from pydantic.main import BaseModel
 
 from store.app.crud.artifacts import get_image_name
 from store.app.db import Crud
-from store.app.model import ArtifactSize, User
+from store.app.model import Artifact, ArtifactSize, User
 from store.app.routers.users import get_session_user_with_write_permission
 from store.settings import settings
 
@@ -50,6 +50,7 @@ async def upload_image(
         image = Image.open(file.file)
         artifact = await crud.upload_image(
             image=image,
+            name=file.filename,
             user_id=user.id,
             description=description,
         )
@@ -64,3 +65,21 @@ async def image_url(image_id: str, size: ArtifactSize) -> RedirectResponse:
     # TODO: Use CloudFront API to return a signed CloudFront URL.
     image_url = f"{settings.site.artifact_base_url}/{get_image_name(image_id, size)}"
     return RedirectResponse(url=image_url)
+
+
+class ImageInfoResponse(BaseModel):
+    id: str
+    caption: str | None
+
+
+@image_router.get("/batch")
+async def batch(
+    crud: Annotated[Crud, Depends(Crud.get)],
+    ids: list[str] = Query(description="List of part ids"),
+) -> list[ImageInfoResponse]:
+    artifacts = await crud._get_item_batch(ids, Artifact)
+    return [
+        ImageInfoResponse(id=artifact.id, caption=artifact.description)
+        for artifact in artifacts
+        if artifact.artifact_type == "image"
+    ]
