@@ -1,5 +1,6 @@
 import imageCompression from "browser-image-compression";
 import TCButton from "components/files/TCButton";
+import { BACKEND_URL } from "constants/backend";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
@@ -14,10 +15,12 @@ const MAX_FILE_MB = MAX_FILE_SIZE / 1024 / 1024;
 
 interface ImageUploadProps {
   onUploadSuccess: (url: string) => void;
+  imageId?: string | null;
 }
 
 const ImageUploadComponent: React.FC<ImageUploadProps> = ({
   onUploadSuccess,
+  imageId,
 }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [compressedFile, setCompressedFile] = useState<File | null>(null);
@@ -33,7 +36,15 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<Crop | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>();
+  useEffect(() => {
+    if (selectedFile) setImageUrl(URL.createObjectURL(selectedFile));
+  }, [selectedFile]);
 
+  useEffect(() => {
+    if (imageId)
+      setImageUrl(new URL(`/images/${imageId}/large`, BACKEND_URL).toString());
+  }, []);
   const handleFileChange = async (file: File) => {
     setUploadStatus(null);
 
@@ -65,6 +76,7 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
       setFileError("Error compressing the image");
       setSelectedFile(null);
     }
+    setShowModal(true);
   };
 
   const onDrop = (acceptedFiles: FileWithPath[]) => {
@@ -108,7 +120,7 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
 
   const handleClick = (event: React.MouseEvent) => {
     event.stopPropagation();
-    if (selectedFile) {
+    if (imageUrl) {
       setShowModal(true);
     } else {
       triggerFileInput();
@@ -190,14 +202,14 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
   };
 
   useEffect(() => {
-    if (selectedFile) setInitialSetter(true);
+    if (imageUrl) setInitialSetter(true);
   }, [showModal]);
 
   return (
     <Col md="6">
       <Modal show={showModal} onHide={onModalHide} centered>
         <Modal.Body>
-          {selectedFile ? (
+          {imageUrl ? (
             <>
               <ReactCrop
                 crop={crop}
@@ -209,7 +221,7 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
                 onComplete={handleCropComplete}
               >
                 <img
-                  src={URL.createObjectURL(selectedFile)}
+                  src={imageUrl}
                   onLoad={handleImageLoaded}
                   alt="Crop preview"
                 />
@@ -222,7 +234,11 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
                 >
                   Close
                 </TCButton>
-                <TCButton onClick={handleDone} variant="primary">
+                <TCButton
+                  style={{ marginLeft: "1em" }}
+                  onClick={handleDone}
+                  variant="primary"
+                >
                   Done
                 </TCButton>
               </div>
@@ -256,13 +272,13 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
             alignItems: "center",
             marginBottom: "10px",
             overflow: "hidden",
-            cursor: selectedFile ? "pointer" : "default",
+            cursor: imageUrl ? "pointer" : "default",
           }}
           onClick={handleClick}
         >
-          {selectedFile ? (
+          {imageUrl ? (
             <img
-              src={URL.createObjectURL(selectedFile)}
+              src={imageUrl}
               alt="Selected"
               style={{ maxWidth: "100%", maxHeight: "100%" }}
             />
@@ -291,7 +307,7 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
                 event.stopPropagation();
                 setShowModal(true);
               }}
-              disabled={selectedFile ? false : true}
+              disabled={imageUrl ? false : true}
               variant={theme === "dark" ? "outline-light" : "outline-dark"}
             >
               Edit
@@ -307,11 +323,7 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
         </div>
         {fileError && <Alert variant="danger">{fileError}</Alert>}
       </div>
-      <TCButton
-        onClick={handleUpload}
-        disabled={!selectedFile}
-        className="my-3"
-      >
+      <TCButton onClick={handleUpload} disabled={!imageUrl} className="my-3">
         Upload
       </TCButton>
       {uploadStatus && (

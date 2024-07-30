@@ -104,6 +104,7 @@ const ListingForm: React.FC<ListingFormProps> = ({
                 onUploadSuccess={(image_id) =>
                   handleImageUploadSuccess(image_id, index)
                 }
+                imageId={image.id}
               />
               <label htmlFor={"caption-" + index}>Caption</label>
               <Form.Control
