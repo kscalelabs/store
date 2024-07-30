@@ -2,7 +2,17 @@ import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { Button } from "./Button/Button";
 
-const AuthProvider = () => {
+interface AuthProvider {
+  handleGoogleSubmit?: () => void;
+  handleGithubSubmit?: (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => Promise<void>;
+}
+
+const AuthProvider = ({
+  handleGoogleSubmit,
+  handleGithubSubmit,
+}: AuthProvider) => {
   return (
     <div className="flex flex-col w-full">
       <div className="flex justify-center items-center mb-4">
@@ -15,7 +25,7 @@ const AuthProvider = () => {
           variant={"outline"}
           size={"lg"}
           className="w-full"
-          onClick={() => {}}
+          onClick={handleGoogleSubmit}
         >
           <FcGoogle className="w-5 h-5" />
         </Button>
@@ -23,7 +33,7 @@ const AuthProvider = () => {
           variant={"outline"}
           size={"lg"}
           className="w-full"
-          onClick={() => {}}
+          onClick={handleGithubSubmit}
         >
           <FaGithub className="w-5 h-5" />
         </Button>

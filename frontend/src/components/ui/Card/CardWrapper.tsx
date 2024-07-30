@@ -10,6 +10,8 @@ interface CardWrapperProps {
   backButtonLabel: string;
   backButtonHref: string;
   showProvider?: boolean;
+  loginWithGoogle?: () => void;
+  loginWithGithub?: (event: React.FormEvent<HTMLFormElement>) => Promise<void>;
 }
 
 const CardWrapper = ({
@@ -18,6 +20,7 @@ const CardWrapper = ({
   backButtonLabel,
   backButtonHref,
   showProvider,
+  loginWithGithub,
 }: CardWrapperProps) => {
   return (
     <Card className="w-[400px] shadow-md h-full mb-40">
@@ -27,7 +30,7 @@ const CardWrapper = ({
       <CardContent>{children}</CardContent>
       {showProvider && (
         <CardFooter>
-          <AuthProvider />
+          <AuthProvider handleGithubSubmit={loginWithGithub} />
         </CardFooter>
       )}
       <CardFooter>

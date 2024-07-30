@@ -73,6 +73,7 @@ const Login = () => {
             headerLabel="Welcome Back!"
             showProvider
             backButtonLabel="Don't have an account? Create a new account."
+            loginWithGithub={handleGithubSubmit}
           >
             <form
               onSubmit={handleSubmit(onSubmit)}

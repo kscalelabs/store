@@ -22,7 +22,7 @@ const Signup = () => {
   });
 
   const onSubmit: SubmitHandler<LoginType> = async (data: LoginType) => {
-    // add an api endpoint to send the credentials details to backend
+    // add an api endpoint to send the credentials details to backend and email verification
     console.log(data);
   };
   return (
