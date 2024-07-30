@@ -27,6 +27,9 @@ class ListingsCrud(BaseCrud):
     async def get_user_listings(self, user_id: str, page: int, search_query: str) -> tuple[list[Listing], bool]:
         return await self._list_me(Listing, user_id, page, lambda x: 0, search_query)
 
+    async def dump_listings(self) -> list[Listing]:
+        return await self._list_items(Listing)
+
     async def add_listing(self, listing: Listing) -> None:
         try:
             await asyncio.gather(

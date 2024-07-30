@@ -1,8 +1,8 @@
 import ListingForm from "components/ListingForm";
-import { api, Artifact } from "hooks/api";
+import { api, Artifact, Listing } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const NewListing: React.FC = () => {
@@ -15,6 +15,7 @@ const NewListing: React.FC = () => {
   const [artifacts, setArtifacts] = useState<Artifact[]>([]);
   const [child_ids, setChildIds] = useState<string[]>([]);
   const [URDFId, setURDFId] = useState<string | null>(null);
+  const [listings, setListings] = useState<Listing[]>([]);
 
   const navigate = useNavigate();
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -43,9 +44,22 @@ const NewListing: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        const listings = await auth_api.dumpListings();
+        setListings(listings);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchListings();
+  }, []);
+
   return (
     <ListingForm
       theme={theme}
+      listings={listings}
       title="Add a New Listing"
       message={message}
       name={name}

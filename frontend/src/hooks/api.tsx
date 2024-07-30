@@ -119,6 +119,13 @@ export class api {
     });
   }
 
+  public async dumpListings(): Promise<Listing[]> {
+    return this.callWrapper(async () => {
+      const response = await this.api.get("/listings/dump");
+      return response.data;
+    });
+  }
+
   public async getUserBatch(userIds: string[]): Promise<Map<string, string>> {
     return this.callWrapper(async () => {
       const params = new URLSearchParams();
