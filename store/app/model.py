@@ -99,6 +99,7 @@ class Artifact(RobolistBaseModel):
     """
 
     user_id: str
+    name: str
     artifact_type: ArtifactType
     sizes: list[ArtifactSize] | None = None
     description: str | None = None
@@ -107,12 +108,14 @@ class Artifact(RobolistBaseModel):
     def create(
         cls,
         user_id: str,
+        name: str,
         artifact_type: ArtifactType,
         sizes: list[ArtifactSize] | None = None,
         description: str | None = None,
     ) -> Self:
         return cls(
             id=str(new_uuid()),
+            name=name,
             user_id=user_id,
             artifact_type=artifact_type,
             sizes=sizes,

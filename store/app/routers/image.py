@@ -50,6 +50,7 @@ async def upload_image(
         image = Image.open(file.file)
         artifact = await crud.upload_image(
             image=image,
+            name=file.filename,
             user_id=user.id,
             description=description,
         )

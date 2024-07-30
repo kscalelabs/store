@@ -35,6 +35,7 @@ async def upload_urdf(
         )
     artifact = await crud.upload_urdf(
         file=file.file,
+        name=file.filename,
         user_id=user.id,
     )
     return UserInfoResponse(urdf_id=artifact.id)
