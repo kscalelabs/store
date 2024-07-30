@@ -59,10 +59,10 @@ const Login = () => {
         <Spinner animation="border" />
       ) : (
         <>
-          <div className={styles.container}>
+          <div>
             <Card className="custom-card">
               <CardHeader>
-                <CardTitle>Welcome to KScaleLabs</CardTitle>
+                <CardTitle>Welcome to RoboList</CardTitle>
                 <CardDescription>Login</CardDescription>
               </CardHeader>
               <CardContent className={styles.content}>

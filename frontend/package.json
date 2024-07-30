@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@radix-ui/react-slot": "^1.1.0",
     "@react-three/drei": "^9.107.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
@@ -11,6 +12,7 @@
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.3.0",
     "browser-image-compression": "^2.0.2",
+    "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "holderjs": "^2.9.9",
     "nth-check": ">=2.0.1",
@@ -20,6 +22,7 @@
     "react-dom": "^18.3.1",
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.52.1",
+    "react-icons": "^5.2.1",
     "react-image-crop": "^11.0.6",
     "react-markdown": "^9.0.1",
     "react-scripts": "5.0.1",
