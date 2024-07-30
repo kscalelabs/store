@@ -16,7 +16,7 @@ import {
   Spinner,
 } from "react-bootstrap";
 import Markdown from "react-markdown";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 interface ListingDetailsResponse {
   name: string;
@@ -24,6 +24,11 @@ interface ListingDetailsResponse {
   description?: string;
   artifact_ids: string[];
   child_ids: string[];
+}
+
+interface Child {
+  id: string;
+  name: string;
 }
 
 const RenderListing = ({
@@ -44,6 +49,7 @@ const RenderListing = ({
   const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
   const [imageIndex, setArtifactIndex] = useState(0);
   const [showDelete, setShowDelete] = useState(false);
+  const [children, setChildren] = useState<Child[] | null>(null);
 
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
@@ -78,6 +84,22 @@ const RenderListing = ({
     fetchListing();
   }, [user_id]);
 
+  useEffect(() => {
+    const fetchChildren = async () => {
+      try {
+        const children = await auth_api.getListingsBatch(listing.child_ids);
+        setChildren(
+          children.map((child) => ({ id: child.id, name: child.name })),
+        );
+      } catch (err) {
+        addAlert(humanReadableError(err), "error");
+      }
+    };
+    if (listing.child_ids.length > 0) {
+      fetchChildren();
+    }
+  }, []);
+
   return (
     <>
       <Row className="mt-3">
@@ -93,6 +115,20 @@ const RenderListing = ({
               </em>
             </Col>
           </Row>
+          {children && (
+            <Row>
+              <Col>
+                <p>This listing depends on the following listings:</p>
+                <ul>
+                  {children.map((child, id) => (
+                    <li key={"child-" + id}>
+                      <Link to={"/listing/" + child.id}>{child.name}</Link>
+                    </li>
+                  ))}
+                </ul>
+              </Col>
+            </Row>
+          )}
           <hr />
           <Row>
             <Col>

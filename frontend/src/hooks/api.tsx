@@ -119,6 +119,15 @@ export class api {
     });
   }
 
+  public async getListingsBatch(ids: string[]): Promise<Listing[]> {
+    return this.callWrapper(async () => {
+      const response = await this.api.get("/listings/batch", {
+        params: { ids: ids.join(",") },
+      });
+      return response.data;
+    });
+  }
+
   public async dumpListings(): Promise<Listing[]> {
     return this.callWrapper(async () => {
       const response = await this.api.get("/listings/dump");
