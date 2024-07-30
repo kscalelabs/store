@@ -5,7 +5,7 @@ import { Button } from "./Button/Button";
 interface AuthProvider {
   handleGoogleSubmit?: () => void;
   handleGithubSubmit?: (
-    event: React.FormEvent<HTMLFormElement>,
+    event: React.MouseEvent<HTMLButtonElement>,
   ) => Promise<void>;
 }
 

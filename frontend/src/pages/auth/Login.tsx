@@ -7,7 +7,7 @@ import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
 import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
 import { Eye } from "react-bootstrap-icons";
 import { SubmitHandler, useForm } from "react-hook-form";
@@ -42,7 +42,10 @@ const Login = () => {
     console.log(data);
   };
 
-  const handleGithubSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleGithubSubmit = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    console.log("event : ", event);
     event.preventDefault();
     const redirectUrl = await auth_api.sendRegisterGithub();
     window.open(redirectUrl, "_self");

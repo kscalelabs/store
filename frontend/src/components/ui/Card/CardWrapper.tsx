@@ -11,7 +11,9 @@ interface CardWrapperProps {
   backButtonHref: string;
   showProvider?: boolean;
   loginWithGoogle?: () => void;
-  loginWithGithub?: (event: React.FormEvent<HTMLFormElement>) => Promise<void>;
+  loginWithGithub?: (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => Promise<void>;
 }
 
 const CardWrapper = ({
