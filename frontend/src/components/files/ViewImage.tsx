@@ -4,7 +4,7 @@ import React from "react";
 interface ImageProps {
   imageId: string;
   size: "small" | "large";
-  caption: string;
+  caption?: string;
 }
 
 const ImageComponent: React.FC<ImageProps> = ({ imageId, size, caption }) => {

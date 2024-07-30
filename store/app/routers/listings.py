@@ -36,7 +36,7 @@ async def list_listings(
 
 
 @listings_router.get("/batch")
-async def batch(
+async def get_batch(
     crud: Annotated[Crud, Depends(Crud.get)],
     ids: list[str] = Query(description="List of part ids"),
 ) -> list[Listing]:

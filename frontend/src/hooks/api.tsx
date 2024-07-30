@@ -191,6 +191,15 @@ export class api {
     });
   }
 
+  public async getImages(ids: string[]): Promise<Artifact[]> {
+    return this.callWrapper(async () => {
+      const response = await this.api.get("/images/batch", {
+        params: { ids: ids.join(",") },
+      });
+      return response.data;
+    });
+  }
+
   public async uploadImage(formData: FormData): Promise<string> {
     return this.callWrapper(async () => {
       const res = await this.api.post<UploadImageResponse>(
