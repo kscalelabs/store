@@ -1,5 +1,6 @@
-import axios, { AxiosInstance } from "axios";
 import { BACKEND_URL } from "constants/backend";
+import type { paths } from "gen/api";
+import createClient, { Client } from "openapi-fetch";
 import {
   createContext,
   ReactNode,
@@ -15,7 +16,6 @@ const getLocalStorageAuth = (): string | null => {
   return localStorage.getItem(AUTH_KEY_ID);
 };
 
-// changed from email to id to accommodate oauth logins that don't use email
 export const setLocalStorageAuth = (id: string) => {
   localStorage.setItem(AUTH_KEY_ID, id);
 };
@@ -29,7 +29,7 @@ interface AuthenticationContextProps {
   logout: () => void;
   isAuthenticated: boolean;
   apiKeyId: string | null;
-  api: AxiosInstance;
+  client: Client<paths>;
 }
 
 const AuthenticationContext = createContext<
@@ -47,22 +47,21 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
     getLocalStorageAuth(),
   );
 
-  const api = axios.create({
-    baseURL: BACKEND_URL,
-    withCredentials: true,
+  const client = createClient<paths>({
+    baseUrl: BACKEND_URL,
   });
 
+  // Add the API key to the request headers, if the user is authenticated.
   if (apiKeyId !== null) {
-    // Adds the API key to the request header.
-    api.interceptors.request.use(
-      (config) => {
-        config.headers.Authorization = `Bearer ${apiKeyId}`;
-        return config;
+    client.use({
+      async onRequest({ request, options }) {
+        request.headers.set("Authorization", `Bearer ${apiKeyId}`);
+        return request;
       },
-      (error) => {
-        return Promise.reject(error);
+      async onResponse({ request, response, options }) {
+        return response;
       },
-    );
+    });
   }
 
   const login = useCallback((apiKeyId: string) => {
@@ -81,16 +80,14 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
     })();
   }, [navigate]);
 
-  const isAuthenticated = apiKeyId !== null;
-
   return (
     <AuthenticationContext.Provider
       value={{
         login,
         logout,
-        isAuthenticated,
-        apiKeyId: apiKeyId,
-        api,
+        isAuthenticated: apiKeyId !== null,
+        apiKeyId,
+        client,
       }}
     >
       {children}

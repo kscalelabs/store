@@ -174,4 +174,4 @@ async def get_user_info_by_id_endpoint(id: str, crud: Annotated[Crud, Depends(Cr
     return PublicUserInfoResponse(id=user.id, email=user.email)
 
 
-users_router.include_router(github_auth_router, prefix="/github", tags=["github"])
+users_router.include_router(github_auth_router, prefix="/github")

@@ -7,10 +7,11 @@ expects (for example, converting a UUID into a string).
 
 import time
 from datetime import datetime, timedelta
-from typing import Literal, Self
+from typing import Literal, Self, overload
 
 from pydantic import BaseModel
 
+from store.settings import settings
 from store.utils import new_uuid
 
 
@@ -89,29 +90,49 @@ class APIKey(RobolistBaseModel):
 ArtifactSize = Literal["small", "large"]
 ArtifactType = Literal["image", "urdf", "mjcf"]
 
+UPLOAD_CONTENT_TYPE_OPTIONS: dict[ArtifactType, set[str]] = {
+    "image": {"image/png", "image/jpeg", "image/jpg"},
+    "urdf": {"application/gzip", "application/x-gzip"},
+    "mjcf": {"application/gzip", "application/x-gzip"},
+}
 
-def get_artifact_name(id: str, artifact_type: ArtifactType) -> str:
+DOWNLOAD_CONTENT_TYPE: dict[ArtifactType, str] = {
+    "image": "image/png",
+    "urdf": "application/gzip",
+    "mjcf": "application/gzip",
+}
+
+SizeMapping: dict[ArtifactSize, tuple[int, int]] = {
+    "large": settings.image.large_size,
+    "small": settings.image.small_size,
+}
+
+
+@overload
+def get_artifact_name(id: str, artifact_type: Literal["image"], size: ArtifactSize) -> str: ...
+
+
+@overload
+def get_artifact_name(id: str, artifact_type: Literal["urdf", "mjcf"]) -> str: ...
+
+
+def get_artifact_name(id: str, artifact_type: ArtifactType, size: ArtifactSize | None = None) -> str:
     match artifact_type:
         case "image":
-            raise ValueError("Image artifacts should have a size")
+            if size is None:
+                raise ValueError("Image artifacts should have a size")
+            height, width = SizeMapping[size]
+            return f"{id}_{size}_{height}x{width}.png"
         case "urdf":
             return f"{id}.tar.gz"
         case "mjcf":
-            return f"{id}.xml"
+            return f"{id}.tar.gz"
         case _:
             raise ValueError(f"Unknown artifact type: {artifact_type}")
 
 
 def get_content_type(artifact_type: ArtifactType) -> str:
-    match artifact_type:
-        case "image":
-            return "image/png"
-        case "urdf":
-            return "application/gzip"
-        case "mjcf":
-            return "text/xml"
-        case _:
-            raise ValueError(f"Unknown artifact type: {artifact_type}")
+    return DOWNLOAD_CONTENT_TYPE[artifact_type]
 
 
 class Artifact(RobolistBaseModel):

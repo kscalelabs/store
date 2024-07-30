@@ -20,49 +20,60 @@ listings_router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-class NewListing(BaseModel):
-    name: str
-    child_ids: list[str]
-    description: str | None
+class ListListingsResponse(BaseModel):
+    listings: list[Listing]
+    has_next: bool = False
 
 
-@listings_router.get("/search")
+@listings_router.get("/search", response_model=ListListingsResponse)
 async def list_listings(
     crud: Annotated[Crud, Depends(Crud.get)],
     page: int = Query(description="Page number for pagination"),
     search_query: str = Query(None, description="Search query string"),
-) -> tuple[list[Listing], bool]:
-    return await crud.get_listings(page, search_query=search_query)
+) -> ListListingsResponse:
+    listings, has_next = await crud.get_listings(page, search_query=search_query)
+    return ListListingsResponse(listings=listings, has_next=has_next)
 
 
-@listings_router.get("/batch")
+@listings_router.get("/batch", response_model=ListListingsResponse)
 async def get_batch(
     crud: Annotated[Crud, Depends(Crud.get)],
     ids: list[str] = Query(description="List of part ids"),
-) -> list[Listing]:
-    return await crud._get_item_batch(ids, Listing)
+) -> ListListingsResponse:
+    return ListListingsResponse(listings=await crud._get_item_batch(ids, Listing))
 
 
-@listings_router.get("/dump")
+class DumpListingsResponse(BaseModel):
+    listings: list[Listing]
+
+
+@listings_router.get("/dump", response_model=DumpListingsResponse)
 async def dump_listings(
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> list[Listing]:
-    return await crud.dump_listings()
+) -> DumpListingsResponse:
+    return DumpListingsResponse(listings=await crud.dump_listings())
 
 
-@listings_router.get("/me")
+@listings_router.get("/me", response_model=ListListingsResponse)
 async def list_my_listings(
     crud: Annotated[Crud, Depends(Crud.get)],
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
     page: int = Query(description="Page number for pagination"),
     search_query: str = Query(None, description="Search query string"),
-) -> tuple[list[Listing], bool]:
-    return await crud.get_user_listings(user.id, page, search_query=search_query)
+) -> ListListingsResponse:
+    listings, has_next = await crud.get_user_listings(user.id, page, search_query=search_query)
+    return ListListingsResponse(listings=listings, has_next=has_next)
 
 
-@listings_router.post("/add")
+class NewListingRequest(BaseModel):
+    name: str
+    child_ids: list[str]
+    description: str | None
+
+
+@listings_router.post("/add", response_model=bool)
 async def add_listing(
-    new_listing: NewListing,
+    new_listing: NewListingRequest,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
@@ -78,7 +89,7 @@ async def add_listing(
     return True
 
 
-@listings_router.delete("/delete/{listing_id}")
+@listings_router.delete("/delete/{listing_id}", response_model=bool)
 async def delete_listing(
     listing_id: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
@@ -93,7 +104,7 @@ async def delete_listing(
     return True
 
 
-@listings_router.post("/edit/{id}")
+@listings_router.post("/edit/{id}", response_model=bool)
 async def edit_listing(
     id: str,
     listing: dict[str, Any],
@@ -122,7 +133,7 @@ async def get_listing(
     id: str,
     user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> GetListingResponse | None:
+) -> GetListingResponse:
     listing = await crud.get_listing(id)
     if listing is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")

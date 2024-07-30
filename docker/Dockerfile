@@ -11,7 +11,11 @@ COPY /store/requirements.txt /app
 # Install Python dependencies.
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy code and install Python dependencies.
 COPY . /app
+
+# Installs the project.
+RUN pip install --no-cache-dir -e .
 
 # Expose the port that the application runs on.
 EXPOSE 8080

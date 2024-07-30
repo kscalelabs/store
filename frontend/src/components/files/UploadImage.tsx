@@ -1,7 +1,6 @@
 import imageCompression from "browser-image-compression";
 import TCButton from "components/files/TCButton";
 import { BACKEND_URL } from "constants/backend";
-import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
 import React, { useEffect, useRef, useState } from "react";
@@ -27,7 +26,6 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const auth = useAuthentication();
-  const auth_api = new api(auth.api);
   const { theme } = useTheme();
   const validFileTypes = ["image/png", "image/jpeg", "image/jpg"];
   const [showModal, setShowModal] = useState(false);
@@ -104,14 +102,20 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
     formData.append("file", selectedFile);
     const compressedFormData = new FormData();
     compressedFormData.append("file", compressedFile);
-    try {
-      const image_id = await auth_api.uploadImage(formData);
-      onUploadSuccess(image_id);
-      setUploadStatus("File uploaded successfully");
-    } catch (error) {
-      setUploadStatus("Failed to upload file");
-      console.error("Error uploading file:", error);
-    }
+
+    await auth.client
+      .POST("/artifacts/upload", {
+        body: {
+          file: "test",
+        },
+      })
+      .then((res) => {
+        onUploadSuccess(res.data?.artifact_id);
+        setUploadStatus("File uploaded successfully");
+      })
+      .catch((err) => {
+        setUploadStatus("Failed to upload file");
+      });
   };
 
   const triggerFileInput = () => {
