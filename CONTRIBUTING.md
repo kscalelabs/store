@@ -88,35 +88,36 @@ ROBOLIST_ENVIRONMENT=local fastapi dev 'store/app/main.py' --port 8080  # On por
 
 Settings for the app backend live in the `store/settings/` directory. To configure which set of settings you are using, set `ROBOLIST_ENVIRONMENT`. It is the stem of one of the config files in the `store/settings/configs/` directory. When developing locally this should usually just be `local`
 
-To locally develop, put these following environment variables in .env file and when you run the server locally, uvicorn will pickup these variables automatically:
+To locally develop, put these following environment variables in env.sh file and when you run the server locally,
+run: `source env.sh` in every new terminal :
 
 ```
-# Specifies a local environment verses production environment.
+# Specifies a local environment versus production environment.
 export ROBOLIST_ENVIRONMENT=local
 
 # For AWS
-AWS_DEFAULT_REGION='us-east-1'
-AWS_ACCESS_KEY_ID=test
-AWS_SECRET_ACCESS_KEY=test
-AWS_ENDPOINT_URL_DYNAMODB=http://127.0.0.1:4566
+export AWS_DEFAULT_REGION='us-east-1'
+export AWS_ACCESS_KEY_ID=test
+export AWS_SECRET_ACCESS_KEY=test
+export AWS_ENDPOINT_URL_DYNAMODB='http://127.0.0.1:4566'
 
 # For letting the frontend know the backend URL.
-REACT_APP_BACKEND_URL=http://127.0.0.1:8080
+export REACT_APP_BACKEND_URL='http://127.0.0.1:8080'
 
 # For SMTP
-SMTP_HOST=smtp.gmail.com
-SMTP_SENDER_EMAIL=
-SMTP_PASSWORD=
-SMTP_SENDER_NAME=
-SMTP_USERNAME=
+export SMTP_HOST='smtp.gmail.com'
+export SMTP_SENDER_EMAIL=''
+export SMTP_PASSWORD=''
+export SMTP_SENDER_NAME=''
+export SMTP_USERNAME=''
 
 # For Github OAuth
-GITHUB_CLIENT_ID=
-GITHUB_CLIENT_SECRET=
+export GITHUB_CLIENT_ID=''
+export GITHUB_CLIENT_SECRET=''
 
 # For Google OAuth
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
+export GOOGLE_CLIENT_ID=''
+export GOOGLE_CLIENT_SECRET=''
 ```
 
 ### Github OAuth Configuration
