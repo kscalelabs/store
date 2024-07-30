@@ -5,9 +5,13 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copy code and install Python dependencies.
+# Copy the requirements file first to leverage Docker's cache.
+COPY /store/requirements.txt /app
+
+# Install Python dependencies.
+RUN pip install --no-cache-dir -r requirements.txt
+
 COPY . /app
-RUN pip install --no-cache-dir --upgrade .
 
 # Expose the port that the application runs on.
 EXPOSE 8080
