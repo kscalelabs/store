@@ -2,7 +2,7 @@
 
 import logging
 from email.utils import parseaddr as parse_email_address
-from typing import Annotated
+from typing import Annotated, Literal, overload
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.security.utils import get_authorization_scheme_param
@@ -27,13 +27,23 @@ class BaseModel(PydanticBaseModel):
         arbitrary_types_allowed = True
 
 
-async def get_request_api_key_id(request: Request) -> str:
+@overload
+async def _get_request_api_key_id_base(request: Request, require_header: Literal[True]) -> str: ...
+
+
+@overload
+async def _get_request_api_key_id_base(request: Request, require_header: Literal[False]) -> str | None: ...
+
+
+async def _get_request_api_key_id_base(request: Request, require_header: bool) -> str | None:
     authorization = request.headers.get("Authorization") or request.headers.get("authorization")
     if not authorization:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated",
-        )
+        if require_header:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Not authenticated",
+            )
+        return None
     scheme, credentials = get_authorization_scheme_param(authorization)
     if not (scheme and credentials):
         raise HTTPException(
@@ -46,6 +56,14 @@ async def get_request_api_key_id(request: Request) -> str:
             detail="Authorization scheme is invalid",
         )
     return credentials
+
+
+async def get_request_api_key_id(request: Request) -> str:
+    return await _get_request_api_key_id_base(request, True)
+
+
+async def maybe_get_request_api_key_id(request: Request) -> str | None:
+    return await _get_request_api_key_id_base(request, False)
 
 
 async def get_session_user_with_read_permission(
@@ -92,8 +110,10 @@ async def get_session_user_with_admin_permission(
 
 async def maybe_get_user_from_api_key(
     crud: Annotated[Crud, Depends(Crud.get)],
-    api_key_id: Annotated[str, Depends(get_request_api_key_id)],
+    api_key_id: Annotated[str | None, Depends(maybe_get_request_api_key_id)],
 ) -> User | None:
+    if api_key_id is None:
+        return None
     api_key = await crud.get_api_key(api_key_id)
     return await crud.get_user(api_key.user_id, throw_if_missing=False)
 
