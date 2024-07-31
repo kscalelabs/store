@@ -328,6 +328,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/artifacts/edit/{artifact_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Edit Artifact */
+        put: operations["edit_artifact_artifacts_edit__artifact_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/artifacts/delete/{artifact_id}": {
         parameters: {
             query?: never;
@@ -338,8 +355,8 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete */
-        delete: operations["delete_artifacts_delete__artifact_id__delete"];
+        /** Delete Artifact */
+        delete: operations["delete_artifact_artifacts_delete__artifact_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -374,6 +391,8 @@ export interface components {
             description: string | null;
             /** Child Ids */
             child_ids: string[];
+            /** Tags */
+            tags: string[];
             /** Owner Is User */
             owner_is_user: boolean;
         };
@@ -468,6 +487,13 @@ export interface components {
             /** Email */
             email: string;
         };
+        /** UpdateArtifactRequest */
+        UpdateArtifactRequest: {
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+        };
         /** UpdateListingRequest */
         UpdateListingRequest: {
             /** Name */
@@ -476,6 +502,8 @@ export interface components {
             child_ids?: string[] | null;
             /** Description */
             description?: string | null;
+            /** Tags */
+            tags?: string[] | null;
         };
         /** UploadArtifactResponse */
         UploadArtifactResponse: {
@@ -1050,7 +1078,42 @@ export interface operations {
             };
         };
     };
-    delete_artifacts_delete__artifact_id__delete: {
+    edit_artifact_artifacts_edit__artifact_id__put: {
+        parameters: {
+            query: {
+                id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateArtifactRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": boolean;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_artifact_artifacts_delete__artifact_id__delete: {
         parameters: {
             query?: never;
             header?: never;
