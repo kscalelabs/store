@@ -1,5 +1,6 @@
 import { BACKEND_URL } from "constants/backend";
 import type { paths } from "gen/api";
+import api from "hooks/api";
 import createClient, { Client } from "openapi-fetch";
 import {
   createContext,
@@ -30,6 +31,7 @@ interface AuthenticationContextProps {
   isAuthenticated: boolean;
   apiKeyId: string | null;
   client: Client<paths>;
+  api: api;
 }
 
 const AuthenticationContext = createContext<
@@ -80,6 +82,8 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
     })();
   }, [navigate]);
 
+  const apiImpl = new api(client);
+
   return (
     <AuthenticationContext.Provider
       value={{
@@ -88,6 +92,7 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
         isAuthenticated: apiKeyId !== null,
         apiKeyId,
         client,
+        api: apiImpl,
       }}
     >
       {children}

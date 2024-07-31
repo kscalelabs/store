@@ -1,11 +1,31 @@
-import { BACKEND_URL } from "constants/backend";
 import type { paths } from "gen/api";
-import createClient from "openapi-fetch";
+import { Client } from "openapi-fetch";
 
-export const useApi = () => {
-  const api = createClient<paths>({
-    baseUrl: BACKEND_URL,
-  });
+export default class api {
+  public client: Client<paths>;
 
-  return api;
-};
+  constructor(client: Client<paths>) {
+    this.client = client;
+  }
+
+  public async upload(
+    file: File,
+    request: {
+      artifact_type: string;
+      listing_id: string;
+    },
+  ) {
+    return await this.client.POST("/artifacts/upload", {
+      body: {
+        file: "",
+        metadata: "image",
+      },
+      bodySerializer() {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("metadata", JSON.stringify(request));
+        return fd;
+      },
+    });
+  }
+}

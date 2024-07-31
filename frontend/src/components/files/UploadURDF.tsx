@@ -1,9 +1,17 @@
 import TCButton from "components/files/TCButton";
+import { useAlertQueue } from "hooks/alerts";
+import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, Col } from "react-bootstrap";
 
-const URDFUploadComponent = () => {
+interface URDFUploadProps {
+  listingId: string;
+}
+
+const URDFUploadComponent = (props: URDFUploadProps) => {
+  const { listingId } = props;
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -14,6 +22,8 @@ const URDFUploadComponent = () => {
   const validFileTypes = ["application/gzip"];
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { api } = useAuthentication();
+  const { addErrorAlert } = useAlertQueue();
 
   useEffect(() => {
     const handleWindowDrop = async (event: DragEvent) => {
@@ -107,15 +117,17 @@ const URDFUploadComponent = () => {
     const formData = new FormData();
     formData.append("file", selectedFile);
 
-    // TODO: Make this work.
-    // try {
-    //   const URDF_id = await auth_api.uploadURDF(formData);
-    //   onUploadSuccess(URDF_id);
-    //   setUploadStatus("File uploaded successfully");
-    // } catch (error) {
-    //   setUploadStatus("Failed to upload file");
-    //   console.error("Error uploading file:", error);
-    // }
+    const { error } = await api.upload(selectedFile, {
+      artifact_type: "urdf",
+      listing_id: listingId,
+    });
+
+    if (error) {
+      setUploadStatus("Failed to upload file");
+      addErrorAlert(error);
+    } else {
+      setUploadStatus("File uploaded successfully");
+    }
   };
 
   const triggerFileInput = () => {
