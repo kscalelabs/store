@@ -19,7 +19,7 @@ async def test_user_auth_functions(app_client: AsyncClient) -> None:
     assert response.status_code == status.HTTP_401_UNAUTHORIZED, response.json()
 
     # Because of the way we patched GitHub functions for mocking, it doesn't matter what token we pass in.
-    response = await app_client.get("/users/github/code/doesnt-matter")
+    response = await app_client.post("/users/github/code", json={"code": "test_code"})
     assert response.status_code == status.HTTP_200_OK, response.json()
     token = response.json()["api_key"]
     auth_headers = {"Authorization": f"Bearer {token}"}
@@ -39,7 +39,7 @@ async def test_user_auth_functions(app_client: AsyncClient) -> None:
     assert response.json()["detail"] == "Not authenticated"
 
     # Log the user back in, getting new session token.
-    response = await app_client.get("/users/github/code/doesnt-matter")
+    response = await app_client.post("/users/github/code", json={"code": "test_code"})
     assert response.status_code == status.HTTP_200_OK, response.json()
     assert response.json()["api_key"] != token
     token = response.json()["api_key"]
