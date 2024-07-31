@@ -1,4 +1,3 @@
-import { humanReadableError } from "constants/backend";
 import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
@@ -20,7 +19,7 @@ type ListingsType =
 const MyListings = () => {
   const auth = useAuthentication();
   const [partsData, setListings] = useState<ListingsType | null>(null);
-  const { addAlert } = useAlertQueue();
+  const { addErrorAlert } = useAlertQueue();
   const { page } = useParams();
   const [moreListings, setMoreListings] = useState<boolean>(false);
 
@@ -47,7 +46,7 @@ const MyListings = () => {
       });
 
       if (error) {
-        addAlert(humanReadableError(error), "error");
+        addErrorAlert(error);
       } else {
         setListings(data.listings);
         setMoreListings(data.has_next);

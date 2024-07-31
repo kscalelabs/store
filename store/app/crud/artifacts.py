@@ -3,11 +3,11 @@
 import asyncio
 import io
 import logging
-from typing import BinaryIO, Literal
+from typing import Any, BinaryIO, Literal
 
 from PIL import Image
 
-from store.app.crud.base import BaseCrud
+from store.app.crud.base import BaseCrud, ItemNotFoundError
 from store.app.errors import NotAuthorizedError
 from store.app.model import (
     Artifact,
@@ -165,3 +165,20 @@ class ArtifactsCrud(BaseCrud):
 
     async def get_listing_artifacts(self, listing_id: str) -> list[Artifact]:
         return await self._get_items_from_secondary_index("listing_id", listing_id, Artifact)
+
+    async def edit_artifact(
+        self,
+        artifact_id: str,
+        name: str | None = None,
+        description: str | None = None,
+    ) -> None:
+        artifact = await self.get_raw_artifact(artifact_id)
+        if artifact is None:
+            raise ItemNotFoundError("Artifact not found")
+        artifact_updates: dict[str, Any] = {}  # noqa: ANN401
+        if name is not None:
+            artifact_updates["name"] = name
+        if description is not None:
+            artifact_updates["description"] = description
+        if artifact_updates:
+            await self._update_item(artifact_id, Artifact, artifact_updates)

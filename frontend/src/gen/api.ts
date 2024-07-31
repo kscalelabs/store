@@ -251,9 +251,9 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put?: never;
         /** Edit Listing */
-        post: operations["edit_listing_listings_edit__id__post"];
+        put: operations["edit_listing_listings_edit__id__put"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -277,15 +277,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/artifacts/image/{image_id}/{size}": {
+    "/artifacts/url/{artifact_type}/{artifact_id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Images Url */
-        get: operations["images_url_artifacts_image__image_id___size__get"];
+        /** Artifact Url */
+        get: operations["artifact_url_artifacts_url__artifact_type___artifact_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -294,15 +294,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/artifacts/{artifact_type}/{artifact_id}": {
+    "/artifacts/{listing_id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Urdf Url */
-        get: operations["urdf_url_artifacts__artifact_type___artifact_id__get"];
+        /** List Artifacts */
+        get: operations["list_artifacts_artifacts__listing_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -328,6 +328,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/artifacts/edit/{artifact_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Edit Artifact */
+        put: operations["edit_artifact_artifacts_edit__artifact_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/artifacts/delete/{artifact_id}": {
         parameters: {
             query?: never;
@@ -338,8 +355,8 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete */
-        delete: operations["delete_artifacts_delete__artifact_id__delete"];
+        /** Delete Artifact */
+        delete: operations["delete_artifact_artifacts_delete__artifact_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -374,6 +391,8 @@ export interface components {
             description: string | null;
             /** Child Ids */
             child_ids: string[];
+            /** Tags */
+            tags: string[];
             /** Owner Is User */
             owner_is_user: boolean;
         };
@@ -391,6 +410,27 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** ListArtifactsItem */
+        ListArtifactsItem: {
+            /** Artifact Id */
+            artifact_id: string;
+            /**
+             * Artifact Type
+             * @enum {string}
+             */
+            artifact_type: "image" | "urdf" | "mjcf";
+            /** Description */
+            description: string | null;
+            /** Timestamp */
+            timestamp: number;
+            /** Url */
+            url: string;
+        };
+        /** ListArtifactsResponse */
+        ListArtifactsResponse: {
+            /** Artifacts */
+            artifacts: components["schemas"]["ListArtifactsItem"][];
         };
         /** ListListingsResponse */
         ListListingsResponse: {
@@ -446,6 +486,24 @@ export interface components {
             id: string;
             /** Email */
             email: string;
+        };
+        /** UpdateArtifactRequest */
+        UpdateArtifactRequest: {
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+        };
+        /** UpdateListingRequest */
+        UpdateListingRequest: {
+            /** Name */
+            name?: string | null;
+            /** Child Ids */
+            child_ids?: string[] | null;
+            /** Description */
+            description?: string | null;
+            /** Tags */
+            tags?: string[] | null;
         };
         /** UploadArtifactResponse */
         UploadArtifactResponse: {
@@ -856,7 +914,7 @@ export interface operations {
             };
         };
     };
-    edit_listing_listings_edit__id__post: {
+    edit_listing_listings_edit__id__put: {
         parameters: {
             query?: never;
             header?: never;
@@ -867,7 +925,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": Record<string, never>;
+                "application/json": components["schemas"]["UpdateListingRequest"];
             };
         };
         responses: {
@@ -922,13 +980,15 @@ export interface operations {
             };
         };
     };
-    images_url_artifacts_image__image_id___size__get: {
+    artifact_url_artifacts_url__artifact_type___artifact_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                size?: "small" | "large";
+            };
             header?: never;
             path: {
-                image_id: string;
-                size: "small" | "large";
+                artifact_type: "image" | "urdf" | "mjcf";
+                artifact_id: string;
             };
             cookie?: never;
         };
@@ -954,13 +1014,12 @@ export interface operations {
             };
         };
     };
-    urdf_url_artifacts__artifact_type___artifact_id__get: {
+    list_artifacts_artifacts__listing_id__get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                artifact_type: "urdf" | "mjcf";
-                artifact_id: string;
+                listing_id: string;
             };
             cookie?: never;
         };
@@ -972,7 +1031,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["ListArtifactsResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1019,7 +1078,42 @@ export interface operations {
             };
         };
     };
-    delete_artifacts_delete__artifact_id__delete: {
+    edit_artifact_artifacts_edit__artifact_id__put: {
+        parameters: {
+            query: {
+                id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateArtifactRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": boolean;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_artifact_artifacts_delete__artifact_id__delete: {
         parameters: {
             query?: never;
             header?: never;

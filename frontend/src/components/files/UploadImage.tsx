@@ -16,7 +16,9 @@ interface ImageUploadProps {
   imageId?: string | null;
 }
 
-const ImageUploadComponent: React.FC<ImageUploadProps> = ({ imageId }) => {
+const ImageUploadComponent = (props: ImageUploadProps) => {
+  const { imageId } = props;
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [compressedFile, setCompressedFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
@@ -205,7 +207,6 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({ imageId }) => {
                 crop={crop}
                 aspect={1}
                 onChange={(c) => {
-                  console.log(c);
                   setCrop(c);
                 }}
                 onComplete={handleCropComplete}

@@ -3,7 +3,6 @@ import { Button } from "components/ui/Button/Button";
 import CardWrapper from "components/ui/Card/CardWrapper";
 import ErrorMessage from "components/ui/ErrorMessage";
 import { Input } from "components/ui/Input/Input";
-import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
@@ -22,24 +21,23 @@ const Login = () => {
   });
 
   const auth = useAuthentication();
-  const { addAlert } = useAlertQueue();
+  const { addErrorAlert } = useAlertQueue();
 
   const [useSpinner, setUseSpinner] = useState(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const onSubmit: SubmitHandler<LoginType> = async (data: LoginType) => {
-    // add an api endpoint to send the credentials details to backend
+    // TODO: Add an api endpoint to send the credentials details to backend.
     console.log(data);
   };
 
   const handleGithubSubmit = async (
     event: React.MouseEvent<HTMLButtonElement>,
   ) => {
-    console.log("event : ", event);
     event.preventDefault();
 
     const { data, error } = await auth.client.GET("/users/github/login");
     if (error) {
-      addAlert(humanReadableError(error), "error");
+      addErrorAlert(error);
     } else {
       window.open(data, "_self");
     }
@@ -59,7 +57,7 @@ const Login = () => {
         });
 
         if (error) {
-          addAlert(humanReadableError(error), "error");
+          addErrorAlert(error);
           setUseSpinner(false);
         } else {
           auth.login(data.api_key);

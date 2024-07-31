@@ -1,5 +1,4 @@
 import TCButton from "components/files/TCButton";
-import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { Dispatch, FormEvent, SetStateAction, useState } from "react";
@@ -66,7 +65,7 @@ const NewListing = () => {
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
 
-  const { addAlert } = useAlertQueue();
+  const { addAlert, addErrorAlert } = useAlertQueue();
   const navigate = useNavigate();
 
   // On submit, add the listing to the database and navigate to the
@@ -83,7 +82,7 @@ const NewListing = () => {
     });
 
     if (error) {
-      addAlert(humanReadableError(error), "error");
+      addErrorAlert(error);
     } else {
       addAlert("Listing added successfully", "success");
       navigate(`/listing/${data.listing_id}`);

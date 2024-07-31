@@ -7,7 +7,7 @@ expects (for example, converting a UUID into a string).
 
 import time
 from datetime import datetime, timedelta
-from typing import Literal, Self, overload
+from typing import Literal, Self
 
 from pydantic import BaseModel
 
@@ -42,7 +42,7 @@ class User(RobolistBaseModel):
 
     @classmethod
     def create(cls, email: str) -> Self:
-        return cls(id=str(new_uuid()), email=email, permissions=None)
+        return cls(id=new_uuid(), email=email, permissions=None)
 
 
 class OAuthKey(RobolistBaseModel):
@@ -53,7 +53,7 @@ class OAuthKey(RobolistBaseModel):
 
     @classmethod
     def create(cls, user_token: str, user_id: str) -> Self:
-        return cls(id=str(new_uuid()), user_id=user_id, user_token=user_token)
+        return cls(id=new_uuid(), user_id=user_id, user_token=user_token)
 
 
 APIKeySource = Literal["user", "oauth"]
@@ -84,7 +84,7 @@ class APIKey(RobolistBaseModel):
         if permissions == "full":
             permissions = {"read", "write", "admin"}
         ttl_timestamp = int((datetime.utcnow() + timedelta(days=90)).timestamp())
-        return cls(id=str(new_uuid()), user_id=user_id, source=source, permissions=permissions, ttl=ttl_timestamp)
+        return cls(id=new_uuid(), user_id=user_id, source=source, permissions=permissions, ttl=ttl_timestamp)
 
 
 ArtifactSize = Literal["small", "large"]
@@ -108,15 +108,7 @@ SizeMapping: dict[ArtifactSize, tuple[int, int]] = {
 }
 
 
-@overload
-def get_artifact_name(id: str, artifact_type: Literal["image"], size: ArtifactSize) -> str: ...
-
-
-@overload
-def get_artifact_name(id: str, artifact_type: Literal["urdf", "mjcf"]) -> str: ...
-
-
-def get_artifact_name(id: str, artifact_type: ArtifactType, size: ArtifactSize | None = None) -> str:
+def get_artifact_name(id: str, artifact_type: ArtifactType, size: ArtifactSize = "large") -> str:
     match artifact_type:
         case "image":
             if size is None:
@@ -129,6 +121,10 @@ def get_artifact_name(id: str, artifact_type: ArtifactType, size: ArtifactSize |
             return f"{id}.tar.gz"
         case _:
             raise ValueError(f"Unknown artifact type: {artifact_type}")
+
+
+def get_artifact_url(id: str, artifact_type: ArtifactType, size: ArtifactSize = "large") -> str:
+    return f"{settings.site.artifact_base_url}/{get_artifact_name(id, artifact_type, size)}"
 
 
 def get_content_type(artifact_type: ArtifactType) -> str:
@@ -163,7 +159,7 @@ class Artifact(RobolistBaseModel):
         description: str | None = None,
     ) -> Self:
         return cls(
-            id=str(new_uuid()),
+            id=new_uuid(),
             user_id=user_id,
             listing_id=listing_id,
             name=name,
@@ -186,6 +182,22 @@ class Listing(RobolistBaseModel):
     child_ids: list[str]
     description: str | None
 
+    @classmethod
+    def create(
+        cls,
+        user_id: str,
+        name: str,
+        child_ids: list[str],
+        description: str | None = None,
+    ) -> Self:
+        return cls(
+            id=new_uuid(),
+            user_id=user_id,
+            name=name,
+            child_ids=child_ids,
+            description=description,
+        )
+
 
 class ListingTag(RobolistBaseModel):
     """Marks a listing as having a given tag.
@@ -201,7 +213,7 @@ class ListingTag(RobolistBaseModel):
     @classmethod
     def create(cls, listing_id: str, tag: str) -> Self:
         return cls(
-            id=str(new_uuid()),
+            id=new_uuid(),
             listing_id=listing_id,
             name=tag,
         )

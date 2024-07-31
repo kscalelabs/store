@@ -2,6 +2,8 @@ import { Row } from "react-bootstrap";
 
 interface Props {
   title: string;
+  // TODO: If can edit, allow the user to update the title.
+  edit: boolean;
 }
 
 const ListingTitle = (props: Props) => {

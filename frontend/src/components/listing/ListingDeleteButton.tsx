@@ -1,5 +1,4 @@
 import TCButton from "components/files/TCButton";
-import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useState } from "react";
@@ -14,7 +13,7 @@ const ListingDeleteButton = (props: Props) => {
   const { listing_id } = props;
   const [deleting, setDeleting] = useState(false);
 
-  const { addAlert } = useAlertQueue();
+  const { addAlert, addErrorAlert } = useAlertQueue();
   const auth = useAuthentication();
   const navigate = useNavigate();
 
@@ -31,7 +30,7 @@ const ListingDeleteButton = (props: Props) => {
     );
 
     if (error) {
-      addAlert(humanReadableError(error), "error");
+      addErrorAlert(error);
       setDeleting(false);
     } else {
       addAlert("Listing deleted successfully", "success");

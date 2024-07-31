@@ -1,8 +1,8 @@
+import ListingArtifacts from "components/listing/ListingArtifacts";
 import ListingChildren from "components/listing/ListingChildren";
 import ListingDeleteButton from "components/listing/ListingDeleteButton";
 import ListingDescription from "components/listing/ListingDescription";
 import ListingTitle from "components/listing/ListingTitle";
-import { humanReadableError } from "constants/backend";
 import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
@@ -21,16 +21,23 @@ const RenderListing = (props: RenderListingProps) => {
   const { listing } = props;
   return (
     <Col>
-      <ListingTitle title={listing.name} />
-      <ListingDescription description={listing.description} />
-      <ListingChildren child_ids={listing.child_ids} />
+      <ListingTitle title={listing.name} edit={listing.owner_is_user} />
+      <ListingDescription
+        description={listing.description}
+        edit={listing.owner_is_user}
+      />
+      <ListingChildren
+        child_ids={listing.child_ids}
+        edit={listing.owner_is_user}
+      />
+      <ListingArtifacts listing_id={listing.id} edit={listing.owner_is_user} />
       {listing.owner_is_user && <ListingDeleteButton listing_id={listing.id} />}
     </Col>
   );
 };
 
 const ListingDetails = () => {
-  const { addAlert } = useAlertQueue();
+  const { addErrorAlert } = useAlertQueue();
   const auth = useAuthentication();
   const { id } = useParams();
   const [listing, setListing] = useState<ListingResponse | null>(null);
@@ -50,12 +57,12 @@ const ListingDetails = () => {
           },
         });
         if (error) {
-          addAlert(humanReadableError(error), "error");
+          addErrorAlert(error);
         } else {
           setListing(data);
         }
       } catch (err) {
-        addAlert(humanReadableError(err), "error");
+        addErrorAlert(err);
       }
     };
     fetchListing();

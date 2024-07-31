@@ -240,6 +240,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         item_dict = await table.query(
             IndexName=self.get_gsi_index_name(secondary_index_name),
             KeyConditionExpression=Key(secondary_index_name).eq(secondary_index_value),
+            FilterExpression=Key("type").eq(item_class.__name__),
         )
         items = item_dict["Items"]
         return [self._validate_item(item, item_class) for item in items]

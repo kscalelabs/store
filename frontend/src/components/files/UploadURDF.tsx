@@ -3,11 +3,7 @@ import { useTheme } from "hooks/theme";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, Col } from "react-bootstrap";
 
-interface URDFUploadProps {
-  onUploadSuccess: (url: string) => void;
-}
-
-const URDFUploadComponent: React.FC<URDFUploadProps> = () => {
+const URDFUploadComponent = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
