@@ -1,17 +1,16 @@
-import { BACKEND_URL } from "constants/backend";
 import React from "react";
 
 interface ImageProps {
-  imageId: string;
+  url: string;
   size: "small" | "large";
   caption?: string;
 }
 
-const ImageComponent: React.FC<ImageProps> = ({ imageId, size, caption }) => {
+const ImageComponent: React.FC<ImageProps> = ({ url, size, caption }) => {
   return (
     <div style={{ width: "100%", paddingTop: "100%", position: "relative" }}>
       <img
-        src={new URL(`/images/${imageId}/${size}`, BACKEND_URL).toString()}
+        src={url}
         alt={caption}
         className="d-block rounded-lg"
         style={{

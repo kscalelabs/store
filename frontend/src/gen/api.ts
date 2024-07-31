@@ -420,6 +420,8 @@ export interface components {
         ListArtifactsItem: {
             /** Artifact Id */
             artifact_id: string;
+            /** Name */
+            name: string;
             /**
              * Artifact Type
              * @enum {string}
