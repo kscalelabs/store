@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 
 interface ListingFormProps {
   title: string;
-  message: string;
   name: string;
   setName: Dispatch<SetStateAction<string>>;
   description: string;
@@ -17,20 +16,12 @@ interface ListingFormProps {
 }
 
 const ListingForm = (props: ListingFormProps) => {
-  const {
-    title,
-    message,
-    name,
-    setName,
-    description,
-    setDescription,
-    handleSubmit,
-  } = props;
+  const { title, name, setName, description, setDescription, handleSubmit } =
+    props;
 
   return (
     <>
       <h1>{title}</h1>
-      {message && <p>{message}</p>}
       <Form onSubmit={handleSubmit} className="mb-3">
         {/* Name */}
         <Col md={12} className="mb-4">
@@ -72,7 +63,6 @@ const ListingForm = (props: ListingFormProps) => {
 
 const NewListing = () => {
   const auth = useAuthentication();
-  const [message, setMessage] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
 
@@ -103,7 +93,6 @@ const NewListing = () => {
   return (
     <ListingForm
       title="Create Listing"
-      message={message}
       name={name}
       setName={setName}
       description={description}

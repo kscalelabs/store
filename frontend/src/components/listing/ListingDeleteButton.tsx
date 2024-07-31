@@ -21,7 +21,7 @@ const ListingDeleteButton = (props: Props) => {
   const handleDelete = async () => {
     setDeleting(true);
 
-    const { data, error } = await auth.client.DELETE(
+    const { error } = await auth.client.DELETE(
       "/listings/delete/{listing_id}",
       {
         params: {

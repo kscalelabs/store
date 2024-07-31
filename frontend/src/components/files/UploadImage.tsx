@@ -1,7 +1,6 @@
 import imageCompression from "browser-image-compression";
 import TCButton from "components/files/TCButton";
 import { BACKEND_URL } from "constants/backend";
-import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, Col, Modal } from "react-bootstrap";
@@ -17,15 +16,11 @@ interface ImageUploadProps {
   imageId?: string | null;
 }
 
-const ImageUploadComponent: React.FC<ImageUploadProps> = ({
-  onUploadSuccess,
-  imageId,
-}) => {
+const ImageUploadComponent: React.FC<ImageUploadProps> = ({ imageId }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [compressedFile, setCompressedFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
-  const auth = useAuthentication();
   const { theme } = useTheme();
   const validFileTypes = ["image/png", "image/jpeg", "image/jpg"];
   const [showModal, setShowModal] = useState(false);

@@ -1,5 +1,4 @@
 import TCButton from "components/files/TCButton";
-import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, Col } from "react-bootstrap";
@@ -8,14 +7,11 @@ interface URDFUploadProps {
   onUploadSuccess: (url: string) => void;
 }
 
-const URDFUploadComponent: React.FC<URDFUploadProps> = ({
-  onUploadSuccess,
-}) => {
+const URDFUploadComponent: React.FC<URDFUploadProps> = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<boolean>(false);
-  const auth = useAuthentication();
   const { theme } = useTheme();
   const MAX_FILE_SIZE = 25 * 1024 * 1024;
   const MAX_FILE_SIZE_MB = MAX_FILE_SIZE / 1024 / 1024;

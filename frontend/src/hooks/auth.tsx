@@ -54,11 +54,11 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
   // Add the API key to the request headers, if the user is authenticated.
   if (apiKeyId !== null) {
     client.use({
-      async onRequest({ request, options }) {
+      async onRequest({ request }) {
         request.headers.set("Authorization", `Bearer ${apiKeyId}`);
         return request;
       },
-      async onResponse({ request, response, options }) {
+      async onResponse({ response }) {
         return response;
       },
     });
