@@ -1,6 +1,6 @@
 import { BACKEND_URL } from "constants/backend";
 import type { paths } from "gen/api";
-import createClient, { Client, type Middleware } from "openapi-fetch";
+import createClient, { Client } from "openapi-fetch";
 import {
   createContext,
   ReactNode,
@@ -40,25 +40,6 @@ interface AuthenticationProviderProps {
   children: ReactNode;
 }
 
-const client = createClient<paths>({
-  baseUrl: BACKEND_URL,
-});
-
-const authMiddleware: Middleware = {
-  async onRequest({ request }) {
-    const accessToken = localStorage.getItem(AUTH_KEY_ID);
-    if (!accessToken) {
-      throw new Error("No access token found");
-    }
-
-    request.headers.set("Authorization", `Bearer ${accessToken}`);
-    return request;
-  },
-};
-
-client.use(authMiddleware);
-export const apiClient = client;
-
 export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
   const { children } = props;
   const navigate = useNavigate();
@@ -66,9 +47,21 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
     getLocalStorageAuth(),
   );
 
+  const client = createClient<paths>({
+    baseUrl: BACKEND_URL,
+  });
+
   // Add the API key to the request headers, if the user is authenticated.
   if (apiKeyId !== null) {
-    client.use(authMiddleware);
+    client.use({
+      async onRequest({ request }) {
+        request.headers.set("Authorization", `Bearer ${apiKeyId}`);
+        return request;
+      },
+      async onResponse({ response }) {
+        return response;
+      },
+    });
   }
 
   const login = useCallback((apiKeyId: string) => {

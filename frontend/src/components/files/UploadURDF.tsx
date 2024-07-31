@@ -5,10 +5,12 @@ import React, { useEffect, useRef, useState } from "react";
 import { Alert, Col } from "react-bootstrap";
 
 interface URDFUploadProps {
-  listing_id: string;
+  listingId: string;
 }
 
 const URDFUploadComponent = (props: URDFUploadProps) => {
+  const { listingId } = props;
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -114,7 +116,7 @@ const URDFUploadComponent = (props: URDFUploadProps) => {
 
     const { error } = await APICalls.upload(selectedFile, {
       artifact_type: "urdf",
-      listing_id: props.listing_id,
+      listing_id: props.listingId,
     });
 
     if (error) {
