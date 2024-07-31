@@ -59,7 +59,7 @@ class DynamoSettings:
 @dataclass
 class SiteSettings:
     homepage: str = field(default=MISSING)
-    image_base_url: str = field(default=MISSING)
+    artifact_base_url: str = field(default=MISSING)
 
 
 @dataclass

@@ -10,11 +10,11 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from store.app.crud.base import InternalError, ItemNotFoundError
 from store.app.db import create_tables
-from store.app.routers.image import image_router
+from store.app.errors import InternalError, ItemNotFoundError, NotAuthenticatedError, NotAuthorizedError
+from store.app.routers.artifacts import artifacts_router
 from store.app.routers.listings import listings_router
-from store.app.routers.users import NotAuthenticatedError, users_router
+from store.app.routers.users import users_router
 from store.settings import settings
 
 LOCALHOST_URLS = [
@@ -84,6 +84,14 @@ async def not_authenticated_exception_handler(request: Request, exc: NotAuthenti
     )
 
 
+@app.exception_handler(NotAuthorizedError)
+async def not_authorized_exception_handler(request: Request, exc: NotAuthorizedError) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN,
+        content={"message": "Not authorized.", "detail": str(exc)},
+    )
+
+
 @app.get("/")
 async def read_root() -> bool:
     return True
@@ -91,7 +99,7 @@ async def read_root() -> bool:
 
 app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(listings_router, prefix="/listings", tags=["listings"])
-app.include_router(image_router, prefix="/images", tags=["images"])
+app.include_router(artifacts_router, prefix="/artifacts", tags=["artifacts"])
 
 # For running with debugger
 if __name__ == "__main__":

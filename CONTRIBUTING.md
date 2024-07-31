@@ -41,10 +41,10 @@ Initialize the test databases by running the creation script:
 python -m store.app.db create
 ```
 
-And initialize the image bucket:
+And initialize the artifact bucket:
 
 ```
-aws s3api create-bucket --bucket images
+aws s3api create-bucket --bucket artifacts
 ```
 
 #### Admin Panel
@@ -82,6 +82,14 @@ Serve the FastAPI application in development mode:
 
 ```bash
 ROBOLIST_ENVIRONMENT=local fastapi dev 'store/app/main.py' --port 8080  # On port 8080 to avoid conflicts with Docker
+```
+
+### Keeping Frontend and Backend In Sync
+
+After updating the backend API, you need to update the generated API client. To do this, from this `frontend` directory, run:
+
+```bash
+openapi-typescript http://localhost:8080/openapi.json --output src/gen/api.ts  # While running the backend API locally
 ```
 
 ### Configuration

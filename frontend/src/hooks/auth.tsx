@@ -1,5 +1,6 @@
-import axios, { AxiosInstance } from "axios";
 import { BACKEND_URL } from "constants/backend";
+import type { paths } from "gen/api";
+import createClient, { Client } from "openapi-fetch";
 import {
   createContext,
   ReactNode,
@@ -15,7 +16,6 @@ const getLocalStorageAuth = (): string | null => {
   return localStorage.getItem(AUTH_KEY_ID);
 };
 
-// changed from email to id to accommodate oauth logins that don't use email
 export const setLocalStorageAuth = (id: string) => {
   localStorage.setItem(AUTH_KEY_ID, id);
 };
@@ -28,8 +28,8 @@ interface AuthenticationContextProps {
   login: (apiKeyId: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
-  id: string | null;
-  api: AxiosInstance;
+  apiKeyId: string | null;
+  client: Client<paths>;
 }
 
 const AuthenticationContext = createContext<
@@ -43,30 +43,31 @@ interface AuthenticationProviderProps {
 export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
   const { children } = props;
   const navigate = useNavigate();
-  const [id, setId] = useState<string | null>(getLocalStorageAuth());
+  const [apiKeyId, setApiKeyId] = useState<string | null>(
+    getLocalStorageAuth(),
+  );
 
-  const api = axios.create({
-    baseURL: BACKEND_URL,
-    withCredentials: true,
+  const client = createClient<paths>({
+    baseUrl: BACKEND_URL,
   });
 
-  if (id !== null) {
-    // Adds the API key to the request header.
-    api.interceptors.request.use(
-      (config) => {
-        config.headers.Authorization = `Bearer ${id}`;
-        return config;
+  // Add the API key to the request headers, if the user is authenticated.
+  if (apiKeyId !== null) {
+    client.use({
+      async onRequest({ request }) {
+        request.headers.set("Authorization", `Bearer ${apiKeyId}`);
+        return request;
       },
-      (error) => {
-        return Promise.reject(error);
+      async onResponse({ response }) {
+        return response;
       },
-    );
+    });
   }
 
   const login = useCallback((apiKeyId: string) => {
     (async () => {
       setLocalStorageAuth(apiKeyId);
-      setId(apiKeyId);
+      setApiKeyId(apiKeyId);
       navigate("/");
     })();
   }, []);
@@ -74,21 +75,19 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
   const logout = useCallback(() => {
     (async () => {
       deleteLocalStorageAuth();
-      setId(null);
+      setApiKeyId(null);
       navigate("/");
     })();
   }, [navigate]);
-
-  const isAuthenticated = id !== null;
 
   return (
     <AuthenticationContext.Provider
       value={{
         login,
         logout,
-        isAuthenticated,
-        id,
-        api,
+        isAuthenticated: apiKeyId !== null,
+        apiKeyId,
+        client,
       }}
     >
       {children}

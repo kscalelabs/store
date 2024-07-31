@@ -4,7 +4,7 @@ import datetime
 import functools
 import uuid
 from collections import OrderedDict
-from typing import Callable, Generic, Hashable, ParamSpec, TypeVar, overload
+from typing import Awaitable, Callable, Generic, Hashable, ParamSpec, TypeVar, overload
 
 Tk = TypeVar("Tk", bound=Hashable)
 Tv = TypeVar("Tv")
@@ -86,6 +86,48 @@ def cache_result(num_seconds: float, capacity: int = 2**16) -> Callable[[Callabl
                 if (cur_time - last_time).total_seconds() < num_seconds:
                     return result
             result = func(*args, **kwargs)
+            cache[key] = (cur_time, result)
+            return result
+
+        return wrapper
+
+    return decorator
+
+
+def cache_async_result(
+    num_seconds: float,
+    capacity: int = 2**16,
+) -> Callable[[Callable[P, Awaitable[Tv]]], Callable[P, Awaitable[Tv]]]:
+    """Cache the result of an async function for a certain number of seconds.
+
+    Usage:
+
+        ```python
+        @cache_async_result(num_seconds=60)
+        async def expensive_function(arg):
+            ...
+        ```
+
+    Args:
+        num_seconds: The number of seconds to cache the result.
+        capacity: The number of results to cache.
+
+    Returns:
+        A decorator that caches the result of the function.
+    """
+
+    def decorator(func: Callable[P, Awaitable[Tv]]) -> Callable[P, Awaitable[Tv]]:
+        cache = LRUCache[str, tuple[datetime.datetime, Tv]](capacity)
+
+        @functools.wraps(func)
+        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> Tv:
+            cur_time = datetime.datetime.now()
+            key = str((args, kwargs))
+            if key in cache:
+                last_time, result = cache[key]
+                if (cur_time - last_time).total_seconds() < num_seconds:
+                    return result
+            result = await func(*args, **kwargs)
             cache[key] = (cur_time, result)
             return result
 

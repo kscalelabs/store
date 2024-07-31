@@ -12,9 +12,9 @@ from store.app.crud.users import UserCrud
 
 
 class Crud(
-    ArtifactsCrud,
     UserCrud,
     ListingsCrud,
+    ArtifactsCrud,
     BaseCrud,
 ):
     """Composes the various CRUD classes into a single class."""

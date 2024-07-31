@@ -3,31 +3,30 @@
 import asyncio
 import io
 import logging
-from typing import BinaryIO
+from typing import BinaryIO, Literal
 
 from PIL import Image
 
 from store.app.crud.base import BaseCrud
-from store.app.model import Artifact, ArtifactSize
+from store.app.errors import NotAuthorizedError
+from store.app.model import (
+    Artifact,
+    ArtifactSize,
+    ArtifactType,
+    Listing,
+    SizeMapping,
+    get_artifact_name,
+    get_content_type,
+)
 from store.settings import settings
 
 logger = logging.getLogger(__name__)
-
-SizeMapping: dict[ArtifactSize, tuple[int, int]] = {
-    "large": settings.image.large_size,
-    "small": settings.image.small_size,
-}
-
-
-def get_image_name(image_id: str, size: ArtifactSize) -> str:
-    height, width = SizeMapping[size]
-    return f"{image_id}_{size}_{height}x{width}.png"
 
 
 class ArtifactsCrud(BaseCrud):
     @classmethod
     def get_gsis(cls) -> set[str]:
-        return super().get_gsis().union({"user_id"})
+        return super().get_gsis().union({"user_id", "listing_id"})
 
     def _crop_image(self, image: Image.Image, size: tuple[int, int]) -> io.BytesIO:
         image_bytes = io.BytesIO()
@@ -56,21 +55,30 @@ class ArtifactsCrud(BaseCrud):
 
     async def _upload_cropped_image(self, image: Image.Image, image_id: str, size: ArtifactSize) -> None:
         image_bytes = self._crop_image(image, SizeMapping[size])
-        name = get_image_name(image_id, size)
+        name = get_artifact_name(image_id, "image", size)
         await self._upload_to_s3(image_bytes, name, "image/png")
 
-    async def upload_image(
+    async def _upload_image(
         self,
-        image: Image.Image,
+        name: str,
+        file: io.BytesIO | BinaryIO,
+        listing: Listing,
         user_id: str,
         description: str | None = None,
     ) -> Artifact:
+        if listing.user_id != user_id:
+            raise NotAuthorizedError("User does not have permission to upload artifacts to this listing")
         artifact = Artifact.create(
             user_id=user_id,
+            listing_id=listing.id,
+            name=name,
             artifact_type="image",
             sizes=list(SizeMapping.keys()),
             description=description,
         )
+
+        image = Image.open(file)
+
         await asyncio.gather(
             *(
                 self._upload_cropped_image(
@@ -84,36 +92,76 @@ class ArtifactsCrud(BaseCrud):
         )
         return artifact
 
-    async def upload_urdf(
+    async def get_raw_artifact(self, artifact_id: str) -> Artifact | None:
+        return await self._get_item(artifact_id, Artifact)
+
+    async def _upload_raw_artifact(
         self,
+        name: str,
         file: io.BytesIO | BinaryIO,
+        listing: Listing,
         user_id: str,
+        artifact_type: Literal["urdf", "mjcf"],
         description: str | None = None,
     ) -> Artifact:
+        if listing.user_id != user_id:
+            raise NotAuthorizedError("User does not have permission to upload artifacts to this listing")
+        content_type = get_content_type(artifact_type)
         artifact = Artifact.create(
             user_id=user_id,
-            artifact_type="urdf",
+            listing_id=listing.id,
+            name=name,
+            artifact_type=artifact_type,
             description=description,
         )
         await asyncio.gather(
-            self._upload_to_s3(file, artifact.id, "text/xml"),
+            self._upload_to_s3(file, get_artifact_name(artifact.id, artifact_type), content_type),
             self._add_item(artifact),
         )
         return artifact
 
-    async def upload_mjcf(
+    async def upload_artifact(
         self,
+        name: str,
         file: io.BytesIO | BinaryIO,
+        listing: Listing,
         user_id: str,
+        artifact_type: ArtifactType,
         description: str | None = None,
     ) -> Artifact:
-        artifact = Artifact.create(
-            user_id=user_id,
-            artifact_type="urdf",
-            description=description,
-        )
+        match artifact_type:
+            case "image":
+                return await self._upload_image(name, file, listing, user_id, description)
+            case _:
+                return await self._upload_raw_artifact(name, file, listing, user_id, artifact_type, description)
+
+    async def _remove_image(self, artifact: Artifact, user_id: str) -> None:
+        if artifact.user_id != user_id:
+            raise NotAuthorizedError("User does not have permission to delete this image")
         await asyncio.gather(
-            self._upload_to_s3(file, artifact.id, "text/xml"),
-            self._add_item(artifact),
+            *(self._delete_from_s3(get_artifact_name(artifact.id, "image", size)) for size in SizeMapping.keys()),
+            self._delete_item(artifact),
         )
-        return artifact
+
+    async def _remove_raw_artifact(
+        self,
+        artifact: Artifact,
+        artifact_type: Literal["urdf", "mjcf"],
+        user_id: str,
+    ) -> None:
+        if artifact.user_id != user_id:
+            raise NotAuthorizedError("User does not have permission to delete this artifact")
+        await asyncio.gather(
+            self._delete_from_s3(get_artifact_name(artifact.id, artifact_type)),
+            self._delete_item(artifact),
+        )
+
+    async def remove_artifact(self, artifact: Artifact, user_id: str) -> None:
+        match artifact.artifact_type:
+            case "image":
+                await self._remove_image(artifact, user_id)
+            case _:
+                await self._remove_raw_artifact(artifact, artifact.artifact_type, user_id)
+
+    async def get_listing_artifacts(self, listing_id: str) -> list[Artifact]:
+        return await self._get_items_from_secondary_index("listing_id", listing_id, Artifact)

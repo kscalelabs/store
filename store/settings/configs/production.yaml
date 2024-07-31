@@ -4,4 +4,4 @@ dynamo:
   table_name: robolist
 site:
   homepage: https://robolist.xyz
-  image_base_url: https://media.robolist.xyz
+  artifact_base_url: https://media.robolist.xyz

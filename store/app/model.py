@@ -5,11 +5,13 @@ methods for converting from our input data into the format the database
 expects (for example, converting a UUID into a string).
 """
 
+import time
 from datetime import datetime, timedelta
-from typing import Literal, Self
+from typing import Literal, Self, overload
 
 from pydantic import BaseModel
 
+from store.settings import settings
 from store.utils import new_uuid
 
 
@@ -88,6 +90,50 @@ class APIKey(RobolistBaseModel):
 ArtifactSize = Literal["small", "large"]
 ArtifactType = Literal["image", "urdf", "mjcf"]
 
+UPLOAD_CONTENT_TYPE_OPTIONS: dict[ArtifactType, set[str]] = {
+    "image": {"image/png", "image/jpeg", "image/jpg"},
+    "urdf": {"application/gzip", "application/x-gzip"},
+    "mjcf": {"application/gzip", "application/x-gzip"},
+}
+
+DOWNLOAD_CONTENT_TYPE: dict[ArtifactType, str] = {
+    "image": "image/png",
+    "urdf": "application/gzip",
+    "mjcf": "application/gzip",
+}
+
+SizeMapping: dict[ArtifactSize, tuple[int, int]] = {
+    "large": settings.image.large_size,
+    "small": settings.image.small_size,
+}
+
+
+@overload
+def get_artifact_name(id: str, artifact_type: Literal["image"], size: ArtifactSize) -> str: ...
+
+
+@overload
+def get_artifact_name(id: str, artifact_type: Literal["urdf", "mjcf"]) -> str: ...
+
+
+def get_artifact_name(id: str, artifact_type: ArtifactType, size: ArtifactSize | None = None) -> str:
+    match artifact_type:
+        case "image":
+            if size is None:
+                raise ValueError("Image artifacts should have a size")
+            height, width = SizeMapping[size]
+            return f"{id}_{size}_{height}x{width}.png"
+        case "urdf":
+            return f"{id}.tar.gz"
+        case "mjcf":
+            return f"{id}.tar.gz"
+        case _:
+            raise ValueError(f"Unknown artifact type: {artifact_type}")
+
+
+def get_content_type(artifact_type: ArtifactType) -> str:
+    return DOWNLOAD_CONTENT_TYPE[artifact_type]
+
 
 class Artifact(RobolistBaseModel):
     """Defines an artifact that some user owns, like an image or uploaded file.
@@ -99,14 +145,19 @@ class Artifact(RobolistBaseModel):
     """
 
     user_id: str
+    listing_id: str
+    name: str
     artifact_type: ArtifactType
     sizes: list[ArtifactSize] | None = None
     description: str | None = None
+    timestamp: int
 
     @classmethod
     def create(
         cls,
         user_id: str,
+        listing_id: str,
+        name: str,
         artifact_type: ArtifactType,
         sizes: list[ArtifactSize] | None = None,
         description: str | None = None,
@@ -114,9 +165,12 @@ class Artifact(RobolistBaseModel):
         return cls(
             id=str(new_uuid()),
             user_id=user_id,
+            listing_id=listing_id,
+            name=name,
             artifact_type=artifact_type,
             sizes=sizes,
             description=description,
+            timestamp=int(time.time()),
         )
 
 
@@ -130,12 +184,16 @@ class Listing(RobolistBaseModel):
     user_id: str
     name: str
     child_ids: list[str]
-    artifact_ids: list[str]
     description: str | None
 
 
 class ListingTag(RobolistBaseModel):
-    """Marks a listing as having a given tag."""
+    """Marks a listing as having a given tag.
+
+    This is useful for tagging listings with metadata, like "robot", "gripper",
+    or "actuator". Tags are used to categorize listings and make them easier to
+    search for.
+    """
 
     listing_id: str
     name: str

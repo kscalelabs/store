@@ -1,6 +1,6 @@
 # .gitignore
 
-#environment varibles
+# Environment variables
 .env
 env.sh
 

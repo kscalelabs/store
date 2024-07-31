@@ -23,3 +23,11 @@ Build static files:
 ```bash
 npm run build
 ```
+
+## Updating Backend API
+
+After updating the backend API, you need to update the generated API client. To do this, from this `frontend` directory, run:
+
+```bash
+openapi-typescript http://localhost:8080/openapi.json --output src/gen/api.ts  # While running the backend API locally
+```

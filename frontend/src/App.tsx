@@ -8,7 +8,6 @@ import { ThemeProvider } from "hooks/theme";
 import About from "pages/About";
 import Login from "pages/auth/Login";
 import Signup from "pages/auth/Signup";
-import EditListingForm from "pages/EditListingForm";
 import Home from "pages/Home";
 import ListingDetails from "pages/ListingDetails";
 import Listings from "pages/Listings";
@@ -37,13 +36,9 @@ const App = () => {
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/logout" element={<Logout />} />
                   <Route path="/listings/add" element={<NewListing />} />
-                  <Route path="/listings/:page" element={<Listings />} />
+                  <Route path="/listings/:page?" element={<Listings />} />
                   <Route path="/listing/:id" element={<ListingDetails />} />
-                  <Route
-                    path="/listing/edit/:id"
-                    element={<EditListingForm />}
-                  />
-                  <Route path="/listings/me/:page" element={<MyListings />} />
+                  <Route path="/listings/me/:page?" element={<MyListings />} />
                   <Route path="/404" element={<NotFound />} />
                   <Route path="*" element={<NotFoundRedirect />} />
                 </Routes>

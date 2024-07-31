@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Button } from "./Button";
 
 interface BackButtonProps {
@@ -7,10 +8,8 @@ interface BackButtonProps {
 
 const BackButton = ({ href, label }: BackButtonProps) => {
   return (
-    <Button variant={"link"} className="font-normal w-full" size={"sm"} asChild>
-      <a className="text-" href={href}>
-        {label}
-      </a>
+    <Button variant="link" className="font-normal w-full" asChild>
+      <Link to={href}>{label}</Link>
     </Button>
   );
 };

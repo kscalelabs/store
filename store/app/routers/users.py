@@ -10,6 +10,7 @@ from pydantic.main import BaseModel as PydanticBaseModel
 
 from store.app.crud.base import ItemNotFoundError
 from store.app.db import Crud
+from store.app.errors import NotAuthenticatedError
 from store.app.model import User, UserPermission
 from store.app.routers.auth.github import github_auth_router
 from store.app.utils.email import send_delete_email
@@ -19,9 +20,6 @@ logger = logging.getLogger(__name__)
 users_router = APIRouter()
 
 TOKEN_TYPE = "Bearer"
-
-
-class NotAuthenticatedError(Exception): ...
 
 
 class BaseModel(PydanticBaseModel):
@@ -92,6 +90,14 @@ async def get_session_user_with_admin_permission(
         raise NotAuthenticatedError("Not authenticated")
 
 
+async def maybe_get_user_from_api_key(
+    crud: Annotated[Crud, Depends(Crud.get)],
+    api_key_id: Annotated[str, Depends(get_request_api_key_id)],
+) -> User | None:
+    api_key = await crud.get_api_key(api_key_id)
+    return await crud.get_user(api_key.user_id, throw_if_missing=False)
+
+
 def validate_email(email: str) -> str:
     try:
         email = parse_email_address(email)[1]
@@ -146,26 +152,34 @@ async def logout_user_endpoint(
     return True
 
 
-class PublicUserInfoResponse(BaseModel):
+class SinglePublicUserInfoResponseItem(BaseModel):
     id: str
     email: str
 
 
-@users_router.get("/batch", response_model=list[PublicUserInfoResponse])
+class PublicUserInfoResponse(BaseModel):
+    users: list[SinglePublicUserInfoResponseItem]
+
+
+@users_router.get("/batch", response_model=PublicUserInfoResponse)
 async def get_users_batch_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
     ids: list[str] = Query(...),
-) -> list[PublicUserInfoResponse]:
+) -> PublicUserInfoResponse:
     users = await crud.get_user_batch(ids)
-    return [PublicUserInfoResponse(id=user.id, email=user.email) for user in users]
+    return PublicUserInfoResponse(
+        users=[SinglePublicUserInfoResponseItem(id=user.id, email=user.email) for user in users]
+    )
 
 
-@users_router.get("/{id}", response_model=PublicUserInfoResponse)
-async def get_user_info_by_id_endpoint(id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> PublicUserInfoResponse:
+@users_router.get("/{id}", response_model=SinglePublicUserInfoResponseItem)
+async def get_user_info_by_id_endpoint(
+    id: str, crud: Annotated[Crud, Depends(Crud.get)]
+) -> SinglePublicUserInfoResponseItem:
     user = await crud.get_user(id)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return PublicUserInfoResponse(id=user.id, email=user.email)
+    return SinglePublicUserInfoResponseItem(id=user.id, email=user.email)
 
 
-users_router.include_router(github_auth_router, prefix="/github", tags=["github"])
+users_router.include_router(github_auth_router, prefix="/github")

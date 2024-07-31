@@ -5,7 +5,6 @@ import ErrorMessage from "components/ui/ErrorMessage";
 import { Input } from "components/ui/Input/Input";
 import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
-import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import { Spinner } from "react-bootstrap";
@@ -25,16 +24,6 @@ const Login = () => {
   const auth = useAuthentication();
   const { addAlert } = useAlertQueue();
 
-  const auth_api = new api(
-    auth.api,
-    async (err) => {
-      addAlert(humanReadableError(err), "error");
-    },
-    () => {
-      setUseSpinner(false);
-    },
-  );
-
   const [useSpinner, setUseSpinner] = useState(false);
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const onSubmit: SubmitHandler<LoginType> = async (data: LoginType) => {
@@ -47,8 +36,13 @@ const Login = () => {
   ) => {
     console.log("event : ", event);
     event.preventDefault();
-    const redirectUrl = await auth_api.sendRegisterGithub();
-    window.open(redirectUrl, "_self");
+
+    const { data, error } = await auth.client.GET("/users/github/login");
+    if (error) {
+      addAlert(humanReadableError(error), "error");
+    } else {
+      window.open(data, "_self");
+    }
   };
 
   useEffect(() => {
@@ -57,10 +51,20 @@ const Login = () => {
       const search = window.location.search;
       const params = new URLSearchParams(search);
       const code = params.get("code");
+
       if (code) {
         setUseSpinner(true);
-        const res = await auth_api.loginGithub(code as string);
-        auth.login(res.api_key);
+        const { data, error } = await auth.client.POST("/users/github/code", {
+          body: { code },
+        });
+
+        if (error) {
+          addAlert(humanReadableError(error), "error");
+          setUseSpinner(false);
+        } else {
+          auth.login(data.api_key);
+          setUseSpinner(false);
+        }
       }
     })();
   }, []);

@@ -7,7 +7,7 @@ from typing import Literal, overload
 from store.app.crud.base import BaseCrud
 from store.app.model import APIKey, APIKeyPermissionSet, APIKeySource, OAuthKey, User
 from store.settings import settings
-from store.utils import cache_result
+from store.utils import cache_async_result
 
 
 def github_auth_key(github_id: str) -> str:
@@ -106,7 +106,7 @@ class UserCrud(BaseCrud):
     async def get_user_count(self) -> int:
         return await self._count_items(User)
 
-    @cache_result(settings.crypto.cache_token_db_result_seconds)
+    @cache_async_result(settings.crypto.cache_token_db_result_seconds)
     async def get_api_key(self, api_key_id: str) -> APIKey:
         return await self._get_item(api_key_id, APIKey, throw_if_missing=True)
 

@@ -1,10 +1,9 @@
 import TCButton from "components/files/TCButton";
 import { useAuthentication } from "hooks/auth";
-import React from "react";
 import { Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
-const Home: React.FC = () => {
+const Home = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthentication();
 
@@ -16,7 +15,7 @@ const Home: React.FC = () => {
       </Row>
       <Row className="row-two">
         <Col sm={12}>
-          <Card onClick={() => navigate(`/listings/1`)}>
+          <Card onClick={() => navigate(`/listings`)}>
             <Card.Body>
               <Card.Title>Browse Listings</Card.Title>
               <Card.Text>Buy and sell robots or robot parts</Card.Text>
@@ -24,6 +23,7 @@ const Home: React.FC = () => {
           </Card>
         </Col>
       </Row>
+
       {isAuthenticated && (
         <>
           <Row className="row-two">
