@@ -35,6 +35,7 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
   const [completedCrop, setCompletedCrop] = useState<Crop | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>();
+
   useEffect(() => {
     if (selectedFile) setImageUrl(URL.createObjectURL(selectedFile));
   }, [selectedFile]);
@@ -43,6 +44,7 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
     if (imageId)
       setImageUrl(new URL(`/images/${imageId}/large`, BACKEND_URL).toString());
   }, []);
+
   const handleFileChange = async (file: File) => {
     setUploadStatus(null);
 
@@ -61,12 +63,12 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
     }
 
     try {
-      const thecompressedFile = await imageCompression(file, {
+      const theCompressedFile = await imageCompression(file, {
         maxSizeMB: 0.2,
         maxWidthOrHeight: 800,
         useWebWorker: true,
       });
-      setCompressedFile(thecompressedFile);
+      setCompressedFile(theCompressedFile);
       setSelectedFile(file);
       setFileError(null);
     } catch (error) {
@@ -94,28 +96,17 @@ const ImageUploadComponent: React.FC<ImageUploadProps> = ({
       setUploadStatus("Failed to upload file");
       return;
     }
-    if (!selectedFile || !compressedFile) {
+    if (compressedFile === null) {
       setUploadStatus("No file selected");
       return;
     }
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-    const compressedFormData = new FormData();
-    compressedFormData.append("file", compressedFile);
 
-    await auth.client
-      .POST("/artifacts/upload", {
-        body: {
-          file: "test",
-        },
-      })
-      .then((res) => {
-        onUploadSuccess(res.data?.artifact_id);
-        setUploadStatus("File uploaded successfully");
-      })
-      .catch((err) => {
-        setUploadStatus("Failed to upload file");
-      });
+    // TODO: Make this work.
+    // await auth.client.POST("/artifacts/upload", {
+    //   body: {
+    //     file: compressedFile,
+    //   },
+    // });
   };
 
   const triggerFileInput = () => {

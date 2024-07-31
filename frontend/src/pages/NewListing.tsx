@@ -1,7 +1,6 @@
 import TCButton from "components/files/TCButton";
 import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
-import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { Dispatch, FormEvent, SetStateAction, useState } from "react";
 import { Col, Form } from "react-bootstrap";
@@ -73,7 +72,6 @@ const ListingForm = (props: ListingFormProps) => {
 
 const NewListing = () => {
   const auth = useAuthentication();
-  const auth_api = new api(auth.api);
   const [message, setMessage] = useState<string>("");
   const [name, setName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -86,16 +84,19 @@ const NewListing = () => {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    try {
-      await auth_api.addListing({
+    const { data, error } = await auth.client.POST("/listings/add", {
+      body: {
         name,
         description,
         child_ids: [],
-      });
+      },
+    });
+
+    if (error) {
+      addAlert(humanReadableError(error), "error");
+    } else {
       setMessage("Listing added successfully.");
-      navigate("/listings/me/1");
-    } catch (err) {
-      addAlert(humanReadableError(err), "error");
+      navigate(`/listing/${data.listing_id}`);
     }
   };
 

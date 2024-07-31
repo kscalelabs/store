@@ -1,10 +1,9 @@
 import TCButton from "components/files/TCButton";
 import { useAuthentication } from "hooks/auth";
-import React from "react";
 import { Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
-const Home: React.FC = () => {
+const Home = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthentication();
 

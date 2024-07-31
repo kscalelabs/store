@@ -1,5 +1,6 @@
+import { humanReadableError } from "constants/backend";
+import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/alerts";
-import { api, Listing } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import {
@@ -13,10 +14,12 @@ import {
 import Markdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+type ListingsType =
+  paths["/listings/me"]["get"]["responses"][200]["content"]["application/json"]["listings"];
+
 const MyListings = () => {
   const auth = useAuthentication();
-  const auth_api = new api(auth.api);
-  const [partsData, setListings] = useState<Listing[] | null>(null);
+  const [partsData, setListings] = useState<ListingsType | null>(null);
   const { addAlert } = useAlertQueue();
   const { page } = useParams();
   const [moreListings, setMoreListings] = useState<boolean>(false);
@@ -33,16 +36,20 @@ const MyListings = () => {
 
   useEffect(() => {
     const fetch_parts = async () => {
-      try {
-        const partsQuery = await auth_api.getMyListings(pageNumber);
-        setListings(partsQuery[0]);
-        setMoreListings(partsQuery[1]);
-      } catch (err) {
-        if (err instanceof Error) {
-          addAlert(err.message, "error");
-        } else {
-          addAlert("An unexpected error occurred", "error");
-        }
+      // const partsQuery = await auth_api.getMyListings(pageNumber);
+      const { data, error } = await auth.client.GET("/listings/me", {
+        params: {
+          query: {
+            page: pageNumber,
+          },
+        },
+      });
+
+      if (error) {
+        addAlert(humanReadableError(error), "error");
+      } else {
+        setListings(data.listings);
+        setMoreListings(data.has_next);
       }
     };
     fetch_parts();

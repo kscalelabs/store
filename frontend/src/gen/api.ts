@@ -113,28 +113,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/users/github/code/{code}": {
+    "/users/github/code": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
+        get?: never;
+        put?: never;
         /**
          * Github Code
          * @description Gives the user a session token upon successful github authentication and creation of user.
          *
          *     Args:
-         *         code: Github code returned from the successful authentication.
+         *         data: The request body, containing the code from the OAuth redirect.
          *         crud: The CRUD object.
          *         response: The response object.
          *
          *     Returns:
          *         UserInfoResponse.
          */
-        get: operations["github_code_users_github_code__code__get"];
-        put?: never;
-        post?: never;
+        post: operations["github_code_users_github_code_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -375,6 +375,11 @@ export interface components {
             /** Owner Is User */
             owner_is_user: boolean;
         };
+        /** GithubAuthRequest */
+        GithubAuthRequest: {
+            /** Code */
+            code: string;
+        };
         /** GithubAuthResponse */
         GithubAuthResponse: {
             /** Api Key */
@@ -423,8 +428,18 @@ export interface components {
             /** Description */
             description: string | null;
         };
+        /** NewListingResponse */
+        NewListingResponse: {
+            /** Listing Id */
+            listing_id: string;
+        };
         /** PublicUserInfoResponse */
         PublicUserInfoResponse: {
+            /** Users */
+            users: components["schemas"]["SinglePublicUserInfoResponseItem"][];
+        };
+        /** SinglePublicUserInfoResponseItem */
+        SinglePublicUserInfoResponseItem: {
             /** Id */
             id: string;
             /** Email */
@@ -557,7 +572,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PublicUserInfoResponse"][];
+                    "application/json": components["schemas"]["PublicUserInfoResponse"];
                 };
             };
             /** @description Validation Error */
@@ -588,7 +603,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PublicUserInfoResponse"];
+                    "application/json": components["schemas"]["SinglePublicUserInfoResponseItem"];
                 };
             };
             /** @description Validation Error */
@@ -622,16 +637,18 @@ export interface operations {
             };
         };
     };
-    github_code_users_github_code__code__get: {
+    github_code_users_github_code_post: {
         parameters: {
             query?: never;
             header?: never;
-            path: {
-                code: string;
-            };
+            path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GithubAuthRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -792,7 +809,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": boolean;
+                    "application/json": components["schemas"]["NewListingResponse"];
                 };
             };
             /** @description Validation Error */

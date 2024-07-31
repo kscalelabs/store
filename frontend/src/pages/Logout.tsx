@@ -1,6 +1,5 @@
 import { humanReadableError } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
-import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect } from "react";
 import { Spinner } from "react-bootstrap";
@@ -8,15 +7,13 @@ import { Spinner } from "react-bootstrap";
 const Logout = () => {
   const auth = useAuthentication();
   const { addAlert } = useAlertQueue();
-  const auth_api = new api(auth.api);
 
   useEffect(() => {
     (async () => {
-      try {
-        await auth_api.logout();
-      } catch (err) {
-        addAlert(humanReadableError(err), "error");
-      } finally {
+      const { error } = await auth.client.DELETE("/users/logout");
+      if (error) {
+        addAlert(humanReadableError(error), "error");
+      } else {
         auth.logout();
       }
     })();

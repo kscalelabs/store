@@ -1,5 +1,4 @@
 import TCButton from "components/files/TCButton";
-import { api } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
 import React, { useEffect, useRef, useState } from "react";
@@ -17,7 +16,6 @@ const URDFUploadComponent: React.FC<URDFUploadProps> = ({
   const [fileError, setFileError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<boolean>(false);
   const auth = useAuthentication();
-  const auth_api = new api(auth.api);
   const { theme } = useTheme();
   const MAX_FILE_SIZE = 25 * 1024 * 1024;
   const MAX_FILE_SIZE_MB = MAX_FILE_SIZE / 1024 / 1024;
@@ -116,14 +114,16 @@ const URDFUploadComponent: React.FC<URDFUploadProps> = ({
     }
     const formData = new FormData();
     formData.append("file", selectedFile);
-    try {
-      const URDF_id = await auth_api.uploadURDF(formData);
-      onUploadSuccess(URDF_id);
-      setUploadStatus("File uploaded successfully");
-    } catch (error) {
-      setUploadStatus("Failed to upload file");
-      console.error("Error uploading file:", error);
-    }
+
+    // TODO: Make this work.
+    // try {
+    //   const URDF_id = await auth_api.uploadURDF(formData);
+    //   onUploadSuccess(URDF_id);
+    //   setUploadStatus("File uploaded successfully");
+    // } catch (error) {
+    //   setUploadStatus("Failed to upload file");
+    //   console.error("Error uploading file:", error);
+    // }
   };
 
   const triggerFileInput = () => {

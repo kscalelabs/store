@@ -1,7 +1,7 @@
 import { SearchInput } from "components/ui/Search/SearchInput";
 import { humanReadableError } from "constants/backend";
+import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/alerts";
-import { api, Listing } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import {
@@ -15,10 +15,12 @@ import {
 import Markdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
+type ListingsType =
+  paths["/listings/search"]["get"]["responses"][200]["content"]["application/json"]["listings"];
+
 const Listings = () => {
   const auth = useAuthentication();
-  const auth_api = new api(auth.api);
-  const [partsData, setListings] = useState<Listing[] | null>(null);
+  const [partsData, setListings] = useState<ListingsType | null>(null);
   const [moreListings, setMoreListings] = useState<boolean>(false);
   const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
   const [searchQuery, setSearchQuery] = useState("");
@@ -48,19 +50,46 @@ const Listings = () => {
 
   useEffect(() => {
     const fetch_robots = async () => {
-      try {
-        const partsQuery = await auth_api.getListings(pageNumber, searchQuery);
-        setMoreListings(partsQuery[1]);
-        const parts = partsQuery[0];
-        setListings(parts);
-        const ids = new Set<string>();
-        parts.forEach((part) => {
-          ids.add(part.user_id);
+      const { data, error } = await auth.client.GET("/listings/search", {
+        params: {
+          query: {
+            page: pageNumber,
+            search_query: searchQuery,
+          },
+        },
+      });
+
+      if (error) {
+        addAlert(humanReadableError(error), "error");
+        return;
+      }
+
+      setListings(data.listings);
+      setMoreListings(data.has_next);
+      const ids = new Set<string>();
+      data.listings.forEach((part) => {
+        ids.add(part.user_id);
+      });
+
+      if (ids.size > 0) {
+        const { data, error } = await auth.client.GET("/users/batch", {
+          params: {
+            query: {
+              ids: Array.from(ids),
+            },
+          },
         });
-        if (ids.size > 0)
-          setIdMap(await auth_api.getUserBatch(Array.from(ids)));
-      } catch (err) {
-        addAlert(humanReadableError(err), "error");
+
+        if (error) {
+          addAlert(humanReadableError(error), "error");
+          return;
+        }
+
+        const idMap = new Map<string, string>();
+        data.users.forEach((user) => {
+          idMap.set(user.id, user.email);
+        });
+        setIdMap(idMap);
       }
     };
     fetch_robots();
