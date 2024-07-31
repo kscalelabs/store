@@ -152,26 +152,34 @@ async def logout_user_endpoint(
     return True
 
 
-class PublicUserInfoResponse(BaseModel):
+class SinglePublicUserInfoResponseItem(BaseModel):
     id: str
     email: str
 
 
-@users_router.get("/batch", response_model=list[PublicUserInfoResponse])
+class PublicUserInfoResponse(BaseModel):
+    users: list[SinglePublicUserInfoResponseItem]
+
+
+@users_router.get("/batch", response_model=PublicUserInfoResponse)
 async def get_users_batch_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
     ids: list[str] = Query(...),
-) -> list[PublicUserInfoResponse]:
+) -> PublicUserInfoResponse:
     users = await crud.get_user_batch(ids)
-    return [PublicUserInfoResponse(id=user.id, email=user.email) for user in users]
+    return PublicUserInfoResponse(
+        users=[SinglePublicUserInfoResponseItem(id=user.id, email=user.email) for user in users]
+    )
 
 
-@users_router.get("/{id}", response_model=PublicUserInfoResponse)
-async def get_user_info_by_id_endpoint(id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> PublicUserInfoResponse:
+@users_router.get("/{id}", response_model=SinglePublicUserInfoResponseItem)
+async def get_user_info_by_id_endpoint(
+    id: str, crud: Annotated[Crud, Depends(Crud.get)]
+) -> SinglePublicUserInfoResponseItem:
     user = await crud.get_user(id)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return PublicUserInfoResponse(id=user.id, email=user.email)
+    return SinglePublicUserInfoResponseItem(id=user.id, email=user.email)
 
 
 users_router.include_router(github_auth_router, prefix="/github")

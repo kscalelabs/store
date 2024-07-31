@@ -71,22 +71,25 @@ class NewListingRequest(BaseModel):
     description: str | None
 
 
-@listings_router.post("/add", response_model=bool)
+class NewListingResponse(BaseModel):
+    listing_id: str
+
+
+@listings_router.post("/add", response_model=NewListingResponse)
 async def add_listing(
     new_listing: NewListingRequest,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    await crud.add_listing(
-        Listing(
-            id=str(new_uuid()),
-            name=new_listing.name,
-            description=new_listing.description,
-            user_id=user.id,
-            child_ids=new_listing.child_ids,
-        )
+) -> NewListingResponse:
+    listing = Listing(
+        id=str(new_uuid()),
+        name=new_listing.name,
+        description=new_listing.description,
+        user_id=user.id,
+        child_ids=new_listing.child_ids,
     )
-    return True
+    await crud.add_listing(listing)
+    return NewListingResponse(listing_id=listing.id)
 
 
 @listings_router.delete("/delete/{listing_id}", response_model=bool)

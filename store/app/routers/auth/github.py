@@ -3,7 +3,7 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from httpx import AsyncClient, Response as HttpxResponse
 from pydantic.main import BaseModel
 
@@ -44,20 +44,23 @@ async def github_email_req(headers: dict[str, str]) -> HttpxResponse:
         return await client.get("https://api.github.com/user/emails", headers=headers)
 
 
+class GithubAuthRequest(BaseModel):
+    code: str
+
+
 class GithubAuthResponse(BaseModel):
     api_key: str
 
 
-@github_auth_router.get("/code/{code}", response_model=GithubAuthResponse)
+@github_auth_router.post("/code", response_model=GithubAuthResponse)
 async def github_code(
-    code: str,
+    data: GithubAuthRequest,
     crud: Annotated[Crud, Depends(Crud.get)],
-    response: Response,
 ) -> GithubAuthResponse:
     """Gives the user a session token upon successful github authentication and creation of user.
 
     Args:
-        code: Github code returned from the successful authentication.
+        data: The request body, containing the code from the OAuth redirect.
         crud: The CRUD object.
         response: The response object.
 
@@ -67,7 +70,7 @@ async def github_code(
     params = {
         "client_id": settings.oauth.github_client_id,
         "client_secret": settings.oauth.github_client_secret,
-        "code": code,
+        "code": data.code,
     }
 
     headers = {"Accept": "application/json"}
