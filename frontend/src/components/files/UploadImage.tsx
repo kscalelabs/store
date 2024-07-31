@@ -1,7 +1,8 @@
 import imageCompression from "browser-image-compression";
 import TCButton from "components/files/TCButton";
 import { BACKEND_URL } from "constants/backend";
-import { APICalls } from "hooks/ApiCalls";
+import { useAlertQueue } from "hooks/alerts";
+import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, Col, Modal } from "react-bootstrap";
@@ -13,7 +14,6 @@ const MAX_FILE_SIZE = 25 * 1536 * 1536;
 const MAX_FILE_MB = MAX_FILE_SIZE / 1024 / 1024;
 
 interface ImageUploadProps {
-  onUploadSuccess: (url: string) => void;
   imageId?: string | null;
   listingId: string;
 }
@@ -29,6 +29,8 @@ const ImageUploadComponent = (props: ImageUploadProps) => {
   const validFileTypes = ["image/png", "image/jpeg", "image/jpg"];
   const [showModal, setShowModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { api } = useAuthentication();
+  const { addErrorAlert } = useAlertQueue();
 
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<Crop | null>(null);
@@ -100,16 +102,16 @@ const ImageUploadComponent = (props: ImageUploadProps) => {
       return;
     }
 
-    const { response, error } = await APICalls.upload(compressedFile, {
+    const { error } = await api.upload(compressedFile, {
       artifact_type: "image",
       listing_id: listingId,
     });
 
     if (error) {
-      console.error(error);
+      setUploadStatus("Failed to upload file");
+      addErrorAlert(error);
     } else {
       setUploadStatus("File uploaded successfully");
-      props.onUploadSuccess(response.url);
     }
   };
 

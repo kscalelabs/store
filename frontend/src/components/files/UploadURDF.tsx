@@ -1,5 +1,6 @@
 import TCButton from "components/files/TCButton";
-import { APICalls } from "hooks/ApiCalls";
+import { useAlertQueue } from "hooks/alerts";
+import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, Col } from "react-bootstrap";
@@ -21,6 +22,8 @@ const URDFUploadComponent = (props: URDFUploadProps) => {
   const validFileTypes = ["application/gzip"];
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const { api } = useAuthentication();
+  const { addErrorAlert } = useAlertQueue();
 
   useEffect(() => {
     const handleWindowDrop = async (event: DragEvent) => {
@@ -114,17 +117,16 @@ const URDFUploadComponent = (props: URDFUploadProps) => {
     const formData = new FormData();
     formData.append("file", selectedFile);
 
-    const { error } = await APICalls.upload(selectedFile, {
+    const { error } = await api.upload(selectedFile, {
       artifact_type: "urdf",
       listing_id: listingId,
     });
 
     if (error) {
       setUploadStatus("Failed to upload file");
-      console.error("Error uploading file:", error);
+      addErrorAlert(error);
     } else {
       setUploadStatus("File uploaded successfully");
-      // onUploadSuccess(response.url);
     }
   };
 
