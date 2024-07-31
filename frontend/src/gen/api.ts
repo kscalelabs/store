@@ -277,7 +277,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/artifacts/image/{artifact_id}_{size}.png": {
+    "/artifacts/image/{image_id}/{size}": {
         parameters: {
             query?: never;
             header?: never;
@@ -285,7 +285,7 @@ export interface paths {
             cookie?: never;
         };
         /** Images Url */
-        get: operations["images_url_artifacts_image__artifact_id___size__png_get"];
+        get: operations["images_url_artifacts_image__image_id___size__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -294,15 +294,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/artifacts/artifact/{artifact_id}.{artifact_type}": {
+    "/artifacts/{artifact_type}/{artifact_id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Artifact Url */
-        get: operations["artifact_url_artifacts_artifact__artifact_id___artifact_type__get"];
+        /** Urdf Url */
+        get: operations["urdf_url_artifacts__artifact_type___artifact_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -356,6 +356,8 @@ export interface components {
              * Format: binary
              */
             file: string;
+            /** Metadata */
+            metadata: string;
         };
         /** DumpListingsResponse */
         DumpListingsResponse: {
@@ -920,13 +922,12 @@ export interface operations {
             };
         };
     };
-    images_url_artifacts_image__artifact_id___size__png_get: {
+    images_url_artifacts_image__image_id___size__get: {
         parameters: {
-            query: {
-                image_id: string;
-            };
+            query?: never;
             header?: never;
             path: {
+                image_id: string;
                 size: "small" | "large";
             };
             cookie?: never;
@@ -953,13 +954,13 @@ export interface operations {
             };
         };
     };
-    artifact_url_artifacts_artifact__artifact_id___artifact_type__get: {
+    urdf_url_artifacts__artifact_type___artifact_id__get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                artifact_id: string;
                 artifact_type: "urdf" | "mjcf";
+                artifact_id: string;
             };
             cookie?: never;
         };
@@ -987,11 +988,7 @@ export interface operations {
     };
     upload_artifacts_upload_post: {
         parameters: {
-            query: {
-                listing_id: string;
-                artifact_type: "image" | "urdf" | "mjcf";
-                description?: string | null;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
