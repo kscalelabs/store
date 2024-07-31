@@ -84,6 +84,14 @@ Serve the FastAPI application in development mode:
 ROBOLIST_ENVIRONMENT=local fastapi dev 'store/app/main.py' --port 8080  # On port 8080 to avoid conflicts with Docker
 ```
 
+### Keeping Frontend and Backend In Sync
+
+After updating the backend API, you need to update the generated API client. To do this, from this `frontend` directory, run:
+
+```bash
+openapi-typescript http://localhost:8080/openapi.json --output src/gen/api.ts  # While running the backend API locally
+```
+
 ### Configuration
 
 Settings for the app backend live in the `store/settings/` directory. To configure which set of settings you are using, set `ROBOLIST_ENVIRONMENT`. It is the stem of one of the config files in the `store/settings/configs/` directory. When developing locally this should usually just be `local`
