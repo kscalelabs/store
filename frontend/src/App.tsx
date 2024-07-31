@@ -36,9 +36,9 @@ const App = () => {
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/logout" element={<Logout />} />
                   <Route path="/listings/add" element={<NewListing />} />
-                  <Route path="/listings/:page" element={<Listings />} />
+                  <Route path="/listings/:page?" element={<Listings />} />
                   <Route path="/listing/:id" element={<ListingDetails />} />
-                  <Route path="/listings/me/:page" element={<MyListings />} />
+                  <Route path="/listings/me/:page?" element={<MyListings />} />
                   <Route path="/404" element={<NotFound />} />
                   <Route path="*" element={<NotFoundRedirect />} />
                 </Routes>

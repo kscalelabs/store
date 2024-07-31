@@ -1,3 +1,7 @@
+import ListingChildren from "components/listing/ListingChildren";
+import ListingDeleteButton from "components/listing/ListingDeleteButton";
+import ListingDescription from "components/listing/ListingDescription";
+import ListingTitle from "components/listing/ListingTitle";
 import { humanReadableError } from "constants/backend";
 import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/alerts";
@@ -14,7 +18,15 @@ interface RenderListingProps {
 }
 
 const RenderListing = (props: RenderListingProps) => {
-  return <div>Placeholder for {props.listing.id}</div>;
+  const { listing } = props;
+  return (
+    <Col>
+      <ListingTitle title={listing.name} />
+      <ListingDescription description={listing.description} />
+      <ListingChildren child_ids={listing.child_ids} />
+      {listing.owner_is_user && <ListingDeleteButton listing_id={listing.id} />}
+    </Col>
+  );
 };
 
 const ListingDetails = () => {
@@ -53,7 +65,7 @@ const ListingDetails = () => {
     <>
       <Breadcrumb>
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
-        <Breadcrumb.Item onClick={() => navigate("/listings/1")}>
+        <Breadcrumb.Item onClick={() => navigate("/listings")}>
           Listings
         </Breadcrumb.Item>
         {listing && <Breadcrumb.Item active>{listing.name}</Breadcrumb.Item>}

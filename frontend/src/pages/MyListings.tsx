@@ -24,7 +24,8 @@ const MyListings = () => {
   const { page } = useParams();
   const [moreListings, setMoreListings] = useState<boolean>(false);
 
-  const pageNumber = parseInt(page || "", 10);
+  const pageNumber = parseInt(page || "1", 10);
+
   if (isNaN(pageNumber) || pageNumber < 0) {
     return (
       <>

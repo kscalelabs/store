@@ -28,7 +28,8 @@ const Listings = () => {
   const { addAlert } = useAlertQueue();
   const { page } = useParams();
 
-  const pageNumber = parseInt(page || "", 10);
+  const pageNumber = parseInt(page || "1", 10);
+
   if (isNaN(pageNumber) || pageNumber < 0) {
     return (
       <>

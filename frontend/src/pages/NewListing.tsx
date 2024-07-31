@@ -95,7 +95,7 @@ const NewListing = () => {
     if (error) {
       addAlert(humanReadableError(error), "error");
     } else {
-      setMessage("Listing added successfully.");
+      addAlert("Listing added successfully", "success");
       navigate(`/listing/${data.listing_id}`);
     }
   };

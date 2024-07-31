@@ -15,7 +15,7 @@ const Home = () => {
       </Row>
       <Row className="row-two">
         <Col sm={12}>
-          <Card onClick={() => navigate(`/listings/1`)}>
+          <Card onClick={() => navigate(`/listings`)}>
             <Card.Body>
               <Card.Title>Browse Listings</Card.Title>
               <Card.Text>Buy and sell robots or robot parts</Card.Text>
@@ -23,6 +23,7 @@ const Home = () => {
           </Card>
         </Col>
       </Row>
+
       {isAuthenticated && (
         <>
           <Row className="row-two">
