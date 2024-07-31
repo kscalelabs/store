@@ -1,4 +1,4 @@
-import { apiClient } from "./api";
+import { apiClient } from "./auth";
 
 type UploadMetadata = {
   artifact_type: string;
