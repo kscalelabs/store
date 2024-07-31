@@ -46,7 +46,7 @@ const client = createClient<paths>({
 
 const authMiddleware: Middleware = {
   async onRequest({ request }) {
-    const accessToken = localStorage.getItem("AUTH");
+    const accessToken = localStorage.getItem(AUTH_KEY_ID);
     if (!accessToken) {
       throw new Error("No access token found");
     }
@@ -68,15 +68,7 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
 
   // Add the API key to the request headers, if the user is authenticated.
   if (apiKeyId !== null) {
-    client.use({
-      async onRequest({ request }) {
-        request.headers.set("Authorization", `Bearer ${apiKeyId}`);
-        return request;
-      },
-      async onResponse({ response }) {
-        return response;
-      },
-    });
+    client.use(authMiddleware);
   }
 
   const login = useCallback((apiKeyId: string) => {
