@@ -2,11 +2,10 @@ import React from "react";
 
 interface ImageProps {
   url: string;
-  size: "small" | "large";
   caption?: string;
 }
 
-const ImageComponent: React.FC<ImageProps> = ({ url, size, caption }) => {
+const ImageComponent: React.FC<ImageProps> = ({ url, caption }) => {
   return (
     <div style={{ width: "100%", paddingTop: "100%", position: "relative" }}>
       <img
