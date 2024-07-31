@@ -116,7 +116,7 @@ const URDFUploadComponent = (props: URDFUploadProps) => {
 
     const { error } = await APICalls.upload(selectedFile, {
       artifact_type: "urdf",
-      listing_id: props.listingId,
+      listing_id: listingId,
     });
 
     if (error) {
