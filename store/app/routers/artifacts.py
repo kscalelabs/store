@@ -3,7 +3,7 @@
 import logging
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, Form, HTTPException, UploadFile, status
 from fastapi.responses import RedirectResponse
 from pydantic.main import BaseModel
 
@@ -22,15 +22,15 @@ class UploadImageResponse(BaseModel):
     image_id: str
 
 
-@artifacts_router.get("/image/{artifact_id}_{size}.png")
+@artifacts_router.get("/image/{image_id}/{size}")
 async def images_url(image_id: str, size: ArtifactSize) -> RedirectResponse:
     # TODO: Use CloudFront API to return a signed CloudFront URL.
     image_url = f"{settings.site.artifact_base_url}/{get_artifact_name(image_id, 'image', size)}"
     return RedirectResponse(url=image_url)
 
 
-@artifacts_router.get("/artifact/{artifact_id}.{artifact_type}")
-async def artifact_url(artifact_id: str, artifact_type: Literal["urdf", "mjcf"]) -> RedirectResponse:
+@artifacts_router.get("/{artifact_type}/{artifact_id}")
+async def urdf_url(artifact_type: Literal["urdf", "mjcf"], artifact_id: str) -> RedirectResponse:
     artifact_url = f"{settings.site.artifact_base_url}/{get_artifact_name(artifact_id, artifact_type)}"
     return RedirectResponse(url=artifact_url)
 
@@ -50,13 +50,16 @@ async def upload(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
     file: UploadFile,
-    data: UploadArtifactRequest,
+    metadata: Annotated[str, Form()],
 ) -> UploadArtifactResponse:
     if file.filename is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="URDF filename was not provided",
         )
+
+    # Converts the metadata JSON string to a Pydantic model.
+    data = UploadArtifactRequest.model_validate_json(metadata)
 
     # Checks that the content type is valid.
     if (content_type := file.content_type) is None:

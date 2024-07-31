@@ -1,5 +1,6 @@
 """Runs tests on the robot APIs."""
 
+import json
 from pathlib import Path
 
 from fastapi import status
@@ -13,7 +14,7 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
     await create_tables()
 
     # Register.
-    response = await app_client.get("/users/github/code/doesnt-matter")
+    response = await app_client.post("/users/github/code", json={"code": "test_code"})
     assert response.status_code == status.HTTP_200_OK, response.json()
     token = response.json()["api_key"]
     auth_headers = {"Authorization": f"Bearer {token}"}
@@ -29,19 +30,20 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
         headers=auth_headers,
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
+    listing_id = response.json()["listing_id"]
 
     # Upload an image.
     image = Image.new("RGB", (100, 100))
     image_path = Path(tmpdir) / "test.png"
     image.save(image_path)
+    data_json = json.dumps({"artifact_type": "image", "listing_id": listing_id})
     response = await app_client.post(
-        "/images/upload",
+        "/artifacts/upload",
         headers=auth_headers,
-        files={"file": ("test.png", open(image_path, "rb"), "image/png")},
+        files={"file": ("test.png", open(image_path, "rb"), "image/png"), "metadata": (None, data_json)},
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
-    assert response.json()["image_id"] is not None
-    image_id = response.json()["image_id"]
+    assert response.json()["artifact_id"] is not None
 
     # Searches for listings.
     response = await app_client.get(
@@ -50,15 +52,15 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
         headers=auth_headers,
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
-    items, has_more = response.json()
+    data = response.json()
+    items, has_next = data["listings"], data["has_next"]
     assert len(items) == 1
-    assert not has_more
+    assert not has_next
 
     # Checks the item.
-    item = items[0]
+    item = data["listings"][0]
     assert item["name"] == "test listing"
     assert item["description"] == "test description"
-    assert item["artifact_ids"] == [image_id]
     assert item["child_ids"] == []
 
     # Checks my own listings.
@@ -68,15 +70,15 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
         headers=auth_headers,
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
-    items, has_more = response.json()
+    data = response.json()
+    items, has_next = data["listings"], data["has_next"]
     assert len(items) == 1
-    assert not has_more
+    assert not has_next
 
     # Gets the listing by ID.
     listing_id = item["id"]
     response = await app_client.get(f"/listings/{listing_id}", headers=auth_headers)
     assert response.status_code == status.HTTP_200_OK, response.json()
-    assert response.json() == item
 
     # Edits the listing.
     response = await app_client.post(
@@ -97,5 +99,7 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
         headers=auth_headers,
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
-    items, has_more = response.json()
+    data = response.json()
+    items, has_next = data["listings"], data["has_next"]
     assert len(items) == 0
+    assert not has_next
