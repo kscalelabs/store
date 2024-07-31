@@ -468,6 +468,20 @@ export interface components {
             /** Email */
             email: string;
         };
+        /** UpdateListingRequest */
+        UpdateListingRequest: {
+            /** Name */
+            name?: string | null;
+            /** Child Ids */
+            child_ids?: string[] | null;
+            /** Description */
+            description?: string | null;
+        };
+        /** UpdateListingResponse */
+        UpdateListingResponse: {
+            /** Listing Id */
+            listing_id: string;
+        };
         /** UploadArtifactResponse */
         UploadArtifactResponse: {
             /** Artifact Id */
@@ -888,7 +902,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": Record<string, never>;
+                "application/json": components["schemas"]["UpdateListingRequest"];
             };
         };
         responses: {
@@ -898,7 +912,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": boolean;
+                    "application/json": components["schemas"]["UpdateListingResponse"];
                 };
             };
             /** @description Validation Error */

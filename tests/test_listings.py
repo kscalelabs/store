@@ -81,7 +81,7 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
     assert response.status_code == status.HTTP_200_OK, response.json()
 
     # Edits the listing.
-    response = await app_client.post(
+    response = await app_client.put(
         f"/listings/edit/{listing_id}",
         json={"name": "edited name"},
         headers=auth_headers,

@@ -1,7 +1,7 @@
 """Defines all listing related API endpoints."""
 
 import logging
-from typing import Annotated, Any
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
@@ -105,10 +105,16 @@ async def delete_listing(
     return True
 
 
-@listings_router.post("/edit/{id}", response_model=bool)
+class UpdateListingRequest(BaseModel):
+    name: str | None = None
+    child_ids: list[str] | None = None
+    description: str | None = None
+
+
+@listings_router.put("/edit/{id}", response_model=bool)
 async def edit_listing(
     id: str,
-    listing: dict[str, Any],
+    listing: UpdateListingRequest,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
@@ -117,7 +123,8 @@ async def edit_listing(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
     if listing_info.user_id != user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this listing")
-    await crud._update_item(id, Listing, listing)
+    listing_updates = {k: v for k, v in listing.model_dump().items() if v is not None}
+    await crud._update_item(id, Listing, listing_updates)
     return True
 
 

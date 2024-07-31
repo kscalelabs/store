@@ -47,5 +47,5 @@ async def test_user_auth_functions(app_client: AsyncClient, tmpdir: Path) -> Non
     image_id = response.json()["artifact_id"]
 
     # Gets the URLs for various sizes of images.
-    response = await app_client.get(f"/artifacts/image/{image_id}/large")
+    response = await app_client.get(f"/artifacts/url/image/{image_id}", params={"size": "small"})
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT, response.json()

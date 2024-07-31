@@ -25,6 +25,7 @@ const EmptyCarouselItem = ({ loading }: { loading: boolean }) => {
 
 interface Props {
   listing_id: string;
+  // TODO: If can edit, allow the user to add and delete artifacts.
   edit: boolean;
 }
 

@@ -2,6 +2,7 @@ import { Row } from "react-bootstrap";
 
 interface Props {
   child_ids: string[];
+  // TODO: If can, allow the user to add and delete children.
   edit: boolean;
 }
 
