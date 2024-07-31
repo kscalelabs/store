@@ -251,9 +251,9 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        put?: never;
         /** Edit Listing */
-        post: operations["edit_listing_listings_edit__id__post"];
+        put: operations["edit_listing_listings_edit__id__put"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -476,11 +476,6 @@ export interface components {
             child_ids?: string[] | null;
             /** Description */
             description?: string | null;
-        };
-        /** UpdateListingResponse */
-        UpdateListingResponse: {
-            /** Listing Id */
-            listing_id: string;
         };
         /** UploadArtifactResponse */
         UploadArtifactResponse: {
@@ -891,7 +886,7 @@ export interface operations {
             };
         };
     };
-    edit_listing_listings_edit__id__post: {
+    edit_listing_listings_edit__id__put: {
         parameters: {
             query?: never;
             header?: never;
@@ -912,7 +907,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UpdateListingResponse"];
+                    "application/json": boolean;
                 };
             };
             /** @description Validation Error */
