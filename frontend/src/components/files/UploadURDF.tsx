@@ -108,7 +108,7 @@ const URDFUploadComponent = () => {
     const formData = new FormData();
     formData.append("file", selectedFile);
 
-    const { response, error } = await APICalls.upload(selectedFile, {
+    const { error } = await APICalls.upload(selectedFile, {
       artifact_type: "image",
       listing_id: "5",
     });

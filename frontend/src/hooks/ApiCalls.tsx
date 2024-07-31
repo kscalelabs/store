@@ -12,7 +12,7 @@ export const APICalls = {
         file: "",
         metadata: "image",
       },
-      bodySerializer(body) {
+      bodySerializer() {
         const fd = new FormData();
         fd.append("file", file);
         fd.append("metadata", JSON.stringify(request));
