@@ -35,6 +35,12 @@ async def artifact_url(artifact_id: str, artifact_type: Literal["urdf", "mjcf"])
     return RedirectResponse(url=artifact_url)
 
 
+class UploadArtifactRequest(BaseModel):
+    artifact_type: ArtifactType
+    listing_id: str
+    description: str | None = None
+
+
 class UploadArtifactResponse(BaseModel):
     artifact_id: str
 
@@ -43,10 +49,8 @@ class UploadArtifactResponse(BaseModel):
 async def upload(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
-    listing_id: str,
     file: UploadFile,
-    artifact_type: ArtifactType,
-    description: str | None = None,
+    data: UploadArtifactRequest,
 ) -> UploadArtifactResponse:
     if file.filename is None:
         raise HTTPException(
@@ -60,15 +64,15 @@ async def upload(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="URDF content type was not provided",
         )
-    if content_type not in UPLOAD_CONTENT_TYPE_OPTIONS[artifact_type]:
-        content_type_options_string = ", ".join(UPLOAD_CONTENT_TYPE_OPTIONS[artifact_type])
+    if content_type not in UPLOAD_CONTENT_TYPE_OPTIONS[data.artifact_type]:
+        content_type_options_string = ", ".join(UPLOAD_CONTENT_TYPE_OPTIONS[data.artifact_type])
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid content type {content_type}; expected one of {content_type_options_string}",
         )
 
     # Checks that the listing is valid.
-    listing = await crud.get_listing(listing_id)
+    listing = await crud.get_listing(data.listing_id)
     if listing is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -81,8 +85,8 @@ async def upload(
         name=file.filename,
         listing=listing,
         user_id=user.id,
-        artifact_type=artifact_type,
-        description=description,
+        artifact_type=data.artifact_type,
+        description=data.description,
     )
     return UploadArtifactResponse(artifact_id=artifact.id)
 

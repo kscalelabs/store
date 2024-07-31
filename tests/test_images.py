@@ -13,19 +13,33 @@ async def test_user_auth_functions(app_client: AsyncClient, tmpdir: Path) -> Non
     await create_tables()
 
     # Get an auth token using the mocked Github endpoint.
-    response = await app_client.get("/users/github/code/doesnt-matter")
+    response = await app_client.post("/users/github/code", json={"code": "test_code"})
     assert response.status_code == status.HTTP_200_OK, response.json()
     token = response.json()["api_key"]
     auth_headers = {"Authorization": f"Bearer {token}"}
+
+    # Create a listing.
+    response = await app_client.post(
+        "/listings/add",
+        json={
+            "name": "test listing",
+            "description": "test description",
+            "child_ids": [],
+        },
+        headers=auth_headers,
+    )
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    listing_id = response.json()["listing_id"]
 
     # Upload an image.
     image = Image.new("RGB", (100, 100))
     image_path = Path(tmpdir) / "test.png"
     image.save(image_path)
     response = await app_client.post(
-        "/images/upload",
-        headers=auth_headers,
+        "/artifacts/upload",
         files={"file": ("test.png", open(image_path, "rb"), "image/png")},
+        json={"artifact_type": "image", "listing_id": listing_id},
+        headers=auth_headers,
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     assert response.json()["image_id"] is not None

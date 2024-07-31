@@ -18,6 +18,18 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
     token = response.json()["api_key"]
     auth_headers = {"Authorization": f"Bearer {token}"}
 
+    # Create a listing.
+    response = await app_client.post(
+        "/listings/add",
+        json={
+            "name": "test listing",
+            "description": "test description",
+            "child_ids": [],
+        },
+        headers=auth_headers,
+    )
+    assert response.status_code == status.HTTP_200_OK, response.json()
+
     # Upload an image.
     image = Image.new("RGB", (100, 100))
     image_path = Path(tmpdir) / "test.png"
@@ -30,19 +42,6 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
     assert response.status_code == status.HTTP_200_OK, response.json()
     assert response.json()["image_id"] is not None
     image_id = response.json()["image_id"]
-
-    # Create a listing.
-    response = await app_client.post(
-        "/listings/add",
-        json={
-            "name": "test listing",
-            "description": "test description",
-            "artifact_ids": [image_id],
-            "child_ids": [],
-        },
-        headers=auth_headers,
-    )
-    assert response.status_code == status.HTTP_200_OK, response.json()
 
     # Searches for listings.
     response = await app_client.get(
