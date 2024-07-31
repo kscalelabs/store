@@ -1,11 +1,23 @@
 import { BACKEND_URL } from "constants/backend";
 import type { paths } from "gen/api";
-import createClient from "openapi-fetch";
+import createClient, { type Middleware } from "openapi-fetch";
 
-export const useApi = () => {
-  const api = createClient<paths>({
-    baseUrl: BACKEND_URL,
-  });
+const apiClient = createClient<paths>({
+  baseUrl: BACKEND_URL,
+});
 
-  return api;
+const authMiddleware: Middleware = {
+  async onRequest({ request }) {
+    const accessToken = localStorage.getItem("AUTH");
+    if (!accessToken) {
+      throw new Error("No access token found");
+    }
+
+    request.headers.set("Authorization", `Bearer ${accessToken}`);
+    return request;
+  },
 };
+
+apiClient.use(authMiddleware);
+
+export { apiClient };

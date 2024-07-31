@@ -1,6 +1,7 @@
 import imageCompression from "browser-image-compression";
 import TCButton from "components/files/TCButton";
 import { BACKEND_URL } from "constants/backend";
+import { APICalls } from "hooks/ApiCalls";
 import { useTheme } from "hooks/theme";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, Col, Modal } from "react-bootstrap";
@@ -98,12 +99,17 @@ const ImageUploadComponent = (props: ImageUploadProps) => {
       return;
     }
 
-    // TODO: Make this work.
-    // await auth.client.POST("/artifacts/upload", {
-    //   body: {
-    //     file: compressedFile,
-    //   },
-    // });
+    const { response, error } = await APICalls.upload(compressedFile, {
+      artifact_type: "image",
+      listing_id: "5",
+    });
+
+    if (error) {
+      console.error(error);
+    } else {
+      setUploadStatus("File uploaded successfully");
+      props.onUploadSuccess(response.url);
+    }
   };
 
   const triggerFileInput = () => {

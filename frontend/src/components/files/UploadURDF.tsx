@@ -1,4 +1,5 @@
 import TCButton from "components/files/TCButton";
+import { APICalls } from "hooks/ApiCalls";
 import { useTheme } from "hooks/theme";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, Col } from "react-bootstrap";
@@ -107,15 +108,18 @@ const URDFUploadComponent = () => {
     const formData = new FormData();
     formData.append("file", selectedFile);
 
-    // TODO: Make this work.
-    // try {
-    //   const URDF_id = await auth_api.uploadURDF(formData);
-    //   onUploadSuccess(URDF_id);
-    //   setUploadStatus("File uploaded successfully");
-    // } catch (error) {
-    //   setUploadStatus("Failed to upload file");
-    //   console.error("Error uploading file:", error);
-    // }
+    const { response, error } = await APICalls.upload(selectedFile, {
+      artifact_type: "image",
+      listing_id: "5",
+    });
+
+    if (error) {
+      setUploadStatus("Failed to upload file");
+      console.error("Error uploading file:", error);
+    } else {
+      setUploadStatus("File uploaded successfully");
+      // onUploadSuccess(response.url);
+    }
   };
 
   const triggerFileInput = () => {
