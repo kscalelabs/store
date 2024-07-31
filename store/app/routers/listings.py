@@ -13,7 +13,6 @@ from store.app.routers.users import (
     get_session_user_with_write_permission,
     maybe_get_user_from_api_key,
 )
-from store.utils import new_uuid
 
 listings_router = APIRouter()
 

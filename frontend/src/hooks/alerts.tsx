@@ -30,6 +30,7 @@ interface AlertQueueContextProps {
   alerts: Map<string, [string | ReactNode, AlertType]>;
   removeAlert: (alertId: string) => void;
   addAlert: (alert: string | ReactNode, kind: AlertType) => void;
+  // eslint-disable-next-line
   addErrorAlert: (alert: any) => void;
 }
 
@@ -72,6 +73,7 @@ export const AlertQueueProvider = (props: AlertQueueProviderProps) => {
   );
 
   const addErrorAlert = useCallback(
+    // eslint-disable-next-line
     (alert: any | undefined) => {
       addAlert(humanReadableError(alert), "error");
     },
