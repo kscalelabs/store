@@ -1,5 +1,4 @@
 import { SearchInput } from "components/ui/Search/SearchInput";
-import { humanReadableError } from "constants/backend";
 import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
@@ -25,7 +24,7 @@ const Listings = () => {
   const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleSearchBarInput, setVisibleSearchBarInput] = useState("");
-  const { addAlert } = useAlertQueue();
+  const { addErrorAlert } = useAlertQueue();
   const { page } = useParams();
 
   const pageNumber = parseInt(page || "1", 10);
@@ -61,7 +60,7 @@ const Listings = () => {
       });
 
       if (error) {
-        addAlert(humanReadableError(error), "error");
+        addErrorAlert(error);
         return;
       }
 
@@ -82,7 +81,7 @@ const Listings = () => {
         });
 
         if (error) {
-          addAlert(humanReadableError(error), "error");
+          addErrorAlert(error);
           return;
         }
 

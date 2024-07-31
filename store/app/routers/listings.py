@@ -81,8 +81,7 @@ async def add_listing(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> NewListingResponse:
-    listing = Listing(
-        id=str(new_uuid()),
+    listing = Listing.create(
         name=new_listing.name,
         description=new_listing.description,
         user_id=user.id,

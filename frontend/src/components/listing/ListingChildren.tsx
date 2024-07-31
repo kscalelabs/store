@@ -2,6 +2,7 @@ import { Row } from "react-bootstrap";
 
 interface Props {
   child_ids: string[];
+  edit: boolean;
 }
 
 const ListingChildren = (props: Props) => {

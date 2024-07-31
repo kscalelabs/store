@@ -2,6 +2,7 @@ import { Row } from "react-bootstrap";
 
 interface Props {
   description: string | null;
+  edit: boolean;
 }
 
 const ListingDescription = (props: Props) => {

@@ -7,7 +7,7 @@ interface URDFUploadProps {
   onUploadSuccess: (url: string) => void;
 }
 
-const URDFUploadComponent: React.FC<URDFUploadProps> = () => {
+const URDFUploadComponent = ({}: URDFUploadProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);

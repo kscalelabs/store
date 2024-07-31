@@ -22,9 +22,10 @@ const Signup = () => {
   });
 
   const onSubmit: SubmitHandler<LoginType> = async (data: LoginType) => {
-    // add an api endpoint to send the credentials details to backend and email verification
+    // TODO: Add an api endpoint to send the credentials details to backend and email verification.
     console.log(data);
   };
+
   return (
     <div className="flex justify-center items-center min-h-screen">
       <CardWrapper

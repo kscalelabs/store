@@ -1,3 +1,4 @@
+import { humanReadableError } from "constants/backend";
 import {
   createContext,
   ReactNode,
@@ -29,6 +30,7 @@ interface AlertQueueContextProps {
   alerts: Map<string, [string | ReactNode, AlertType]>;
   removeAlert: (alertId: string) => void;
   addAlert: (alert: string | ReactNode, kind: AlertType) => void;
+  addErrorAlert: (alert: any) => void;
 }
 
 const AlertQueueContext = createContext<AlertQueueContextProps | undefined>(
@@ -69,6 +71,13 @@ export const AlertQueueProvider = (props: AlertQueueProviderProps) => {
     [generateAlertId],
   );
 
+  const addErrorAlert = useCallback(
+    (alert: any | undefined) => {
+      addAlert(humanReadableError(alert), "error");
+    },
+    [addAlert],
+  );
+
   const removeAlert = useCallback((alertId: string) => {
     setAlerts((prev) => {
       const newAlerts = new Map(prev);
@@ -83,6 +92,7 @@ export const AlertQueueProvider = (props: AlertQueueProviderProps) => {
         alerts,
         removeAlert,
         addAlert,
+        addErrorAlert,
       }}
     >
       {children}
