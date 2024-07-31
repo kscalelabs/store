@@ -125,8 +125,13 @@ async def edit_listing(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
     if listing_info.user_id != user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this listing")
-    listing_updates = {k: v for k, v in listing.model_dump().items() if v is not None}
-    await crud._update_item(id, Listing, listing_updates)
+    await crud.edit_listing(
+        listing_id=id,
+        name=listing.name,
+        child_ids=listing.child_ids,
+        description=listing.description,
+        tags=listing.tags,
+    )
     return True
 
 

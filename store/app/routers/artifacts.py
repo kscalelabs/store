@@ -117,28 +117,29 @@ async def upload(
     return UploadArtifactResponse(artifact_id=artifact.id)
 
 
+class UpdateArtifactRequest(BaseModel):
+    name: str | None = None
+    description: str | None = None
+
+
 @artifacts_router.put("/edit/{artifact_id}", response_model=bool)
-async def edit(
+async def edit_artifact(
+    id: str,
+    artifact: UpdateArtifactRequest,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
-    artifact_id: str,
-    description: str,
 ) -> bool:
-    artifact = await crud.get_raw_artifact(artifact_id)
-    if artifact is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Could not find URDF associated with the given id",
-        )
-
-    # Updates the URDF's description.
-    await crud.edit_artifact(artifact, description, user.id)
-
+    artifact_info = await crud.get_raw_artifact(id)
+    if artifact_info is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Artifact not found")
+    if artifact_info.user_id != user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this artifact")
+    await crud.edit_artifact(artifact_id=id, name=artifact.name, description=artifact.description)
     return True
 
 
 @artifacts_router.delete("/delete/{artifact_id}", response_model=bool)
-async def delete(
+async def delete_artifact(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
     artifact_id: str,
