@@ -53,10 +53,10 @@ class ArtifactsCrud(BaseCrud):
         image_bytes.seek(0)
         return image_bytes
 
-    async def _upload_cropped_image(self, image: Image.Image, image_id: str, size: ArtifactSize) -> None:
+    async def _upload_cropped_image(self, image: Image.Image, name: str, image_id: str, size: ArtifactSize) -> None:
         image_bytes = self._crop_image(image, SizeMapping[size])
-        name = get_artifact_name(image_id, "image", size)
-        await self._upload_to_s3(image_bytes, name, "image/png")
+        filename = get_artifact_name(image_id, "image", size)
+        await self._upload_to_s3(image_bytes, name, filename, "image/png")
 
     async def _upload_image(
         self,
@@ -83,6 +83,7 @@ class ArtifactsCrud(BaseCrud):
             *(
                 self._upload_cropped_image(
                     image=image,
+                    name=name,
                     image_id=artifact.id,
                     size=size,
                 )
@@ -115,7 +116,7 @@ class ArtifactsCrud(BaseCrud):
             description=description,
         )
         await asyncio.gather(
-            self._upload_to_s3(file, get_artifact_name(artifact.id, artifact_type), content_type),
+            self._upload_to_s3(file, name, get_artifact_name(artifact.id, artifact_type), content_type),
             self._add_item(artifact),
         )
         return artifact

@@ -298,11 +298,12 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             AttributeUpdates={k: {"Value": v, "Action": "PUT"} for k, v in new_values.items() if k != "id"},
         )
 
-    async def _upload_to_s3(self, data: io.BytesIO | BinaryIO, filename: str, content_type: str) -> None:
+    async def _upload_to_s3(self, data: io.BytesIO | BinaryIO, name: str, filename: str, content_type: str) -> None:
         """Uploads some data to S3.
 
         Args:
             data: The data to upload to S3.
+            name: The filename you want users who download the artifact to receive.
             filename: The resulting filename in S3 (should be unique).
             content_type: The file content type, for CloudFront to provide
                 in the file header when the user retrieves it.
@@ -311,7 +312,10 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         await bucket.upload_fileobj(
             data,
             f"{settings.s3.prefix}{filename}",
-            ExtraArgs={"ContentType": content_type},
+            ExtraArgs={
+                "ContentType": content_type,
+                "ContentDisposition": f'attachment; filename="{name}"',
+            },
         )
 
     async def _delete_from_s3(self, filename: str) -> None:
