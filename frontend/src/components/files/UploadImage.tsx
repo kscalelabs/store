@@ -15,6 +15,7 @@ const MAX_FILE_MB = MAX_FILE_SIZE / 1024 / 1024;
 interface ImageUploadProps {
   onUploadSuccess: (url: string) => void;
   imageId?: string | null;
+  listing_id: string;
 }
 
 const ImageUploadComponent = (props: ImageUploadProps) => {
@@ -101,7 +102,7 @@ const ImageUploadComponent = (props: ImageUploadProps) => {
 
     const { response, error } = await APICalls.upload(compressedFile, {
       artifact_type: "image",
-      listing_id: "5",
+      listing_id: props.listing_id,
     });
 
     if (error) {

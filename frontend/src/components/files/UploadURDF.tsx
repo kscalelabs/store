@@ -4,7 +4,11 @@ import { useTheme } from "hooks/theme";
 import React, { useEffect, useRef, useState } from "react";
 import { Alert, Col } from "react-bootstrap";
 
-const URDFUploadComponent = () => {
+interface URDFUploadProps {
+  listing_id: string;
+}
+
+const URDFUploadComponent = (props: URDFUploadProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -109,8 +113,8 @@ const URDFUploadComponent = () => {
     formData.append("file", selectedFile);
 
     const { error } = await APICalls.upload(selectedFile, {
-      artifact_type: "image",
-      listing_id: "5",
+      artifact_type: "urdf",
+      listing_id: props.listing_id,
     });
 
     if (error) {
