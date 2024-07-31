@@ -50,13 +50,32 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             self._delete_listing_artifacts(listing),
         )
 
-    async def get_listing_tag(self, listing_tag_id: str) -> ListingTag | None:
-        return await self._get_item(listing_tag_id, ListingTag, throw_if_missing=False)
+    async def add_tag_to_listing(self, listing_id: str, tag: str) -> None:
+        await self._add_item(ListingTag.create(listing_id=listing_id, tag=tag), unique_fields=["listing_id", "name"])
 
-    async def add_tag(self, listing_id: str, tag: str) -> None:
-        listing_tag = ListingTag.create(listing_id=listing_id, tag=tag)
-        return await self._add_item(listing_tag)
+    async def remove_tag_from_listing(self, listing_id: str, tag: str) -> None:
+        await self._delete_item(listing_id)
 
-    async def delete_tag(self, listing_id: str, tag: str) -> None:
-        listing_tag = ListingTag.create(listing_id=listing_id, tag=tag)
-        return await self._delete_item(listing_tag)
+    async def set_listing_tags(self, listing: Listing, tags: list[str]) -> None:
+        """For a given listing, determines which tags to add and which to remove.
+
+        Args:
+            listing: The listing to update.
+            tags: The new tags to set.
+        """
+        tags_to_add = set(tags)
+        tags_to_remove = set(await self.get_tags_for_listing(listing.id))
+        tags_to_add.difference_update(tags_to_remove)
+        tags_to_remove.difference_update(tags_to_add)
+        await asyncio.gather(
+            *(self.add_tag_to_listing(listing.id, tag) for tag in tags_to_add),
+            *(self.remove_tag_from_listing(listing.id, tag) for tag in tags_to_remove),
+        )
+
+    async def get_tags_for_listing(self, listing_id: str) -> list[str]:
+        listing_tags = await self._get_items_from_secondary_index("listing_id", listing_id, ListingTag)
+        return [t.name for t in listing_tags]
+
+    async def get_listing_ids_for_tag(self, tag: str) -> list[str]:
+        listing_tags = await self._get_items_from_secondary_index("name", tag, ListingTag)
+        return [t.listing_id for t in listing_tags]

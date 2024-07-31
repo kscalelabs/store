@@ -117,6 +117,26 @@ async def upload(
     return UploadArtifactResponse(artifact_id=artifact.id)
 
 
+@artifacts_router.put("/edit/{artifact_id}", response_model=bool)
+async def edit(
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+    artifact_id: str,
+    description: str,
+) -> bool:
+    artifact = await crud.get_raw_artifact(artifact_id)
+    if artifact is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Could not find URDF associated with the given id",
+        )
+
+    # Updates the URDF's description.
+    await crud.edit_artifact(artifact, description, user.id)
+
+    return True
+
+
 @artifacts_router.delete("/delete/{artifact_id}", response_model=bool)
 async def delete(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],

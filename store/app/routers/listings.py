@@ -1,5 +1,6 @@
 """Defines all listing related API endpoints."""
 
+import asyncio
 import logging
 from typing import Annotated
 
@@ -109,6 +110,7 @@ class UpdateListingRequest(BaseModel):
     name: str | None = None
     child_ids: list[str] | None = None
     description: str | None = None
+    tags: list[str] | None = None
 
 
 @listings_router.put("/edit/{id}", response_model=bool)
@@ -133,6 +135,7 @@ class GetListingResponse(BaseModel):
     name: str
     description: str | None
     child_ids: list[str]
+    tags: list[str]
     owner_is_user: bool
 
 
@@ -142,7 +145,10 @@ async def get_listing(
     user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> GetListingResponse:
-    listing = await crud.get_listing(id)
+    listing, listing_tags = await asyncio.gather(
+        crud.get_listing(id),
+        crud.get_tags_for_listing(id),
+    )
     if listing is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
     return GetListingResponse(
@@ -150,5 +156,6 @@ async def get_listing(
         name=listing.name,
         description=listing.description,
         child_ids=listing.child_ids,
+        tags=listing_tags,
         owner_is_user=user is not None and user.id == listing.user_id,
     )
