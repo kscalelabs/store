@@ -65,6 +65,22 @@ const Listings = () => {
         onSearch={handleSearchInputEnterKey}
       />
       <ListingGrid listingIds={listingIds} />
+      {pageNumber > 1 && (
+        <button
+          className="btn btn-primary"
+          onClick={() => navigate(`/listings/${pageNumber - 1}`)}
+        >
+          Previous
+        </button>
+      )}
+      {moreListings && (
+        <button
+          className="btn btn-primary"
+          onClick={() => navigate(`/listings/${pageNumber + 1}`)}
+        >
+          Load more
+        </button>
+      )}
     </>
   );
 };
