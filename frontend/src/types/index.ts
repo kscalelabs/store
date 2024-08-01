@@ -53,3 +53,5 @@ export const NewListingSchema = z.object({
 });
 
 export type NewListingType = z.infer<typeof NewListingSchema>;
+
+export type FormType = "edit" | "string";

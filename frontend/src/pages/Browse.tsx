@@ -8,6 +8,7 @@ import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { FormType } from "types";
 
 const Browse = () => {
   const auth = useAuthentication();
@@ -15,11 +16,11 @@ const Browse = () => {
   const [moreListings, setMoreListings] = useState<boolean>(false);
   const { addErrorAlert } = useAlertQueue();
   const [showDialogBox, setShowDialogBox] = useState(false);
-
   const [searchParams, setSearchParams] = useSearchParams();
-
+  const [formType, setformType] = useState("");
+  const [listId, setlistId] = useState("");
   const navigate = useNavigate();
-
+  console.log(" lsiting id : ", listingIds);
   // Gets the current page number and makes sure it is valid.
   const page = searchParams.get("page");
   const query = searchParams.get("query");
@@ -30,6 +31,7 @@ const Browse = () => {
 
   const [searchQuery, setSearchQuery] = useState(query || "");
   const debouncedSearch = useDebounce(searchQuery, 300);
+
   useEffect(() => {
     handleSearch();
   }, [debouncedSearch]);
@@ -108,7 +110,13 @@ const Browse = () => {
             )}
           </div>
           <div>
-            <Button variant={"primary"} onClick={() => setShowDialogBox(true)}>
+            <Button
+              variant={"primary"}
+              onClick={() => {
+                setShowDialogBox(true);
+                setformType("create");
+              }}
+            >
               + New List
             </Button>
           </div>
@@ -137,11 +145,22 @@ const Browse = () => {
           </div>
         )}
         {showDialogBox && (
-          <AddOrEditList open={showDialogBox} onClose={setShowDialogBox} />
+          <AddOrEditList
+            listId={listId}
+            formType={formType as FormType}
+            open={showDialogBox}
+            onClose={setShowDialogBox}
+          />
         )}
         <div className="grid grid-cols-4 py-4 px-4 gap-4">
           {listingIds?.map((id) => (
-            <List key={id} id={id} setShowDialogBox={setShowDialogBox} />
+            <List
+              key={id}
+              id={id}
+              setShowDialogBox={setShowDialogBox}
+              setformType={setformType}
+              setlistId={setlistId}
+            />
           ))}
         </div>
       </div>
