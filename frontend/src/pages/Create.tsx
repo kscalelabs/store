@@ -13,7 +13,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { NewListingSchema, NewListingType } from "types";
 
-const NewListing = () => {
+const Create = () => {
   const auth = useAuthentication();
   const { addAlert, addErrorAlert } = useAlertQueue();
   const navigate = useNavigate();
@@ -46,14 +46,14 @@ const NewListing = () => {
       addErrorAlert(error);
     } else {
       addAlert("New listing was created successfully", "success");
-      navigate(`/listing/${responseData.listing_id}`);
+      navigate(`/item/${responseData.listing_id}`);
     }
   };
 
   return (
     <RequireAuthentication>
-      <div className="flex justify-center">
-        <Card className="w-[500px] shadow-md h-full mb-40">
+      <div className="container mx-auto max-w-lg shadow-md rounded-lg bg-white dark:bg-gray-800 dark:text-white">
+        <Card className="shadow-md">
           <CardHeader>
             <Header title="Create" />
           </CardHeader>
@@ -108,4 +108,4 @@ const NewListing = () => {
   );
 };
 
-export default NewListing;
+export default Create;

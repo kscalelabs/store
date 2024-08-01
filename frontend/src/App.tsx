@@ -5,12 +5,12 @@ import { AuthenticationProvider } from "hooks/auth";
 import { DarkModeProvider } from "hooks/dark_mode";
 import About from "pages/About";
 import APIKeys from "pages/APIKeys";
+import Browse from "pages/Browse";
+import Create from "pages/Create";
 import Home from "pages/Home";
 import ListingDetails from "pages/ListingDetails";
-import Listings from "pages/Listings";
 import Login from "pages/Login";
 import Logout from "pages/Logout";
-import NewListing from "pages/NewListing";
 import NotFound from "pages/NotFound";
 import Profile from "pages/Profile";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
@@ -34,9 +34,9 @@ const App = () => {
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/logout" element={<Logout />} />
-                    <Route path="/listings/add" element={<NewListing />} />
-                    <Route path="/listings/:page?" element={<Listings />} />
-                    <Route path="/listing/:id" element={<ListingDetails />} />
+                    <Route path="/create" element={<Create />} />
+                    <Route path="/browse/:page?" element={<Browse />} />
+                    <Route path="/item/:id" element={<ListingDetails />} />
                     <Route path="/404" element={<NotFound />} />
                     <Route path="*" element={<NotFoundRedirect />} />
                   </Routes>

@@ -1,9 +1,11 @@
 import clsx from "clsx";
 import {
+  FaBookOpen,
   FaDoorClosed,
   FaHome,
   FaKey,
   FaLock,
+  FaPen,
   FaQuestion,
   FaScroll,
   FaTimes,
@@ -21,11 +23,19 @@ const SidebarItem = ({ icon, title, onClick }: SidebarItemProps) => {
   return (
     <li>
       <button onClick={onClick} className="w-full">
-        <span className="flex items-center p-3 px-4 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+        <span className="flex items-center py-1 px-4 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
           {icon}
           <span className={icon && "ms-5"}>{title}</span>
         </span>
       </button>
+    </li>
+  );
+};
+
+const SidebarSeparator = () => {
+  return (
+    <li className="py-1">
+      <div className="border-t border-gray-200 dark:border-gray-700" />
     </li>
   );
 };
@@ -72,6 +82,23 @@ const Sidebar = ({ show, onClose }: Props) => {
             }}
           />
           <SidebarItem
+            title="Browse"
+            icon={<FaBookOpen />}
+            onClick={() => {
+              navigate("/browse");
+              onClose();
+            }}
+          />
+          <SidebarItem
+            title="Create"
+            icon={<FaPen />}
+            onClick={() => {
+              navigate("/create");
+              onClose();
+            }}
+          />
+          <SidebarSeparator />
+          <SidebarItem
             title="Profile"
             icon={<FaUserCircle />}
             onClick={() => {
@@ -95,9 +122,7 @@ const Sidebar = ({ show, onClose }: Props) => {
               onClose();
             }}
           />
-          <li>
-            <div className="border-t border-gray-200 dark:border-gray-700" />
-          </li>
+          <SidebarSeparator />
           <SidebarItem
             title="About"
             icon={<FaQuestion />}

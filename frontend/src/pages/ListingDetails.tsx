@@ -25,7 +25,7 @@ const RenderListing = (props: RenderListingProps) => {
   const navigate = useNavigate();
 
   return (
-    <div className="container mx-auto pt-4 max-w-4xl shadow-md px-4 rounded-lg bg-white dark:bg-gray-800 dark:text-white border dark:border-gray-700 relative">
+    <div className="container mx-auto p-4 max-w-4xl shadow-md px-4 rounded-lg bg-white dark:bg-gray-800 dark:text-white border bg-card text-card-foreground shadow relative">
       <span className="absolute top-4 right-4 flex space-x-2">
         {listing.owner_is_user && (
           <ListingDeleteButton listing_id={listing.id} />
@@ -86,7 +86,7 @@ const ListingDetails = () => {
   return listing && id ? (
     <RenderListing listing={listing} />
   ) : (
-    <div className="flex justify-center items-center h-screen">
+    <div className="flex justify-center items-center pt-8">
       <Spinner />
     </div>
   );
