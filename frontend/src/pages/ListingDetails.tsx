@@ -4,11 +4,11 @@ import ListingDeleteButton from "components/listing/ListingDeleteButton";
 import ListingDescription from "components/listing/ListingDescription";
 import ListingTitle from "components/listing/ListingTitle";
 import Breadcrumbs from "components/ui/Breadcrumb/Breadcrumbs";
+import Spinner from "components/ui/Spinner";
 import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
-import { Col, Container, Row, Spinner } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 
 type ListingResponse =
@@ -21,7 +21,7 @@ interface RenderListingProps {
 const RenderListing = (props: RenderListingProps) => {
   const { listing } = props;
   return (
-    <Col>
+    <div className="pt-4">
       <ListingTitle title={listing.name} edit={listing.owner_is_user} />
       <ListingDescription
         description={listing.description}
@@ -33,7 +33,7 @@ const RenderListing = (props: RenderListingProps) => {
       />
       <ListingArtifacts listing_id={listing.id} edit={listing.owner_is_user} />
       {listing.owner_is_user && <ListingDeleteButton listing_id={listing.id} />}
-    </Col>
+    </div>
   );
 };
 
@@ -75,24 +75,16 @@ const ListingDetails = () => {
         items={[
           { label: "Home", onClick: () => navigate("/") },
           { label: "Listings", onClick: () => navigate("/listings") },
-          { label: listing?.name || "", onClick: undefined },
+          { label: "Listing" },
         ]}
       />
 
       {listing && id ? (
         <RenderListing listing={listing} />
       ) : (
-        <Container
-          fluid
-          className="d-flex justify-content-center align-items-center"
-          style={{ height: "100vh" }}
-        >
-          <Row className="w-100">
-            <Col className="d-flex justify-content-center align-items-center">
-              <Spinner animation="border" />
-            </Col>
-          </Row>
-        </Container>
+        <div className="flex justify-center items-center h-screen">
+          <Spinner />
+        </div>
       )}
     </>
   );

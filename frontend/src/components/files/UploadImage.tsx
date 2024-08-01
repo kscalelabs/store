@@ -3,11 +3,10 @@ import TCButton from "components/files/TCButton";
 import { BACKEND_URL } from "constants/backend";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
-import { useTheme } from "hooks/theme";
+import { useDarkMode } from "hooks/dark_mode";
 import React, { useEffect, useRef, useState } from "react";
-import { Alert, Col, Modal } from "react-bootstrap";
 import { FileWithPath, useDropzone } from "react-dropzone";
-import ReactCrop, { type Crop } from "react-image-crop";
+import { type Crop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 
 const MAX_FILE_SIZE = 25 * 1536 * 1536;
@@ -25,7 +24,7 @@ const ImageUploadComponent = (props: ImageUploadProps) => {
   const [compressedFile, setCompressedFile] = useState<File | null>(null);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
-  const { theme } = useTheme();
+  const { darkMode } = useDarkMode();
   const validFileTypes = ["image/png", "image/jpeg", "image/jpg"];
   const [showModal, setShowModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -207,8 +206,8 @@ const ImageUploadComponent = (props: ImageUploadProps) => {
   }, [showModal]);
 
   return (
-    <Col md="6">
-      <Modal show={showModal} onHide={onModalHide} centered>
+    <div className="m-0">
+      {/* <Modal show={showModal} onHide={onModalHide} centered>
         <Modal.Body>
           {imageUrl ? (
             <>
@@ -247,7 +246,7 @@ const ImageUploadComponent = (props: ImageUploadProps) => {
             <p>No file selected</p>
           )}
         </Modal.Body>
-      </Modal>
+      </Modal> */}
       <div
         {...getRootProps({ onClick: (event) => event.preventDefault() })}
         style={{
@@ -303,38 +302,37 @@ const ImageUploadComponent = (props: ImageUploadProps) => {
             }}
           >
             <TCButton
-              onClick={(event) => {
-                event.stopPropagation();
+              onClick={() => {
                 setShowModal(true);
               }}
               disabled={imageUrl ? false : true}
-              variant={theme === "dark" ? "outline-light" : "outline-dark"}
+              variant={darkMode ? "outline-light" : "outline-dark"}
             >
               Edit
             </TCButton>
           </div>
           <TCButton
             onClick={triggerFileInput}
-            variant={theme === "dark" ? "outline-light" : "outline-dark"}
+            variant={darkMode ? "outline-light" : "outline-dark"}
           >
             {" "}
             Select Image{" "}
           </TCButton>
         </div>
-        {fileError && <Alert variant="danger">{fileError}</Alert>}
+        {/* {fileError && <Alert variant="danger">{fileError}</Alert>} */}
       </div>
       <TCButton onClick={handleUpload} disabled={!imageUrl} className="my-3">
         Upload
       </TCButton>
-      {uploadStatus && (
+      {/* {uploadStatus && (
         <Alert
           variant={uploadStatus.includes("successfully") ? "success" : "danger"}
           className="mt-3"
         >
           {uploadStatus}
         </Alert>
-      )}
-    </Col>
+      )} */}
+    </div>
   );
 };
 

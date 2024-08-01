@@ -2,7 +2,6 @@ import TCButton from "components/files/TCButton";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useState } from "react";
-import { Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
 interface Props {
@@ -39,7 +38,7 @@ const ListingDeleteButton = (props: Props) => {
   };
 
   return (
-    <Row className="mb-3">
+    <div className="mb-3">
       <TCButton
         className="mb-3"
         onClick={handleDelete}
@@ -48,7 +47,7 @@ const ListingDeleteButton = (props: Props) => {
       >
         {deleting ? "Deleting..." : "Delete"}
       </TCButton>
-    </Row>
+    </div>
   );
 };
 

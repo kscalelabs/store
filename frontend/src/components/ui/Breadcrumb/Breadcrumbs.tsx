@@ -21,10 +21,10 @@ const Breadcrumbs = ({ items }: Props) => {
               index === items.length - 1 && "text-gray-500 dark:text-gray-400",
             )}
           >
-            <button className="inline-flex items-center text-sm font-medium text-gray-700 dark:text-gray-400">
+            <button className="inline-flex items-center text-lg font-medium text-gray-700 dark:text-gray-400">
               <a
                 onClick={item.onClick}
-                className="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white"
+                className="inline-flex items-center text-lg font-medium text-gray-700 hover:text-blue-600 dark:text-gray-400 dark:hover:text-white"
               >
                 {index > 0 && (
                   <span className="mr-2" aria-hidden="true">

@@ -1,8 +1,8 @@
+import Spinner from "components/ui/Spinner";
 import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
-import { Col, Row, Spinner } from "react-bootstrap";
 import ListingGridCard from "./ListingGridCard";
 
 type ListingInfo =
@@ -24,7 +24,6 @@ const ListingGrid = (props: Props) => {
   useEffect(() => {
     if (listingIds !== null && listingIds.length > 0) {
       (async () => {
-        console.log("LISTING IDS:", listingIds);
         const { data, error } = await auth.client.GET("/listings/batch", {
           params: {
             query: {
@@ -43,20 +42,20 @@ const ListingGrid = (props: Props) => {
     }
   }, [listingIds]);
 
-  return (
-    <Row className="mt-5">
-      {listingIds === null ? (
-        <Col className="text-center">
-          <Spinner animation="border" />
-        </Col>
-      ) : (
-        listingIds.map((listingId) => (
-          <Col key={listingId} lg={2} md={3} sm={6} xs={12}>
-            <ListingGridCard listingId={listingId} listingInfo={listingInfo} />
-          </Col>
-        ))
-      )}
-    </Row>
+  return listingIds === null ? (
+    <div className="flex justify-center items-center h-64">
+      <Spinner />
+    </div>
+  ) : (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      {listingIds.map((listingId) => (
+        <ListingGridCard
+          key={listingId}
+          listingId={listingId}
+          listingInfo={listingInfo}
+        />
+      ))}
+    </div>
   );
 };
 

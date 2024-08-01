@@ -1,13 +1,17 @@
 /* eslint-disable */
 // @ts-nocheck
 import { forwardRef } from "react";
-import { Button, ButtonProps } from "react-bootstrap";
 
 const TCButton = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
+  const { children, className, ...rest } = props;
   return (
-    <Button ref={ref} {...props}>
-      {props.children}
-    </Button>
+    <button
+      ref={ref}
+      className={`px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 ${className}`}
+      {...rest}
+    >
+      {children}
+    </button>
   );
 });
 

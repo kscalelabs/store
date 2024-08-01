@@ -3,8 +3,8 @@ import { Button } from "components/ui/Button/Button";
 import ErrorMessage from "components/ui/ErrorMessage";
 import { Input } from "components/ui/Input/Input";
 import { useState } from "react";
-import { Eye, EyeSlash } from "react-bootstrap-icons";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { SignUpSchema, SignupType } from "types";
 
 const SignupForm = () => {
@@ -45,12 +45,12 @@ const SignupForm = () => {
         />
         <div className="absolute inset-y-0 right-0 flex items-center pr-3">
           {showPassword ? (
-            <EyeSlash
+            <FaEyeSlash
               onClick={() => setShowPassword(false)}
               className="cursor-pointer"
             />
           ) : (
-            <Eye
+            <FaEye
               onClick={() => setShowPassword(true)}
               className="cursor-pointer"
             />
@@ -70,12 +70,12 @@ const SignupForm = () => {
         />
         <div className="absolute inset-y-0 right-0 flex items-center pr-3">
           {showConfirmPassword ? (
-            <EyeSlash
+            <FaEyeSlash
               onClick={() => setShowConfirmPassword(false)}
               className="cursor-pointer"
             />
           ) : (
-            <Eye
+            <FaEye
               onClick={() => setShowConfirmPassword(true)}
               className="cursor-pointer"
             />
@@ -86,7 +86,10 @@ const SignupForm = () => {
         <ErrorMessage>{errors?.confirmPassword?.message}</ErrorMessage>
       )}
 
-      <Button type="submit" className="w-full">
+      <Button
+        variant="outline"
+        className="w-full hover:bg-gray-100 dark:hover:bg-gray-600"
+      >
         Signup
       </Button>
     </form>

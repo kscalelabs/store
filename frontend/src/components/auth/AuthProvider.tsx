@@ -1,6 +1,6 @@
+import { Button } from "components/ui/Button/Button";
 import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
-import { Button } from "../ui/Button/Button";
 
 interface AuthProvider {
   handleGoogleSubmit?: () => void;
@@ -24,15 +24,15 @@ const AuthProvider = ({
         <Button
           variant={"outline"}
           size={"lg"}
-          className="w-full"
+          className="w-full hover:bg-gray-100 dark:hover:bg-gray-600"
           onClick={handleGoogleSubmit}
         >
           <FcGoogle className="w-5 h-5" />
         </Button>
         <Button
-          variant={"outline"}
-          size={"lg"}
-          className="w-full"
+          variant="outline"
+          size="lg"
+          className="w-full hover:bg-gray-100 dark:hover:bg-gray-600"
           onClick={handleGithubSubmit}
         >
           <FaGithub className="w-5 h-5" />

@@ -6,7 +6,6 @@ import {
   useContext,
   useState,
 } from "react";
-import { Toast, ToastContainer } from "react-bootstrap";
 
 const DELAY = 5000;
 const MAX_ERRORS = 10;
@@ -121,7 +120,7 @@ export const AlertQueue = (props: AlertQueueProps) => {
   return (
     <>
       {children}
-      <ToastContainer
+      {/* <ToastContainer
         className="p-3"
         position="bottom-center"
         style={{ zIndex: 1000, position: "fixed", marginBottom: 50 }}
@@ -145,7 +144,7 @@ export const AlertQueue = (props: AlertQueueProps) => {
             </Toast>
           );
         })}
-      </ToastContainer>
+      </ToastContainer> */}
     </>
   );
 };

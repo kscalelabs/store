@@ -5,11 +5,10 @@ import { RenderDescription } from "components/listing/ListingDescription";
 import { Card, CardContent, CardHeader } from "components/ui/Card";
 import ErrorMessage from "components/ui/ErrorMessage";
 import Header from "components/ui/Header";
-import { Input } from "components/ui/Input/Input";
+import { Input, TextArea } from "components/ui/Input/Input";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useState } from "react";
-import { Col } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { NewListingSchema, NewListingType } from "types";
@@ -73,10 +72,9 @@ const NewListing = () => {
 
               {/* Description Input */}
               <div className="relative">
-                <textarea
+                <TextArea
                   placeholder="Description"
                   rows={4}
-                  className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   {...register("description", {
                     setValueAs: (value) => {
                       setDescription(value);
@@ -97,9 +95,9 @@ const NewListing = () => {
               )}
 
               {/* Submit */}
-              <Col md={12} className="mb-4">
+              <div className="flex justify-end">
                 <TCButton type="submit">Submit</TCButton>
-              </Col>
+              </div>
             </form>
           </CardContent>
         </Card>

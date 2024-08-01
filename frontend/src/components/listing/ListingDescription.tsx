@@ -1,4 +1,3 @@
-import { Row } from "react-bootstrap";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -46,9 +45,9 @@ interface Props {
 const ListingDescription = (props: Props) => {
   const { description } = props;
   return (
-    <Row className="mb-3">
+    <div className="mb-3">
       {description && <RenderDescription description={description} />}
-    </Row>
+    </div>
   );
 };
 

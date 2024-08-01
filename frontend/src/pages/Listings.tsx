@@ -5,6 +5,7 @@ import { Input } from "components/ui/Input/Input";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
+import { FaTimes } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 
 const Listings = () => {
@@ -61,11 +62,22 @@ const Listings = () => {
         ]}
       />
       <div className="flex justify-center mt-4">
-        <Input
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search listings..."
-          className="w-[500px]"
-        />
+        <div className="relative">
+          <Input
+            onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchQuery}
+            placeholder="Search listings..."
+            className="w-64 sm:w-96"
+          />
+          {searchQuery.length > 0 && (
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+              <FaTimes
+                onClick={() => setSearchQuery("")}
+                className="cursor-pointer"
+              />
+            </div>
+          )}
+        </div>
       </div>
       {hasButton && (
         <div className="flex justify-center mt-4">

@@ -1,5 +1,3 @@
-import { Row } from "react-bootstrap";
-
 interface Props {
   title: string;
   // TODO: If can edit, allow the user to update the title.
@@ -9,9 +7,9 @@ interface Props {
 const ListingTitle = (props: Props) => {
   const { title } = props;
   return (
-    <Row className="mb-3">
-      <h1 className="display-4">{title}</h1>
-    </Row>
+    <div className="mb-3">
+      <h1 className="text-3xl font-semibold">{title}</h1>
+    </div>
   );
 };
 

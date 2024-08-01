@@ -1,10 +1,10 @@
 import BackButton from "components/ui/Button/BackButton";
 import { Card, CardContent, CardFooter, CardHeader } from "components/ui/Card";
 import Header from "components/ui/Header";
+import Spinner from "components/ui/Spinner";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
-import { Spinner } from "react-bootstrap";
 import AuthProvider from "./AuthProvider";
 import LoginForm from "./LoginForm";
 import SignupForm from "./SignupForm";
@@ -56,7 +56,7 @@ export const AuthBlockInner = () => {
   if (useSpinner) {
     return (
       <CardContent className="flex justify-center">
-        <Spinner animation="border" />
+        <Spinner />
       </CardContent>
     );
   }

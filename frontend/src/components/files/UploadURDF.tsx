@@ -1,9 +1,8 @@
 import TCButton from "components/files/TCButton";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
-import { useTheme } from "hooks/theme";
+import { useDarkMode } from "hooks/dark_mode";
 import React, { useEffect, useRef, useState } from "react";
-import { Alert, Col } from "react-bootstrap";
 
 interface URDFUploadProps {
   listingId: string;
@@ -16,7 +15,7 @@ const URDFUploadComponent = (props: URDFUploadProps) => {
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<boolean>(false);
-  const { theme } = useTheme();
+  const { darkMode } = useDarkMode();
   const MAX_FILE_SIZE = 25 * 1024 * 1024;
   const MAX_FILE_SIZE_MB = MAX_FILE_SIZE / 1024 / 1024;
   const validFileTypes = ["application/gzip"];
@@ -135,7 +134,7 @@ const URDFUploadComponent = (props: URDFUploadProps) => {
   };
 
   return (
-    <Col md="6">
+    <div className="mb-3">
       <div
         className="mb-3"
         onDragOver={handleDragOver}
@@ -149,7 +148,7 @@ const URDFUploadComponent = (props: URDFUploadProps) => {
         <TCButton
           className="mb-3"
           onClick={triggerFileInput}
-          variant={theme === "dark" ? "outline-light" : "outline-dark"}
+          variant={darkMode ? "outline-light" : "outline-dark"}
         >
           {selectedFile ? selectedFile.name : "No file chosen"}
         </TCButton>
@@ -160,11 +159,11 @@ const URDFUploadComponent = (props: URDFUploadProps) => {
           ref={fileInputRef}
           style={{ display: "none" }}
         />
-        {fileError && <Alert variant="danger">{fileError}</Alert>}
+        {/* {fileError && <Alert variant="danger">{fileError}</Alert>} */}
         <TCButton onClick={handleUpload} disabled={!selectedFile}>
           Upload
         </TCButton>
-        {uploadStatus && (
+        {/* {uploadStatus && (
           <Alert
             variant={
               uploadStatus.includes("successfully") ? "success" : "danger"
@@ -173,9 +172,9 @@ const URDFUploadComponent = (props: URDFUploadProps) => {
           >
             {uploadStatus}
           </Alert>
-        )}
+        )} */}
       </div>
-    </Col>
+    </div>
   );
 };
 
