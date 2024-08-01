@@ -1,33 +1,36 @@
 import { useDebounce } from "@uidotdev/usehooks";
 import AddOrEditList from "components/listing/AddOrEditList";
-import Breadcrumbs from "components/ui/Breadcrumb/Breadcrumbs";
-import { Button } from "components/ui/Button/Button";
 import { Input } from "components/ui/Input/Input";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { FaTimes } from "react-icons/fa";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
-const Listings = () => {
+const Browse = () => {
   const auth = useAuthentication();
   const [listingIds, setListingIds] = useState<string[] | null>(null);
   const [moreListings, setMoreListings] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const { addErrorAlert } = useAlertQueue();
   const [showDialogBox, setShowDialogBox] = useState(false);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const navigate = useNavigate();
 
-  const debouncedSearch = useDebounce(searchQuery, 300);
-  useEffect(() => {
-    handleSearch();
-  }, [debouncedSearch]);
-
   // Gets the current page number and makes sure it is valid.
-  const { page } = useParams();
+  const page = searchParams.get("page");
+  const query = searchParams.get("query");
   const pageNumber = parseInt(page || "1", 10);
   if (isNaN(pageNumber) || pageNumber < 0) {
     navigate("/404");
   }
+
+  const [searchQuery, setSearchQuery] = useState(query || "");
+  const debouncedSearch = useDebounce(searchQuery, 300);
+  useEffect(() => {
+    handleSearch();
+  }, [debouncedSearch]);
 
   const handleSearch = async () => {
     setListingIds(null);
@@ -55,22 +58,32 @@ const Listings = () => {
 
   return (
     <>
-      <Breadcrumbs
-        items={[
-          { label: "Home", onClick: () => navigate("/") },
-          { label: "Listings" },
-        ]}
-      />
-      <div className="flex mt-4 w-full justify-between items-center">
-        <div className="flex justify-center w-full">
+      <div className="flex justify-center mt-4">
+        <div className="relative">
           <Input
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              if (e.target.value === "") {
+                setSearchParams({});
+              } else {
+                setSearchParams({ query: e.target.value });
+              }
+            }}
+            value={searchQuery}
             placeholder="Search listings..."
-            className="w-[500px]"
+            className="w-64 sm:w-96"
           />
-        </div>
-        <div className="flex justify-end w-auto ml-auto">
-          <Button onClick={() => setShowDialogBox(true)}>+ New List</Button>
+          {searchQuery.length > 0 && (
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+              <FaTimes
+                onClick={() => {
+                  setSearchQuery("");
+                  setSearchParams({});
+                }}
+                className="cursor-pointer"
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -80,7 +93,7 @@ const Listings = () => {
             {prevButton && (
               <button
                 className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l"
-                onClick={() => navigate(`/listings/${pageNumber - 1}`)}
+                onClick={() => navigate(`/browse/${pageNumber - 1}`)}
               >
                 Previous
               </button>
@@ -88,7 +101,7 @@ const Listings = () => {
             {nextButton && (
               <button
                 className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r"
-                onClick={() => navigate(`/listings/${pageNumber + 1}`)}
+                onClick={() => navigate(`/browse/${pageNumber + 1}`)}
               >
                 Next
               </button>
@@ -105,4 +118,4 @@ const Listings = () => {
   );
 };
 
-export default Listings;
+export default Browse;

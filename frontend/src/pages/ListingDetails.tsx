@@ -3,12 +3,13 @@ import ListingChildren from "components/listing/ListingChildren";
 import ListingDeleteButton from "components/listing/ListingDeleteButton";
 import ListingDescription from "components/listing/ListingDescription";
 import ListingTitle from "components/listing/ListingTitle";
-import Breadcrumbs from "components/ui/Breadcrumb/Breadcrumbs";
+import { Button } from "components/ui/Button/Button";
+import Spinner from "components/ui/Spinner";
 import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
-import { Col, Container, Row, Spinner } from "react-bootstrap";
+import { FaTimes } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 
 type ListingResponse =
@@ -20,8 +21,24 @@ interface RenderListingProps {
 
 const RenderListing = (props: RenderListingProps) => {
   const { listing } = props;
+
+  const navigate = useNavigate();
+
   return (
-    <Col>
+    <div className="container mx-auto p-4 max-w-4xl shadow-md px-4 rounded-lg bg-white dark:bg-gray-800 dark:text-white border bg-card text-card-foreground shadow relative">
+      <span className="absolute top-4 right-4 flex space-x-2">
+        {listing.owner_is_user && (
+          <ListingDeleteButton listing_id={listing.id} />
+        )}
+        <Button
+          onClick={() => navigate(-1)}
+          variant={"outline"}
+          className="hover:bg-gray-200 dark:hover:bg-gray-700 bg-opacity-50"
+        >
+          <span className="mr-2">Close</span>
+          <FaTimes />
+        </Button>
+      </span>
       <ListingTitle title={listing.name} edit={listing.owner_is_user} />
       <ListingDescription
         description={listing.description}
@@ -32,8 +49,7 @@ const RenderListing = (props: RenderListingProps) => {
         edit={listing.owner_is_user}
       />
       <ListingArtifacts listing_id={listing.id} edit={listing.owner_is_user} />
-      {listing.owner_is_user && <ListingDeleteButton listing_id={listing.id} />}
-    </Col>
+    </div>
   );
 };
 
@@ -42,8 +58,6 @@ const ListingDetails = () => {
   const auth = useAuthentication();
   const { id } = useParams();
   const [listing, setListing] = useState<ListingResponse | null>(null);
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -69,32 +83,12 @@ const ListingDetails = () => {
     fetchListing();
   }, [id]);
 
-  return (
-    <>
-      <Breadcrumbs
-        items={[
-          { label: "Home", onClick: () => navigate("/") },
-          { label: "Listings", onClick: () => navigate("/listings") },
-          { label: listing?.name || "", onClick: undefined },
-        ]}
-      />
-
-      {listing && id ? (
-        <RenderListing listing={listing} />
-      ) : (
-        <Container
-          fluid
-          className="d-flex justify-content-center align-items-center"
-          style={{ height: "100vh" }}
-        >
-          <Row className="w-100">
-            <Col className="d-flex justify-content-center align-items-center">
-              <Spinner animation="border" />
-            </Col>
-          </Row>
-        </Container>
-      )}
-    </>
+  return listing && id ? (
+    <RenderListing listing={listing} />
+  ) : (
+    <div className="flex justify-center items-center pt-8">
+      <Spinner />
+    </div>
   );
 };
 

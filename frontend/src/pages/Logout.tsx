@@ -1,7 +1,9 @@
+import { Card, CardContent, CardHeader } from "components/ui/Card";
+import Header from "components/ui/Header";
+import Spinner from "components/ui/Spinner";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useEffect } from "react";
-import { Spinner } from "react-bootstrap";
 
 const Logout = () => {
   const auth = useAuthentication();
@@ -19,9 +21,17 @@ const Logout = () => {
   }, []);
 
   return (
-    <div>
-      <h1 className="mb-4">Log Out</h1>
-      <Spinner animation="border" />
+    <div className="mx-8">
+      <div className="flex justify-center items-center">
+        <Card className="w-[400px] shadow-md bg-white text-black rounded-lg">
+          <CardHeader>
+            <Header title="Logout" />
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <Spinner />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

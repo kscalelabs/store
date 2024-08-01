@@ -1,8 +1,8 @@
-import TCButton from "components/files/TCButton";
+import { Button } from "components/ui/Button/Button";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useState } from "react";
-import { Row } from "react-bootstrap";
+import { FaExclamation } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 interface Props {
@@ -33,22 +33,20 @@ const ListingDeleteButton = (props: Props) => {
       addErrorAlert(error);
       setDeleting(false);
     } else {
-      addAlert("Listing deleted successfully", "success");
-      navigate("/listings");
+      addAlert("Listing was deleted successfully", "success");
+      navigate("/browse");
     }
   };
 
   return (
-    <Row className="mb-3">
-      <TCButton
-        className="mb-3"
-        onClick={handleDelete}
-        variant="danger"
-        disabled={deleting}
-      >
-        {deleting ? "Deleting..." : "Delete"}
-      </TCButton>
-    </Row>
+    <Button
+      onClick={handleDelete}
+      variant={deleting ? "ghost" : "destructive"}
+      disabled={deleting}
+    >
+      <span className="mr-2">{deleting ? "Deleting..." : "Delete"}</span>
+      <FaExclamation />
+    </Button>
   );
 };
 

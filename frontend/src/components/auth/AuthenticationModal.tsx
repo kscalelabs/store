@@ -1,4 +1,4 @@
-import { Modal } from "react-bootstrap";
+import { FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { AuthBlockInner } from "./AuthBlock";
 
@@ -10,19 +10,17 @@ const LogInModal = () => {
   };
 
   return (
-    <Modal show={true} onHide={navigateToPreviousPage} centered>
-      <Modal.Header className="border-0">
-        <Modal.Title
-          className="text-center w-100"
-          style={{ fontSize: "1.5rem" }}
-        >
-          Log In
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+      <div className="w-[400px] shadow-md bg-white text-black rounded-lg">
+        <div className="flex justify-between items-center p-4 border-b mb-4">
+          <h2 className="text-xl font-semibold">Log In</h2>
+          <button onClick={navigateToPreviousPage}>
+            <FaTimes />
+          </button>
+        </div>
         <AuthBlockInner />
-      </Modal.Body>
-    </Modal>
+      </div>
+    </div>
   );
 };
 
