@@ -5,22 +5,25 @@ const About = () => {
         <h1 className="mb-8 text-4xl font-extrabold tracking-tight leading-none md:text-5xl lg:text-6xl">
           About
         </h1>
-        <p className="mb-8 text-lg font-normal lg:text-xl sm:px-16 lg:px-48">
+        <p className="mb-4 text-lg font-normal lg:text-xl sm:px-16 lg:px-48">
           This is a simple store to help make it easy to buy, sell and build
-          robots. It is maintained by{" "}
-          <button
-            onClick={() => window.open("https://kscale.io")}
-            className="text-blue-700 underline"
+          robots.
+        </p>
+        <p className="text-lg font-normal lg:text-xl sm:px-16 lg:px-48">
+          It is maintained by{" "}
+          <a
+            href="https://kscale.dev"
+            className="text-blue-700 underline hover:text-blue-900"
           >
             K-Scale Labs
-          </button>{" "}
+          </a>{" "}
           with open-source code freely available on{" "}
-          <button
-            onClick={() => window.open("https://github.com/kscalelabs/store")}
+          <a
+            href="https://github.com/kscalelabs/store"
             className="text-blue-700 underline"
           >
             Github
-          </button>
+          </a>
           .
         </p>
       </div>
