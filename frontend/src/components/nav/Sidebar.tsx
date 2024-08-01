@@ -118,7 +118,7 @@ const Sidebar = ({ show, onClose }: Props) => {
             title="Terms of Service"
             icon={<FaScroll />}
             onClick={() => {
-              navigate("/terms");
+              navigate("/tos");
               onClose();
             }}
           />
