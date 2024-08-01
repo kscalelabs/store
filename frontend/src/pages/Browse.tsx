@@ -1,5 +1,7 @@
 import { useDebounce } from "@uidotdev/usehooks";
 import AddOrEditList from "components/listing/AddOrEditList";
+import List from "components/listing/List";
+import { Button } from "components/ui/Button/Button";
 import { Input } from "components/ui/Input/Input";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
@@ -43,7 +45,6 @@ const Browse = () => {
         },
       },
     });
-
     if (error) {
       addErrorAlert(error);
     } else {
@@ -56,64 +57,94 @@ const Browse = () => {
   const nextButton = moreListings;
   const hasButton = prevButton || nextButton;
 
+  useEffect(() => {
+    async function fetchData() {
+      const { data, error } = await auth.client.GET("/listings/me", {
+        params: {
+          query: {
+            page: pageNumber,
+            search_query: searchQuery,
+          },
+        },
+      });
+      if (error) {
+        addErrorAlert(error);
+      } else {
+        setListingIds(data.listing_ids);
+        setMoreListings(data.has_next);
+      }
+    }
+    fetchData();
+  }, []);
+
   return (
     <>
-      <div className="flex justify-center mt-4">
-        <div className="relative">
-          <Input
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              if (e.target.value === "") {
-                setSearchParams({});
-              } else {
-                setSearchParams({ query: e.target.value });
-              }
-            }}
-            value={searchQuery}
-            placeholder="Search listings..."
-            className="w-64 sm:w-96"
-          />
-          {searchQuery.length > 0 && (
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-              <FaTimes
-                onClick={() => {
-                  setSearchQuery("");
+      <div className="min-h-screen">
+        <div className="flex justify-center mt-4 gap-x-2">
+          <div className="relative">
+            <Input
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (e.target.value === "") {
                   setSearchParams({});
-                }}
-                className="cursor-pointer"
-              />
-            </div>
-          )}
-        </div>
-      </div>
-
-      {hasButton && (
-        <div className="flex justify-center mt-4">
-          <div className="inline-flex">
-            {prevButton && (
-              <button
-                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l"
-                onClick={() => navigate(`/browse/${pageNumber - 1}`)}
-              >
-                Previous
-              </button>
-            )}
-            {nextButton && (
-              <button
-                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r"
-                onClick={() => navigate(`/browse/${pageNumber + 1}`)}
-              >
-                Next
-              </button>
+                } else {
+                  setSearchParams({ query: e.target.value });
+                }
+              }}
+              value={searchQuery}
+              placeholder="Search listings..."
+              className="w-64 sm:w-96"
+            />
+            {searchQuery.length > 0 && (
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                <FaTimes
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSearchParams({});
+                  }}
+                  className="cursor-pointer"
+                />
+              </div>
             )}
           </div>
+          <div>
+            <Button variant={"primary"} onClick={() => setShowDialogBox(true)}>
+              + New List
+            </Button>
+          </div>
         </div>
-      )}
-      <AddOrEditList
-        open={showDialogBox}
-        onClose={setShowDialogBox}
-        listingIds={listingIds}
-      />
+
+        {hasButton && (
+          <div className="flex justify-center mt-4">
+            <div className="inline-flex">
+              {prevButton && (
+                <button
+                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l"
+                  onClick={() => navigate(`/browse/${pageNumber - 1}`)}
+                >
+                  Previous
+                </button>
+              )}
+              {nextButton && (
+                <button
+                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r"
+                  onClick={() => navigate(`/browse/${pageNumber + 1}`)}
+                >
+                  Next
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+        {showDialogBox && (
+          <AddOrEditList open={showDialogBox} onClose={setShowDialogBox} />
+        )}
+        <div className="grid grid-cols-4 py-4 px-4 gap-4">
+          {listingIds?.map((id) => (
+            <List key={id} id={id} setShowDialogBox={setShowDialogBox} />
+          ))}
+        </div>
+      </div>
     </>
   );
 };

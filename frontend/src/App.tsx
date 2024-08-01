@@ -23,7 +23,7 @@ const App = () => {
         <AuthenticationProvider>
           <AlertQueueProvider>
             <AlertQueue>
-              <div className="dark:bg-gray-900 dark:text-white h-screen">
+              <div className="dark:bg-gray-900 dark:text-white min-h-screen">
                 <Navbar />
 
                 <div className="container mx-auto pt-24 px-8">
