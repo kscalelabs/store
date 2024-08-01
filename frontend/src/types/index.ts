@@ -44,8 +44,12 @@ export const SignUpSchema = z
 export type SignupType = z.infer<typeof SignUpSchema>;
 
 export const NewListingSchema = z.object({
-  name: z.string({ required_error: "Name is required" }).min(1),
-  description: z.string({ required_error: "Description is required" }).min(1),
+  name: z
+    .string({ required_error: "Name is required" })
+    .min(4, { message: "Name is required" }),
+  description: z
+    .string({ required_error: "Description is required" })
+    .min(6, { message: "Description is required" }),
 });
 
 export type NewListingType = z.infer<typeof NewListingSchema>;

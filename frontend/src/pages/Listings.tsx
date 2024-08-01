@@ -1,6 +1,7 @@
 import { useDebounce } from "@uidotdev/usehooks";
-import ListingGrid from "components/listings/ListingGrid";
+import AddOrEditList from "components/listing/AddOrEditList";
 import Breadcrumbs from "components/ui/Breadcrumb/Breadcrumbs";
+import { Button } from "components/ui/Button/Button";
 import { Input } from "components/ui/Input/Input";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
@@ -13,7 +14,7 @@ const Listings = () => {
   const [moreListings, setMoreListings] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState("");
   const { addErrorAlert } = useAlertQueue();
-
+  const [showDialogBox, setShowDialogBox] = useState(false);
   const navigate = useNavigate();
 
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -60,13 +61,19 @@ const Listings = () => {
           { label: "Listings" },
         ]}
       />
-      <div className="flex justify-center mt-4">
-        <Input
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search listings..."
-          className="w-[500px]"
-        />
+      <div className="flex mt-4 w-full justify-between items-center">
+        <div className="flex justify-center w-full">
+          <Input
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search listings..."
+            className="w-[500px]"
+          />
+        </div>
+        <div className="flex justify-end w-auto ml-auto">
+          <Button onClick={() => setShowDialogBox(true)}>+ New List</Button>
+        </div>
       </div>
+
       {hasButton && (
         <div className="flex justify-center mt-4">
           <div className="inline-flex">
@@ -89,7 +96,11 @@ const Listings = () => {
           </div>
         </div>
       )}
-      <ListingGrid listingIds={listingIds} />
+      <AddOrEditList
+        open={showDialogBox}
+        onClose={setShowDialogBox}
+        listingIds={listingIds}
+      />
     </>
   );
 };

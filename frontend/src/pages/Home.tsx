@@ -24,17 +24,6 @@ const Home = () => {
             <CardTitle>Browse existing Robolist listings</CardTitle>
           </CardContent>
         </Card>
-        <Card
-          onClick={() => navigate(`/listings/add`)}
-          className="w-[400px] shadow-md h-full mb-40 ml-4"
-        >
-          <CardHeader>
-            <Header title="Create Listing" />
-          </CardHeader>
-          <CardContent>
-            <CardTitle>List your robot on Robolist</CardTitle>
-          </CardContent>
-        </Card>
       </Row>
     </div>
   );
