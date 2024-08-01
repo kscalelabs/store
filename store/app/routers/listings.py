@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class ListListingsResponse(BaseModel):
-    listings: list[Listing]
+    listing_ids: list[str]
     has_next: bool = False
 
 
@@ -32,15 +32,39 @@ async def list_listings(
     search_query: str = Query(None, description="Search query string"),
 ) -> ListListingsResponse:
     listings, has_next = await crud.get_listings(page, search_query=search_query)
-    return ListListingsResponse(listings=listings, has_next=has_next)
+    listing_ids = [listing.id for listing in listings]
+    return ListListingsResponse(listing_ids=listing_ids, has_next=has_next)
 
 
-@listings_router.get("/batch", response_model=ListListingsResponse)
-async def get_batch(
+class ListingInfoResponse(BaseModel):
+    id: str
+    name: str
+    description: str | None
+    child_ids: list[str]
+
+
+class GetBatchListingsResponse(BaseModel):
+    listings: list[ListingInfoResponse]
+
+
+@listings_router.get("/batch", response_model=GetBatchListingsResponse)
+async def get_batch_listing_info(
     crud: Annotated[Crud, Depends(Crud.get)],
     ids: list[str] = Query(description="List of part ids"),
-) -> ListListingsResponse:
-    return ListListingsResponse(listings=await crud._get_item_batch(ids, Listing))
+) -> GetBatchListingsResponse:
+    print("IDs:", ids)
+    listings = await crud._get_item_batch(ids, Listing)
+    return GetBatchListingsResponse(
+        listings=[
+            ListingInfoResponse(
+                id=listing.id,
+                name=listing.name,
+                description=listing.description,
+                child_ids=listing.child_ids,
+            )
+            for listing in listings
+        ]
+    )
 
 
 class DumpListingsResponse(BaseModel):
@@ -62,7 +86,8 @@ async def list_my_listings(
     search_query: str = Query(None, description="Search query string"),
 ) -> ListListingsResponse:
     listings, has_next = await crud.get_user_listings(user.id, page, search_query=search_query)
-    return ListListingsResponse(listings=listings, has_next=has_next)
+    listing_ids = [listing.id for listing in listings]
+    return ListListingsResponse(listing_ids=listing_ids, has_next=has_next)
 
 
 class NewListingRequest(BaseModel):

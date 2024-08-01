@@ -1,11 +1,8 @@
-import TCButton from "components/files/TCButton";
-import { useAuthentication } from "hooks/auth";
 import { Card, Col, Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthentication();
 
   return (
     <div className="flex-column pt-5 gap-4" style={{ display: "flex" }}>
@@ -14,51 +11,31 @@ const Home = () => {
         <p className="lead">Buy and sell robots and robot parts</p>
       </Row>
       <Row className="row-two">
-        <Col sm={12}>
-          <Card onClick={() => navigate(`/listings`)}>
+        <Col sm={12} md={6}>
+          <Card
+            onClick={() => navigate(`/listings`)}
+            className="text-center"
+            bg="secondary"
+          >
             <Card.Body>
               <Card.Title>Browse Listings</Card.Title>
-              <Card.Text>Buy and sell robots or robot parts</Card.Text>
+              <Card.Text>Browse existing Robolist listings</Card.Text>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col sm={12} md={6}>
+          <Card
+            onClick={() => navigate(`/listings/add`)}
+            className="text-center"
+            bg="primary"
+          >
+            <Card.Body>
+              <Card.Title>Create Listing</Card.Title>
+              <Card.Text>List your robot on Robolist</Card.Text>
             </Card.Body>
           </Card>
         </Col>
       </Row>
-
-      {isAuthenticated && (
-        <>
-          <Row className="row-two">
-            <Col md={6} sm={12}>
-              <TCButton
-                variant="primary"
-                size="lg"
-                style={{
-                  width: "100%",
-                }}
-                onClick={() => {
-                  navigate("/listings/me/1");
-                }}
-              >
-                View My Listings
-              </TCButton>
-            </Col>
-
-            <Col md={6} sm={12}>
-              <TCButton
-                variant="primary"
-                size="lg"
-                style={{
-                  width: "100%",
-                }}
-                onClick={() => {
-                  navigate("/listings/add");
-                }}
-              >
-                Make a Listing
-              </TCButton>
-            </Col>
-          </Row>
-        </>
-      )}
     </div>
   );
 };

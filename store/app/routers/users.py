@@ -4,7 +4,7 @@ import logging
 from email.utils import parseaddr as parse_email_address
 from typing import Annotated, Literal, overload
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel as PydanticBaseModel
 
@@ -166,7 +166,6 @@ async def delete_user_endpoint(
 async def logout_user_endpoint(
     token: Annotated[str, Depends(get_request_api_key_id)],
     crud: Annotated[Crud, Depends(Crud.get)],
-    response: Response,
 ) -> bool:
     await crud.delete_api_key(token)
     return True

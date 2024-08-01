@@ -1,3 +1,4 @@
+import RequireAuthentication from "components/auth/RequireAuthentication";
 import TCButton from "components/files/TCButton";
 import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/alerts";
@@ -79,7 +80,7 @@ const NewListing = () => {
   };
 
   return (
-    <>
+    <RequireAuthentication>
       <h1 className="display-6">Create Listing</h1>
       <Form onSubmit={handleSubmit} className="mb-3">
         {/* Name */}
@@ -157,7 +158,7 @@ const NewListing = () => {
           <TCButton type="submit">Submit</TCButton>
         </Col>
       </Form>
-    </>
+    </RequireAuthentication>
   );
 };
 

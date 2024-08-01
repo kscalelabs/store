@@ -6,13 +6,11 @@ import { AlertQueue, AlertQueueProvider } from "hooks/alerts";
 import { AuthenticationProvider } from "hooks/auth";
 import { ThemeProvider } from "hooks/theme";
 import About from "pages/About";
-import Login from "pages/auth/Login";
-import Signup from "pages/auth/Signup";
 import Home from "pages/Home";
 import ListingDetails from "pages/ListingDetails";
 import Listings from "pages/Listings";
+import Login from "pages/Login";
 import Logout from "pages/Logout";
-import MyListings from "pages/MyListings";
 import NewListing from "pages/NewListing";
 import NotFound from "pages/NotFound";
 import { Container } from "react-bootstrap";
@@ -33,12 +31,10 @@ const App = () => {
                   <Route path="/" element={<Home />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/login" element={<Login />} />
-                  <Route path="/signup" element={<Signup />} />
                   <Route path="/logout" element={<Logout />} />
                   <Route path="/listings/add" element={<NewListing />} />
                   <Route path="/listings/:page?" element={<Listings />} />
                   <Route path="/listing/:id" element={<ListingDetails />} />
-                  <Route path="/listings/me/:page?" element={<MyListings />} />
                   <Route path="/404" element={<NotFound />} />
                   <Route path="*" element={<NotFoundRedirect />} />
                 </Routes>

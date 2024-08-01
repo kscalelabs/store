@@ -53,15 +53,11 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
-    items, has_next = data["listings"], data["has_next"]
+    items, has_next = data["listing_ids"], data["has_next"]
     assert len(items) == 1
     assert not has_next
-
-    # Checks the item.
-    item = data["listings"][0]
-    assert item["name"] == "test listing"
-    assert item["description"] == "test description"
-    assert item["child_ids"] == []
+    listing_ids = data["listing_ids"]
+    assert listing_ids == [listing_id]
 
     # Checks my own listings.
     response = await app_client.get(
@@ -71,12 +67,12 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
-    items, has_next = data["listings"], data["has_next"]
+    items, has_next = data["listing_ids"], data["has_next"]
     assert len(items) == 1
     assert not has_next
 
     # Gets the listing by ID.
-    listing_id = item["id"]
+    listing_id = listing_ids[0]
     response = await app_client.get(f"/listings/{listing_id}", headers=auth_headers)
     assert response.status_code == status.HTTP_200_OK, response.json()
 
@@ -100,6 +96,6 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
-    items, has_next = data["listings"], data["has_next"]
+    items, has_next = data["listing_ids"], data["has_next"]
     assert len(items) == 0
     assert not has_next

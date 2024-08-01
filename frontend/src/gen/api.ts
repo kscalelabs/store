@@ -165,8 +165,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Batch */
-        get: operations["get_batch_listings_batch_get"];
+        /** Get Batch Listing Info */
+        get: operations["get_batch_listing_info_listings_batch_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -381,6 +381,11 @@ export interface components {
             /** Listings */
             listings: components["schemas"]["Listing"][];
         };
+        /** GetBatchListingsResponse */
+        GetBatchListingsResponse: {
+            /** Listings */
+            listings: components["schemas"]["ListingInfoResponse"][];
+        };
         /** GetListingResponse */
         GetListingResponse: {
             /** Id */
@@ -434,8 +439,8 @@ export interface components {
         };
         /** ListListingsResponse */
         ListListingsResponse: {
-            /** Listings */
-            listings: components["schemas"]["Listing"][];
+            /** Listing Ids */
+            listing_ids: string[];
             /**
              * Has Next
              * @default false
@@ -460,6 +465,17 @@ export interface components {
             child_ids: string[];
             /** Description */
             description: string | null;
+        };
+        /** ListingInfoResponse */
+        ListingInfoResponse: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string | null;
+            /** Child Ids */
+            child_ids: string[];
         };
         /** NewListingRequest */
         NewListingRequest: {
@@ -764,7 +780,7 @@ export interface operations {
             };
         };
     };
-    get_batch_listings_batch_get: {
+    get_batch_listing_info_listings_batch_get: {
         parameters: {
             query: {
                 /** @description List of part ids */
@@ -782,7 +798,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ListListingsResponse"];
+                    "application/json": components["schemas"]["GetBatchListingsResponse"];
                 };
             };
             /** @description Validation Error */
