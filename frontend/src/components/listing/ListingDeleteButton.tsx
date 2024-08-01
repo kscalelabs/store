@@ -34,7 +34,7 @@ const ListingDeleteButton = (props: Props) => {
       setDeleting(false);
     } else {
       addAlert("Listing was deleted successfully", "success");
-      navigate("/listings");
+      navigate("/browse");
     }
   };
 
