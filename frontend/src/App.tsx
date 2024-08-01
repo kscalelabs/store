@@ -1,11 +1,10 @@
-import "bootstrap/dist/css/bootstrap.min.css";
-import Footer from "components/nav/Footer";
-import TopNavbar from "components/nav/TopNavbar";
+import Navbar from "components/nav/Navbar";
 import NotFoundRedirect from "components/NotFoundRedirect";
 import { AlertQueue, AlertQueueProvider } from "hooks/alerts";
 import { AuthenticationProvider } from "hooks/auth";
-import { ThemeProvider } from "hooks/theme";
+import { DarkModeProvider } from "hooks/dark_mode";
 import About from "pages/About";
+import APIKeys from "pages/APIKeys";
 import Home from "pages/Home";
 import ListingDetails from "pages/ListingDetails";
 import Listings from "pages/Listings";
@@ -13,38 +12,40 @@ import Login from "pages/Login";
 import Logout from "pages/Logout";
 import NewListing from "pages/NewListing";
 import NotFound from "pages/NotFound";
-import { Container } from "react-bootstrap";
+import Profile from "pages/Profile";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import "./App.css";
 
 const App = () => {
   return (
     <Router>
-      <ThemeProvider>
+      <DarkModeProvider>
         <AuthenticationProvider>
           <AlertQueueProvider>
             <AlertQueue>
-              <TopNavbar />
+              <div className="dark:bg-gray-900 dark:text-white h-screen">
+                <Navbar />
 
-              <Container className="content">
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/logout" element={<Logout />} />
-                  <Route path="/listings/add" element={<NewListing />} />
-                  <Route path="/listings/:page?" element={<Listings />} />
-                  <Route path="/listing/:id" element={<ListingDetails />} />
-                  <Route path="/404" element={<NotFound />} />
-                  <Route path="*" element={<NotFoundRedirect />} />
-                </Routes>
-              </Container>
-
-              <Footer />
+                <div className="container mx-auto pt-24 px-8">
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/keys" element={<APIKeys />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/logout" element={<Logout />} />
+                    <Route path="/listings/add" element={<NewListing />} />
+                    <Route path="/listings/:page?" element={<Listings />} />
+                    <Route path="/listing/:id" element={<ListingDetails />} />
+                    <Route path="/404" element={<NotFound />} />
+                    <Route path="*" element={<NotFoundRedirect />} />
+                  </Routes>
+                </div>
+              </div>
             </AlertQueue>
           </AlertQueueProvider>
         </AuthenticationProvider>
-      </ThemeProvider>
+      </DarkModeProvider>
     </Router>
   );
 };

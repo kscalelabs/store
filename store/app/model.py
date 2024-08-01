@@ -103,8 +103,8 @@ DOWNLOAD_CONTENT_TYPE: dict[ArtifactType, str] = {
 }
 
 SizeMapping: dict[ArtifactSize, tuple[int, int]] = {
-    "large": settings.image.large_size,
-    "small": settings.image.small_size,
+    "large": settings.image.large_image_size,
+    "small": settings.image.small_image_size,
 }
 
 

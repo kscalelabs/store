@@ -3,8 +3,8 @@ import { Button } from "components/ui/Button/Button";
 import ErrorMessage from "components/ui/ErrorMessage";
 import { Input } from "components/ui/Input/Input";
 import { useState } from "react";
-import { Eye, EyeSlash } from "react-bootstrap-icons";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { LoginSchema, LoginType } from "types";
 
 const LoginForm = () => {
@@ -29,37 +29,43 @@ const LoginForm = () => {
       className="grid grid-cols-1 space-y-6"
     >
       {/* Email */}
-      <div>
+      <div className="relative">
         <Input placeholder="Email" type="text" {...register("email")} />
+        {errors?.email && <ErrorMessage>{errors?.email?.message}</ErrorMessage>}
       </div>
-      {errors?.email && <ErrorMessage>{errors?.email?.message}</ErrorMessage>}
 
       {/* Password */}
       <div className="relative">
-        <Input
-          placeholder="Password"
-          type={showPassword ? "text" : "password"}
-          {...register("password")}
-        />
-        <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-          {showPassword ? (
-            <EyeSlash
-              onClick={() => setShowPassword(false)}
-              className="cursor-pointer"
-            />
-          ) : (
-            <Eye
-              onClick={() => setShowPassword(true)}
-              className="cursor-pointer"
-            />
-          )}
+        <div className="relative">
+          <Input
+            placeholder="Password"
+            type={showPassword ? "text" : "password"}
+            {...register("password")}
+          />
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+            {showPassword ? (
+              <FaEyeSlash
+                onClick={() => setShowPassword(false)}
+                className="cursor-pointer"
+              />
+            ) : (
+              <FaEye
+                onClick={() => setShowPassword(true)}
+                className="cursor-pointer"
+              />
+            )}
+          </div>
         </div>
+        {errors?.password && (
+          <ErrorMessage>{errors?.password?.message}</ErrorMessage>
+        )}
       </div>
-      {errors?.password && (
-        <ErrorMessage>{errors?.password?.message}</ErrorMessage>
-      )}
 
-      <Button type="submit" className="w-full">
+      {/* Submit Button */}
+      <Button
+        variant="outline"
+        className="w-full hover:bg-gray-100 dark:hover:bg-gray-600"
+      >
         Login
       </Button>
     </form>

@@ -102,17 +102,61 @@ class NewListingResponse(BaseModel):
 
 @listings_router.post("/add", response_model=NewListingResponse)
 async def add_listing(
-    new_listing: NewListingRequest,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
+    # metadata: Annotated[str, Form()],
+    # files: list[UploadFile] = Form(...),
+    data: NewListingRequest,
 ) -> NewListingResponse:
+    # # Checks that the content type is valid.
+    # for file in files:
+    #     if file.filename is None:
+    #         raise HTTPException(
+    #             status_code=status.HTTP_400_BAD_REQUEST,
+    #             detail="Image filename was not provided",
+    #         )
+    #     if file.size is None or file.size < settings.image.min_bytes or file.size > settings.image.max_bytes:
+    #         raise HTTPException(
+    #             status_code=status.HTTP_400_BAD_REQUEST,
+    #             detail="Invalid image size",
+    #         )
+    #     if (content_type := file.content_type) is None:
+    #         raise HTTPException(
+    #             status_code=status.HTTP_400_BAD_REQUEST,
+    #             detail="Artifact content type was not provided",
+    #         )
+    #     if content_type not in UPLOAD_CONTENT_TYPE_OPTIONS["image"]:
+    #         content_type_options_string = ", ".join(UPLOAD_CONTENT_TYPE_OPTIONS["image"])
+    #         raise HTTPException(
+    #             status_code=status.HTTP_400_BAD_REQUEST,
+    #             detail=f"Invalid content type {content_type}; expected one of {content_type_options_string}",
+    #         )
+
+    # Converts the metadata JSON string to a Pydantic model.
+    # data = NewListingRequest.model_validate_json(metadata)
+
+    # Creates a new listing.
     listing = Listing.create(
-        name=new_listing.name,
-        description=new_listing.description,
+        name=data.name,
+        description=data.description,
         user_id=user.id,
-        child_ids=new_listing.child_ids,
+        child_ids=data.child_ids,
     )
     await crud.add_listing(listing)
+
+    # Uploads all the images.
+    # await asyncio.gather(
+    #     crud.upload_artifact(
+    #         file=file.file,
+    #         name=cast(str, file.filename),  # Validated above.
+    #         listing=listing,
+    #         user_id=user.id,
+    #         artifact_type="image",
+    #         description=data.description,
+    #     )
+    #     for file in files
+    # )
+
     return NewListingResponse(listing_id=listing.id)
 
 

@@ -1,15 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import RequireAuthentication from "components/auth/RequireAuthentication";
-import TCButton from "components/files/TCButton";
 import { RenderDescription } from "components/listing/ListingDescription";
+import { Button } from "components/ui/Button/Button";
 import { Card, CardContent, CardHeader } from "components/ui/Card";
 import ErrorMessage from "components/ui/ErrorMessage";
 import Header from "components/ui/Header";
-import { Input } from "components/ui/Input/Input";
+import { Input, TextArea } from "components/ui/Input/Input";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useState } from "react";
-import { Col } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { NewListingSchema, NewListingType } from "types";
@@ -46,7 +45,7 @@ const NewListing = () => {
     if (error) {
       addErrorAlert(error);
     } else {
-      addAlert("Listing added successfully", "success");
+      addAlert("New listing was created successfully", "success");
       navigate(`/listing/${responseData.listing_id}`);
     }
   };
@@ -56,7 +55,7 @@ const NewListing = () => {
       <div className="flex justify-center">
         <Card className="w-[500px] shadow-md h-full mb-40">
           <CardHeader>
-            <Header title="New Listing" />
+            <Header title="Create" />
           </CardHeader>
           <CardContent>
             <form
@@ -73,10 +72,9 @@ const NewListing = () => {
 
               {/* Description Input */}
               <div className="relative">
-                <textarea
+                <TextArea
                   placeholder="Description"
                   rows={4}
-                  className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   {...register("description", {
                     setValueAs: (value) => {
                       setDescription(value);
@@ -97,9 +95,11 @@ const NewListing = () => {
               )}
 
               {/* Submit */}
-              <Col md={12} className="mb-4">
-                <TCButton type="submit">Submit</TCButton>
-              </Col>
+              <div className="flex justify-end">
+                <Button variant="primary" type="submit">
+                  Submit
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>

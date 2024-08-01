@@ -10,6 +10,7 @@ from pydantic.main import BaseModel
 from store.app.db import Crud
 from store.app.model import UPLOAD_CONTENT_TYPE_OPTIONS, ArtifactSize, ArtifactType, User, get_artifact_url
 from store.app.routers.users import get_session_user_with_write_permission
+from store.settings import settings
 
 artifacts_router = APIRouter()
 
@@ -60,6 +61,41 @@ async def list_artifacts(listing_id: str, crud: Annotated[Crud, Depends(Crud.get
     )
 
 
+def validate_file(file: UploadFile, artifact_type: ArtifactType) -> str:
+    if file.filename is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Artifact filename was not provided",
+        )
+    if file.size is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Artifact size was not provided",
+        )
+    if file.size < settings.image.min_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Artifact size is too small; file size {file.size} is less than {settings.image.min_bytes} bytes",
+        )
+    if file.size > settings.image.max_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Artifact size is too large; file size {file.size} is less than {settings.image.max_bytes} bytes",
+        )
+    if (content_type := file.content_type) is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Artifact content type was not provided",
+        )
+    if content_type not in UPLOAD_CONTENT_TYPE_OPTIONS[artifact_type]:
+        content_type_options_string = ", ".join(UPLOAD_CONTENT_TYPE_OPTIONS[artifact_type])
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid content type {content_type}; expected one of {content_type_options_string}",
+        )
+    return file.filename
+
+
 class UploadArtifactRequest(BaseModel):
     artifact_type: ArtifactType
     listing_id: str
@@ -77,27 +113,9 @@ async def upload(
     file: UploadFile,
     metadata: Annotated[str, Form()],
 ) -> UploadArtifactResponse:
-    if file.filename is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="URDF filename was not provided",
-        )
-
     # Converts the metadata JSON string to a Pydantic model.
     data = UploadArtifactRequest.model_validate_json(metadata)
-
-    # Checks that the content type is valid.
-    if (content_type := file.content_type) is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="URDF content type was not provided",
-        )
-    if content_type not in UPLOAD_CONTENT_TYPE_OPTIONS[data.artifact_type]:
-        content_type_options_string = ", ".join(UPLOAD_CONTENT_TYPE_OPTIONS[data.artifact_type])
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid content type {content_type}; expected one of {content_type_options_string}",
-        )
+    filename = validate_file(file, data.artifact_type)
 
     # Checks that the listing is valid.
     listing = await crud.get_listing(data.listing_id)
@@ -107,10 +125,10 @@ async def upload(
             detail="Could not find listing associated with the given id",
         )
 
-    # Uploads the URDF and adds it to the listing.
+    # Uploads the artifact and adds it to the listing.
     artifact = await crud.upload_artifact(
         file=file.file,
-        name=file.filename,
+        name=filename,
         listing=listing,
         user_id=user.id,
         artifact_type=data.artifact_type,
@@ -150,10 +168,10 @@ async def delete_artifact(
     if artifact is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Could not find URDF associated with the given id",
+            detail="Could not find artifact associated with the given id",
         )
 
-    # Deletes the URDF from the listing.
+    # Deletes the artifact from the listing.
     await crud.remove_artifact(artifact, user.id)
 
     return True
