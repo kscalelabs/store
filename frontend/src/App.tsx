@@ -4,6 +4,7 @@ import { AlertQueue, AlertQueueProvider } from "hooks/alerts";
 import { AuthenticationProvider } from "hooks/auth";
 import { DarkModeProvider } from "hooks/dark_mode";
 import About from "pages/About";
+import APIKeys from "pages/APIKeys";
 import Home from "pages/Home";
 import ListingDetails from "pages/ListingDetails";
 import Listings from "pages/Listings";
@@ -11,6 +12,7 @@ import Login from "pages/Login";
 import Logout from "pages/Logout";
 import NewListing from "pages/NewListing";
 import NotFound from "pages/NotFound";
+import Profile from "pages/Profile";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import "./App.css";
 
@@ -28,6 +30,8 @@ const App = () => {
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/about" element={<About />} />
+                    <Route path="/keys" element={<APIKeys />} />
+                    <Route path="/profile" element={<Profile />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/logout" element={<Logout />} />
                     <Route path="/listings/add" element={<NewListing />} />

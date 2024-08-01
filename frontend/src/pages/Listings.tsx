@@ -1,33 +1,35 @@
 import { useDebounce } from "@uidotdev/usehooks";
 import ListingGrid from "components/listings/ListingGrid";
-import Breadcrumbs from "components/ui/Breadcrumb/Breadcrumbs";
 import { Input } from "components/ui/Input/Input";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 const Listings = () => {
   const auth = useAuthentication();
   const [listingIds, setListingIds] = useState<string[] | null>(null);
   const [moreListings, setMoreListings] = useState<boolean>(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const { addErrorAlert } = useAlertQueue();
+
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const navigate = useNavigate();
 
-  const debouncedSearch = useDebounce(searchQuery, 300);
-  useEffect(() => {
-    handleSearch();
-  }, [debouncedSearch]);
-
   // Gets the current page number and makes sure it is valid.
-  const { page } = useParams();
+  const page = searchParams.get("page");
+  const query = searchParams.get("query");
   const pageNumber = parseInt(page || "1", 10);
   if (isNaN(pageNumber) || pageNumber < 0) {
     navigate("/404");
   }
+
+  const [searchQuery, setSearchQuery] = useState(query || "");
+  const debouncedSearch = useDebounce(searchQuery, 300);
+  useEffect(() => {
+    handleSearch();
+  }, [debouncedSearch]);
 
   const handleSearch = async () => {
     setListingIds(null);
@@ -55,16 +57,17 @@ const Listings = () => {
 
   return (
     <>
-      <Breadcrumbs
-        items={[
-          { label: "Home", onClick: () => navigate("/") },
-          { label: "Listings" },
-        ]}
-      />
       <div className="flex justify-center mt-4">
         <div className="relative">
           <Input
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              if (e.target.value === "") {
+                setSearchParams({});
+              } else {
+                setSearchParams({ query: e.target.value });
+              }
+            }}
             value={searchQuery}
             placeholder="Search listings..."
             className="w-64 sm:w-96"
@@ -72,7 +75,10 @@ const Listings = () => {
           {searchQuery.length > 0 && (
             <div className="absolute inset-y-0 right-0 flex items-center pr-3">
               <FaTimes
-                onClick={() => setSearchQuery("")}
+                onClick={() => {
+                  setSearchQuery("");
+                  setSearchParams({});
+                }}
                 className="cursor-pointer"
               />
             </div>

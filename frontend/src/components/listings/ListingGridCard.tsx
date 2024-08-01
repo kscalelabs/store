@@ -27,7 +27,7 @@ const ListingGridCard = (props: Props) => {
       {part ? (
         <div
           className={clsx(
-            "transition-transform duration-300 ease-in-out transform",
+            "transition-transform duration-100 ease-in-out transform",
             hovering ? "scale-105" : "scale-100",
             "w-64 h-64 object-cover rounded-lg",
           )}

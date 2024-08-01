@@ -1,5 +1,12 @@
 import clsx from "clsx";
-import { FaDoorClosed, FaHome, FaQuestion, FaTimes } from "react-icons/fa";
+import {
+  FaDoorClosed,
+  FaHome,
+  FaKey,
+  FaQuestion,
+  FaTimes,
+  FaUserCircle,
+} from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 interface SidebarItemProps {
@@ -12,9 +19,9 @@ const SidebarItem = ({ icon, title, onClick }: SidebarItemProps) => {
   return (
     <li>
       <button onClick={onClick} className="w-full">
-        <span className="flex items-center p-4 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+        <span className="flex items-center p-3 px-4 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
           {icon}
-          <span className={icon && "ms-3"}>{title}</span>
+          <span className={icon && "ms-5"}>{title}</span>
         </span>
       </button>
     </li>
@@ -59,6 +66,22 @@ const Sidebar = ({ show, onClose }: Props) => {
             icon={<FaHome />}
             onClick={() => {
               navigate("/");
+              onClose();
+            }}
+          />
+          <SidebarItem
+            title="Profile"
+            icon={<FaUserCircle />}
+            onClick={() => {
+              navigate("/profile");
+              onClose();
+            }}
+          />
+          <SidebarItem
+            title="API Keys"
+            icon={<FaKey />}
+            onClick={() => {
+              navigate("/keys");
               onClose();
             }}
           />
