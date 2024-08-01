@@ -11,18 +11,17 @@ const LogInModal = () => {
 
   return (
     <Modal show={true} onHide={navigateToPreviousPage} centered>
-      <Modal.Header closeButton>
-        <Modal.Title>Sign in to see this page</Modal.Title>
+      <Modal.Header className="border-0">
+        <Modal.Title
+          className="text-center w-100"
+          style={{ fontSize: "1.5rem" }}
+        >
+          Log In
+        </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <AuthBlockInner />
       </Modal.Body>
-      <Modal.Footer>
-        <small>
-          <i>Issues logging in? Send an email to </i>
-          <code>support@robolist.xyz</code>
-        </small>
-      </Modal.Footer>
     </Modal>
   );
 };

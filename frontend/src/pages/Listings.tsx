@@ -1,9 +1,10 @@
+import { useDebounce } from "@uidotdev/usehooks";
 import ListingGrid from "components/listings/ListingGrid";
-import { SearchInput } from "components/ui/Search/SearchInput";
+import Breadcrumbs from "components/ui/Breadcrumb/Breadcrumbs";
+import { Input } from "components/ui/Input/Input";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
-import { Breadcrumb } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 
 const Listings = () => {
@@ -11,10 +12,14 @@ const Listings = () => {
   const [listingIds, setListingIds] = useState<string[] | null>(null);
   const [moreListings, setMoreListings] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [visibleSearchBarInput, setVisibleSearchBarInput] = useState("");
   const { addErrorAlert } = useAlertQueue();
 
   const navigate = useNavigate();
+
+  const debouncedSearch = useDebounce(searchQuery, 300);
+  useEffect(() => {
+    handleSearch();
+  }, [debouncedSearch]);
 
   // Gets the current page number and makes sure it is valid.
   const { page } = useParams();
@@ -23,64 +28,68 @@ const Listings = () => {
     navigate("/404");
   }
 
-  function handleSearch() {
-    setSearchQuery(visibleSearchBarInput);
-  }
+  const handleSearch = async () => {
+    setListingIds(null);
 
-  const handleSearchInputEnterKey = (query: string) => {
-    setVisibleSearchBarInput(query);
-    handleSearch();
-  };
-
-  useEffect(() => {
-    (async () => {
-      const { data, error } = await auth.client.GET("/listings/search", {
-        params: {
-          query: {
-            page: pageNumber,
-            search_query: searchQuery,
-          },
+    const { data, error } = await auth.client.GET("/listings/search", {
+      params: {
+        query: {
+          page: pageNumber,
+          search_query: searchQuery,
         },
-      });
+      },
+    });
 
-      if (error) {
-        addErrorAlert(error);
-        return;
-      }
-
+    if (error) {
+      addErrorAlert(error);
+    } else {
       setListingIds(data.listing_ids);
       setMoreListings(data.has_next);
-    })();
-  }, [pageNumber, searchQuery]);
+    }
+  };
+
+  const prevButton = pageNumber > 1;
+  const nextButton = moreListings;
+  const hasButton = prevButton || nextButton;
 
   return (
     <>
-      <Breadcrumb>
-        <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
-        <Breadcrumb.Item active>Listings</Breadcrumb.Item>
-      </Breadcrumb>
-      <SearchInput
-        userInput={visibleSearchBarInput}
-        onChange={(e) => setVisibleSearchBarInput(e.target.value)}
-        onSearch={handleSearchInputEnterKey}
+      <Breadcrumbs
+        items={[
+          { label: "Home", onClick: () => navigate("/") },
+          { label: "Listings" },
+        ]}
       />
+      <div className="flex justify-center mt-4">
+        <Input
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search listings..."
+          className="w-[500px]"
+        />
+      </div>
+      {hasButton && (
+        <div className="flex justify-center mt-4">
+          <div className="inline-flex">
+            {prevButton && (
+              <button
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l"
+                onClick={() => navigate(`/listings/${pageNumber - 1}`)}
+              >
+                Previous
+              </button>
+            )}
+            {nextButton && (
+              <button
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r"
+                onClick={() => navigate(`/listings/${pageNumber + 1}`)}
+              >
+                Next
+              </button>
+            )}
+          </div>
+        </div>
+      )}
       <ListingGrid listingIds={listingIds} />
-      {pageNumber > 1 && (
-        <button
-          className="btn btn-primary"
-          onClick={() => navigate(`/listings/${pageNumber - 1}`)}
-        >
-          Previous
-        </button>
-      )}
-      {moreListings && (
-        <button
-          className="btn btn-primary"
-          onClick={() => navigate(`/listings/${pageNumber + 1}`)}
-        >
-          Load more
-        </button>
-      )}
     </>
   );
 };
