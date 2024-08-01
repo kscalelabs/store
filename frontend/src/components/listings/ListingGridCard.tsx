@@ -22,8 +22,10 @@ const ListingGridCard = (props: Props) => {
       <Card.Body>
         <Card.Title>{part ? part.name : <Placeholder xs={6} />}</Card.Title>
         <Card.Text>
-          {part?.description && (
+          {part?.description ? (
             <RenderDescription description={part.description} />
+          ) : (
+            <Placeholder xs={8} />
           )}
         </Card.Text>
       </Card.Body>

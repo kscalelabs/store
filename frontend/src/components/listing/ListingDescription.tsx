@@ -45,7 +45,11 @@ interface Props {
 
 const ListingDescription = (props: Props) => {
   const { description } = props;
-  return <Row className="mb-3">{description && <p>{description}</p>}</Row>;
+  return (
+    <Row className="mb-3">
+      {description && <RenderDescription description={description} />}
+    </Row>
+  );
 };
 
 export default ListingDescription;
