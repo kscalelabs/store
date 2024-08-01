@@ -3,7 +3,9 @@ import {
   FaDoorClosed,
   FaHome,
   FaKey,
+  FaLock,
   FaQuestion,
+  FaScroll,
   FaTimes,
   FaUserCircle,
 } from "react-icons/fa";
@@ -86,6 +88,17 @@ const Sidebar = ({ show, onClose }: Props) => {
             }}
           />
           <SidebarItem
+            title="Logout"
+            icon={<FaDoorClosed />}
+            onClick={() => {
+              navigate("/logout");
+              onClose();
+            }}
+          />
+          <li>
+            <div className="border-t border-gray-200 dark:border-gray-700" />
+          </li>
+          <SidebarItem
             title="About"
             icon={<FaQuestion />}
             onClick={() => {
@@ -94,10 +107,18 @@ const Sidebar = ({ show, onClose }: Props) => {
             }}
           />
           <SidebarItem
-            title="Logout"
-            icon={<FaDoorClosed />}
+            title="Privacy Policy"
+            icon={<FaLock />}
             onClick={() => {
-              navigate("/logout");
+              navigate("/privacy");
+              onClose();
+            }}
+          />
+          <SidebarItem
+            title="Terms of Service"
+            icon={<FaScroll />}
+            onClick={() => {
+              navigate("/terms");
               onClose();
             }}
           />

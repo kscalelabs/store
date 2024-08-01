@@ -1,23 +1,27 @@
+import { Button } from "components/ui/Button/Button";
+import { useEffect } from "react";
 import {
   FaCheckCircle,
   FaExclamationCircle,
   FaInfoCircle,
-  FaStopCircle,
   FaTimes,
+  FaTimesCircle,
 } from "react-icons/fa";
 
-interface Props {
-  kind: "success" | "error" | "warning" | "info";
+export type ToastKind = "success" | "error" | "warning" | "info";
+
+interface ToastIconProps {
+  kind: ToastKind;
 }
 
-const ToastIcon = (props: Props) => {
+const ToastIcon = (props: ToastIconProps) => {
   const { kind } = props;
 
   switch (kind) {
     case "success":
       return <FaCheckCircle className="w-4 h-4" />;
     case "error":
-      return <FaStopCircle className="w-4 h-4" />;
+      return <FaTimesCircle className="w-4 h-4" />;
     case "warning":
       return <FaExclamationCircle className="w-4 h-4" />;
     case "info":
@@ -25,25 +29,48 @@ const ToastIcon = (props: Props) => {
   }
 };
 
+interface Props {
+  kind: ToastKind;
+  message: string | React.ReactNode;
+  timeout?: number;
+  onClose?: () => void;
+}
+
 const Toast = (props: Props) => {
+  const { kind, message, timeout, onClose } = props;
+
+  // Automatically close the toast after some interval.
+  useEffect(() => {
+    if (!timeout || !onClose) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      onClose();
+    }, timeout);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [timeout, onClose]);
+
   return (
     <div
       className="flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800"
       role="alert"
     >
       <div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-blue-500 bg-blue-100 rounded-lg dark:bg-blue-800 dark:text-blue-200">
-        <ToastIcon {...props} />
+        <ToastIcon kind={kind} />
       </div>
-      <div className="ms-3 text-sm font-normal">Set yourself free.</div>
-      <button
-        type="button"
-        className="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700"
-        data-dismiss-target="#toast-default"
-        aria-label="Close"
+      <div className="ms-3 text-sm font-normal">{message}</div>
+      <Button
+        variant="ghost"
+        className="ml-4 hover:bg-gray-200"
+        onClick={onClose}
       >
         <span className="sr-only">Close</span>
         <FaTimes className="w-3 h-3" />
-      </button>
+      </Button>
     </div>
   );
 };

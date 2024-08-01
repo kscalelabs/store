@@ -10,6 +10,7 @@ from pydantic.main import BaseModel
 from store.app.db import Crud
 from store.app.model import UPLOAD_CONTENT_TYPE_OPTIONS, ArtifactSize, ArtifactType, User, get_artifact_url
 from store.app.routers.users import get_session_user_with_write_permission
+from store.settings import settings
 
 artifacts_router = APIRouter()
 
@@ -80,7 +81,12 @@ async def upload(
     if file.filename is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="URDF filename was not provided",
+            detail="Artifact filename was not provided",
+        )
+    if file.size is None or file.size < settings.image.min_bytes or file.size > settings.image.max_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid image size",
         )
 
     # Converts the metadata JSON string to a Pydantic model.
@@ -90,7 +96,7 @@ async def upload(
     if (content_type := file.content_type) is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="URDF content type was not provided",
+            detail="Artifact content type was not provided",
         )
     if content_type not in UPLOAD_CONTENT_TYPE_OPTIONS[data.artifact_type]:
         content_type_options_string = ", ".join(UPLOAD_CONTENT_TYPE_OPTIONS[data.artifact_type])
@@ -107,7 +113,7 @@ async def upload(
             detail="Could not find listing associated with the given id",
         )
 
-    # Uploads the URDF and adds it to the listing.
+    # Uploads the artifact and adds it to the listing.
     artifact = await crud.upload_artifact(
         file=file.file,
         name=file.filename,
@@ -150,10 +156,10 @@ async def delete_artifact(
     if artifact is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Could not find URDF associated with the given id",
+            detail="Could not find artifact associated with the given id",
         )
 
-    # Deletes the URDF from the listing.
+    # Deletes the artifact from the listing.
     await crud.remove_artifact(artifact, user.id)
 
     return True

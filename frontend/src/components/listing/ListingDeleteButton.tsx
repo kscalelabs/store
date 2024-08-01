@@ -33,16 +33,15 @@ const ListingDeleteButton = (props: Props) => {
       addErrorAlert(error);
       setDeleting(false);
     } else {
-      addAlert("Listing deleted successfully", "success");
+      addAlert("Listing was deleted successfully", "success");
       navigate("/listings");
     }
   };
 
   return (
     <Button
-      className="bg-red-500 hover:bg-red-600"
       onClick={handleDelete}
-      variant={deleting ? "ghost" : "outline"}
+      variant={deleting ? "ghost" : "destructive"}
       disabled={deleting}
     >
       <span className="mr-2">{deleting ? "Deleting..." : "Delete"}</span>

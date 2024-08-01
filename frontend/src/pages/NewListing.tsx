@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import RequireAuthentication from "components/auth/RequireAuthentication";
-import TCButton from "components/files/TCButton";
 import { RenderDescription } from "components/listing/ListingDescription";
+import { Button } from "components/ui/Button/Button";
 import { Card, CardContent, CardHeader } from "components/ui/Card";
 import ErrorMessage from "components/ui/ErrorMessage";
 import Header from "components/ui/Header";
@@ -45,7 +45,7 @@ const NewListing = () => {
     if (error) {
       addErrorAlert(error);
     } else {
-      addAlert("Listing added successfully", "success");
+      addAlert("New listing was created successfully", "success");
       navigate(`/listing/${responseData.listing_id}`);
     }
   };
@@ -55,7 +55,7 @@ const NewListing = () => {
       <div className="flex justify-center">
         <Card className="w-[500px] shadow-md h-full mb-40">
           <CardHeader>
-            <Header title="New Listing" />
+            <Header title="Create" />
           </CardHeader>
           <CardContent>
             <form
@@ -96,7 +96,9 @@ const NewListing = () => {
 
               {/* Submit */}
               <div className="flex justify-end">
-                <TCButton type="submit">Submit</TCButton>
+                <Button variant="primary" type="submit">
+                  Submit
+                </Button>
               </div>
             </form>
           </CardContent>

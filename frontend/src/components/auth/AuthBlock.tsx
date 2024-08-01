@@ -83,7 +83,7 @@ export const AuthBlockInner = () => {
 
 const AuthBlock = () => {
   return (
-    <Card className="w-[400px] shadow-md h-full mb-40">
+    <Card className="w-[400px] shadow-md bg-white text-black rounded-lg">
       <CardHeader>
         <Header />
       </CardHeader>

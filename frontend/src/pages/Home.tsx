@@ -1,3 +1,4 @@
+import { Button } from "components/ui/Button/Button";
 import { FaArrowRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -14,20 +15,22 @@ const Home = () => {
           Buy and sell robots and robot parts, share hardware and software, and
           connect with other robot enthusiasts, all in one place.
         </p>
-        <div className="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0">
-          <button
+        <div className="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0 space-x-2">
+          <Button
             onClick={() => navigate(`/listings`)}
-            className="inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center text-white rounded-lg bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900"
+            variant="primary"
+            size="lg"
           >
             Browse
             <FaArrowRight className="ml-2" />
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => navigate(`/listings/add`)}
-            className="inline-flex justify-center items-center py-3 px-5 ml-5 text-base font-medium text-center text-blue-700 bg-white rounded-lg hover:bg-gray-50 focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900"
+            variant="secondary"
+            size="lg"
           >
             Create
-          </button>
+          </Button>
         </div>
       </div>
     </section>

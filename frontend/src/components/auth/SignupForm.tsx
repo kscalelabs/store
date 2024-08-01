@@ -5,6 +5,7 @@ import { Input } from "components/ui/Input/Input";
 import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { Link } from "react-router-dom";
 import { SignUpSchema, SignupType } from "types";
 
 const SignupForm = () => {
@@ -31,61 +32,78 @@ const SignupForm = () => {
       className="grid grid-cols-1 space-y-6"
     >
       {/* Email */}
-      <div>
+      <div className="relative">
         <Input placeholder="Email" type="text" {...register("email")} />
         {errors?.email && <ErrorMessage>{errors?.email?.message}</ErrorMessage>}
       </div>
 
       {/* Password */}
       <div className="relative">
-        <Input
-          placeholder="Password"
-          type={showPassword ? "text" : "password"}
-          {...register("password")}
-        />
-        <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-          {showPassword ? (
-            <FaEyeSlash
-              onClick={() => setShowPassword(false)}
-              className="cursor-pointer"
-            />
-          ) : (
-            <FaEye
-              onClick={() => setShowPassword(true)}
-              className="cursor-pointer"
-            />
-          )}
+        <div className="relative">
+          <Input
+            placeholder="Password"
+            type={showPassword ? "text" : "password"}
+            {...register("password")}
+          />
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+            {showPassword ? (
+              <FaEyeSlash
+                onClick={() => setShowPassword(false)}
+                className="cursor-pointer"
+              />
+            ) : (
+              <FaEye
+                onClick={() => setShowPassword(true)}
+                className="cursor-pointer"
+              />
+            )}
+          </div>
         </div>
+        {errors?.password && (
+          <ErrorMessage>{errors?.password?.message}</ErrorMessage>
+        )}
       </div>
-      {errors?.password && (
-        <ErrorMessage>{errors?.password?.message}</ErrorMessage>
-      )}
 
       {/* Confirm Password */}
       <div className="relative">
-        <Input
-          placeholder="Confirm Password"
-          type={showConfirmPassword ? "text" : "password"}
-          {...register("confirmPassword")}
-        />
-        <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-          {showConfirmPassword ? (
-            <FaEyeSlash
-              onClick={() => setShowConfirmPassword(false)}
-              className="cursor-pointer"
-            />
-          ) : (
-            <FaEye
-              onClick={() => setShowConfirmPassword(true)}
-              className="cursor-pointer"
-            />
-          )}
+        <div className="relative">
+          <Input
+            placeholder="Confirm Password"
+            type={showConfirmPassword ? "text" : "password"}
+            {...register("confirmPassword")}
+          />
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+            {showConfirmPassword ? (
+              <FaEyeSlash
+                onClick={() => setShowConfirmPassword(false)}
+                className="cursor-pointer"
+              />
+            ) : (
+              <FaEye
+                onClick={() => setShowConfirmPassword(true)}
+                className="cursor-pointer"
+              />
+            )}
+          </div>
         </div>
+        {errors?.confirmPassword && (
+          <ErrorMessage>{errors?.confirmPassword?.message}</ErrorMessage>
+        )}
       </div>
-      {errors?.confirmPassword && (
-        <ErrorMessage>{errors?.confirmPassword?.message}</ErrorMessage>
-      )}
 
+      <div className="text-sm text-center text-gray-600 dark:text-gray-400">
+        By signing up, you agree to our{" "}
+        <Link to="/tos" className="text-accent underline">
+          terms and conditions
+        </Link>{" "}
+        and{" "}
+        <Link to="/privacy" className="text-accent underline">
+          privacy policy
+        </Link>
+        .
+      </div>
+
+      {/* Signup Button */}
       <Button
         variant="outline"
         className="w-full hover:bg-gray-100 dark:hover:bg-gray-600"

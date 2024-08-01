@@ -45,6 +45,9 @@ export type SignupType = z.infer<typeof SignUpSchema>;
 
 export const NewListingSchema = z.object({
   name: z.string({ required_error: "Name is required" }).min(1),
+  // images: z
+  //   .array(z.instanceof(File))
+  //   .min(1, { message: "At least one image is required" }),
   description: z.string({ required_error: "Description is required" }).min(1),
 });
 

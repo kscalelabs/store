@@ -38,9 +38,10 @@ class EmailSettings:
 
 
 @dataclass
-class ImageSettings:
-    large_size: tuple[int, int] = field(default=(1536, 1536))
-    small_size: tuple[int, int] = field(default=(256, 256))
+class ArtifactSettings:
+    large_image_size: tuple[int, int] = field(default=(1536, 1536))
+    small_image_size: tuple[int, int] = field(default=(256, 256))
+    min_bytes: int = field(default=256)
     max_bytes: int = field(default=1536 * 1536 * 25)
     quality: int = field(default=80)
 
@@ -68,7 +69,7 @@ class EnvironmentSettings:
     user: UserSettings = field(default_factory=UserSettings)
     crypto: CryptoSettings = field(default_factory=CryptoSettings)
     email: EmailSettings = field(default_factory=EmailSettings)
-    image: ImageSettings = field(default_factory=ImageSettings)
+    image: ArtifactSettings = field(default_factory=ArtifactSettings)
     s3: S3Settings = field(default_factory=S3Settings)
     dynamo: DynamoSettings = field(default_factory=DynamoSettings)
     site: SiteSettings = field(default_factory=SiteSettings)

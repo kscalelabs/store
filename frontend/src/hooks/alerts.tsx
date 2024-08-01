@@ -1,3 +1,4 @@
+import Toast from "components/ui/Toast";
 import { humanReadableError } from "constants/backend";
 import {
   createContext,
@@ -7,23 +8,10 @@ import {
   useState,
 } from "react";
 
-const DELAY = 5000;
-const MAX_ERRORS = 10;
+const DELAY = 3000;
+const MAX_ALERTS = 5;
 
-type AlertType = "error" | "success" | "primary" | "info";
-
-const alertTypeToBg = (kind: AlertType) => {
-  switch (kind) {
-    case "error":
-      return "danger";
-    case "success":
-      return "success";
-    case "primary":
-      return "primary";
-    case "info":
-      return "secondary";
-  }
-};
+type AlertType = "error" | "success" | "info";
 
 interface AlertQueueContextProps {
   alerts: Map<string, [string | ReactNode, AlertType]>;
@@ -60,7 +48,7 @@ export const AlertQueueProvider = (props: AlertQueueProviderProps) => {
         newAlerts.set(alertId, [alert, kind]);
 
         // Ensure the map doesn't exceed MAX_ERRORS
-        while (newAlerts.size > MAX_ERRORS) {
+        while (newAlerts.size > MAX_ALERTS) {
           const firstKey = Array.from(newAlerts.keys())[0];
           newAlerts.delete(firstKey);
         }
@@ -120,31 +108,20 @@ export const AlertQueue = (props: AlertQueueProps) => {
   return (
     <>
       {children}
-      {/* <ToastContainer
-        className="p-3"
-        position="bottom-center"
-        style={{ zIndex: 1000, position: "fixed", marginBottom: 50 }}
-      >
+      {/* Render the alerts coming up from the bottom-left corner. */}
+      <div className="fixed bottom-0 left-0 p-4 space-y-4">
         {Array.from(alerts).map(([alertId, [alert, kind]]) => {
           return (
             <Toast
               key={alertId}
-              bg={alertTypeToBg(kind)}
-              autohide
-              delay={DELAY}
+              kind={kind}
+              message={alert}
+              timeout={DELAY}
               onClose={() => removeAlert(alertId)}
-              animation={true}
-            >
-              <Toast.Header>
-                <strong className="me-auto">
-                  {kind.charAt(0).toUpperCase() + kind.slice(1)}
-                </strong>
-              </Toast.Header>
-              <Toast.Body>{alert}</Toast.Body>
-            </Toast>
+            />
           );
         })}
-      </ToastContainer> */}
+      </div>
     </>
   );
 };

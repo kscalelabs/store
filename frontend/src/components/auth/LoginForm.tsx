@@ -29,36 +29,39 @@ const LoginForm = () => {
       className="grid grid-cols-1 space-y-6"
     >
       {/* Email */}
-      <div>
+      <div className="relative">
         <Input placeholder="Email" type="text" {...register("email")} />
+        {errors?.email && <ErrorMessage>{errors?.email?.message}</ErrorMessage>}
       </div>
-      {errors?.email && <ErrorMessage>{errors?.email?.message}</ErrorMessage>}
 
       {/* Password */}
       <div className="relative">
-        <Input
-          placeholder="Password"
-          type={showPassword ? "text" : "password"}
-          {...register("password")}
-        />
-        <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-          {showPassword ? (
-            <FaEyeSlash
-              onClick={() => setShowPassword(false)}
-              className="cursor-pointer"
-            />
-          ) : (
-            <FaEye
-              onClick={() => setShowPassword(true)}
-              className="cursor-pointer"
-            />
-          )}
+        <div className="relative">
+          <Input
+            placeholder="Password"
+            type={showPassword ? "text" : "password"}
+            {...register("password")}
+          />
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+            {showPassword ? (
+              <FaEyeSlash
+                onClick={() => setShowPassword(false)}
+                className="cursor-pointer"
+              />
+            ) : (
+              <FaEye
+                onClick={() => setShowPassword(true)}
+                className="cursor-pointer"
+              />
+            )}
+          </div>
         </div>
+        {errors?.password && (
+          <ErrorMessage>{errors?.password?.message}</ErrorMessage>
+        )}
       </div>
-      {errors?.password && (
-        <ErrorMessage>{errors?.password?.message}</ErrorMessage>
-      )}
 
+      {/* Submit Button */}
       <Button
         variant="outline"
         className="w-full hover:bg-gray-100 dark:hover:bg-gray-600"

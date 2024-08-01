@@ -11,7 +11,7 @@ const LogInModal = () => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white w-[400px] shadow-md">
+      <div className="w-[400px] shadow-md bg-white text-black rounded-lg">
         <div className="flex justify-between items-center p-4 border-b mb-4">
           <h2 className="text-xl font-semibold">Log In</h2>
           <button onClick={navigateToPreviousPage}>

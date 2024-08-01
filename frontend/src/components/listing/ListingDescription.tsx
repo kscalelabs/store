@@ -10,7 +10,6 @@ export const RenderDescription = ({ description }: RenderDescriptionProps) => {
     <Markdown
       remarkPlugins={[remarkGfm]}
       components={{
-        // For Tailwind CSS styling.
         p: ({ children }) => <p className="mb-1">{children}</p>,
         ul: ({ children }) => <ul className="list-disc ml-4">{children}</ul>,
         ol: ({ children }) => <ol className="list-decimal ml-4">{children}</ol>,
