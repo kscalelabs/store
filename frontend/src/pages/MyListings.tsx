@@ -13,6 +13,7 @@ import {
 } from "react-bootstrap";
 import Markdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { useSearch } from "hooks/Search";
 
 const MyListings = () => {
   const auth = useAuthentication();
@@ -21,6 +22,7 @@ const MyListings = () => {
   const { addAlert } = useAlertQueue();
   const { page } = useParams();
   const [moreListings, setMoreListings] = useState<boolean>(false);
+  const { searchQuery } = useSearch();
 
   const pageNumber = parseInt(page || "", 10);
   if (isNaN(pageNumber) || pageNumber < 0) {
@@ -35,7 +37,7 @@ const MyListings = () => {
   useEffect(() => {
     const fetch_parts = async () => {
       try {
-        const partsQuery = await auth_api.getMyListings(pageNumber);
+        const partsQuery = await auth_api.getMyListings(pageNumber, searchQuery);
         setListings(partsQuery[0]);
         setMoreListings(partsQuery[1]);
       } catch (err) {
@@ -47,7 +49,7 @@ const MyListings = () => {
       }
     };
     fetch_parts();
-  }, []);
+  }, [searchQuery]);
 
   const navigate = useNavigate();
 

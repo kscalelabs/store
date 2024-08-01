@@ -43,8 +43,8 @@ export class api {
 
   constructor(
     api: AxiosInstance,
-    onError: (error: Error) => void = () => {},
-    onFinish: () => void = () => {},
+    onError: (error: Error) => void = () => { },
+    onFinish: () => void = () => { },
   ) {
     this.api = api;
     this.onError = onError;
@@ -125,10 +125,10 @@ export class api {
     });
   }
 
-  public async getMyListings(page: number): Promise<[Listing[], boolean]> {
+  public async getMyListings(page: number, searchQuery?: string): Promise<[Listing[], boolean]> {
     return this.callWrapper(async () => {
       const response = await this.api.get("/listings/me", {
-        params: { page },
+        params: { page, search_query: searchQuery || "" },
       });
       return response.data;
     });

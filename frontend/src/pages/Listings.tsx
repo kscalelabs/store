@@ -3,6 +3,7 @@ import { SearchInput } from "components/ui/Search/SearchInput";
 import { useAlertQueue } from "hooks/alerts";
 import { api, Listing } from "hooks/api";
 import { useAuthentication } from "hooks/auth";
+import { useSearch } from "hooks/Search";
 import { useEffect, useState } from "react";
 import {
   Breadcrumb,
@@ -16,13 +17,13 @@ import Markdown from "react-markdown";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
 const Listings = () => {
+  const { searchQuery } = useSearch();
+  console.log(searchQuery);
   const auth = useAuthentication();
   const auth_api = new api(auth.api);
   const [partsData, setListings] = useState<Listing[] | null>(null);
   const [moreListings, setMoreListings] = useState<boolean>(false);
   const [idMap, setIdMap] = useState<Map<string, string>>(new Map());
-  const [searchQuery, setSearchQuery] = useState("");
-  const [visibleSearchBarInput, setVisibleSearchBarInput] = useState("");
   const { addAlert } = useAlertQueue();
   const { page } = useParams();
 
@@ -35,16 +36,6 @@ const Listings = () => {
       </>
     );
   }
-
-  function handleSearch() {
-    const searchQuery = visibleSearchBarInput;
-    setSearchQuery(searchQuery);
-  }
-
-  const handleSearchInputEnterKey = (query: string) => {
-    setVisibleSearchBarInput(query);
-    handleSearch();
-  };
 
   useEffect(() => {
     const fetch_robots = async () => {
@@ -92,11 +83,6 @@ const Listings = () => {
         <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
         <Breadcrumb.Item active>Listings</Breadcrumb.Item>
       </Breadcrumb>
-      <SearchInput
-        userInput={visibleSearchBarInput}
-        onChange={(e) => setVisibleSearchBarInput(e.target.value)}
-        onSearch={handleSearchInputEnterKey}
-      />
 
       <Row className="mt-5">
         {partsData.map((part) => (

@@ -17,6 +17,7 @@ import NewListing from "pages/NewListing";
 import NotFound from "pages/NotFound";
 import { Container } from "react-bootstrap";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { SearchProvider } from './hooks/Search';
 import "./App.css";
 
 const App = () => {
@@ -25,30 +26,33 @@ const App = () => {
       <ThemeProvider>
         <AuthenticationProvider>
           <AlertQueueProvider>
-            <AlertQueue>
-              <TopNavbar />
+            <SearchProvider>
+              <AlertQueue>
+                <TopNavbar />
 
-              <Container className="content">
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/logout" element={<Logout />} />
-                  <Route path="/listings/add" element={<NewListing />} />
-                  <Route path="/listings/:page" element={<Listings />} />
-                  <Route path="/listing/:id" element={<ListingDetails />} />
-                  <Route
-                    path="/listing/edit/:id"
-                    element={<EditListingForm />}
-                  />
-                  <Route path="/listings/me/:page" element={<MyListings />} />
-                  <Route path="/404" element={<NotFound />} />
-                  <Route path="*" element={<NotFoundRedirect />} />
-                </Routes>
-              </Container>
 
-              <Footer />
-            </AlertQueue>
+                <Container className="content">
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/logout" element={<Logout />} />
+                    <Route path="/listings/add" element={<NewListing />} />
+                    <Route path="/listings/:page" element={<Listings />} />
+                    <Route path="/listing/:id" element={<ListingDetails />} />
+                    <Route
+                      path="/listing/edit/:id"
+                      element={<EditListingForm />}
+                    />
+                    <Route path="/listings/me/:page" element={<MyListings />} />
+                    <Route path="/404" element={<NotFound />} />
+                    <Route path="*" element={<NotFoundRedirect />} />
+                  </Routes>
+                </Container>
+
+                <Footer />
+              </AlertQueue>
+            </SearchProvider>
           </AlertQueueProvider>
         </AuthenticationProvider>
       </ThemeProvider>
