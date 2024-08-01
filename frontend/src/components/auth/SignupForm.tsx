@@ -3,7 +3,7 @@ import { Button } from "components/ui/Button/Button";
 import ErrorMessage from "components/ui/ErrorMessage";
 import { Input } from "components/ui/Input/Input";
 import { useState } from "react";
-import { Eye } from "react-bootstrap-icons";
+import { Eye, EyeSlash } from "react-bootstrap-icons";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { SignUpSchema, SignupType } from "types";
 
@@ -43,16 +43,23 @@ const SignupForm = () => {
           type={showPassword ? "text" : "password"}
           {...register("password")}
         />
-        {errors?.password && (
-          <ErrorMessage>{errors?.password?.message}</ErrorMessage>
-        )}
         <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-          <Eye
-            onClick={() => setShowPassword((p) => !p)}
-            className="cursor-pointer"
-          />
+          {showPassword ? (
+            <EyeSlash
+              onClick={() => setShowPassword(false)}
+              className="cursor-pointer"
+            />
+          ) : (
+            <Eye
+              onClick={() => setShowPassword(true)}
+              className="cursor-pointer"
+            />
+          )}
         </div>
       </div>
+      {errors?.password && (
+        <ErrorMessage>{errors?.password?.message}</ErrorMessage>
+      )}
 
       {/* Confirm Password */}
       <div className="relative">
@@ -61,16 +68,24 @@ const SignupForm = () => {
           type={showConfirmPassword ? "text" : "password"}
           {...register("confirmPassword")}
         />
-        {errors?.confirmPassword && (
-          <ErrorMessage>{errors?.confirmPassword?.message}</ErrorMessage>
-        )}
         <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-          <Eye
-            onClick={() => setShowConfirmPassword((p) => !p)}
-            className="cursor-pointer"
-          />
+          {showConfirmPassword ? (
+            <EyeSlash
+              onClick={() => setShowConfirmPassword(false)}
+              className="cursor-pointer"
+            />
+          ) : (
+            <Eye
+              onClick={() => setShowConfirmPassword(true)}
+              className="cursor-pointer"
+            />
+          )}
         </div>
       </div>
+      {errors?.confirmPassword && (
+        <ErrorMessage>{errors?.confirmPassword?.message}</ErrorMessage>
+      )}
+
       <Button type="submit" className="w-full">
         Signup
       </Button>

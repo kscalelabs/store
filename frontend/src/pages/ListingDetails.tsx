@@ -3,11 +3,12 @@ import ListingChildren from "components/listing/ListingChildren";
 import ListingDeleteButton from "components/listing/ListingDeleteButton";
 import ListingDescription from "components/listing/ListingDescription";
 import ListingTitle from "components/listing/ListingTitle";
+import Breadcrumbs from "components/ui/Breadcrumb/Breadcrumbs";
 import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
-import { Breadcrumb, Col, Container, Row, Spinner } from "react-bootstrap";
+import { Col, Container, Row, Spinner } from "react-bootstrap";
 import { useNavigate, useParams } from "react-router-dom";
 
 type ListingResponse =
@@ -70,13 +71,13 @@ const ListingDetails = () => {
 
   return (
     <>
-      <Breadcrumb>
-        <Breadcrumb.Item onClick={() => navigate("/")}>Home</Breadcrumb.Item>
-        <Breadcrumb.Item onClick={() => navigate("/listings")}>
-          Listings
-        </Breadcrumb.Item>
-        {listing && <Breadcrumb.Item active>{listing.name}</Breadcrumb.Item>}
-      </Breadcrumb>
+      <Breadcrumbs
+        items={[
+          { label: "Home", onClick: () => navigate("/") },
+          { label: "Listings", onClick: () => navigate("/listings") },
+          { label: listing?.name || "", onClick: undefined },
+        ]}
+      />
 
       {listing && id ? (
         <RenderListing listing={listing} />

@@ -22,6 +22,9 @@ const Sidebar = ({ show, onHide }: Props) => {
         >
           <Row style={{ marginTop: "auto" }} />
           <Row>
+            <Link to="/logout">Log Out</Link>
+          </Row>
+          <Row>
             <Link to="/about">About</Link>
           </Row>
           <Row>

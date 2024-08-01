@@ -3,7 +3,7 @@ import { Button } from "components/ui/Button/Button";
 import ErrorMessage from "components/ui/ErrorMessage";
 import { Input } from "components/ui/Input/Input";
 import { useState } from "react";
-import { Eye } from "react-bootstrap-icons";
+import { Eye, EyeSlash } from "react-bootstrap-icons";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { LoginSchema, LoginType } from "types";
 
@@ -31,8 +31,8 @@ const LoginForm = () => {
       {/* Email */}
       <div>
         <Input placeholder="Email" type="text" {...register("email")} />
-        {errors?.email && <ErrorMessage>{errors?.email?.message}</ErrorMessage>}
       </div>
+      {errors?.email && <ErrorMessage>{errors?.email?.message}</ErrorMessage>}
 
       {/* Password */}
       <div className="relative">
@@ -41,16 +41,23 @@ const LoginForm = () => {
           type={showPassword ? "text" : "password"}
           {...register("password")}
         />
-        {errors?.password && (
-          <ErrorMessage>{errors?.password?.message}</ErrorMessage>
-        )}
         <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-          <Eye
-            onClick={() => setShowPassword((p) => !p)}
-            className="cursor-pointer"
-          />
+          {showPassword ? (
+            <EyeSlash
+              onClick={() => setShowPassword(false)}
+              className="cursor-pointer"
+            />
+          ) : (
+            <Eye
+              onClick={() => setShowPassword(true)}
+              className="cursor-pointer"
+            />
+          )}
         </div>
       </div>
+      {errors?.password && (
+        <ErrorMessage>{errors?.password?.message}</ErrorMessage>
+      )}
 
       <Button type="submit" className="w-full">
         Login

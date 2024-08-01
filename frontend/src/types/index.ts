@@ -15,6 +15,8 @@ export const LoginSchema = z.object({
     .min(4, { message: "Password Required" }),
 });
 
+export type LoginType = z.infer<typeof LoginSchema>;
+
 export const SignUpSchema = z
   .object({
     email: z
@@ -39,5 +41,11 @@ export const SignUpSchema = z
     path: ["confirm"],
   });
 
-export type LoginType = z.infer<typeof LoginSchema>;
 export type SignupType = z.infer<typeof SignUpSchema>;
+
+export const NewListingSchema = z.object({
+  name: z.string({ required_error: "Name is required" }).min(1),
+  description: z.string({ required_error: "Description is required" }).min(1),
+});
+
+export type NewListingType = z.infer<typeof NewListingSchema>;

@@ -1,4 +1,6 @@
-import { Card, Col, Row } from "react-bootstrap";
+import { Card, CardContent, CardHeader, CardTitle } from "components/ui/Card";
+import Header from "components/ui/Header";
+import { Row } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
@@ -11,30 +13,28 @@ const Home = () => {
         <p className="lead">Buy and sell robots and robot parts</p>
       </Row>
       <Row className="row-two">
-        <Col sm={12} md={6}>
-          <Card
-            onClick={() => navigate(`/listings`)}
-            className="text-center"
-            bg="secondary"
-          >
-            <Card.Body>
-              <Card.Title>Browse Listings</Card.Title>
-              <Card.Text>Browse existing Robolist listings</Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col sm={12} md={6}>
-          <Card
-            onClick={() => navigate(`/listings/add`)}
-            className="text-center"
-            bg="primary"
-          >
-            <Card.Body>
-              <Card.Title>Create Listing</Card.Title>
-              <Card.Text>List your robot on Robolist</Card.Text>
-            </Card.Body>
-          </Card>
-        </Col>
+        <Card
+          onClick={() => navigate(`/listings`)}
+          className="w-[400px] shadow-md h-full mb-40"
+        >
+          <CardHeader>
+            <Header title="Browse Listings" />
+          </CardHeader>
+          <CardContent>
+            <CardTitle>Browse existing Robolist listings</CardTitle>
+          </CardContent>
+        </Card>
+        <Card
+          onClick={() => navigate(`/listings/add`)}
+          className="w-[400px] shadow-md h-full mb-40 ml-4"
+        >
+          <CardHeader>
+            <Header title="Create Listing" />
+          </CardHeader>
+          <CardContent>
+            <CardTitle>List your robot on Robolist</CardTitle>
+          </CardContent>
+        </Card>
       </Row>
     </div>
   );

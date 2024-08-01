@@ -4,7 +4,7 @@ import { useAuthentication } from "hooks/auth";
 import { useTheme } from "hooks/theme";
 import { useState } from "react";
 import { Container, Nav, Navbar } from "react-bootstrap";
-import { GearFill, MoonFill, SunFill } from "react-bootstrap-icons";
+import { MoonFill, PersonCircle, SunFill } from "react-bootstrap-icons";
 import { Link } from "react-router-dom";
 
 const TopNavbar = () => {
@@ -31,17 +31,14 @@ const TopNavbar = () => {
               <>
                 <Boop timing={100}>
                   <Nav.Link onClick={() => setShowSidebar(true)}>
-                    <GearFill />
+                    <PersonCircle />
                   </Nav.Link>
                 </Boop>
-                <Nav.Link as={Link} to="/logout">
-                  Log Out
-                </Nav.Link>
               </>
             ) : (
               <>
                 <Nav.Link as={Link} to="/login">
-                  Login
+                  <PersonCircle />
                 </Nav.Link>
               </>
             )}

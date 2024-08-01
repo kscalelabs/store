@@ -1,6 +1,6 @@
+import { RenderDescription } from "components/listing/ListingDescription";
 import { paths } from "gen/api";
 import { Card, Placeholder } from "react-bootstrap";
-import Markdown from "react-markdown";
 import { useNavigate } from "react-router-dom";
 
 type ListingInfo =
@@ -22,20 +22,11 @@ const ListingGridCard = (props: Props) => {
       <Card.Body>
         <Card.Title>{part ? part.name : <Placeholder xs={6} />}</Card.Title>
         <Card.Text>
-          <Markdown
-            components={{
-              p: ({ ...props }) => <p {...props} />,
-              li: ({ ...props }) => <li {...props} />,
-              h1: ({ ...props }) => <h3 {...props} className="h6" />,
-              h2: ({ ...props }) => <h4 {...props} className="h6" />,
-              h3: ({ ...props }) => <h5 {...props} className="h6" />,
-              h4: ({ ...props }) => <h6 {...props} className="h6" />,
-              h5: ({ ...props }) => <h6 {...props} className="h6" />,
-              h6: ({ ...props }) => <h6 {...props} className="h6" />,
-            }}
-          >
-            {part?.description}
-          </Markdown>
+          {part?.description ? (
+            <RenderDescription description={part.description} />
+          ) : (
+            <Placeholder xs={8} />
+          )}
         </Card.Text>
       </Card.Body>
     </Card>
