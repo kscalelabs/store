@@ -7,13 +7,11 @@ interface AuthProvider {
   handleGithubSubmit?: (
     event: React.MouseEvent<HTMLButtonElement>,
   ) => Promise<void>;
-  agreeTerms?: boolean;
 }
 
 const AuthProvider = ({
   handleGoogleSubmit,
   handleGithubSubmit,
-  agreeTerms,
 }: AuthProvider) => {
   return (
     <div className="flex flex-col w-full">

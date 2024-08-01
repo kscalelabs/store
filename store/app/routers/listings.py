@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from typing import Annotated, cast
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
