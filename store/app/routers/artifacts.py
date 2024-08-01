@@ -32,6 +32,7 @@ async def artifact_url(
 
 class ListArtifactsItem(BaseModel):
     artifact_id: str
+    name: str
     artifact_type: ArtifactType
     description: str | None
     timestamp: int
@@ -48,6 +49,7 @@ async def list_artifacts(listing_id: str, crud: Annotated[Crud, Depends(Crud.get
         artifacts=[
             ListArtifactsItem(
                 artifact_id=artifact.id,
+                name=artifact.name,
                 artifact_type=artifact.artifact_type,
                 description=artifact.description,
                 timestamp=artifact.timestamp,

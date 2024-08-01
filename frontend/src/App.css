@@ -13,6 +13,19 @@ div.content {
   }
 }
 
+a.link {
+  color: #0d6efd;
+  text-decoration: underline;
+}
+
+a.link:hover {
+  text-decoration: none;
+}
+
+body.dark-mode a.link {
+  color: #8ab9fe;
+}
+
 html,
 body {
   word-wrap: break-word;
