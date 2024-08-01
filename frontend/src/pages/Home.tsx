@@ -17,7 +17,7 @@ const Home = () => {
         </p>
         <div className="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0 space-x-2">
           <Button
-            onClick={() => navigate(`/listings`)}
+            onClick={() => navigate(`/browse`)}
             variant="primary"
             size="lg"
           >
@@ -25,7 +25,7 @@ const Home = () => {
             <FaArrowRight className="ml-2" />
           </Button>
           <Button
-            onClick={() => navigate(`/listings/add`)}
+            onClick={() => navigate(`/create`)}
             variant="secondary"
             size="lg"
           >

@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-const Listings = () => {
+const Browse = () => {
   const auth = useAuthentication();
   const [listingIds, setListingIds] = useState<string[] | null>(null);
   const [moreListings, setMoreListings] = useState<boolean>(false);
@@ -91,7 +91,7 @@ const Listings = () => {
             {prevButton && (
               <button
                 className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l"
-                onClick={() => navigate(`/listings/${pageNumber - 1}`)}
+                onClick={() => navigate(`/browse/${pageNumber - 1}`)}
               >
                 Previous
               </button>
@@ -99,7 +99,7 @@ const Listings = () => {
             {nextButton && (
               <button
                 className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r"
-                onClick={() => navigate(`/listings/${pageNumber + 1}`)}
+                onClick={() => navigate(`/browse/${pageNumber + 1}`)}
               >
                 Next
               </button>
@@ -112,4 +112,4 @@ const Listings = () => {
   );
 };
 
-export default Listings;
+export default Browse;

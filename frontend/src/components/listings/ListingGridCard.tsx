@@ -31,7 +31,7 @@ const ListingGridCard = (props: Props) => {
             hovering ? "scale-105" : "scale-100",
             "w-64 h-64 object-cover rounded-lg",
           )}
-          onClick={() => navigate(`/listing/${listingId}`)}
+          onClick={() => navigate(`/item/${listingId}`)}
         >
           <img
             className="w-full h-full object-cover rounded-lg"
