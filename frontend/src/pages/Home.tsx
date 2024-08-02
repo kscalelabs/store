@@ -32,6 +32,7 @@ const Home = () => {
             Create
           </Button>
         </div>
+        {/* Landing page image/redesign */}
       </div>
     </section>
   );
