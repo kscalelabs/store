@@ -53,26 +53,6 @@ const Browse = () => {
   const nextButton = moreListings;
   const hasButton = prevButton || nextButton;
 
-  useEffect(() => {
-    async function fetchData() {
-      const { data, error } = await auth.client.GET("/listings/me", {
-        params: {
-          query: {
-            page: pageNumber,
-            search_query: searchQuery,
-          },
-        },
-      });
-      if (error) {
-        addErrorAlert(error);
-      } else {
-        setListingIds(data.listing_ids);
-        setMoreListings(data.has_next);
-      }
-    }
-    fetchData();
-  }, []);
-
   return (
     <>
       <div className="pb-8">
