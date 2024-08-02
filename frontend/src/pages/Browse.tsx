@@ -17,8 +17,8 @@ const Browse = () => {
   const { addErrorAlert } = useAlertQueue();
   const [showDialogBox, setShowDialogBox] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [formType, setformType] = useState("");
-  const [listId, setlistId] = useState("");
+  const [formType, setFormType] = useState("");
+  const [listId, setListId] = useState("");
   const navigate = useNavigate();
   console.log(" lsiting id : ", listingIds);
   // Gets the current page number and makes sure it is valid.
@@ -114,7 +114,7 @@ const Browse = () => {
               variant={"primary"}
               onClick={() => {
                 setShowDialogBox(true);
-                setformType("create");
+                setFormType("create");
               }}
             >
               + New List
@@ -158,8 +158,8 @@ const Browse = () => {
               key={id}
               id={id}
               setShowDialogBox={setShowDialogBox}
-              setformType={setformType}
-              setlistId={setlistId}
+              setformType={setFormType}
+              setlistId={setListId}
             />
           ))}
         </div>
