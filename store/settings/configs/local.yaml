@@ -1,7 +1,7 @@
 crypto:
   jwt_secret: fakeJwtSecret
 s3:
-  bucket: artifacts-senthil-store
+  bucket: ${oc.env:AWS_S3_BUCKET}
   prefix: ""
 dynamo:
   table_name: robolist-local
