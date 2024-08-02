@@ -1,7 +1,9 @@
 import clsx from "clsx";
+import { useAuthentication } from "hooks/auth";
 import {
   FaBookOpen,
   FaDoorClosed,
+  FaDoorOpen,
   FaHome,
   FaKey,
   FaLock,
@@ -17,15 +19,25 @@ interface SidebarItemProps {
   title: string;
   icon?: JSX.Element;
   onClick?: () => void;
+  size?: "sm" | "md" | "lg";
 }
 
-const SidebarItem = ({ icon, title, onClick }: SidebarItemProps) => {
+const SidebarItem = ({ icon, title, onClick, size }: SidebarItemProps) => {
   return (
     <li>
-      <button onClick={onClick} className="w-full">
-        <span className="flex items-center py-1 px-4 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+      <button onClick={onClick} className="w-full focus:outline-none">
+        <span className="flex items-center py-2 px-4 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
           {icon}
-          <span className={icon && "ms-5"}>{title}</span>
+          {/* <span className={icon && "ms-5"}>{title}</span> */}
+          <span
+            className={clsx(
+              icon && "ms-5",
+              size === "sm" && "text-sm",
+              size === "lg" && "text-lg",
+            )}
+          >
+            {title}
+          </span>
         </span>
       </button>
     </li>
@@ -47,6 +59,7 @@ interface Props {
 
 const Sidebar = ({ show, onClose }: Props) => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuthentication();
 
   return (
     <div
@@ -72,7 +85,7 @@ const Sidebar = ({ show, onClose }: Props) => {
         <span className="sr-only">Close menu</span>
       </button>
       <div className="py-4 overflow-y-auto">
-        <ul className="space-y-2 font-medium">
+        <ul className="space-y-1">
           <SidebarItem
             title="Home"
             icon={<FaHome />}
@@ -80,6 +93,7 @@ const Sidebar = ({ show, onClose }: Props) => {
               navigate("/");
               onClose();
             }}
+            size="md"
           />
           <SidebarItem
             title="Browse"
@@ -88,6 +102,7 @@ const Sidebar = ({ show, onClose }: Props) => {
               navigate("/browse");
               onClose();
             }}
+            size="md"
           />
           <SidebarItem
             title="Create"
@@ -96,33 +111,57 @@ const Sidebar = ({ show, onClose }: Props) => {
               navigate("/create");
               onClose();
             }}
+            size="md"
           />
           <SidebarSeparator />
-          <SidebarItem
-            title="Profile"
-            icon={<FaUserCircle />}
-            onClick={() => {
-              navigate("/profile");
-              onClose();
-            }}
-          />
-          <SidebarItem
-            title="API Keys"
-            icon={<FaKey />}
-            onClick={() => {
-              navigate("/keys");
-              onClose();
-            }}
-          />
-          <SidebarItem
-            title="Logout"
-            icon={<FaDoorClosed />}
-            onClick={() => {
-              navigate("/logout");
-              onClose();
-            }}
-          />
-          <SidebarSeparator />
+          {isAuthenticated && (
+            <SidebarItem
+              title="Profile"
+              icon={<FaUserCircle />}
+              onClick={() => {
+                navigate("/profile");
+                onClose();
+              }}
+              size="md"
+            />
+          )}
+          {isAuthenticated && (
+            <SidebarItem
+              title="API Keys"
+              icon={<FaKey />}
+              onClick={() => {
+                navigate("/keys");
+                onClose();
+              }}
+              size="md"
+            />
+          )}
+          {isAuthenticated ? (
+            <SidebarItem
+              title="Logout"
+              icon={<FaDoorClosed />}
+              onClick={() => {
+                navigate("/logout");
+                onClose();
+              }}
+              size="md"
+            />
+          ) : (
+            <SidebarItem
+              title="Login"
+              icon={<FaDoorOpen />}
+              onClick={() => {
+                navigate("/login");
+                onClose();
+              }}
+              size="md"
+            />
+          )}
+        </ul>
+      </div>
+      {/* Aligned to bottom */}
+      <div className="absolute bottom-4 w-full">
+        <ul className="space-y-1 font-medium mt-4">
           <SidebarItem
             title="About"
             icon={<FaQuestion />}
@@ -130,6 +169,7 @@ const Sidebar = ({ show, onClose }: Props) => {
               navigate("/about");
               onClose();
             }}
+            size="sm"
           />
           <SidebarItem
             title="Privacy Policy"
@@ -138,6 +178,7 @@ const Sidebar = ({ show, onClose }: Props) => {
               navigate("/privacy");
               onClose();
             }}
+            size="sm"
           />
           <SidebarItem
             title="Terms of Service"
@@ -146,6 +187,7 @@ const Sidebar = ({ show, onClose }: Props) => {
               navigate("/tos");
               onClose();
             }}
+            size="sm"
           />
         </ul>
       </div>

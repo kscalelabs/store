@@ -15,7 +15,7 @@ const Home = () => {
           Buy and sell robots and robot parts, share hardware and software, and
           connect with other robot enthusiasts, all in one place.
         </p>
-        <div className="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0 space-x-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto">
           <Button
             onClick={() => navigate(`/browse`)}
             variant="primary"
