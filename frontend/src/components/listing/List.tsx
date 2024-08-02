@@ -34,10 +34,11 @@ const List = ({ id, setShowDialogBox, setformType, setlistId }: ListProps) => {
   if (isLoading) {
     return (
       <div className="bg-transparent">
-        <Skeleton className="h-44 w-64 bg-white" />
-        <Skeleton className="h-6 w-64 mt-5 bg-white" />
-        <Skeleton className="h-5 w-64 mt-2 mb-5 bg-white" />
-        <Skeleton className="h-3.5 w-64 mt-1 bg-white" />
+        <Skeleton className="h-44 w-70 bg-white" />
+        <Skeleton className="h-6 w-70 mt-5 bg-white" />
+        <Skeleton className="h-6 w-70 mt-5 bg-white" />
+        <Skeleton className="h-5 w-70 mt-2 mb-5 bg-white" />
+        <Skeleton className="h-3.5 w-70 mt-1 bg-white" />
         <Skeleton className="h-5 mt-3.5 w-20 bg-white" />
       </div>
     );
