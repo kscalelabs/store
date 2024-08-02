@@ -13,7 +13,7 @@ interface ListingBodyProps {
 const ListingBody = (props: ListingBodyProps) => {
   const { listing } = props;
   return (
-    <div className="p-4">
+    <div className="px-4">
       <ListingDescription
         description={listing.description}
         edit={listing.owner_is_user}

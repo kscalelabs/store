@@ -25,7 +25,7 @@ const CloseButton = () => {
 const ListingHeader = (props: Props) => {
   const { title } = props;
   return (
-    <div className="relative border-b p-4">
+    <div className="relative border-b p-4 mb-4">
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4">
         <h1 className="text-2xl font-bold">{title}</h1>
         <CloseButton />
