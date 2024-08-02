@@ -18,6 +18,7 @@ aiosmtplib
 fastapi
 pillow
 python-multipart
+httpx
 
 # Deployment dependencies.
 uvicorn[standard]
