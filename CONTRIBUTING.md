@@ -17,6 +17,9 @@ To get started developing:
 > [!IMPORTANT]
 > You **MUST** access the locally run website through `127.0.0.1:3000` and **NOT** `localhost:3000`. This is because the CORS policy is configured to only allow requests from the exact domain `127.0.0.1:3000`.
 
+> [!NOTE]
+> You should develop the backend using Python 3.11 or later
+
 ## Database
 
 ### DynamoDB/S3
