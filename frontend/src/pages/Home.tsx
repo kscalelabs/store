@@ -1,42 +1,42 @@
 import { Button } from "components/ui/Button/Button";
 import { useDarkMode } from "hooks/dark_mode";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { FaArrowRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import LandingDark from "../images/LandingDark.png";
+import LandingLight from "../images/LandingLight.png";
 
 const Home = () => {
   const navigate = useNavigate();
   const { darkMode } = useDarkMode();
-  const [imageSrc, setImageSrc] = useState<string>("");
 
-  // change image based on DarkMode state
-  useEffect(() => {
-    setImageSrc(
-      darkMode ? "/images/LandingDark.png" : "/images/LandingLight.png",
-    );
-  }, [darkMode]);
-
+  // change landing page image based on DarkMode state
   const renderImage = useMemo(() => {
     return (
       <img
-        src={imageSrc}
-        alt="Landing Page"
-        className="w-full h-auto mx-auto"
+        alt="Image of robot standing in futuristic background"
+        src={darkMode ? LandingDark : LandingLight}
+        className="absolute -z-10 h-full w-full object-cover object-right md:object-center"
       />
     );
-  }, [imageSrc]);
+  }, [darkMode]);
 
   return (
-    <div>
-      <div className="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16">
-        <h1 className="mb-8 text-4xl font-extrabold tracking-tight leading-none md:text-5xl lg:text-6xl">
-          Robolist
-        </h1>
-        <p className="mb-8 text-lg font-normal lg:text-xl sm:px-16 lg:px-48">
-          Buy and sell robots and robot parts, share hardware and software, and
-          connect with other robot enthusiasts, all in one place.
-        </p>
-        <div className="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0 space-x-2">
+    <div className="relative isolate overflow-hidden py-24 sm:py-32">
+      {renderImage}
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto max-w-2xl lg:mx-0 mt-10">
+          <h2 className="text-4xl md:text-5xl lg:text-6xl leading-none  font-extrabold tracking-tight text-white sm:text-6xl">
+            Robolist
+          </h2>
+          <p className="mt-4 text-base lg:text-lg w-2/3 text-white">
+            Buy and sell robots and robot parts,
+            <br></br> share hardware and software,
+            <br></br> and connect with other robot enthusiasts,
+            <br></br> all in one place.
+          </p>
+        </div>
+        <div className="flex gap-4 mx-auto mt-12 max-w-2xl lg:mx-0 lg:max-w-none">
           <Button
             onClick={() => navigate(`/browse`)}
             variant="primary"
@@ -53,7 +53,6 @@ const Home = () => {
             Create
           </Button>
         </div>
-        <div className="mt-8">{renderImage}</div>
       </div>
     </div>
   );
