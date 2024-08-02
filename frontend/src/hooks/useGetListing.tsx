@@ -35,6 +35,7 @@ const useGetListing = (id: string) => {
     };
     fetchListing();
   }, []);
+
   return {
     listing,
     isLoading,
