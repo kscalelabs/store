@@ -1,12 +1,33 @@
 import { Button } from "components/ui/Button/Button";
+import { useDarkMode } from "hooks/dark_mode";
+import { useEffect, useMemo, useState } from "react";
 import { FaArrowRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const navigate = useNavigate();
+  const { darkMode } = useDarkMode();
+  const [imageSrc, setImageSrc] = useState<string>("");
+
+  // change image based on DarkMode state
+  useEffect(() => {
+    setImageSrc(
+      darkMode ? "/images/LandingDark.png" : "/images/LandingLight.png",
+    );
+  }, [darkMode]);
+
+  const renderImage = useMemo(() => {
+    return (
+      <img
+        src={imageSrc}
+        alt="Landing Page"
+        className="w-full h-auto mx-auto"
+      />
+    );
+  }, [imageSrc]);
 
   return (
-    <section>
+    <div>
       <div className="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16">
         <h1 className="mb-8 text-4xl font-extrabold tracking-tight leading-none md:text-5xl lg:text-6xl">
           Robolist
@@ -32,9 +53,9 @@ const Home = () => {
             Create
           </Button>
         </div>
-        {/* Landing page image/redesign */}
+        <div className="mt-8">{renderImage}</div>
       </div>
-    </section>
+    </div>
   );
 };
 
