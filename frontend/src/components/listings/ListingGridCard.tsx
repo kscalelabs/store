@@ -2,7 +2,6 @@ import clsx from "clsx";
 import Image from "components/Image";
 import { RenderDescription } from "components/listing/ListingDescription";
 import { Card, CardContent, CardHeader, CardTitle } from "components/ui/Card";
-import { Skeleton } from "components/ui/Skeleton";
 import { paths } from "gen/api";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -22,7 +21,7 @@ const ListingGridCard = (props: Props) => {
 
   const listing = listingInfo?.find((listing) => listing.id === listingId);
 
-  return listing ? (
+  return (
     <Card
       className={clsx(
         "transition-transform duration-100 ease-in-out transform cursor-pointer",
@@ -36,26 +35,25 @@ const ListingGridCard = (props: Props) => {
       <Image />
       <div className="px-4 py-4 h-full">
         <CardHeader>
-          <CardTitle className="text-gray-500 text-xl">
-            {listing?.name}
+          <CardTitle className="text-gray-500 text-xl min-h-6">
+            {listing ? (
+              listing.name
+            ) : (
+              <div className="animate-pulse bg-gray-200 h-6 w-1/2 mb-2"></div>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent className="max-h-32 overflow-hidden">
-          {listing?.description && (
-            <RenderDescription description={listing?.description} />
+          {listing ? (
+            listing?.description && (
+              <RenderDescription description={listing?.description} />
+            )
+          ) : (
+            <div className="animate-pulse bg-gray-200 h-6 w-full"></div>
           )}
         </CardContent>
       </div>
     </Card>
-  ) : (
-    <div className="bg-transparent">
-      <Skeleton className="h-44 w-70 bg-white" />
-      <Skeleton className="h-6 w-70 mt-5 bg-white" />
-      <Skeleton className="h-6 w-70 mt-5 bg-white" />
-      <Skeleton className="h-5 w-70 mt-2 mb-5 bg-white" />
-      <Skeleton className="h-3.5 w-70 mt-1 bg-white" />
-      <Skeleton className="h-5 mt-3.5 w-20 bg-white" />
-    </div>
   );
 };
 
