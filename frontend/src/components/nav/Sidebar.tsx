@@ -20,24 +20,48 @@ interface SidebarItemProps {
   icon?: JSX.Element;
   onClick?: () => void;
   size?: "sm" | "md" | "lg";
+  align?: "left" | "right";
 }
 
-const SidebarItem = ({ icon, title, onClick, size }: SidebarItemProps) => {
+const SidebarItem = ({
+  icon,
+  title,
+  onClick,
+  size,
+  align,
+}: SidebarItemProps) => {
   return (
     <li>
       <button onClick={onClick} className="w-full focus:outline-none">
         <span className="flex items-center py-2 px-4 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-          {icon}
-          {/* <span className={icon && "ms-5"}>{title}</span> */}
-          <span
-            className={clsx(
-              icon && "ms-5",
-              size === "sm" && "text-sm",
-              size === "lg" && "text-lg",
-            )}
-          >
-            {title}
-          </span>
+          {align === "right" ? (
+            <>
+              <span className="flex-grow" />
+              <span
+                className={clsx(
+                  icon && "mr-4",
+                  size === "sm" && "text-sm",
+                  size === "lg" && "text-lg",
+                )}
+              >
+                {title}
+              </span>
+              {icon}
+            </>
+          ) : (
+            <>
+              {icon}
+              <span
+                className={clsx(
+                  icon && "ml-4",
+                  size === "sm" && "text-sm",
+                  size === "lg" && "text-lg",
+                )}
+              >
+                {title}
+              </span>
+            </>
+          )}
         </span>
       </button>
     </li>
@@ -160,7 +184,7 @@ const Sidebar = ({ show, onClose }: Props) => {
         </ul>
       </div>
       {/* Aligned to bottom */}
-      <div className="absolute bottom-4 w-full">
+      <div className="absolute bottom-4 right-4">
         <ul className="space-y-1 font-medium mt-4">
           <SidebarItem
             title="About"
@@ -170,6 +194,7 @@ const Sidebar = ({ show, onClose }: Props) => {
               onClose();
             }}
             size="sm"
+            align="right"
           />
           <SidebarItem
             title="Privacy Policy"
@@ -179,6 +204,7 @@ const Sidebar = ({ show, onClose }: Props) => {
               onClose();
             }}
             size="sm"
+            align="right"
           />
           <SidebarItem
             title="Terms of Service"
@@ -188,6 +214,7 @@ const Sidebar = ({ show, onClose }: Props) => {
               onClose();
             }}
             size="sm"
+            align="right"
           />
         </ul>
       </div>
