@@ -23,4 +23,4 @@
 
 This is the code for our online store. This is a simple store for buying and selling robots and robot parts.
 
-If you would like to contribute, see the [CONTRIBUTING.md](CONTRIBUTING.md) file.
+If you would like to contribute, see the [CONTRIBUTING.md](CONTRIBUTING.md) file and check out the [project tracker](https://github.com/orgs/kscalelabs/projects/8/views/1).
