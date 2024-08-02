@@ -34,9 +34,9 @@ const ListingGridCard = (props: Props) => {
       onClick={() => navigate(`/item/${listingId}`)}
     >
       <Image />
-      <div className="px-3 py-4">
+      <div className="px-4 py-4 h-full">
         <CardHeader>
-          <CardTitle className="text-gray-500 text-xl mb-3">
+          <CardTitle className="text-gray-500 text-xl">
             {listing?.name}
           </CardTitle>
         </CardHeader>
