@@ -13,7 +13,7 @@ const CloseButton = () => {
   return (
     <Button
       onClick={() => navigate(-1)}
-      variant="ghost"
+      variant="outline"
       className="hover:bg-gray-200 dark:hover:bg-gray-700 bg-opacity-50"
     >
       <span className="md:hidden block mr-2">Close</span>
@@ -26,8 +26,8 @@ const ListingHeader = (props: Props) => {
   const { title } = props;
   return (
     <div className="relative border-b p-4">
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] items-center">
-        <h1 className="text-2xl font-bold mb-2">{title}</h1>
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4">
+        <h1 className="text-2xl font-bold">{title}</h1>
         <CloseButton />
       </div>
     </div>
