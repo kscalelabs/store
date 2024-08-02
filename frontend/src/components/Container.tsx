@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import "./App.css";
+import { useLocation } from "react-router-dom";
 
 interface ContainerProps {
   children: ReactNode;
@@ -7,6 +7,13 @@ interface ContainerProps {
 
 const Container = (props: ContainerProps) => {
   const { children } = props;
+  const location = useLocation();
+  const { pathname } = location;
+
+  // landing page/home path
+  if (pathname === "/") {
+    return <div className="pt-16">{children}</div>;
+  }
 
   return <div className="container mx-auto pt-24 px-8">{children}</div>;
 };

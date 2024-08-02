@@ -1,8 +1,10 @@
+import Container from "components/Container";
+import Footer from "components/Footer";
 import Navbar from "components/nav/Navbar";
 import NotFoundRedirect from "components/NotFoundRedirect";
 import { AlertQueue, AlertQueueProvider } from "hooks/alerts";
 import { AuthenticationProvider } from "hooks/auth";
-import { DarkModeProvider } from "hooks/dark_mode";
+import { DarkModeProvider } from "hooks/useDarkMode";
 import About from "pages/About";
 import APIKeys from "pages/APIKeys";
 import Browse from "pages/Browse";
@@ -25,19 +27,22 @@ const App = () => {
             <AlertQueue>
               <div className="dark:bg-gray-900 dark:text-white h-screen">
                 <Navbar />
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/keys" element={<APIKeys />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/logout" element={<Logout />} />
-                  <Route path="/create" element={<Create />} />
-                  <Route path="/browse/:page?" element={<Browse />} />
-                  <Route path="/item/:id" element={<ListingDetails />} />
-                  <Route path="/404" element={<NotFound />} />
-                  <Route path="*" element={<NotFoundRedirect />} />
-                </Routes>
+                <Container>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/keys" element={<APIKeys />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/logout" element={<Logout />} />
+                    <Route path="/create" element={<Create />} />
+                    <Route path="/browse/:page?" element={<Browse />} />
+                    <Route path="/item/:id" element={<ListingDetails />} />
+                    <Route path="/404" element={<NotFound />} />
+                    <Route path="*" element={<NotFoundRedirect />} />
+                  </Routes>
+                </Container>
+                <Footer />
               </div>
             </AlertQueue>
           </AlertQueueProvider>
