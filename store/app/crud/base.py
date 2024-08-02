@@ -331,6 +331,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         """Creates an S3 bucket if it does not already exist."""
         try:
             await self.s3.meta.client.head_bucket(Bucket=settings.s3.bucket)
+            print(f"Bucket {settings.s3.bucket} already exists.")
             logger.info("Found existing bucket %s", settings.s3.bucket)
         except ClientError:
             logger.info("Creating %s bucket", settings.s3.bucket)
