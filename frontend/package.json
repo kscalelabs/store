@@ -1,6 +1,6 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
+  "name": "k-scale-store",
+  "version": "0.1.1",
   "private": true,
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -21,6 +21,7 @@
     "openapi-fetch": "^0.10.4",
     "postcss": ">=8.4.31",
     "react": "^18.3.1",
+    "react-device-detect": "^2.2.3",
     "react-dom": "^18.3.1",
     "react-dropzone": "^14.2.3",
     "react-hook-form": "^7.52.1",

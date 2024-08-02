@@ -1,6 +1,7 @@
 import { Button } from "components/ui/Button/Button";
 import { useDarkMode } from "hooks/useDarkMode";
 import { useMemo } from "react";
+import { isMobile } from "react-device-detect";
 import { FaArrowRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import LandingDark from "../images/LandingDark.png";
@@ -20,6 +21,11 @@ const Home = () => {
       />
     );
   }, [darkMode]);
+
+  // mobile specifc layout
+  if (isMobile) {
+    return <div></div>;
+  }
 
   return (
     <div className="relative isolate overflow-hidden pb-20">
