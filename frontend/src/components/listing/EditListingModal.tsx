@@ -17,11 +17,11 @@ import { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { NewListingSchema, NewListingType } from "types";
 
-const dropZoneConfig = {
-  maxFiles: 5,
-  maxSize: 1024 * 1024 * 4,
-  multiple: true,
-};
+// const dropZoneConfig = {
+//   maxFiles: 5,
+//   maxSize: 1024 * 1024 * 4,
+//   multiple: true,
+// };
 
 interface AddOrEditProps {
   open: boolean;

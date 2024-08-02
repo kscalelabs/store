@@ -12,12 +12,9 @@ const Browse = () => {
   const [listingIds, setListingIds] = useState<string[] | null>(null);
   const [moreListings, setMoreListings] = useState<boolean>(false);
   const { addErrorAlert } = useAlertQueue();
-  const [showDialogBox, setShowDialogBox] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [formType, setFormType] = useState("");
-  const [listId, setListId] = useState("");
   const navigate = useNavigate();
-  console.log(" lsiting id : ", listingIds);
+
   // Gets the current page number and makes sure it is valid.
   const page = searchParams.get("page");
   const query = searchParams.get("query");
