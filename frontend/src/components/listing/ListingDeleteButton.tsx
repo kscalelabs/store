@@ -6,11 +6,11 @@ import { FaExclamation } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 interface Props {
-  listing_id: string;
+  listingId: string;
 }
 
 const ListingDeleteButton = (props: Props) => {
-  const { listing_id } = props;
+  const { listingId: listing_id } = props;
   const [deleting, setDeleting] = useState(false);
 
   const { addAlert, addErrorAlert } = useAlertQueue();

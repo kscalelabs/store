@@ -15,6 +15,7 @@ const ListingBody = (props: ListingBodyProps) => {
   return (
     <div className="px-4">
       <ListingDescription
+        listingId={listing.id}
         description={listing.description}
         edit={listing.owner_is_user}
       />

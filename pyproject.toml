@@ -36,6 +36,7 @@ namespace_packages = false
 
 module = [
     "boto3.*",
+    "httpx.*",
     "moto.*",
 ]
 

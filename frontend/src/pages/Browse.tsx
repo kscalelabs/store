@@ -1,14 +1,11 @@
 import { useDebounce } from "@uidotdev/usehooks";
-import AddOrEditList from "components/listing/AddOrEditList";
-import List from "components/listing/List";
-import { Button } from "components/ui/Button/Button";
+import ListingGrid from "components/listings/ListingGrid";
 import { Input } from "components/ui/Input/Input";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { FormType } from "types";
 
 const Browse = () => {
   const auth = useAuthentication();
@@ -81,7 +78,7 @@ const Browse = () => {
 
   return (
     <>
-      <div className="min-h-screen">
+      <div className="pb-8">
         <div className="flex justify-center mt-4 gap-x-2">
           <div className="relative">
             <Input
@@ -109,17 +106,6 @@ const Browse = () => {
               </div>
             )}
           </div>
-          <div>
-            <Button
-              variant={"primary"}
-              onClick={() => {
-                setShowDialogBox(true);
-                setFormType("create");
-              }}
-            >
-              + New List
-            </Button>
-          </div>
         </div>
 
         {hasButton && (
@@ -144,26 +130,9 @@ const Browse = () => {
             </div>
           </div>
         )}
-        {showDialogBox && (
-          <AddOrEditList
-            listId={listId}
-            formType={formType as FormType}
-            open={showDialogBox}
-            onClose={setShowDialogBox}
-          />
-        )}
-        <div className="grid grid-cols-4 py-4 px-4 gap-4">
-          {listingIds?.map((id) => (
-            <List
-              key={id}
-              id={id}
-              setShowDialogBox={setShowDialogBox}
-              setformType={setFormType}
-              setlistId={setListId}
-            />
-          ))}
-        </div>
       </div>
+
+      <ListingGrid listingIds={listingIds} />
     </>
   );
 };

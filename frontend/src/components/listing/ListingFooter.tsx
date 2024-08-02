@@ -1,18 +1,23 @@
 import ListingDeleteButton from "./ListingDeleteButton";
 
 interface Props {
-  listing_id: string;
+  listingId: string;
   edit: boolean;
 }
 
-const ListingFooter = ({ listing_id, edit }: Props) => {
-  if (!edit) {
-    return <></>;
-  }
-
+const ListingFooter = ({ listingId, edit }: Props) => {
   return (
-    <div className="flex justify-end border-t p-4">
-      <ListingDeleteButton listing_id={listing_id} />
+    <div className="relative border-t p-4">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-center">
+        <div className="text-gray-600 dark:text-gray-400 italic text-sm">
+          {`Listing ID: ${listingId}`}
+        </div>
+        {edit && (
+          <div className="flex justify-end gap-2">
+            <ListingDeleteButton listingId={listingId} />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

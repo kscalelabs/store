@@ -1,3 +1,10 @@
+import { Button } from "components/ui/Button/Button";
+import { TextArea } from "components/ui/Input/Input";
+import Spinner from "components/ui/Spinner";
+import { useAlertQueue } from "hooks/alerts";
+import { useAuthentication } from "hooks/auth";
+import { useState } from "react";
+import { FaFile, FaPen } from "react-icons/fa";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -36,16 +43,94 @@ export const RenderDescription = ({ description }: RenderDescriptionProps) => {
 };
 
 interface Props {
+  listingId: string;
   description: string | null;
   // TODO: If can edit, allow the user to update the description.
   edit: boolean;
 }
 
 const ListingDescription = (props: Props) => {
-  const { description } = props;
+  const { listingId, description: initialDescription, edit } = props;
+
+  const auth = useAuthentication();
+  const { addAlert, addErrorAlert } = useAlertQueue();
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [newDescription, setNewDescription] = useState(
+    initialDescription ?? "",
+  );
+  const [hasChanged, setHasChanged] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSave = async () => {
+    if (!hasChanged) {
+      setIsEditing(false);
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await auth.client.PUT("/listings/edit/{id}", {
+      params: {
+        path: { id: listingId },
+      },
+      body: {
+        description: newDescription,
+      },
+    });
+    if (error) {
+      addErrorAlert(error);
+      setHasChanged(false);
+    } else {
+      addAlert("Listing updated successfully", "success");
+      setIsEditing(false);
+    }
+    setSubmitting(false);
+  };
+
   return (
     <div className="mb-3">
-      {description && <RenderDescription description={description} />}
+      {submitting ? (
+        <Spinner />
+      ) : (
+        <>
+          {isEditing && (
+            <TextArea
+              placeholder="Description"
+              rows={4}
+              value={newDescription}
+              onChange={(e) => {
+                setNewDescription(e.target.value);
+                setHasChanged(true);
+              }}
+              className="border-b border-gray-300 dark:border-gray-700 mb-2"
+            />
+          )}
+          <RenderDescription description={newDescription} />
+          {edit && (
+            <Button
+              onClick={() => {
+                if (isEditing) {
+                  handleSave();
+                } else {
+                  setIsEditing(true);
+                }
+              }}
+              variant="warning"
+              className="mt-2"
+              disabled={submitting}
+            >
+              {isEditing ? (
+                <>
+                  <FaFile className="mr-2" /> Save
+                </>
+              ) : (
+                <>
+                  <FaPen className="mr-2" /> Edit
+                </>
+              )}
+            </Button>
+          )}
+        </>
+      )}
     </div>
   );
 };
