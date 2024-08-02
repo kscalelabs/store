@@ -1,5 +1,12 @@
-import { FaGithub, FaLinkedinIn } from "react-icons/fa";
+// src/components/Footer.tsx
+import { FaDiscord, FaGithub, FaLinkedinIn } from "react-icons/fa";
 import { Link, useLocation } from "react-router-dom";
+import {
+  DiscordPrimaryColor,
+  GithubPrimaryColor,
+  LinkedinPrimaryColor,
+} from "types/colors";
+import SocialLink from "./SocialLink";
 
 const Footer = () => {
   const location = useLocation();
@@ -14,49 +21,35 @@ const Footer = () => {
   }
 
   return (
-    <footer className="bg-white dark:bg-gray-800 text-sm py-20">
-      <div className="flex flex-col gap-4 mx-12 sm:mx-24">
+    <footer className="bg-white dark:bg-gray-900 text-sm py-20">
+      <div className="flex flex-col gap-4 mx-12 sm:mx-36">
         <div className="flex flex-row justify-between items-center">
           <span className="text-xl">K-Scale Labs</span>
           <div className="flex flex-row gap-4 rounded-full p-1.5 px-2">
-            <a
+            <SocialLink
               href="https://www.linkedin.com/company/kscale"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="
-                bg-sky-600 hover:bg-opacity-80
-                rounded-full
-                text-white cursor-pointer
-                focus:outline-none
-                focus:ring-2 focus:ring-offset-2 focus:ring-sky-500
-              "
+              ariaLabel="Visit K-Scale LinkedIn Page"
+              bgColor={LinkedinPrimaryColor}
+              ringColor="focus:ring-sky-500"
             >
-              <button
-                className="text-base p-3 rounded-full"
-                aria-label="Visit LinkedIn Page"
-              >
-                <FaLinkedinIn />
-              </button>
-            </a>
-            <a
+              <FaLinkedinIn />
+            </SocialLink>
+            <SocialLink
               href="https://github.com/kscalelabs/store"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="
-                rounded-full
-              text-white cursor-pointer
-                bg-gray-600 hover:bg-opacity-80
-                focus:outline-none
-                focus:ring-2 focus:ring-offset-2 focus:ring-black
-              "
+              ariaLabel="Visit K-Scale Github Page"
+              bgColor={GithubPrimaryColor}
+              ringColor="focus:ring-black"
             >
-              <button
-                className="text-2xl p-2 rounded-full"
-                aria-label="Visit Instagram Page"
-              >
-                <FaGithub />
-              </button>
-            </a>
+              <FaGithub />
+            </SocialLink>
+            <SocialLink
+              href="https://discord.gg/rhCy6UdBRD"
+              ariaLabel="Join K-Scale Discord"
+              bgColor={DiscordPrimaryColor}
+              ringColor="focus:ring-black"
+            >
+              <FaDiscord />
+            </SocialLink>
           </div>
         </div>
         <div className="flex flex-row gap-32 sm:gap-56 md:gap-64">
@@ -78,7 +71,7 @@ const Footer = () => {
             </a>
           </div>
           <div className="flex flex-col items-start gap-2 sm:gap-3">
-            <h2 className="text-lg font-semibold mb-1">Buy</h2>
+            <h2 className="text-lg font-semibold mb-1">Buy and Sell</h2>
             <Link to={"/browse"} className="hover:text-gray-500">
               Robots
             </Link>
@@ -90,15 +83,9 @@ const Footer = () => {
             </Link>
           </div>
           <div className="flex flex-col items-start gap-2 sm:gap-3">
-            <h2 className="text-lg font-semibold mb-1">Sell</h2>
-            <Link to={"/browse"} className="hover:text-gray-500">
-              Robots
-            </Link>
-            <Link to={"/browse"} className="hover:text-gray-500">
-              Parts
-            </Link>
-            <Link to={"/browse"} className="hover:text-gray-500">
-              Designs
+            <h2 className="text-lg font-semibold mb-1">Resources</h2>
+            <Link to={"/guides"} className="hover:text-gray-500">
+              Guides
             </Link>
           </div>
         </div>

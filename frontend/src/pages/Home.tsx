@@ -30,10 +30,10 @@ const Home = () => {
   return (
     <div className="relative isolate overflow-hidden pb-20">
       {renderImage}
-      <div className="backdrop-blur-sm bg-white/40 dark:bg-black/40 px-20 p-12 rounded-br-xl lg:w-2/5 shadow-sm">
-        <div className="mx-auto px-6 lg:px-4">
+      <div className="backdrop-blur-sm bg-white/40 dark:bg-black/40 px-20 p-12 rounded-br-2xl lg:w-1/2 shadow-sm">
+        <div className="mx-auto px-6 lg:px-12">
           <div className="relative mx-auto max-w-2xl mt-10">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl leading-none font-extrabold tracking-tight text-white">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl leading-none font-bold tracking-tight text-white">
               Robolist
             </h2>
             <p className="mt-4 text-base lg:text-lg text-white">

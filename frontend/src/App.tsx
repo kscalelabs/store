@@ -1,5 +1,5 @@
 import Container from "components/Container";
-import Footer from "components/Footer";
+import Footer from "components/footer/Footer";
 import Navbar from "components/nav/Navbar";
 import NotFoundRedirect from "components/NotFoundRedirect";
 import { AlertQueue, AlertQueueProvider } from "hooks/alerts";
