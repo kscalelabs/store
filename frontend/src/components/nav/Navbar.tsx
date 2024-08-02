@@ -1,4 +1,3 @@
-import { useAuthentication } from "hooks/auth";
 import { useDarkMode } from "hooks/useDarkMode";
 import { useState } from "react";
 import { FaMoon, FaSun, FaUserCircle } from "react-icons/fa";
@@ -10,7 +9,6 @@ const ICON_SIZE = 20;
 const Navbar = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
   const { darkMode, setDarkMode } = useDarkMode();
-  const { isAuthenticated } = useAuthentication();
   const navigate = useNavigate();
 
   return (
@@ -33,22 +31,13 @@ const Navbar = () => {
                 <FaSun size={ICON_SIZE} />
               )}
             </button>
-            <button
-              onClick={
-                isAuthenticated
-                  ? () => setShowSidebar(true)
-                  : () => navigate("/login")
-              }
-              className="pl-4"
-            >
+            <button onClick={() => setShowSidebar(true)} className="pl-4">
               <FaUserCircle size={ICON_SIZE} />
             </button>
           </div>
         </div>
       </nav>
-      {isAuthenticated && (
-        <Sidebar show={showSidebar} onClose={() => setShowSidebar(false)} />
-      )}
+      <Sidebar show={showSidebar} onClose={() => setShowSidebar(false)} />
     </>
   );
 };
