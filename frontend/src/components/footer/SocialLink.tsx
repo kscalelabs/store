@@ -23,15 +23,17 @@ const SocialLink: FC<SocialLinkProps> = ({
       target="_blank"
       rel="noopener noreferrer"
       className={`
-        bg-[${bgColor}] hover:bg-opacity-80
+        hover:bg-opacity-80
         rounded-full
-        text-white cursor-pointer
+        text-white
+        cursor-pointer
         focus:outline-none
         focus:ring-2 focus:ring-offset-2 ${ringColor}
         ${className}
       `}
+      style={{ backgroundColor: bgColor }}
     >
-      <button className="text-2xl p-2 rounded-full" aria-label={ariaLabel}>
+      <button className="text-xl p-2 rounded-full" aria-label={ariaLabel}>
         {children}
       </button>
     </a>
