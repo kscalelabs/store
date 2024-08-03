@@ -37,10 +37,14 @@ class UserCrud(BaseCrud):
     async def get_user(self, id: str, throw_if_missing: bool = False) -> User | None:
         return await self._get_item(id, User, throw_if_missing=throw_if_missing)
 
+    """Standard sign up with email and password, leaves oauth providers empty"""
+
     async def _create_user_from_email(self, email: str, password: str) -> User:
         user = User.create(email=email, password=password)
         await self._add_item(user, unique_fields=["email"])
         return user
+
+    """OAuth sign up, creates user and links OAuthKey"""
 
     async def _create_user_from_oauth(self, email: str, provider: str, token: str) -> User:
         user = User.create(email=email, password=None)
@@ -131,7 +135,21 @@ class UserCrud(BaseCrud):
 
 async def test_adhoc() -> None:
     async with UserCrud() as crud:
-        await crud._create_user_from_email(email="ben@kscale.dev", password="examplepas$w0rd")
+        # Test standard user creation
+        user = await crud._create_user_from_email(email="ben@kscale.dev", password="examplepas$w0rd")
+        print(f"User created: {user}")
+
+        # Test OAuth user creation (GitHub)
+        oauth_user_github = await crud.get_user_from_github_token(
+            token="gh_token_example", email="oauth_github@kscale.dev"
+        )
+        print(f"OAuth GitHub User created: {oauth_user_github}")
+
+        # Test OAuth user creation (Google)
+        oauth_user_google = await crud.get_user_from_google_token(
+            token="google_token_example", email="oauth_google@kscale.dev"
+        )
+        print(f"OAuth Google User created: {oauth_user_google}")
 
 
 if __name__ == "__main__":

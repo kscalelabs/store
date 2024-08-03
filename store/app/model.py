@@ -76,6 +76,7 @@ class User(RobolistBaseModel):
 
 class OAuthKey(RobolistBaseModel):
     """Keys for OAuth providers which identify users."""
+
     user_id: str
     provider: str
     token: str
@@ -86,8 +87,7 @@ class OAuthKey(RobolistBaseModel):
             id=new_uuid(),
             user_id=user_id,
             provider=provider,
-            token=token
-        )
+            token=token),
 
 
 APIKeySource = Literal["user", "oauth"]
@@ -118,7 +118,12 @@ class APIKey(RobolistBaseModel):
         if permissions == "full":
             permissions = {"read", "write", "admin"}
         ttl_timestamp = int((datetime.utcnow() + timedelta(days=90)).timestamp())
-        return cls(id=new_uuid(), user_id=user_id, source=source, permissions=permissions, ttl=ttl_timestamp)
+        return cls(
+            id=new_uuid(),
+            user_id=user_id,
+            source=source,
+            permissions=permissions,
+            ttl=ttl_timestamp),
 
 
 ArtifactSize = Literal["small", "large"]
