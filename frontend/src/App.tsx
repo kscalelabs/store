@@ -26,7 +26,7 @@ const App = () => {
               <div className="dark:bg-gray-900 dark:text-white min-h-screen">
                 <Navbar />
 
-                <div className="container mx-auto pt-24 px-8">
+                <div className="container mx-auto py-24 px-8">
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/about" element={<About />} />
