@@ -11,8 +11,8 @@ import {
 import ErrorMessage from "components/ui/ErrorMessage";
 import { Input, TextArea } from "components/ui/Input/Input";
 import { paths } from "gen/api";
-import { useAlertQueue } from "hooks/alerts";
-import { useAuthentication } from "hooks/auth";
+import { useAlertQueue } from "hooks/useAlertQueue";
+import { useAuthentication } from "hooks/useAuth";
 import { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { NewListingSchema, NewListingType } from "types";

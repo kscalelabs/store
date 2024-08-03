@@ -1,8 +1,8 @@
 import { useDebounce } from "@uidotdev/usehooks";
 import ListingGrid from "components/listings/ListingGrid";
 import { Input } from "components/ui/Input/Input";
-import { useAlertQueue } from "hooks/alerts";
-import { useAuthentication } from "hooks/auth";
+import { useAlertQueue } from "hooks/useAlertQueue";
+import { useAuthentication } from "hooks/useAuth";
 import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
