@@ -7,7 +7,7 @@ expects (for example, converting a UUID into a string).
 
 import time
 from datetime import datetime, timedelta
-from typing import Optional, Self, Set, Literal
+from typing import Literal, Optional, Self, Set
 
 from pydantic import BaseModel, EmailStr
 
@@ -83,11 +83,7 @@ class OAuthKey(RobolistBaseModel):
 
     @classmethod
     def create(cls, user_id: str, provider: str, token: str) -> Self:
-        return cls(
-            id=new_uuid(),
-            user_id=user_id,
-            provider=provider,
-            token=token),
+        return (cls(id=new_uuid(), user_id=user_id, provider=provider, token=token),)
 
 
 APIKeySource = Literal["user", "oauth"]
@@ -118,12 +114,7 @@ class APIKey(RobolistBaseModel):
         if permissions == "full":
             permissions = {"read", "write", "admin"}
         ttl_timestamp = int((datetime.utcnow() + timedelta(days=90)).timestamp())
-        return cls(
-            id=new_uuid(),
-            user_id=user_id,
-            source=source,
-            permissions=permissions,
-            ttl=ttl_timestamp),
+        return (cls(id=new_uuid(), user_id=user_id, source=source, permissions=permissions, ttl=ttl_timestamp),)
 
 
 ArtifactSize = Literal["small", "large"]

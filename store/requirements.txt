@@ -4,6 +4,7 @@
 omegaconf
 bson
 pydantic
+email-validator
 
 # AWS dependencies.
 aioboto3
@@ -11,6 +12,7 @@ aioboto3
 # Crypto dependencies
 argon2-cffi
 pyjwt[asyncio]
+bcrypt
 
 # FastAPI dependencies.
 aiohttp
