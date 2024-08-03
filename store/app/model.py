@@ -7,9 +7,9 @@ expects (for example, converting a UUID into a string).
 
 import time
 from datetime import datetime, timedelta
-from typing import Literal, Self
+from typing import Optional, Self, Set, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 from store.settings import settings
 from store.store.app.utils.password import hash_password
@@ -33,28 +33,38 @@ UserPermission = Literal["is_admin"]
 class User(RobolistBaseModel):
     """Defines the user model for the API.
 
-    Users are defined by their email and hashed_password. This is the
-    simplest form of authentication, and is used for users who sign up with
-    their email and password.
+    Users are defined by their id and email (both unique).
+    Hashed password is set if user signs up with email and password, and is
+    left empty if the user signed up with Google or Github OAuth.
     """
 
-    email: str
-    hashed_password: str
-    permissions: set[UserPermission] | None = None
+    email: EmailStr
+    hashed_password: Optional[str] = None
+    permissions: Optional[Set[UserPermission]] = None
     created_at: int
     updated_at: int
-    email_verified_at: int | None = None
+    email_verified_at: Optional[int] = None
+    github_id: Optional[str] = None
+    google_id: Optional[str] = None
 
     @classmethod
-    def create(cls, email: str, password: str) -> Self:
+    def create(
+        cls,
+        email: str,
+        password: Optional[str] = None,
+        github_id: Optional[str] = None,
+        google_id: Optional[str] = None,
+    ) -> Self:
         now = int(time.time())
+        hashed_pw = hash_password(password) if password else None
         return cls(
             id=new_uuid(),
             email=email,
-            hashed_password=hash_password(password),
-            permissions=None,
+            hashed_password=hashed_pw,
             created_at=now,
             updated_at=now,
+            github_id=github_id,
+            google_id=google_id,
         )
 
     def update_timestamp(self) -> None:
@@ -66,13 +76,18 @@ class User(RobolistBaseModel):
 
 class OAuthKey(RobolistBaseModel):
     """Keys for OAuth providers which identify users."""
-
     user_id: str
-    user_token: str
+    provider: str
+    token: str
 
     @classmethod
-    def create(cls, user_token: str, user_id: str) -> Self:
-        return cls(id=new_uuid(), user_id=user_id, user_token=user_token)
+    def create(cls, user_id: str, provider: str, token: str) -> Self:
+        return cls(
+            id=new_uuid(),
+            user_id=user_id,
+            provider=provider,
+            token=token
+        )
 
 
 APIKeySource = Literal["user", "oauth"]

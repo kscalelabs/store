@@ -42,10 +42,15 @@ class UserCrud(BaseCrud):
         await self._add_item(user, unique_fields=["email"])
         return user
 
-    async def _create_user_from_auth_key(self, auth_key: str, email: str) -> User:
-        user = await self._create_user_from_email(email)
-        key = OAuthKey.create(auth_key, user.id)
-        await self._add_item(key, unique_fields=["user_token"])
+    async def _create_user_from_oauth(self, email: str, provider: str, token: str) -> User:
+        user = User.create(email=email, password=None)
+        if provider == "github":
+            user.github_id = token
+        elif provider == "google":
+            user.google_id = token
+        await self._add_item(user, unique_fields=["email"])
+        oauth_key = OAuthKey.create(user_id=user.id, provider=provider, token=token)
+        await self._add_item(oauth_key, unique_fields=["user_token"])
         return user
 
     @overload
@@ -71,7 +76,7 @@ class UserCrud(BaseCrud):
         user = await self._get_user_from_auth_key(auth_key)
         if user is not None:
             return user
-        return await self._create_user_from_auth_key(auth_key, email)
+        return await self._create_user_from_oauth(email, "github", auth_key)
 
     async def delete_github_token(self, github_id: str) -> None:
         await self._delete_item(await self._get_oauth_key(github_auth_key(github_id), throw_if_missing=True))
@@ -81,7 +86,7 @@ class UserCrud(BaseCrud):
         user = await self._get_user_from_auth_key(auth_key)
         if user is not None:
             return user
-        return await self._create_user_from_auth_key(auth_key, email)
+        return await self._create_user_from_oauth(email, "google", auth_key)
 
     async def delete_google_token(self, google_id: str) -> None:
         await self._delete_item(await self._get_oauth_key(google_auth_key(google_id), throw_if_missing=True))
@@ -126,7 +131,7 @@ class UserCrud(BaseCrud):
 
 async def test_adhoc() -> None:
     async with UserCrud() as crud:
-        await crud._create_user_from_email(email="ben@kscale.dev")
+        await crud._create_user_from_email(email="ben@kscale.dev", password="examplepas$w0rd")
 
 
 if __name__ == "__main__":
