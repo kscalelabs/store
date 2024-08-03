@@ -37,8 +37,8 @@ class UserCrud(BaseCrud):
     async def get_user(self, id: str, throw_if_missing: bool = False) -> User | None:
         return await self._get_item(id, User, throw_if_missing=throw_if_missing)
 
-    async def _create_user_from_email(self, email: str) -> User:
-        user = User.create(email=email)
+    async def _create_user_from_email(self, email: str, password: str) -> User:
+        user = User.create(email=email, password=password)
         await self._add_item(user, unique_fields=["email"])
         return user
 

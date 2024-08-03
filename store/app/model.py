@@ -12,6 +12,7 @@ from typing import Literal, Self
 from pydantic import BaseModel
 
 from store.settings import settings
+from store.store.app.utils.security import hash_password
 from store.utils import new_uuid
 
 
@@ -32,17 +33,36 @@ UserPermission = Literal["is_admin"]
 class User(RobolistBaseModel):
     """Defines the user model for the API.
 
-    Users are defined by their email, username and password hash. This is the
+    Users are defined by their email and hashed_password. This is the
     simplest form of authentication, and is used for users who sign up with
     their email and password.
     """
 
     email: str
+    hashed_password: str
     permissions: set[UserPermission] | None = None
+    created_at: int
+    updated_at: int
+    email_verified_at: int | None = None
 
     @classmethod
-    def create(cls, email: str) -> Self:
-        return cls(id=new_uuid(), email=email, permissions=None)
+    def create(cls, email: str, password: str) -> Self:
+        now = int(time.time())
+        return cls(
+            id=new_uuid(),
+            email=email,
+            permissions=None,
+            created_at=now,
+            updated_at=now,
+            hashed_password=hash_password(password)  # Call a function to hash the password
+        )
+
+    def update_timestamp(self) -> None:
+        self.updated_at = int(time.time())
+
+    def verify_email(self) -> None:
+        self.email_verified_at = int(time.time())
+
 
 
 class OAuthKey(RobolistBaseModel):
