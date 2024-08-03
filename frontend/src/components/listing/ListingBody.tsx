@@ -23,7 +23,7 @@ const ListingBody = (props: ListingBodyProps) => {
         child_ids={listing.child_ids}
         edit={listing.owner_is_user}
       />
-      <ListingArtifacts listing_id={listing.id} edit={listing.owner_is_user} />
+      <ListingArtifacts listingId={listing.id} edit={listing.owner_is_user} />
     </div>
   );
 };
