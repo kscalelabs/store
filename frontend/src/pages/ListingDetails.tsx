@@ -3,8 +3,8 @@ import ListingFooter from "components/listing/ListingFooter";
 import ListingHeader from "components/listing/ListingHeader";
 import Spinner from "components/ui/Spinner";
 import { paths } from "gen/api";
-import { useAlertQueue } from "hooks/alerts";
-import { useAuthentication } from "hooks/auth";
+import { useAlertQueue } from "hooks/useAlertQueue";
+import { useAuthentication } from "hooks/useAuth";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 

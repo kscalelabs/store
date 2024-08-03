@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader } from "components/ui/Card";
 import Header from "components/ui/Header";
 import Spinner from "components/ui/Spinner";
-import { useAlertQueue } from "hooks/alerts";
-import { useAuthentication } from "hooks/auth";
+import { useAlertQueue } from "hooks/useAlertQueue";
+import { useAuthentication } from "hooks/useAuth";
 import { useEffect } from "react";
 
 const Logout = () => {

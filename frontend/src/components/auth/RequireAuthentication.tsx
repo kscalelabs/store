@@ -1,5 +1,5 @@
 import LogInModal from "components/auth/AuthenticationModal";
-import { useAuthentication } from "hooks/auth";
+import { useAuthentication } from "hooks/useAuth";
 import React from "react";
 
 interface Props {
