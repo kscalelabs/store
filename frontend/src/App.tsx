@@ -25,23 +25,25 @@ const App = () => {
         <AuthenticationProvider>
           <AlertQueueProvider>
             <AlertQueue>
-              <div className="dark:bg-gray-900 dark:text-white min-h-screen">
+              <div className="dark:bg-gray-900 dark:text-white min-h-screen flex flex-col">
                 <Navbar />
-                <Container>
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/keys" element={<APIKeys />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/logout" element={<Logout />} />
-                    <Route path="/create" element={<Create />} />
-                    <Route path="/browse/:page?" element={<Browse />} />
-                    <Route path="/item/:id" element={<ListingDetails />} />
-                    <Route path="/404" element={<NotFound />} />
-                    <Route path="*" element={<NotFoundRedirect />} />
-                  </Routes>
-                </Container>
+                <div className="flex-grow">
+                  <Container>
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/about" element={<About />} />
+                      <Route path="/keys" element={<APIKeys />} />
+                      <Route path="/profile" element={<Profile />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/logout" element={<Logout />} />
+                      <Route path="/create" element={<Create />} />
+                      <Route path="/browse/:page?" element={<Browse />} />
+                      <Route path="/item/:id" element={<ListingDetails />} />
+                      <Route path="/404" element={<NotFound />} />
+                      <Route path="*" element={<NotFoundRedirect />} />
+                    </Routes>
+                  </Container>
+                </div>
                 <Footer />
               </div>
             </AlertQueue>
