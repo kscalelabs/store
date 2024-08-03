@@ -1,8 +1,10 @@
+import Container from "components/Container";
+import Footer from "components/footer/Footer";
 import Navbar from "components/nav/Navbar";
 import NotFoundRedirect from "components/NotFoundRedirect";
 import { AlertQueue, AlertQueueProvider } from "hooks/alerts";
 import { AuthenticationProvider } from "hooks/auth";
-import { DarkModeProvider } from "hooks/dark_mode";
+import { DarkModeProvider } from "hooks/useDarkMode";
 import About from "pages/About";
 import APIKeys from "pages/APIKeys";
 import Browse from "pages/Browse";
@@ -25,8 +27,7 @@ const App = () => {
             <AlertQueue>
               <div className="dark:bg-gray-900 dark:text-white min-h-screen">
                 <Navbar />
-
-                <div className="container mx-auto py-24 px-8">
+                <Container>
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/about" element={<About />} />
@@ -40,7 +41,8 @@ const App = () => {
                     <Route path="/404" element={<NotFound />} />
                     <Route path="*" element={<NotFoundRedirect />} />
                   </Routes>
-                </div>
+                </Container>
+                <Footer />
               </div>
             </AlertQueue>
           </AlertQueueProvider>

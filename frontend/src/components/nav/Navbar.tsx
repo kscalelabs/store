@@ -1,10 +1,10 @@
-import { useDarkMode } from "hooks/dark_mode";
+import { useDarkMode } from "hooks/useDarkMode";
 import { useState } from "react";
 import { FaMoon, FaSun, FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 
-const SIZE = 20;
+const ICON_SIZE = 20;
 
 const Navbar = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
@@ -13,7 +13,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="fixed w-full z-20 top-0 start-0">
+      <nav className="fixed w-full z-30 top-0 start-0 bg-white dark:bg-gray-800">
         <div className="flex flex-wrap items-center justify-between p-4">
           <button
             onClick={() => navigate("/")}
@@ -25,10 +25,14 @@ const Navbar = () => {
           </button>
           <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
             <button onClick={() => setDarkMode(!darkMode)}>
-              {darkMode ? <FaMoon size={SIZE} /> : <FaSun size={SIZE} />}
+              {darkMode ? (
+                <FaMoon size={ICON_SIZE} />
+              ) : (
+                <FaSun size={ICON_SIZE} />
+              )}
             </button>
             <button onClick={() => setShowSidebar(true)} className="pl-4">
-              <FaUserCircle size={SIZE} />
+              <FaUserCircle size={ICON_SIZE} />
             </button>
           </div>
         </div>
