@@ -51,10 +51,10 @@ class User(RobolistBaseModel):
         return cls(
             id=new_uuid(),
             email=email,
+            hashed_password=hash_password(password),
             permissions=None,
             created_at=now,
             updated_at=now,
-            hashed_password=hash_password(password)  # Call a function to hash the password
         )
 
     def update_timestamp(self) -> None:
@@ -62,7 +62,6 @@ class User(RobolistBaseModel):
 
     def verify_email(self) -> None:
         self.email_verified_at = int(time.time())
-
 
 
 class OAuthKey(RobolistBaseModel):
