@@ -1,26 +1,20 @@
 import { useDebounce } from "@uidotdev/usehooks";
-import AddOrEditList from "components/listing/AddOrEditList";
-import List from "components/listing/List";
-import { Button } from "components/ui/Button/Button";
+import ListingGrid from "components/listings/ListingGrid";
 import { Input } from "components/ui/Input/Input";
 import { useAlertQueue } from "hooks/alerts";
 import { useAuthentication } from "hooks/auth";
 import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { FormType } from "types";
 
 const Browse = () => {
   const auth = useAuthentication();
   const [listingIds, setListingIds] = useState<string[] | null>(null);
   const [moreListings, setMoreListings] = useState<boolean>(false);
   const { addErrorAlert } = useAlertQueue();
-  const [showDialogBox, setShowDialogBox] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [formType, setFormType] = useState("");
-  const [listId, setListId] = useState("");
   const navigate = useNavigate();
-  console.log(" lsiting id : ", listingIds);
+
   // Gets the current page number and makes sure it is valid.
   const page = searchParams.get("page");
   const query = searchParams.get("query");
@@ -59,29 +53,9 @@ const Browse = () => {
   const nextButton = moreListings;
   const hasButton = prevButton || nextButton;
 
-  useEffect(() => {
-    async function fetchData() {
-      const { data, error } = await auth.client.GET("/listings/me", {
-        params: {
-          query: {
-            page: pageNumber,
-            search_query: searchQuery,
-          },
-        },
-      });
-      if (error) {
-        addErrorAlert(error);
-      } else {
-        setListingIds(data.listing_ids);
-        setMoreListings(data.has_next);
-      }
-    }
-    fetchData();
-  }, []);
-
   return (
     <>
-      <div className="min-h-screen">
+      <div className="pb-8">
         <div className="flex justify-center mt-4 gap-x-2">
           <div className="relative">
             <Input
@@ -109,17 +83,6 @@ const Browse = () => {
               </div>
             )}
           </div>
-          <div>
-            <Button
-              variant={"primary"}
-              onClick={() => {
-                setShowDialogBox(true);
-                setFormType("create");
-              }}
-            >
-              + New List
-            </Button>
-          </div>
         </div>
 
         {hasButton && (
@@ -144,26 +107,9 @@ const Browse = () => {
             </div>
           </div>
         )}
-        {showDialogBox && (
-          <AddOrEditList
-            listId={listId}
-            formType={formType as FormType}
-            open={showDialogBox}
-            onClose={setShowDialogBox}
-          />
-        )}
-        <div className="grid grid-cols-4 py-4 px-4 gap-4">
-          {listingIds?.map((id) => (
-            <List
-              key={id}
-              id={id}
-              setShowDialogBox={setShowDialogBox}
-              setformType={setFormType}
-              setlistId={setListId}
-            />
-          ))}
-        </div>
       </div>
+
+      <ListingGrid listingIds={listingIds} />
     </>
   );
 };
