@@ -1,3 +1,8 @@
+"""Utility functions for hashing and verifying passwords.
+
+For User sign up and login.
+"""
+
 import bcrypt
 
 

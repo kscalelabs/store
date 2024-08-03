@@ -12,7 +12,7 @@ from typing import Literal, Self
 from pydantic import BaseModel
 
 from store.settings import settings
-from store.store.app.utils.security import hash_password
+from store.store.app.utils.password import hash_password
 from store.utils import new_uuid
 
 
