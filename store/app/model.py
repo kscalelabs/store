@@ -11,8 +11,8 @@ from typing import Literal, Optional, Self, Set
 
 from pydantic import BaseModel, EmailStr
 
+from store.app.utils.password import hash_password
 from store.settings import settings
-from store.store.app.utils.password import hash_password
 from store.utils import new_uuid
 
 
@@ -83,7 +83,7 @@ class OAuthKey(RobolistBaseModel):
 
     @classmethod
     def create(cls, user_id: str, provider: str, token: str) -> Self:
-        return (cls(id=new_uuid(), user_id=user_id, provider=provider, token=token),)
+        return cls(id=new_uuid(), user_id=user_id, provider=provider, token=token)
 
 
 APIKeySource = Literal["user", "oauth"]
@@ -105,16 +105,11 @@ class APIKey(RobolistBaseModel):
     ttl: int | None = None
 
     @classmethod
-    def create(
-        cls,
-        user_id: str,
-        source: APIKeySource,
-        permissions: APIKeyPermissionSet,
-    ) -> Self:
+    def create(cls, user_id: str, source: APIKeySource, permissions: APIKeyPermissionSet) -> Self:
         if permissions == "full":
             permissions = {"read", "write", "admin"}
         ttl_timestamp = int((datetime.utcnow() + timedelta(days=90)).timestamp())
-        return (cls(id=new_uuid(), user_id=user_id, source=source, permissions=permissions, ttl=ttl_timestamp),)
+        return cls(id=new_uuid(), user_id=user_id, source=source, permissions=permissions, ttl=ttl_timestamp)
 
 
 ArtifactSize = Literal["small", "large"]
