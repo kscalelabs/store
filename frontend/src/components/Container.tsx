@@ -10,7 +10,7 @@ const Container = (props: ContainerProps) => {
   const location = useLocation();
   const { pathname } = location;
 
-  // landing page/home path
+  // Landing page/home path
   if (pathname === "/") {
     return <div className="pt-16">{children}</div>;
   }

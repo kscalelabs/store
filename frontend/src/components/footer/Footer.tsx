@@ -11,6 +11,8 @@ const Footer = () => {
   const location = useLocation();
   const { pathname } = location;
 
+  // Show/hide footer based on pathname
+  // - to hide footer on a page add path to this
   const showFooter =
     pathname?.startsWith("/browse") === false &&
     pathname?.startsWith("/some-other-path-to-hide-footer") === false;

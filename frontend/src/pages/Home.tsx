@@ -12,7 +12,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { darkMode } = useDarkMode();
 
-  // change landing page image based on DarkMode state
+  // Change landing page image based on DarkMode state
   const renderImage = useMemo(() => {
     return (
       <img
