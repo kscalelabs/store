@@ -1,5 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import RequireAuthentication from "components/auth/RequireAuthentication";
+import {
+  FileUploader,
+  FileUploaderContent,
+  FileUploaderItem,
+} from "components/listing/FileUpload";
 import { Button } from "components/ui/Button/Button";
 import {
   Dialog,
@@ -13,15 +18,11 @@ import { Input, TextArea } from "components/ui/Input/Input";
 import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
+import { FileInput, Paperclip } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { FaFileUpload } from "react-icons/fa";
 import { NewListingSchema, NewListingType } from "types";
-
-// const dropZoneConfig = {
-//   maxFiles: 5,
-//   maxSize: 1024 * 1024 * 4,
-//   multiple: true,
-// };
 
 interface AddOrEditProps {
   open: boolean;
@@ -33,7 +34,7 @@ type ListingResponse =
   paths["/listings/{id}"]["get"]["responses"][200]["content"]["application/json"];
 
 const EditListingModal = ({ open, onClose, listingId }: AddOrEditProps) => {
-  // const [files, setFiles] = useState<File[] | null>(null);
+  const [files, setFiles] = useState<File[] | null>(null);
   const { addAlert, addErrorAlert } = useAlertQueue();
   const auth = useAuthentication();
   const [listing, setListing] = useState<ListingResponse | null>(null);
@@ -98,9 +99,9 @@ const EditListingModal = ({ open, onClose, listingId }: AddOrEditProps) => {
   return (
     <RequireAuthentication>
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="bg-gray-950">
+        <DialogContent className="bg-white dark:bg-gray-800 dark:text-white">
           <DialogHeader>
-            <DialogTitle className="text-white text-center py-2">
+            <DialogTitle className="text-center py-2">
               Add Robo Details
             </DialogTitle>
           </DialogHeader>
@@ -114,7 +115,6 @@ const EditListingModal = ({ open, onClose, listingId }: AddOrEditProps) => {
                 placeholder="Name"
                 type="text"
                 {...register("name")}
-                className="text-white"
                 disabled={listing === null}
               />
               {errors?.name && (
@@ -127,7 +127,7 @@ const EditListingModal = ({ open, onClose, listingId }: AddOrEditProps) => {
               <TextArea
                 placeholder="Description"
                 rows={4}
-                className="block p-2.5 text-white w-full text-sm rounded-lg borde focus:ring-blue-500 focus:border-blue-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                className="block p-2.5 w-full text-sm rounded-lg borde focus:ring-blue-500 focus:border-blue-500 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 {...register("description")}
                 disabled={listing === null}
               />
@@ -137,36 +137,36 @@ const EditListingModal = ({ open, onClose, listingId }: AddOrEditProps) => {
             </div>
 
             {/* File Uploader */}
-            {/* <div>
-                <FileUploader
-                  value={files}
-                  onValueChange={setFiles}
-                  dropzoneOptions={dropZoneConfig}
-                  className="relative bg-background rounded-lg p-2"
-                >
-                  <FileInput className="outline-dashed outline-1 outline-white">
-                    <div className="flex items-center justify-center flex-col pt-3 pb-4 w-full ">
-                      <FileSvgDraw />
-                    </div>
-                  </FileInput>
-                  <FileUploaderContent>
-                    {files &&
-                      files.length > 0 &&
-                      files.map((file, index: number) => (
-                        <FileUploaderItem key={index} index={index}>
-                          <Paperclip className="h-4 w-4 stroke-current" />
-                          <span>{file.name}</span>
-                        </FileUploaderItem>
-                      ))}
-                  </FileUploaderContent>
-                </FileUploader>
-              </div> */}
-            <DialogFooter>
-              <Button
-                variant="primary"
-                type="submit"
-                className="text-white w-full"
+            <div>
+              <FileUploader
+                value={files}
+                onValueChange={setFiles}
+                dropzoneOptions={{
+                  maxFiles: 5,
+                  maxSize: 1024 * 1024 * 4,
+                  multiple: true,
+                }}
+                className="relative bg-background rounded-lg p-2"
               >
+                <FileInput className="outline-dashed outline-1 outline-white">
+                  <div className="flex items-center justify-center flex-col pt-3 pb-4 w-full ">
+                    <FaFileUpload />
+                  </div>
+                </FileInput>
+                <FileUploaderContent>
+                  {files &&
+                    files.length > 0 &&
+                    files.map((file, index: number) => (
+                      <FileUploaderItem key={index} index={index}>
+                        <Paperclip className="h-4 w-4 stroke-current" />
+                        <span>{file.name}</span>
+                      </FileUploaderItem>
+                    ))}
+                </FileUploaderContent>
+              </FileUploader>
+            </div>
+            <DialogFooter>
+              <Button variant="primary" type="submit" className="w-full">
                 Submit
               </Button>
             </DialogFooter>

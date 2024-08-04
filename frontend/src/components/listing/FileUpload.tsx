@@ -1,3 +1,5 @@
+import { buttonVariants } from "components/ui/Button/Button";
+import { Input } from "components/ui/Input/Input";
 import { Trash2 as RemoveIcon } from "lucide-react";
 import {
   createContext,
@@ -17,8 +19,6 @@ import {
   useDropzone,
 } from "react-dropzone";
 import { cn } from "utils";
-import { buttonVariants } from "./Button/Button";
-import { Input } from "./Input/Input";
 
 type DirectionOptions = "rtl" | "ltr" | undefined;
 
