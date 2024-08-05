@@ -78,7 +78,6 @@ const ListingDescription = (props: Props) => {
     });
     if (error) {
       addErrorAlert(error);
-      setHasChanged(false);
     } else {
       addAlert("Listing updated successfully", "success");
       setIsEditing(false);
