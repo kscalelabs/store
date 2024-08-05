@@ -43,7 +43,8 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
         files={"file": ("test.png", open(image_path, "rb"), "image/png"), "metadata": (None, data_json)},
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
-    assert response.json()["artifact_id"] is not None
+    data = response.json()
+    assert data["artifact"]["artifact_id"] is not None
 
     # Searches for listings.
     response = await app_client.get(
