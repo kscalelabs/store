@@ -32,7 +32,11 @@ const ListingGridCard = (props: Props) => {
       onMouseLeave={() => setHovering(false)}
       onClick={() => navigate(`/item/${listingId}`)}
     >
-      <Image />
+      {listing?.image_url ? (
+        <img src={listing.image_url} alt={listing.name} />
+      ) : (
+        <Image />
+      )}
       <div className="px-4 py-4 h-full">
         <CardHeader>
           <CardTitle className="text-gray-500 text-xl min-h-6">
@@ -43,7 +47,7 @@ const ListingGridCard = (props: Props) => {
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="max-h-32 overflow-hidden">
+        <CardContent className="text-gray-500 max-h-32 overflow-hidden">
           {listing ? (
             listing?.description && (
               <RenderDescription description={listing?.description} />
