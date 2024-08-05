@@ -1,0 +1,13 @@
+{
+  "folders": [
+	{
+		"name": "landingpage",
+		"path": "../landingpage"
+	},
+	{
+		"name": "kscalelabs",
+		"path": "."
+	}
+],
+  "settings": {}
+}
