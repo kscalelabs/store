@@ -7,9 +7,12 @@ async def test_model_functions() -> None:
     async with Crud() as crud:
         await create_tables(crud)
 
-        # Tests that using the same Github token twice will result in the same user.
-        assert (user := await crud.get_user_from_github_token("test", "test")) is not None
-        assert user.email == "test"
-        assert (user := await crud.get_user_from_github_token("test", "test")) is not None
-        assert user.email == "test"
+        user = await crud.get_user_from_github_token("test_token", "test@example.com")
+        assert user is not None
+        assert user.email == "test@example.com"
+
+        user_again = await crud.get_user_from_github_token("test_token", "test@example.com")
+        assert user_again is not None
+        assert user_again.email == "test@example.com"
+
         assert len(await crud.list_users()) == 1

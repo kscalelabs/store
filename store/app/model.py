@@ -79,11 +79,11 @@ class OAuthKey(RobolistBaseModel):
 
     user_id: str
     provider: str
-    token: str
+    user_token: str
 
     @classmethod
-    def create(cls, user_id: str, provider: str, token: str) -> Self:
-        return cls(id=new_uuid(), user_id=user_id, provider=provider, token=token)
+    def create(cls, user_id: str, provider: str, user_token: str) -> Self:
+        return cls(id=new_uuid(), user_id=user_id, provider=provider, user_token=user_token)
 
 
 APIKeySource = Literal["user", "oauth"]
