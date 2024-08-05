@@ -64,7 +64,11 @@ const Create = () => {
             >
               {/* Name */}
               <div>
-                <Input placeholder="Name" type="text" {...register("name")} />
+                <Input
+                  placeholder="Name (at least 4 characters)"
+                  type="text"
+                  {...register("name")}
+                />
                 {errors?.name && (
                   <ErrorMessage>{errors?.name?.message}</ErrorMessage>
                 )}
@@ -73,7 +77,7 @@ const Create = () => {
               {/* Description Input */}
               <div className="relative">
                 <TextArea
-                  placeholder="Description"
+                  placeholder="Description (at least 6 characters)"
                   rows={4}
                   {...register("description", {
                     setValueAs: (value) => {

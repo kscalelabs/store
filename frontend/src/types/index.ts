@@ -7,13 +7,13 @@ export const LoginSchema = z.object({
       required_error: "Email is required",
       invalid_type_error: "Email should be end at @gmail",
     })
-    .min(1, { message: "Email Required" })
+    .min(1, { message: "Email is required." })
     .email("Invalid Email"),
   password: z
     .string({
-      required_error: "Password is Required",
+      required_error: "Password is required.",
     })
-    .min(4, { message: "Password Required" }),
+    .min(4, { message: "Password is required." }),
 });
 
 export type LoginType = z.infer<typeof LoginSchema>;
@@ -22,32 +22,34 @@ export const SignUpSchema = z
   .object({
     email: z
       .string({
-        required_error: "Email is required",
+        required_error: "Email required.",
       })
-      .min(1, { message: "Email Required" })
-      .email("Invalid Email"),
+      .min(1, { message: "Email required." })
+      .email("Invalid email."),
     password: z
       .string({
-        required_error: "Password is Required",
+        required_error: "Password required.",
       })
-      .min(4, { message: "Password Required" })
+      .min(4, { message: "Password must be at least 4 characters long." })
       .refine(
         (password) => {
           const result = zxcvbn(password);
           return result.score >= 2;
         },
         {
-          message: "Password is too weak",
+          message: "Password is too weak.",
         },
       ),
     confirmPassword: z
       .string({
-        required_error: "Confirm Password is Required",
+        required_error: "Must confirm password.",
       })
-      .min(4, { message: "Confirm Password Required" }),
+      .min(8, {
+        message: "Must confirm password with length at least 8 characters.",
+      }),
   })
   .refine((data) => data.confirmPassword === data.password, {
-    message: "Password not matched",
+    message: "Passwords do not match.",
     path: ["confirmPassword"],
   });
 
@@ -55,11 +57,11 @@ export type SignupType = z.infer<typeof SignUpSchema>;
 
 export const NewListingSchema = z.object({
   name: z
-    .string({ required_error: "Name is required" })
-    .min(4, { message: "Name is required" }),
+    .string({ required_error: "Name is required." })
+    .min(4, { message: "Name must be at least 4 characters long." }),
   description: z
-    .string({ required_error: "Description is required" })
-    .min(6, { message: "Description is required" }),
+    .string({ required_error: "Description is required." })
+    .min(6, { message: "Description must be at least 6 characters long." }),
 });
 
 export type NewListingType = z.infer<typeof NewListingSchema>;
