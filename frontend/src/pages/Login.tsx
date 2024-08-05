@@ -1,6 +1,6 @@
 import AuthBlock from "components/auth/AuthBlock";
 
-const Auth = () => {
+const Login = () => {
   return (
     <div className="mx-8">
       <div className="flex justify-center items-center">
@@ -10,4 +10,4 @@ const Auth = () => {
   );
 };
 
-export default Auth;
+export default Login;

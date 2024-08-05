@@ -172,7 +172,7 @@ const Sidebar = ({ show, onClose }: Props) => {
             />
           ) : (
             <SidebarItem
-              title="Login"
+              title="Login / Sign Up"
               icon={<FaDoorOpen />}
               onClick={() => {
                 navigate("/login");
