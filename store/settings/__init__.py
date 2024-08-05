@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 from typing import Any, Callable, Generic, TypeVar, cast
 
-from dotenv import load_dotenv
 from omegaconf import OmegaConf
 
 from store.settings.environment import EnvironmentSettings
