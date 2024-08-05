@@ -37,6 +37,12 @@ start-docker-dynamodb:
 	@docker rm store-db || true
 	@docker run --name store-db -d -p 8000:8000 amazon/dynamodb-local
 
+start-docker-backend:
+	@docker kill store-backend || true
+	@docker rm store-backend || true
+	@docker build -t store-backend .
+	@docker run --name store-backend -d -p 8080:8080 store-backend
+
 # ------------------------ #
 #      Code Formatting     #
 # ------------------------ #

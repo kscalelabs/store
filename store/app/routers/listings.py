@@ -52,7 +52,6 @@ async def get_batch_listing_info(
     crud: Annotated[Crud, Depends(Crud.get)],
     ids: list[str] = Query(description="List of part ids"),
 ) -> GetBatchListingsResponse:
-    print("IDs:", ids)
     listings = await crud._get_item_batch(ids, Listing)
     return GetBatchListingsResponse(
         listings=[
