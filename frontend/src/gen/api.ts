@@ -478,6 +478,8 @@ export interface components {
             description: string | null;
             /** Child Ids */
             child_ids: string[];
+            /** Image Url */
+            image_url: string | null;
         };
         /** NewListingRequest */
         NewListingRequest: {
@@ -525,8 +527,7 @@ export interface components {
         };
         /** UploadArtifactResponse */
         UploadArtifactResponse: {
-            /** Artifact Id */
-            artifact_id: string;
+            artifact: components["schemas"]["ListArtifactsItem"];
         };
         /** UserInfoResponse */
         UserInfoResponse: {

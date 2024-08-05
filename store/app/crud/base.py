@@ -7,7 +7,7 @@ import logging
 from typing import Any, AsyncContextManager, BinaryIO, Callable, Literal, Self, TypeVar, overload
 
 import aioboto3
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 from types_aiobotocore_s3.service_resource import S3ServiceResource
@@ -226,8 +226,14 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             chunk = item_ids[i : i + chunk_size]
             keys = [{"id": item_id} for item_id in chunk]
             response = await self.db.batch_get_item(RequestItems={TABLE_NAME: {"Keys": keys}})
+
+            # Maps the items to their IDs to return them in the correct order.
+            item_ids_to_items: dict[str, T] = {}
             for item in response["Responses"][TABLE_NAME]:
-                items.append(self._validate_item(item, item_class))
+                item_impl = self._validate_item(item, item_class)
+                item_ids_to_items[item_impl.id] = item_impl
+            items += [item_ids_to_items[item_id] for item_id in chunk]
+
         return items
 
     async def _get_items_from_secondary_index(
@@ -244,6 +250,40 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         )
         items = item_dict["Items"]
         return [self._validate_item(item, item_class) for item in items]
+
+    async def _get_items_from_secondary_index_batch(
+        self,
+        secondary_index_name: str,
+        secondary_index_values: list[str],
+        item_class: type[T],
+        chunk_size: int = DEFAULT_CHUNK_SIZE,
+    ) -> list[list[T]]:
+        items: list[list[T]] = []
+        table = await self.db.Table(TABLE_NAME)
+
+        for i in range(0, len(secondary_index_values), chunk_size):
+            chunk = secondary_index_values[i : i + chunk_size]
+            response = await table.scan(
+                IndexName=self.get_gsi_index_name(secondary_index_name),
+                FilterExpression=(Attr(secondary_index_name).is_in(chunk) & Attr("type").eq(item_class.__name__)),
+            )
+
+            # Maps the items to their IDs.
+            chunk_items = [self._validate_item(item, item_class) for item in response["Items"]]
+            chunk_ids_to_items: dict[str, list[T]] = {}
+            for item in chunk_items:
+                item_id = getattr(item, secondary_index_name)
+                if item_id in chunk_ids_to_items:
+                    chunk_ids_to_items[item_id].append(item)
+                else:
+                    chunk_ids_to_items[item_id] = [item]
+
+            print(chunk_ids_to_items)
+
+            # Adds the items to the list.
+            items += [chunk_ids_to_items.get(id, []) for id in chunk]
+
+        return items
 
     @overload
     async def _get_unique_item_from_secondary_index(
@@ -331,7 +371,6 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         """Creates an S3 bucket if it does not already exist."""
         try:
             await self.s3.meta.client.head_bucket(Bucket=settings.s3.bucket)
-            print(f"Bucket {settings.s3.bucket} already exists.")
             logger.info("Found existing bucket %s", settings.s3.bucket)
         except ClientError:
             logger.info("Creating %s bucket", settings.s3.bucket)

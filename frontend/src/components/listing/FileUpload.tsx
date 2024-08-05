@@ -1,3 +1,5 @@
+import { buttonVariants } from "components/ui/Button/Button";
+import { Input } from "components/ui/Input/Input";
 import { Trash2 as RemoveIcon } from "lucide-react";
 import {
   createContext,
@@ -17,8 +19,6 @@ import {
   useDropzone,
 } from "react-dropzone";
 import { cn } from "utils";
-import { buttonVariants } from "./Button/Button";
-import { Input } from "./Input/Input";
 
 type DirectionOptions = "rtl" | "ltr" | undefined;
 
@@ -326,7 +326,7 @@ export const FileInput = forwardRef<
     >
       <div
         className={cn(
-          `w-full rounded-lg duration-300 ease-in-out
+          `w-full rounded-lg duration-300 ease-in-out border-2 border-dashed
          ${
            dropzoneState.isDragAccept
              ? "border-green-500"
@@ -351,3 +351,27 @@ export const FileInput = forwardRef<
 });
 
 FileInput.displayName = "FileInput";
+
+export const FileSubmitButton = forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement>
+>(({ children, className, ...props }, ref) => {
+  const { isLOF } = useFileUpload();
+  return (
+    <button
+      ref={ref}
+      type="button"
+      disabled={!isLOF}
+      className={cn(
+        buttonVariants({ variant: "primary" }),
+        "w-full",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+});
+
+FileSubmitButton.displayName = "FileSubmitButton";

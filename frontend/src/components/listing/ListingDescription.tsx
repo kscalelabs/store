@@ -1,8 +1,8 @@
 import { Button } from "components/ui/Button/Button";
 import { TextArea } from "components/ui/Input/Input";
 import Spinner from "components/ui/Spinner";
-import { useAlertQueue } from "hooks/alerts";
-import { useAuthentication } from "hooks/auth";
+import { useAlertQueue } from "hooks/useAlertQueue";
+import { useAuthentication } from "hooks/useAuth";
 import { useState } from "react";
 import { FaFile, FaPen } from "react-icons/fa";
 import Markdown from "react-markdown";

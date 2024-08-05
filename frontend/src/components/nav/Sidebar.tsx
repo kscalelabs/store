@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useAuthentication } from "hooks/auth";
+import { useAuthentication } from "hooks/useAuth";
 import {
   FaBookOpen,
   FaDoorClosed,

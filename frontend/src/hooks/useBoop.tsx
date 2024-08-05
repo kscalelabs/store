@@ -10,7 +10,7 @@ interface BoopProps {
   springConfig?: SpringConfig;
 }
 
-function boop({
+function useBoop({
   x = 100,
   y = 100,
   rotation = 0,
@@ -57,4 +57,4 @@ function boop({
   return [appliedStyle, trigger] as const;
 }
 
-export default boop;
+export default useBoop;

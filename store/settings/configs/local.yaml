@@ -1,7 +1,6 @@
 crypto:
   jwt_secret: fakeJwtSecret
 s3:
-  # bucket: ${oc.env:AWS_S3_BUCKET}
   bucket: artifacts
   prefix: ""
 dynamo:
