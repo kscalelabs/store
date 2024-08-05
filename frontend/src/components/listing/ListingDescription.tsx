@@ -67,6 +67,10 @@ const ListingDescription = (props: Props) => {
       setIsEditing(false);
       return;
     }
+    if (newDescription.length < 6) {
+      addErrorAlert("Description must be at least 6 characters long.");
+      return;
+    }
     setSubmitting(true);
     const { error } = await auth.client.PUT("/listings/edit/{id}", {
       params: {
