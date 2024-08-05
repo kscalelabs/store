@@ -13,6 +13,7 @@ aioboto3
 argon2-cffi
 pyjwt[asyncio]
 bcrypt
+pydantic[email]
 
 # FastAPI dependencies.
 aiohttp

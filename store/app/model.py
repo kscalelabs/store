@@ -16,6 +16,11 @@ from store.settings import settings
 from store.utils import new_uuid
 
 
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+
+
 class RobolistBaseModel(BaseModel):
     """Defines the base model for Robolist database rows.
 
