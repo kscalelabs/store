@@ -5,7 +5,9 @@ export const BACKEND_URL =
 
 // eslint-disable-next-line
 export const humanReadableError = (error: any | undefined) => {
-  if (isAxiosError(error)) {
+  if (typeof error === "string") {
+    return error;
+  } else if (isAxiosError(error)) {
     const axiosError = error as AxiosError;
     const request = axiosError.request,
       response = axiosError.response;
