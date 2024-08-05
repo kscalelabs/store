@@ -1,10 +1,22 @@
 crypto:
   jwt_secret: fakeJwtSecret
+
 s3:
   bucket: artifacts
   prefix: ""
+
 dynamo:
   table_name: robolist-local
+
 site:
   homepage: http://127.0.0.1:3000
   artifact_base_url: http://127.0.0.1:4566/artifacts
+  base_url: http://127.0.0.1:8000  # Add this for email verification links
+
+email:
+  use_smtp: false  # For local development, we'll use console output
+
+auth:
+  secret_key: fakeJwtSecret  # You can use the same secret as jwt_secret for local development
+  algorithm: HS256
+  access_token_expire_minutes: 30

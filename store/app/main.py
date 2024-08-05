@@ -16,6 +16,7 @@ from store.app.routers.artifacts import artifacts_router
 from store.app.routers.listings import listings_router
 from store.app.routers.users import users_router
 from store.settings import settings
+from store.app.routers.auth import email_auth
 
 LOCALHOST_URLS = [
     "http://127.0.0.1:3000",
@@ -96,7 +97,7 @@ async def not_authorized_exception_handler(request: Request, exc: NotAuthorizedE
 async def read_root() -> bool:
     return True
 
-
+app.include_router(email_auth.router, prefix="/auth", tags=["auth"])
 app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(listings_router, prefix="/listings", tags=["listings"])
 app.include_router(artifacts_router, prefix="/artifacts", tags=["artifacts"])
