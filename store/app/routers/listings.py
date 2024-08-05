@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
 from store.app.db import Crud
-from store.app.model import Listing, User
+from store.app.model import Listing, User, get_artifact_url
 from store.app.routers.users import (
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
@@ -41,6 +41,7 @@ class ListingInfoResponse(BaseModel):
     name: str
     description: str | None
     child_ids: list[str]
+    image_url: str | None
 
 
 class GetBatchListingsResponse(BaseModel):
@@ -52,7 +53,10 @@ async def get_batch_listing_info(
     crud: Annotated[Crud, Depends(Crud.get)],
     ids: list[str] = Query(description="List of part ids"),
 ) -> GetBatchListingsResponse:
-    listings = await crud._get_item_batch(ids, Listing)
+    listings, artifacts = await asyncio.gather(
+        crud._get_item_batch(ids, Listing),
+        crud.get_listings_artifacts(ids),
+    )
     return GetBatchListingsResponse(
         listings=[
             ListingInfoResponse(
@@ -60,8 +64,16 @@ async def get_batch_listing_info(
                 name=listing.name,
                 description=listing.description,
                 child_ids=listing.child_ids,
+                image_url=next(
+                    (
+                        get_artifact_url(artifact.id, "image", "small")
+                        for artifact in artifacts
+                        if artifact.artifact_type == "image"
+                    ),
+                    None,
+                ),
             )
-            for listing in listings
+            for listing, artifacts in zip(listings, artifacts)
         ]
     )
 

@@ -478,6 +478,8 @@ export interface components {
             description: string | null;
             /** Child Ids */
             child_ids: string[];
+            /** Image Url */
+            image_url: string | null;
         };
         /** NewListingRequest */
         NewListingRequest: {
