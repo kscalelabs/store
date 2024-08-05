@@ -182,7 +182,7 @@ const ListingArtifacts = (props: Props) => {
               <img
                 src={artifact.url}
                 alt={artifact.name}
-                className="rounded-lg w-full"
+                className="rounded-lg w-full aspect-square"
               />
               {edit && (
                 <Button

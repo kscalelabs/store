@@ -33,7 +33,7 @@ const ListingGridCard = (props: Props) => {
       onClick={() => navigate(`/item/${listingId}`)}
     >
       {listing?.image_url ? (
-        <img src={listing.image_url} alt={listing.name} />
+        <img src={listing.image_url} alt={listing.name} className="aspect-square" />
       ) : (
         <Image />
       )}
