@@ -1,7 +1,7 @@
 import Spinner from "components/ui/Spinner";
 import { paths } from "gen/api";
-import { useAlertQueue } from "hooks/alerts";
-import { useAuthentication } from "hooks/auth";
+import { useAlertQueue } from "hooks/useAlertQueue";
+import { useAuthentication } from "hooks/useAuth";
 import { useEffect, useState } from "react";
 import ListingGridCard from "./ListingGridCard";
 
@@ -47,7 +47,7 @@ const ListingGrid = (props: Props) => {
       <Spinner />
     </div>
   ) : (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-w-6xl mx-auto">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mx-auto">
       {listingIds.map((listingId) => (
         <ListingGridCard
           key={listingId}

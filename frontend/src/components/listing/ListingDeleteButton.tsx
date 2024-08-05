@@ -1,16 +1,16 @@
 import { Button } from "components/ui/Button/Button";
-import { useAlertQueue } from "hooks/alerts";
-import { useAuthentication } from "hooks/auth";
+import { useAlertQueue } from "hooks/useAlertQueue";
+import { useAuthentication } from "hooks/useAuth";
 import { useState } from "react";
 import { FaExclamation } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 interface Props {
-  listing_id: string;
+  listingId: string;
 }
 
 const ListingDeleteButton = (props: Props) => {
-  const { listing_id } = props;
+  const { listingId: listing_id } = props;
   const [deleting, setDeleting] = useState(false);
 
   const { addAlert, addErrorAlert } = useAlertQueue();
@@ -34,7 +34,7 @@ const ListingDeleteButton = (props: Props) => {
       setDeleting(false);
     } else {
       addAlert("Listing was deleted successfully", "success");
-      navigate("/listings");
+      navigate("/browse");
     }
   };
 

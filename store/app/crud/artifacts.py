@@ -49,6 +49,10 @@ class ArtifactsCrud(BaseCrud):
         lower = upper + new_height
         image_resized = image.crop((left, upper, right, lower))
 
+        # Resize the image to the desired size.
+        image_resized = image_resized.resize(size, resample=Image.Resampling.BICUBIC)
+
+        # Save the image to a byte stream.
         image_resized.save(image_bytes, format="PNG", optimize=True, quality=settings.image.quality)
         image_bytes.seek(0)
         return image_bytes
@@ -166,6 +170,9 @@ class ArtifactsCrud(BaseCrud):
 
     async def get_listing_artifacts(self, listing_id: str) -> list[Artifact]:
         return await self._get_items_from_secondary_index("listing_id", listing_id, Artifact)
+
+    async def get_listings_artifacts(self, listing_ids: list[str]) -> list[list[Artifact]]:
+        return await self._get_items_from_secondary_index_batch("listing_id", listing_ids, Artifact)
 
     async def edit_artifact(
         self,

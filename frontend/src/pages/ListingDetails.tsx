@@ -1,16 +1,12 @@
-import ListingArtifacts from "components/listing/ListingArtifacts";
-import ListingChildren from "components/listing/ListingChildren";
-import ListingDeleteButton from "components/listing/ListingDeleteButton";
-import ListingDescription from "components/listing/ListingDescription";
-import ListingTitle from "components/listing/ListingTitle";
-import { Button } from "components/ui/Button/Button";
+import ListingBody from "components/listing/ListingBody";
+import ListingFooter from "components/listing/ListingFooter";
+import ListingHeader from "components/listing/ListingHeader";
 import Spinner from "components/ui/Spinner";
 import { paths } from "gen/api";
-import { useAlertQueue } from "hooks/alerts";
-import { useAuthentication } from "hooks/auth";
+import { useAlertQueue } from "hooks/useAlertQueue";
+import { useAuthentication } from "hooks/useAuth";
 import { useEffect, useState } from "react";
-import { FaTimes } from "react-icons/fa";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 type ListingResponse =
   paths["/listings/{id}"]["get"]["responses"][200]["content"]["application/json"];
@@ -22,33 +18,15 @@ interface RenderListingProps {
 const RenderListing = (props: RenderListingProps) => {
   const { listing } = props;
 
-  const navigate = useNavigate();
-
   return (
-    <div className="container mx-auto p-4 max-w-4xl shadow-md px-4 rounded-lg bg-white dark:bg-gray-800 dark:text-white border bg-card text-card-foreground shadow relative">
-      <span className="absolute top-4 right-4 flex space-x-2">
-        {listing.owner_is_user && (
-          <ListingDeleteButton listing_id={listing.id} />
-        )}
-        <Button
-          onClick={() => navigate(-1)}
-          variant={"outline"}
-          className="hover:bg-gray-200 dark:hover:bg-gray-700 bg-opacity-50"
-        >
-          <span className="mr-2">Close</span>
-          <FaTimes />
-        </Button>
-      </span>
-      <ListingTitle title={listing.name} edit={listing.owner_is_user} />
-      <ListingDescription
-        description={listing.description}
+    <div className="container mx-auto max-w-4xl shadow-md rounded-lg bg-white dark:bg-gray-800 dark:text-white border bg-card text-card-foreground shadow relative">
+      <ListingHeader
+        listingId={listing.id}
+        title={listing.name}
         edit={listing.owner_is_user}
       />
-      <ListingChildren
-        child_ids={listing.child_ids}
-        edit={listing.owner_is_user}
-      />
-      <ListingArtifacts listing_id={listing.id} edit={listing.owner_is_user} />
+      <ListingBody listing={listing} />
+      <ListingFooter listingId={listing.id} edit={listing.owner_is_user} />
     </div>
   );
 };

@@ -1,39 +1,105 @@
+import Features from "components/home/Features";
 import { Button } from "components/ui/Button/Button";
+import { useDarkMode } from "hooks/useDarkMode";
+import { useMemo } from "react";
+import { isMobile } from "react-device-detect";
 import { FaArrowRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import LandingDark from "../images/LandingDark.png";
+import LandingLight from "../images/LandingLight.png";
 
 const Home = () => {
   const navigate = useNavigate();
+  const { darkMode } = useDarkMode();
 
-  return (
-    <section>
-      <div className="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16">
-        <h1 className="mb-8 text-4xl font-extrabold tracking-tight leading-none md:text-5xl lg:text-6xl">
-          Robolist
-        </h1>
-        <p className="mb-8 text-lg font-normal lg:text-xl sm:px-16 lg:px-48">
-          Buy and sell robots and robot parts, share hardware and software, and
-          connect with other robot enthusiasts, all in one place.
-        </p>
-        <div className="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0 space-x-2">
-          <Button
-            onClick={() => navigate(`/browse`)}
-            variant="primary"
-            size="lg"
-          >
-            Browse
-            <FaArrowRight className="ml-2" />
-          </Button>
-          <Button
-            onClick={() => navigate(`/create`)}
-            variant="secondary"
-            size="lg"
-          >
-            Create
-          </Button>
+  // Change landing page image based on DarkMode state
+  const renderImage = useMemo(() => {
+    return (
+      <img
+        alt="Image of robot standing in futuristic background"
+        src={darkMode ? LandingDark : LandingLight}
+        className="absolute -z-10 h-full w-full object-cover object-right"
+      />
+    );
+  }, [darkMode]);
+
+  const renderDesktopHero = () => (
+    <div className="relative isolate overflow-hidden h-[70vh]">
+      {renderImage}
+      <div className="absolute inset-0 backdrop-blur-sm bg-white/40 dark:bg-black/40 px-20 py-12 lg:w-1/2 shadow-sm">
+        <div className="relative mx-auto max-w-2xl mt-10 px-6 lg:px-16">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl leading-none font-bold tracking-tight text-white">
+            Robolist
+          </h1>
+          <p className="mt-4 text-base lg:text-lg text-white">
+            Buy and sell robots and robot parts,
+            <br /> share hardware and software,
+            <br /> and connect with other robot enthusiasts,
+            <br /> all in one place.
+          </p>
+          <div className="flex gap-4 mx-auto mt-12 max-w-2xl lg:mx-0 lg:max-w-none">
+            <Button
+              onClick={() => navigate(`/browse`)}
+              variant="primary"
+              size="lg"
+            >
+              Browse
+              <FaArrowRight className="ml-2" />
+            </Button>
+            <Button
+              onClick={() => navigate(`/create`)}
+              variant="secondary"
+              size="lg"
+            >
+              Create
+            </Button>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
+  );
+
+  const renderMobileHero = () => (
+    <div className="relative isolate overflow-hidden h-[70vh]">
+      {renderImage}
+      <div className="absolute inset-x-0 bottom-0 h-1/2 backdrop-blur-sm bg-white/40 dark:bg-black/40 px-6 py-8 shadow-sm">
+        <div className="relative mx-auto max-w-sm px-4">
+          <h1 className="text-3xl font-bold tracking-tight text-white">
+            Robolist
+          </h1>
+          <p className="mt-2 text-sm text-white">
+            Buy and sell robots and robot parts,
+            <br /> share hardware and software,
+            <br /> and connect with other robot enthusiasts,
+            <br /> all in one place.
+          </p>
+          <div className="flex flex-row gap-2 mt-6 max-w-xs">
+            <Button
+              onClick={() => navigate(`/browse`)}
+              variant="primary"
+              size="lg"
+            >
+              Browse
+              <FaArrowRight className="ml-2" />
+            </Button>
+            <Button
+              onClick={() => navigate(`/create`)}
+              variant="secondary"
+              size="lg"
+            >
+              Create
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div>
+      {isMobile ? renderMobileHero() : renderDesktopHero()}
+      <Features />
+    </div>
   );
 };
 

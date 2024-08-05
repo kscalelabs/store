@@ -16,9 +16,10 @@ pydantic[email]
 # FastAPI dependencies.
 aiohttp
 aiosmtplib
-fastapi
+fastapi[standard]
 pillow
 python-multipart
+httpx
 
 # Deployment dependencies.
 uvicorn[standard]

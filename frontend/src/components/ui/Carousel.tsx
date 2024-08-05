@@ -7,16 +7,18 @@ interface Props {
   }[];
 }
 
-const Carousel = (props: Props) => {
-  if (props.items.length === 0) {
+const Carousel = ({ items }: Props) => {
+  if (items.length === 0) {
     return <></>;
   }
+
+  console.log("items:", items);
 
   return (
     <div className="relative w-full">
       {/* Carousel wrapper */}
       <div className="relative h-56 overflow-hidden rounded-lg md:h-96">
-        {props.items.map(({ url, caption }, key) => (
+        {items.map(({ url, caption }, key) => (
           <div
             className="hidden duration-700 ease-in-out"
             data-carousel-item
@@ -33,7 +35,7 @@ const Carousel = (props: Props) => {
 
       {/* Slider indicators */}
       <div className="absolute z-30 flex -translate-x-1/2 bottom-5 left-1/2 space-x-3 rtl:space-x-reverse">
-        {props.items.map((_, key) => (
+        {items.map((_, key) => (
           <button
             type="button"
             className="w-3 h-3 rounded-full"

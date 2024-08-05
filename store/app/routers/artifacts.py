@@ -103,7 +103,7 @@ class UploadArtifactRequest(BaseModel):
 
 
 class UploadArtifactResponse(BaseModel):
-    artifact_id: str
+    artifact: ListArtifactsItem
 
 
 @artifacts_router.post("/upload", response_model=UploadArtifactResponse)
@@ -134,7 +134,16 @@ async def upload(
         artifact_type=data.artifact_type,
         description=data.description,
     )
-    return UploadArtifactResponse(artifact_id=artifact.id)
+    return UploadArtifactResponse(
+        artifact=ListArtifactsItem(
+            artifact_id=artifact.id,
+            name=artifact.name,
+            artifact_type=artifact.artifact_type,
+            description=artifact.description,
+            timestamp=artifact.timestamp,
+            url=get_artifact_url(artifact.id, artifact.artifact_type),
+        ),
+    )
 
 
 class UpdateArtifactRequest(BaseModel):
