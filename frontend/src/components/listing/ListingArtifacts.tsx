@@ -12,7 +12,7 @@ import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 import { Paperclip } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
-import { FaFileUpload, FaTimes } from "react-icons/fa";
+import { FaTimes } from "react-icons/fa";
 
 interface ListingUploadProps {
   listingId: string;
@@ -70,9 +70,19 @@ const ListingUpload = (props: ListingUploadProps) => {
       }}
       className="relative bg-background rounded-lg pt-4 pb-2 px-2"
     >
-      <FileInput className="outline-dashed outline-1 outline-white">
-        <div className="flex items-center justify-center flex-col pt-3 pb-4 w-full ">
-          <FaFileUpload />
+      <FileInput>
+        <div className="flex justify-center pt-3 pb-4 w-full h-32">
+          <div className="text-sm align-middle h-full justify-center flex flex-col">
+            <div className="text-center">
+              <span>Drag and drop your images here</span>
+            </div>
+            <div className="text-center">
+              <span>or</span>
+            </div>
+            <div className="text-center">
+              <span>click to browse</span>
+            </div>
+          </div>
         </div>
       </FileInput>
       <FileUploaderContent>

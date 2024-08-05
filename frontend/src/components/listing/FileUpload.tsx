@@ -326,7 +326,7 @@ export const FileInput = forwardRef<
     >
       <div
         className={cn(
-          `w-full rounded-lg duration-300 ease-in-out
+          `w-full rounded-lg duration-300 ease-in-out border-2 border-dashed
          ${
            dropzoneState.isDragAccept
              ? "border-green-500"
