@@ -1,14 +1,101 @@
+import {
+  FileInput,
+  FileSubmitButton,
+  FileUploader,
+  FileUploaderContent,
+  FileUploaderItem,
+} from "components/listing/FileUpload";
 import { Button } from "components/ui/Button/Button";
-import Carousel from "components/ui/Carousel";
+import Spinner from "components/ui/Spinner";
 import { components } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
-import { useEffect, useState } from "react";
-import EditListingModal from "./EditListingModal";
+import { Paperclip } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { FaFileUpload, FaTimes } from "react-icons/fa";
+
+interface ListingUploadProps {
+  listingId: string;
+  onUpload: (artifact: components["schemas"]["UploadArtifactResponse"]) => void;
+}
+
+const ListingUpload = (props: ListingUploadProps) => {
+  const { listingId, onUpload } = props;
+
+  const { addErrorAlert } = useAlertQueue();
+  const auth = useAuthentication();
+
+  const [files, setFiles] = useState<File[] | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const onValueChange = useCallback(() => {
+    if (files === null) {
+      return;
+    }
+
+    setUploading(true);
+    (async () => {
+      await Promise.all(
+        files.map(async (file: File) => {
+          const { data, error } = await auth.api.upload(file, {
+            artifact_type: "image",
+            listing_id: listingId,
+          });
+
+          if (error) {
+            addErrorAlert(error);
+          } else {
+            setFiles(null);
+            onUpload(data);
+          }
+        }),
+      );
+      setUploading(false);
+    })();
+  }, [files, auth, listingId, addErrorAlert]);
+
+  return uploading ? (
+    <div className="my-4 w-full flex justify-center">
+      <Spinner />
+    </div>
+  ) : (
+    <FileUploader
+      value={files}
+      onValueChange={setFiles}
+      dropzoneOptions={{
+        accept: {
+          "image/*": [".jpg", ".jpeg", ".png", ".gif"],
+        },
+        maxSize: 4 * 1024 * 1024,
+      }}
+      className="relative bg-background rounded-lg pt-4 pb-2 px-2"
+    >
+      <FileInput className="outline-dashed outline-1 outline-white">
+        <div className="flex items-center justify-center flex-col pt-3 pb-4 w-full ">
+          <FaFileUpload />
+        </div>
+      </FileInput>
+      <FileUploaderContent>
+        {files &&
+          files.length > 0 &&
+          files.map((file, index: number) => (
+            <FileUploaderItem key={index} index={index}>
+              <Paperclip className="h-4 w-4 stroke-current" />
+              <span>{file.name}</span>
+            </FileUploaderItem>
+          ))}
+      </FileUploaderContent>
+      {files && files.length > 0 && (
+        <FileSubmitButton onClick={onValueChange}>
+          <span>Upload</span>
+        </FileSubmitButton>
+      )}
+    </FileUploader>
+  );
+};
 
 interface Props {
   listingId: string;
-  // TODO: If can edit, allow the user to add and delete artifacts.
   edit: boolean;
 }
 
@@ -18,13 +105,17 @@ const ListingArtifacts = (props: Props) => {
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
 
-  const [addingImages, setAddingImages] = useState(false);
-
   const [artifacts, setArtifacts] = useState<
     components["schemas"]["ListArtifactsResponse"] | null
   >(null);
 
+  const [deletingIds, setDeletingIds] = useState<string[]>([]);
+
   useEffect(() => {
+    if (artifacts !== null) {
+      return;
+    }
+
     const fetchArtifacts = async () => {
       const { data, error } = await auth.client.GET("/artifacts/{listing_id}", {
         params: {
@@ -39,36 +130,73 @@ const ListingArtifacts = (props: Props) => {
       }
     };
     fetchArtifacts();
-  }, [listingId]);
+  }, [listingId, artifacts]);
+
+  const onDelete = async (artifactId: string) => {
+    setDeletingIds([...deletingIds, artifactId]);
+
+    const { error } = await auth.client.DELETE(
+      "/artifacts/delete/{artifact_id}",
+      {
+        params: {
+          path: { artifact_id: artifactId },
+        },
+      },
+    );
+
+    if (error) {
+      addErrorAlert(error);
+    } else {
+      setArtifacts({
+        artifacts: artifacts!.artifacts.filter(
+          (artifact) => artifact.artifact_id !== artifactId,
+        ),
+      });
+      setDeletingIds(deletingIds.filter((id) => id !== artifactId));
+    }
+  };
 
   return artifacts === null ? (
-    <></>
+    <div className="my-4 w-full flex justify-center">
+      <Spinner />
+    </div>
   ) : (
     <div className="my-4">
-      {artifacts.artifacts.length > 0 ?? (
-        <Carousel
-          items={artifacts.artifacts.map((artifact) => {
-            return {
-              url: artifact.url,
-              caption: artifact.name,
-            };
-          })}
-        />
+      {artifacts.artifacts.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2 mx-auto">
+          {artifacts.artifacts.map((artifact) => (
+            <div
+              key={artifact.artifact_id}
+              className="bg-background rounded-lg p-2 relative"
+            >
+              <img
+                src={artifact.url}
+                alt={artifact.name}
+                className="rounded-lg w-full"
+              />
+              {edit && (
+                <Button
+                  onClick={() => onDelete(artifact.artifact_id)}
+                  variant="destructive"
+                  className="absolute top-5 right-5 rounded-full"
+                  disabled={deletingIds.includes(artifact.artifact_id)}
+                >
+                  <FaTimes />
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
       )}
       {edit && (
-        <>
-          <Button
-            className="btn btn-primary"
-            onClick={() => setAddingImages(true)}
-          >
-            Add Images
-          </Button>
-          <EditListingModal
-            open={addingImages}
-            listingId={listingId}
-            onClose={() => setAddingImages(false)}
-          />
-        </>
+        <ListingUpload
+          listingId={listingId}
+          onUpload={(artifact) => {
+            setArtifacts({
+              artifacts: [...artifacts.artifacts, artifact.artifact],
+            });
+          }}
+        />
       )}
     </div>
   );

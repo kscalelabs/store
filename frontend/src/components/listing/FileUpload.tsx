@@ -351,3 +351,27 @@ export const FileInput = forwardRef<
 });
 
 FileInput.displayName = "FileInput";
+
+export const FileSubmitButton = forwardRef<
+  HTMLButtonElement,
+  React.ButtonHTMLAttributes<HTMLButtonElement>
+>(({ children, className, ...props }, ref) => {
+  const { isLOF } = useFileUpload();
+  return (
+    <button
+      ref={ref}
+      type="button"
+      disabled={!isLOF}
+      className={cn(
+        buttonVariants({ variant: "primary" }),
+        "w-full",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+});
+
+FileSubmitButton.displayName = "FileSubmitButton";

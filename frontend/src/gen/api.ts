@@ -525,8 +525,7 @@ export interface components {
         };
         /** UploadArtifactResponse */
         UploadArtifactResponse: {
-            /** Artifact Id */
-            artifact_id: string;
+            artifact: components["schemas"]["ListArtifactsItem"];
         };
         /** UserInfoResponse */
         UserInfoResponse: {
