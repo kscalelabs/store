@@ -15,7 +15,7 @@ pyjwt[asyncio]
 # FastAPI dependencies.
 aiohttp
 aiosmtplib
-fastapi
+fastapi[standard]
 pillow
 python-multipart
 httpx
