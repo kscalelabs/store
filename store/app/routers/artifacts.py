@@ -72,15 +72,15 @@ def validate_file(file: UploadFile, artifact_type: ArtifactType) -> str:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Artifact size was not provided",
         )
-    if file.size < settings.image.min_bytes:
+    if file.size < settings.artifact.min_bytes:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Artifact size is too small; file size {file.size} is less than {settings.image.min_bytes} bytes",
+            detail=f"Artifact size is too small; {file.size} is less than {settings.artifact.min_bytes} bytes",
         )
-    if file.size > settings.image.max_bytes:
+    if file.size > settings.artifact.max_bytes:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Artifact size is too large; file size {file.size} is less than {settings.image.max_bytes} bytes",
+            detail=f"Artifact size is too large; {file.size} is greater than {settings.artifact.max_bytes} bytes",
         )
     if (content_type := file.content_type) is None:
         raise HTTPException(
