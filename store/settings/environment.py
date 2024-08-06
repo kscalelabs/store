@@ -5,8 +5,6 @@ from dataclasses import dataclass, field
 from omegaconf import II, MISSING
 
 
-from dataclasses import dataclass, field
-from omegaconf import II, MISSING
 @dataclass
 class OauthSettings:
     github_client_id: str = field(default=II("oc.env:GITHUB_CLIENT_ID"))
@@ -30,16 +28,6 @@ class UserSettings:
 
 
 @dataclass
-class EmailSettings:
-    host: str = field(default=II("oc.env:SMTP_HOST"))
-    port: int = field(default=587)
-    username: str = field(default=II("oc.env:SMTP_USERNAME"))
-    password: str = field(default=II("oc.env:SMTP_PASSWORD"))
-    sender_email: str = field(default=II("oc.env:SMTP_SENDER_EMAIL"))
-    sender_name: str = field(default=II("oc.env:SMTP_SENDER_NAME"))
-
-
-@dataclass
 class ArtifactSettings:
     large_image_size: tuple[int, int] = field(default=(1536, 1536))
     small_image_size: tuple[int, int] = field(default=(256, 256))
@@ -60,29 +48,11 @@ class DynamoSettings:
 
 
 @dataclass
-class SiteSettings:
-    homepage: str = field(default=MISSING)
-    artifact_base_url: str = field(default=MISSING)
-
-
-@dataclass
-class EnvironmentSettings:
-    oauth: OauthSettings = field(default_factory=OauthSettings)
-    user: UserSettings = field(default_factory=UserSettings)
-    crypto: CryptoSettings = field(default_factory=CryptoSettings)
-    email: EmailSettings = field(default_factory=EmailSettings)
-    artifact: ArtifactSettings = field(default_factory=ArtifactSettings)
-    s3: S3Settings = field(default_factory=S3Settings)
-    dynamo: DynamoSettings = field(default_factory=DynamoSettings)
-    site: SiteSettings = field(default_factory=SiteSettings)
-    debug: bool = field(default=False)
-
-
-@dataclass
 class AuthSettings:
     secret_key: str = field(default=MISSING)
     algorithm: str = field(default="HS256")
     access_token_expire_minutes: int = field(default=30)
+
 
 @dataclass
 class EmailSettings:
@@ -92,16 +62,19 @@ class EmailSettings:
     password: str = field(default=II("oc.env:SMTP_PASSWORD"))
     sender_email: str = field(default=II("oc.env:SMTP_SENDER_EMAIL"))
     sender_name: str = field(default=II("oc.env:SMTP_SENDER_NAME"))
-    use_smtp: bool = field(default=False)  # Add this line
+    use_smtp: bool = field(default=False)
+
 
 @dataclass
 class SiteSettings:
     homepage: str = field(default=MISSING)
     artifact_base_url: str = field(default=MISSING)
-    base_url: str = field(default=MISSING)  # Add this line
+    base_url: str = field(default=MISSING)
+
 
 @dataclass
 class EnvironmentSettings:
+    artifact: ArtifactSettings = field(default_factory=ArtifactSettings)
     oauth: OauthSettings = field(default_factory=OauthSettings)
     user: UserSettings = field(default_factory=UserSettings)
     crypto: CryptoSettings = field(default_factory=CryptoSettings)
@@ -110,5 +83,5 @@ class EnvironmentSettings:
     s3: S3Settings = field(default_factory=S3Settings)
     dynamo: DynamoSettings = field(default_factory=DynamoSettings)
     site: SiteSettings = field(default_factory=SiteSettings)
-    auth: AuthSettings = field(default_factory=AuthSettings)  # Add this line
+    auth: AuthSettings = field(default_factory=AuthSettings)
     debug: bool = field(default=False)
