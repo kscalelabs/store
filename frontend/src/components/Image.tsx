@@ -1,8 +1,6 @@
 const Image = () => {
   return (
-    <div>
-      <div className="animate-pulse bg-gray-200 w-full aspect-square"></div>
-    </div>
+    <div className="animate-pulse bg-gray-200 dark:bg-gray-800 w-full aspect-square" />
   );
 };
 
