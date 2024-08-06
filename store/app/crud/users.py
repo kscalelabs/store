@@ -1,18 +1,20 @@
 """Defines CRUD interface for user API."""
 
 import asyncio
+import time
 import warnings
 from typing import Literal, overload
 
+from passlib.context import CryptContext
 from pydantic import EmailStr
 
 from store.app.crud.base import BaseCrud
 from store.app.model import APIKey, APIKeyPermissionSet, APIKeySource, OAuthKey, User, UserCreate
 from store.settings import settings
 from store.utils import cache_async_result
-from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 def github_auth_key(github_id: str) -> str:
     return f"github:{github_id}"
@@ -135,6 +137,7 @@ class UserCrud(BaseCrud):
 
     async def delete_api_key(self, token: APIKey | str) -> None:
         await self._delete_item(token)
+
     async def create_user(self, user: UserCreate) -> User:
         hashed_password = pwd_context.hash(user.password)
         new_user = User.create(email=user.email, hashed_password=hashed_password)
@@ -143,9 +146,9 @@ class UserCrud(BaseCrud):
 
     async def verify_user(self, email: EmailStr, token: str) -> bool:
         user = await self.get_user_from_email(email)
-        if user and not user.is_verified:
+        if user and user.email_verified_at is None:
             # TODO: Implement token verification logic
-            user.is_verified = True
+            user.email_verified_at = int(time.time())
             await self._update_item(user)
             return True
         return False
@@ -155,6 +158,7 @@ class UserCrud(BaseCrud):
         if user and pwd_context.verify(password, user.hashed_password):
             return user
         return None
+
 
 async def test_adhoc() -> None:
     async with UserCrud() as crud:

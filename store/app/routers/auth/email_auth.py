@@ -33,7 +33,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
                 detail="Incorrect email or password",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        if not user.is_verified:
+        if user.email_verified_at is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Email not verified",
@@ -57,7 +57,7 @@ async def verify_email(token: str):
         user = await crud.get_user_from_email(email)
         if user is None:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
-        if user.is_verified:
+        if user.email_verified_at is not None:
             return {"message": "Email already verified"}
         await crud.verify_user(user)
     return {"message": "Email verified successfully"}
