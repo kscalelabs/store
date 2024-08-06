@@ -1,29 +1,27 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from jose import JWTError
-from pydantic import EmailStr
+
 from store.app.crud.users import UserCrud
-from store.app.model import UserCreate, User
+from store.app.model import User, UserCreate
 from store.app.utils import jwt_utils
 from store.app.utils.jwt_utils import create_access_token, get_current_user
 from store.app.utils.verify_email import send_verification_email
 
-
 router = APIRouter()
+
 
 @router.post("/signup", response_model=dict)
 async def signup(user: UserCreate):
     async with UserCrud() as crud:
         existing_user = await crud.get_user_from_email(user.email)
         if existing_user:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered"
-            )
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
         new_user = await crud.create_user(user)
         verification_token = create_access_token(data={"sub": new_user.email})
         await send_verification_email(new_user.email, verification_token)
     return {"message": "User created. Please check your email for verification."}
+
 
 @router.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -44,6 +42,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
         access_token = create_access_token(data={"sub": user.email})
         return {"access_token": access_token, "token_type": "bearer"}
 
+
 @router.get("/verify")
 async def verify_email(token: str):
     try:
@@ -53,7 +52,7 @@ async def verify_email(token: str):
             raise HTTPException(status_code=400, detail="Invalid token")
     except JWTError:
         raise HTTPException(status_code=400, detail="Invalid token")
-    
+
     async with UserCrud() as crud:
         user = await crud.get_user_from_email(email)
         if user is None:
@@ -61,10 +60,10 @@ async def verify_email(token: str):
         if user.is_verified:
             return {"message": "Email already verified"}
         user.is_verified = True
-        await crud._update_item(user)
+        await crud.verify_user(user)
     return {"message": "Email verified successfully"}
+
 
 @router.get("/me", response_model=User)
 async def read_users_me(current_user: User = Depends(get_current_user)):
     return current_user
-
