@@ -1,3 +1,4 @@
+import { Canvas, useLoader } from "@react-three/fiber";
 import ListingFileUpload from "components/listing/ListingFileUpload";
 import { Button } from "components/ui/Button/Button";
 import { components } from "gen/api";
@@ -5,6 +6,28 @@ import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 import { useState } from "react";
 import { FaCaretSquareDown, FaCaretSquareUp, FaTimes } from "react-icons/fa";
+import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
+
+const Model = ({ url }: { url: string }) => {
+  const stl = useLoader(STLLoader, url);
+  return <primitive object={stl} />;
+};
+
+interface SingleStlViewerProps {
+  url: string;
+}
+
+const SingleStlViewer = (props: SingleStlViewerProps) => {
+  const { url } = props;
+
+  return (
+    <Canvas onError={(error) => console.log(error)}>
+      <ambientLight />
+      <pointLight position={[10, 10, 10]} />
+      <Model url={url} />
+    </Canvas>
+  );
+};
 
 interface Props {
   listingId: string;
@@ -67,11 +90,12 @@ const ListingSTLs = (props: Props) => {
                   key={stl.artifact_id}
                   className="bg-background rounded-lg p-2 relative"
                 >
-                  <img
+                  {/* <img
                     src={stl.url}
                     alt={stl.name}
                     className="rounded-lg w-full aspect-square"
-                  />
+                  /> */}
+                  <SingleStlViewer url={stl.url} />
                   {edit && (
                     <Button
                       onClick={() => onDelete(stl.artifact_id)}
