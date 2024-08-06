@@ -1,5 +1,6 @@
 import { buttonVariants } from "components/ui/Button/Button";
 import { Input } from "components/ui/Input/Input";
+import { useAlertQueue } from "hooks/useAlertQueue";
 import { Trash2 as RemoveIcon } from "lucide-react";
 import {
   createContext,
@@ -69,6 +70,8 @@ export const FileUploader = forwardRef<
     },
     ref,
   ) => {
+    const { addErrorAlert } = useAlertQueue();
+
     const [isFileTooBig, setIsFileTooBig] = useState(false);
     const [isLOF, setIsLOF] = useState(false);
     const [activeIndex, setActiveIndex] = useState(-1);
@@ -154,7 +157,7 @@ export const FileUploader = forwardRef<
         const files = acceptedFiles;
 
         if (!files) {
-          // Toast.error("file error , probably too big");
+          addErrorAlert("There was an issue with the file.");
           return;
         }
 
@@ -175,13 +178,13 @@ export const FileUploader = forwardRef<
         if (rejectedFiles.length > 0) {
           for (let i = 0; i < rejectedFiles.length; i++) {
             if (rejectedFiles[i].errors[0]?.code === "file-too-large") {
-              //   toast.error(
-              //     `File is too large. Max size is ${maxSize / 1024 / 1024}MB`
-              //   );
+              addErrorAlert(
+                `File is too large. The maximum size is ${maxSize / 1024 / 1024}MB.`,
+              );
               break;
             }
             if (rejectedFiles[i].errors[0]?.message) {
-              //   toast.error(rejectedFiles[i].errors[0].message);
+              addErrorAlert(rejectedFiles[i].errors[0].message);
               break;
             }
           }
