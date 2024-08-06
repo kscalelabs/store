@@ -63,7 +63,7 @@ const SignupForm = () => {
         showStrength={false}
       />
       {/* TOS Text */}
-      <div className="text-xs text-center text-gray-600 dark:text-gray-400">
+      <div className="text-xs text-center text-gray-600 dark:text-gray-300">
         By signing up, you agree to our <br />
         <Link to="/tos" className="text-accent underline">
           terms and conditions
