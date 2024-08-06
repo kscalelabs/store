@@ -9,8 +9,9 @@ import time
 from datetime import datetime, timedelta
 from typing import Literal, Self
 
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
+from store.app.utils.password import hash_password
 from store.settings import settings
 from store.utils import new_uuid
 
@@ -32,28 +33,57 @@ UserPermission = Literal["is_admin"]
 class User(RobolistBaseModel):
     """Defines the user model for the API.
 
-    Users are defined by their email, username and password hash. This is the
-    simplest form of authentication, and is used for users who sign up with
-    their email and password.
+    Users are defined by their id and email (both unique).
+    Hashed password is set if user signs up with email and password, and is
+    left empty if the user signed up with Google or Github OAuth.
     """
 
-    email: str
+    email: EmailStr
+    hashed_password: str | None = None
     permissions: set[UserPermission] | None = None
+    created_at: int
+    updated_at: int
+    email_verified_at: int | None = None
+    github_id: str | None = None
+    google_id: str | None = None
 
     @classmethod
-    def create(cls, email: str) -> Self:
-        return cls(id=new_uuid(), email=email, permissions=None)
+    def create(
+        cls,
+        email: str,
+        password: str | None = None,
+        github_id: str | None = None,
+        google_id: str | None = None,
+    ) -> Self:
+        now = int(time.time())
+        hashed_pw = hash_password(password) if password else None
+        return cls(
+            id=new_uuid(),
+            email=email,
+            hashed_password=hashed_pw,
+            created_at=now,
+            updated_at=now,
+            github_id=github_id,
+            google_id=google_id,
+        )
+
+    def update_timestamp(self) -> None:
+        self.updated_at = int(time.time())
+
+    def verify_email(self) -> None:
+        self.email_verified_at = int(time.time())
 
 
 class OAuthKey(RobolistBaseModel):
     """Keys for OAuth providers which identify users."""
 
     user_id: str
+    provider: str
     user_token: str
 
     @classmethod
-    def create(cls, user_token: str, user_id: str) -> Self:
-        return cls(id=new_uuid(), user_id=user_id, user_token=user_token)
+    def create(cls, user_id: str, provider: str, user_token: str) -> Self:
+        return cls(id=new_uuid(), user_id=user_id, provider=provider, user_token=user_token)
 
 
 APIKeySource = Literal["user", "oauth"]
@@ -75,12 +105,7 @@ class APIKey(RobolistBaseModel):
     ttl: int | None = None
 
     @classmethod
-    def create(
-        cls,
-        user_id: str,
-        source: APIKeySource,
-        permissions: APIKeyPermissionSet,
-    ) -> Self:
+    def create(cls, user_id: str, source: APIKeySource, permissions: APIKeyPermissionSet) -> Self:
         if permissions == "full":
             permissions = {"read", "write", "admin"}
         ttl_timestamp = int((datetime.utcnow() + timedelta(days=90)).timestamp())

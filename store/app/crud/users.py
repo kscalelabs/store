@@ -37,15 +37,24 @@ class UserCrud(BaseCrud):
     async def get_user(self, id: str, throw_if_missing: bool = False) -> User | None:
         return await self._get_item(id, User, throw_if_missing=throw_if_missing)
 
-    async def _create_user_from_email(self, email: str) -> User:
-        user = User.create(email=email)
+    """Standard sign up with email and password, leaves oauth providers empty"""
+
+    async def _create_user_from_email(self, email: str, password: str) -> User:
+        user = User.create(email=email, password=password)
         await self._add_item(user, unique_fields=["email"])
         return user
 
-    async def _create_user_from_auth_key(self, auth_key: str, email: str) -> User:
-        user = await self._create_user_from_email(email)
-        key = OAuthKey.create(auth_key, user.id)
-        await self._add_item(key, unique_fields=["user_token"])
+    """OAuth sign up, creates user and links OAuthKey"""
+
+    async def _create_user_from_oauth(self, email: str, provider: str, user_token: str) -> User:
+        user = User.create(email=email, password=None)
+        if provider == "github":
+            user.github_id = user_token
+        elif provider == "google":
+            user.google_id = user_token
+        await self._add_item(user, unique_fields=["email"])
+        oauth_key = OAuthKey.create(user_id=user.id, provider=provider, user_token=user_token)
+        await self._add_item(oauth_key, unique_fields=["user_token"])
         return user
 
     @overload
@@ -71,7 +80,7 @@ class UserCrud(BaseCrud):
         user = await self._get_user_from_auth_key(auth_key)
         if user is not None:
             return user
-        return await self._create_user_from_auth_key(auth_key, email)
+        return await self._create_user_from_oauth(email, "github", auth_key)
 
     async def delete_github_token(self, github_id: str) -> None:
         await self._delete_item(await self._get_oauth_key(github_auth_key(github_id), throw_if_missing=True))
@@ -81,7 +90,7 @@ class UserCrud(BaseCrud):
         user = await self._get_user_from_auth_key(auth_key)
         if user is not None:
             return user
-        return await self._create_user_from_auth_key(auth_key, email)
+        return await self._create_user_from_oauth(email, "google", auth_key)
 
     async def delete_google_token(self, google_id: str) -> None:
         await self._delete_item(await self._get_oauth_key(google_auth_key(google_id), throw_if_missing=True))
@@ -126,9 +135,12 @@ class UserCrud(BaseCrud):
 
 async def test_adhoc() -> None:
     async with UserCrud() as crud:
-        await crud._create_user_from_email(email="ben@kscale.dev")
+        await crud._create_user_from_email(email="ben@kscale.dev", password="examplepas$w0rd")
+
+        await crud.get_user_from_github_token(token="gh_token_example", email="oauth_github@kscale.dev")
+
+        await crud.get_user_from_google_token(token="google_token_example", email="oauth_google@kscale.dev")
 
 
 if __name__ == "__main__":
-    # python -m store.app.crud.users
     asyncio.run(test_adhoc())

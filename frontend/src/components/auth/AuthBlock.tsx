@@ -81,11 +81,15 @@ export const AuthBlockInner = () => {
   );
 };
 
-const AuthBlock = () => {
+interface AuthBlockProps {
+  title?: string;
+}
+
+const AuthBlock: React.FC<AuthBlockProps> = ({ title }) => {
   return (
     <Card className="w-[400px] shadow-md bg-white text-black rounded-lg">
       <CardHeader>
-        <Header />
+        <Header title={title} />
       </CardHeader>
       <AuthBlockInner />
     </Card>

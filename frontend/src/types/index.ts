@@ -1,4 +1,5 @@
 import { z } from "zod";
+import zxcvbn from "zxcvbn";
 
 export const LoginSchema = z.object({
   email: z
@@ -29,7 +30,16 @@ export const SignUpSchema = z
       .string({
         required_error: "Password is Required",
       })
-      .min(4, { message: "Password Required" }),
+      .min(4, { message: "Password Required" })
+      .refine(
+        (password) => {
+          const result = zxcvbn(password);
+          return result.score >= 2;
+        },
+        {
+          message: "Password is too weak",
+        },
+      ),
     confirmPassword: z
       .string({
         required_error: "Confirm Password is Required",
@@ -38,7 +48,7 @@ export const SignUpSchema = z
   })
   .refine((data) => data.confirmPassword === data.password, {
     message: "Password not matched",
-    path: ["confirm"],
+    path: ["confirmPassword"],
   });
 
 export type SignupType = z.infer<typeof SignUpSchema>;
