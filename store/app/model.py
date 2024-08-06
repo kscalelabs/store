@@ -116,7 +116,7 @@ ArtifactSize = Literal["small", "large"]
 ArtifactType = Literal["image", "urdf", "mjcf"]
 
 UPLOAD_CONTENT_TYPE_OPTIONS: dict[ArtifactType, set[str]] = {
-    "image": {"image/png", "image/jpeg", "image/jpg"},
+    "image": {"image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"},
     "urdf": {"application/gzip", "application/x-gzip"},
     "mjcf": {"application/gzip", "application/x-gzip"},
 }
