@@ -87,7 +87,7 @@ interface AuthBlockProps {
 
 const AuthBlock: React.FC<AuthBlockProps> = ({ title }) => {
   return (
-    <Card className="w-[400px] shadow-md bg-white text-black rounded-lg">
+    <Card className="w-[400px] shadow-md bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg">
       <CardHeader>
         <Header title={title} />
       </CardHeader>
