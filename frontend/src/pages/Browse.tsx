@@ -28,7 +28,7 @@ const Browse = () => {
 
   useEffect(() => {
     handleSearch();
-  }, [debouncedSearch]);
+  }, [debouncedSearch, pageNumber]);
 
   const handleSearch = async () => {
     setListingIds(null);
@@ -90,7 +90,7 @@ const Browse = () => {
             {prevButton && (
               <button
                 className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l mr-auto"
-                onClick={() => navigate(`/browse/${pageNumber - 1}`)}
+                onClick={() => navigate(`/browse/?page=${pageNumber - 1}`)}
               >
                 Previous
               </button>
@@ -98,7 +98,7 @@ const Browse = () => {
             {nextButton && (
               <button
                 className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r ml-auto"
-                onClick={() => navigate(`/browse/${pageNumber + 1}`)}
+                onClick={() => navigate(`/browse/?page=${pageNumber + 1}`)}
               >
                 Next
               </button>
