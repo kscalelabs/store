@@ -17,10 +17,6 @@ artifacts_router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-class UploadImageResponse(BaseModel):
-    image_id: str
-
-
 @artifacts_router.get("/url/{artifact_type}/{artifact_id}")
 async def artifact_url(
     artifact_type: ArtifactType,
