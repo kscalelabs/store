@@ -36,7 +36,7 @@ const ListingGridCard = (props: Props) => {
         <img
           src={listing.image_url}
           alt={listing.name}
-          className="aspect-square"
+          className="w-fit h-fit mx-auto my-auto"
         />
       ) : (
         <Image />
