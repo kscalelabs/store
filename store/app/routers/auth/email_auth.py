@@ -47,7 +47,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
 async def verify_email(token: str):
     try:
         payload = jwt_utils.decode_token(token)
-        email: str = payload.get("sub")
+        email = payload.get("sub")
         if email is None:
             raise HTTPException(status_code=400, detail="Invalid token")
     except JWTError:
