@@ -26,6 +26,7 @@ const ListingGridCard = (props: Props) => {
       className={clsx(
         "transition-transform duration-100 ease-in-out transform cursor-pointer",
         "flex flex-col max-w-sm rounded material-card bg-white justify-between",
+        "dark:bg-gray-900",
         hovering ? "scale-105" : "scale-100",
       )}
       onMouseEnter={() => setHovering(true)}
@@ -43,21 +44,21 @@ const ListingGridCard = (props: Props) => {
       )}
       <div className="px-4 py-4 h-full">
         <CardHeader>
-          <CardTitle className="text-gray-500 text-xl min-h-6">
+          <CardTitle className="text-gray-500 dark:text-gray-300 text-xl min-h-6">
             {listing ? (
               listing.name
             ) : (
-              <div className="animate-pulse bg-gray-200 h-6 w-1/2 mb-2"></div>
+              <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-6 w-1/2 mb-2"></div>
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-gray-500 max-h-32 overflow-hidden">
+        <CardContent className="text-gray-500 dark:text-gray-300 max-h-32 overflow-hidden">
           {listing ? (
             listing?.description && (
               <RenderDescription description={listing?.description} />
             )
           ) : (
-            <div className="animate-pulse bg-gray-200 h-6 w-full"></div>
+            <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-6 w-full"></div>
           )}
         </CardContent>
       </div>
