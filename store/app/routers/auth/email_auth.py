@@ -49,17 +49,16 @@ async def verify_email(token: str):
         payload = jwt_utils.decode_token(token)
         email = payload.get("sub")
         if email is None:
-            raise HTTPException(status_code=400, detail="Invalid token")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token")
     except JWTError:
-        raise HTTPException(status_code=400, detail="Invalid token")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token")
 
     async with UserCrud() as crud:
         user = await crud.get_user_from_email(email)
         if user is None:
-            raise HTTPException(status_code=400, detail="User not found")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
         if user.is_verified:
             return {"message": "Email already verified"}
-        user.is_verified = True
         await crud.verify_user(user)
     return {"message": "Email verified successfully"}
 
