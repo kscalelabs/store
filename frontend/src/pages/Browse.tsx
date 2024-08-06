@@ -89,7 +89,7 @@ const Browse = () => {
           <div className="flex justify-center mt-4">
             {prevButton && (
               <button
-                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l mr-auto"
+                className="bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-300 font-bold py-2 px-4 rounded-l mr-auto"
                 onClick={() => navigate(`/browse/?page=${pageNumber - 1}`)}
               >
                 Previous
@@ -97,7 +97,7 @@ const Browse = () => {
             )}
             {nextButton && (
               <button
-                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r ml-auto"
+                className="bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-300 font-bold py-2 px-4 rounded-r ml-auto"
                 onClick={() => navigate(`/browse/?page=${pageNumber + 1}`)}
               >
                 Next
