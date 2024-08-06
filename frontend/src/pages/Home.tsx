@@ -24,7 +24,7 @@ const Home = () => {
   }, [darkMode]);
 
   const renderDesktopHero = () => (
-    <div className="relative isolate overflow-hidden h-[70vh]">
+    <div className="relative isolate overflow-hidden h-[660px]">
       {renderImage}
       <div className="absolute inset-0 backdrop-blur-sm bg-white/40 dark:bg-black/40 px-20 py-12 lg:w-1/2 shadow-sm">
         <div className="relative mx-auto max-w-2xl mt-10 px-6 lg:px-16">
