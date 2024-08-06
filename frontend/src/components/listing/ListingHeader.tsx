@@ -29,6 +29,10 @@ const ListingTitle = (props: Props) => {
       setIsEditing(false);
       return;
     }
+    if (newTitle.length < 4) {
+      addErrorAlert("Title must be at least 4 characters long.");
+      return;
+    }
     setSubmitting(true);
     const { error } = await auth.client.PUT("/listings/edit/{id}", {
       params: {
@@ -40,7 +44,6 @@ const ListingTitle = (props: Props) => {
     });
     if (error) {
       addErrorAlert(error);
-      setHasChanged(false);
     } else {
       addAlert("Listing updated successfully", "success");
       setIsEditing(false);

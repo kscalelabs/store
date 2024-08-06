@@ -202,9 +202,19 @@ async def edit_listing(
 ) -> bool:
     listing_info = await crud.get_listing(id)
     if listing_info is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found.")
     if listing_info.user_id != user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this listing")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this listing.")
+    if listing.name is not None and len(listing.name) < 4:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Listing name must be at least 4 characters long.",
+        )
+    if listing.description is not None and len(listing.description) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Listing description must be at least 6 characters long.",
+        )
     await crud.edit_listing(
         listing_id=id,
         name=listing.name,
