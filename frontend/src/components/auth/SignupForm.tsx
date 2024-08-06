@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "components/ui/Button/Button";
 import ErrorMessage from "components/ui/ErrorMessage";
 import { Input } from "components/ui/Input/Input";
-import PasswordInput from "components/ui/Input/PasswordInput"; // Import the new PasswordInput component
+import PasswordInput from "components/ui/Input/PasswordInput";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { SignUpSchema, SignupType } from "types";
@@ -18,10 +18,12 @@ const SignupForm = () => {
     resolver: zodResolver(SignUpSchema),
   });
 
-  const onSubmit: SubmitHandler<SignupType> = async (data: SignupType) => {
-    // TODO: Add an api endpoint to send the credentials details to backend and email verification.
+  const password = watch("password") || "";
+  const confirmPassword = watch("confirmPassword") || "";
+  const passwordStrength = password.length > 0 ? zxcvbn(password).score : 0;
 
-    // Exit early if password too weak or not matching
+  const onSubmit: SubmitHandler<SignupType> = async (data: SignupType) => {
+    // Exit account creation early if password too weak or not matching
     if (passwordStrength < 2) {
       console.log("Please enter a stronger a password");
       return;
@@ -30,12 +32,9 @@ const SignupForm = () => {
       return;
     }
 
+    // TODO: Add an api endpoint to send the credentials details to backend and email verification.
     console.log(data);
   };
-
-  const password = watch("password") || "";
-  const confirmPassword = watch("confirmPassword") || ""; // Ensure password is a string
-  const passwordStrength = password.length > 0 ? zxcvbn(password).score : 0;
 
   return (
     <form
@@ -53,7 +52,7 @@ const SignupForm = () => {
         register={register}
         errors={errors}
         name="password"
-        showStrength={true} // Enable strength meter for signup form
+        showStrength={true}
       />
       {/* Confirm Password Input */}
       <PasswordInput<SignupType>
@@ -61,7 +60,7 @@ const SignupForm = () => {
         register={register}
         errors={errors}
         name="confirmPassword"
-        showStrength={false} // No need for strength meter on confirm password
+        showStrength={false}
       />
       {/* TOS Text */}
       <div className="text-xs text-center text-gray-600 dark:text-gray-400">
@@ -79,7 +78,6 @@ const SignupForm = () => {
       <Button
         variant="outline"
         className="w-full text-white bg-blue-600 hover:bg-opacity-70"
-        disabled={passwordStrength < 2} // Disabled if password weak
       >
         Sign up
       </Button>

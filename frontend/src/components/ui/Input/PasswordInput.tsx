@@ -109,7 +109,7 @@ const PasswordInput = <T extends FieldValues>({
             Password Strength: {getStrengthLabel(passwordStrength)}
           </div>
           {passwordStrength < 2 ? (
-            <div className="mt-1 text-sm text-red-500">
+            <div className="mt-1 text-xs text-red-500">
               Please enter a stronger password
             </div>
           ) : null}

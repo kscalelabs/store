@@ -135,18 +135,11 @@ class UserCrud(BaseCrud):
 
 async def test_adhoc() -> None:
     async with UserCrud() as crud:
-        user = await crud._create_user_from_email(email="ben@kscale.dev", password="examplepas$w0rd")
-        print(f"User created: {user}")
+        await crud._create_user_from_email(email="ben@kscale.dev", password="examplepas$w0rd")
 
-        oauth_user_github = await crud.get_user_from_github_token(
-            token="gh_token_example", email="oauth_github@kscale.dev"
-        )
-        print(f"OAuth GitHub User created: {oauth_user_github}")
+        await crud.get_user_from_github_token(token="gh_token_example", email="oauth_github@kscale.dev")
 
-        oauth_user_google = await crud.get_user_from_google_token(
-            token="google_token_example", email="oauth_google@kscale.dev"
-        )
-        print(f"OAuth Google User created: {oauth_user_google}")
+        await crud.get_user_from_google_token(token="google_token_example", email="oauth_google@kscale.dev")
 
 
 if __name__ == "__main__":

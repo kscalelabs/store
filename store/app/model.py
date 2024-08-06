@@ -7,7 +7,7 @@ expects (for example, converting a UUID into a string).
 
 import time
 from datetime import datetime, timedelta
-from typing import Literal, Optional, Self, Set
+from typing import Literal, Self
 
 from pydantic import BaseModel, EmailStr
 
@@ -39,21 +39,21 @@ class User(RobolistBaseModel):
     """
 
     email: EmailStr
-    hashed_password: Optional[str] = None
-    permissions: Optional[Set[UserPermission]] = None
+    hashed_password: str | None = None
+    permissions: set[UserPermission] | None = None
     created_at: int
     updated_at: int
-    email_verified_at: Optional[int] = None
-    github_id: Optional[str] = None
-    google_id: Optional[str] = None
+    email_verified_at: int | None = None
+    github_id: str | None = None
+    google_id: str | None = None
 
     @classmethod
     def create(
         cls,
         email: str,
-        password: Optional[str] = None,
-        github_id: Optional[str] = None,
-        google_id: Optional[str] = None,
+        password: str | None = None,
+        github_id: str | None = None,
+        google_id: str | None = None,
     ) -> Self:
         now = int(time.time())
         hashed_pw = hash_password(password) if password else None
