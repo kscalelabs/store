@@ -7,13 +7,19 @@ expects (for example, converting a UUID into a string).
 
 import time
 from datetime import datetime, timedelta
-from typing import Literal, Self
+from typing import Literal, Optional, Self
 
 from pydantic import BaseModel
 
 from store.settings import settings
 from store.utils import new_uuid
+from pydantic import EmailStr
 
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+
+    
 
 class RobolistBaseModel(BaseModel):
     """Defines the base model for Robolist database rows.
@@ -43,6 +49,20 @@ class User(RobolistBaseModel):
     @classmethod
     def create(cls, email: str) -> Self:
         return cls(id=new_uuid(), email=email, permissions=None)
+    
+    
+    class User(RobolistBaseModel):
+     
+     email: EmailStr
+     hashed_password: str
+     is_verified: bool = False
+     permissions: Optional[set[UserPermission]] = None
+
+    @classmethod
+    def create(cls, email: EmailStr, hashed_password: str) -> Self:
+        return cls(id=new_uuid(), email=email, hashed_password=hashed_password, permissions=None, is_verified=False)
+
+
 
 
 class OAuthKey(RobolistBaseModel):

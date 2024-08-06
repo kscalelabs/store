@@ -3,6 +3,7 @@
 # Environment variables
 .env
 env.sh
+.env.local
 
 # Python
 *.py[oc]
