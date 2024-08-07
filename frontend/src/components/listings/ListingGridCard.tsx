@@ -1,10 +1,12 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import clsx from "clsx";
+import { paths } from "gen/api";
+
 import Image from "components/Image";
 import { RenderDescription } from "components/listing/ListingDescription";
 import { Card, CardContent, CardHeader, CardTitle } from "components/ui/Card";
-import { paths } from "gen/api";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 type ListingInfo =
   paths["/listings/batch"]["get"]["responses"][200]["content"]["application/json"]["listings"];

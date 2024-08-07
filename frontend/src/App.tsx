@@ -1,12 +1,12 @@
-import Container from "components/Container";
-import Footer from "components/footer/Footer";
-import Navbar from "components/nav/Navbar";
-import NotFoundRedirect from "components/NotFoundRedirect";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+
+import "App.css";
+
 import { AlertQueue, AlertQueueProvider } from "hooks/useAlertQueue";
 import { AuthenticationProvider } from "hooks/useAuth";
 import { DarkModeProvider } from "hooks/useDarkMode";
-import About from "pages/About";
 import APIKeys from "pages/APIKeys";
+import About from "pages/About";
 import Browse from "pages/Browse";
 import Create from "pages/Create";
 import Home from "pages/Home";
@@ -15,8 +15,11 @@ import Login from "pages/Login";
 import Logout from "pages/Logout";
 import NotFound from "pages/NotFound";
 import Profile from "pages/Profile";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import "./App.css";
+
+import Container from "components/Container";
+import NotFoundRedirect from "components/NotFoundRedirect";
+import Footer from "components/footer/Footer";
+import Navbar from "components/nav/Navbar";
 
 const App = () => {
   return (

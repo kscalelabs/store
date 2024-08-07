@@ -113,23 +113,31 @@ class APIKey(RobolistBaseModel):
 
 
 ArtifactSize = Literal["small", "large"]
-ArtifactType = Literal["image", "urdf", "mjcf"]
+ArtifactType = Literal["image", "urdf", "mjcf", "stl"]
 
 UPLOAD_CONTENT_TYPE_OPTIONS: dict[ArtifactType, set[str]] = {
+    # Image
     "image": {"image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"},
-    "urdf": {"application/gzip", "application/x-gzip"},
-    "mjcf": {"application/gzip", "application/x-gzip"},
+    # XML
+    "urdf": {"application/xml"},
+    "mjcf": {"application/xml"},
+    # Binary or text
+    "stl": {"application/octet-stream", "text/xml"},
 }
 
 DOWNLOAD_CONTENT_TYPE: dict[ArtifactType, str] = {
+    # Image
     "image": "image/png",
-    "urdf": "application/gzip",
-    "mjcf": "application/gzip",
+    # XML
+    "urdf": "application/xml",
+    "mjcf": "application/xml",
+    # Binary
+    "stl": "application/octet-stream",
 }
 
 SizeMapping: dict[ArtifactSize, tuple[int, int]] = {
-    "large": settings.image.large_image_size,
-    "small": settings.image.small_image_size,
+    "large": settings.artifact.large_image_size,
+    "small": settings.artifact.small_image_size,
 }
 
 
@@ -141,9 +149,11 @@ def get_artifact_name(id: str, artifact_type: ArtifactType, size: ArtifactSize =
             height, width = SizeMapping[size]
             return f"{id}_{size}_{height}x{width}.png"
         case "urdf":
-            return f"{id}.tar.gz"
+            return f"{id}.urdf"
         case "mjcf":
-            return f"{id}.tar.gz"
+            return f"{id}.xml"
+        case "stl":
+            return f"{id}.stl"
         case _:
             raise ValueError(f"Unknown artifact type: {artifact_type}")
 

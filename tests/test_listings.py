@@ -46,6 +46,30 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
     data = response.json()
     assert data["artifact"]["artifact_id"] is not None
 
+    # Uploads a URDF.
+    urdf_path = Path(__file__).parent / "assets" / "sample.urdf"
+    data_json = json.dumps({"artifact_type": "urdf", "listing_id": listing_id})
+    response = await app_client.post(
+        "/artifacts/upload",
+        headers=auth_headers,
+        files={"file": ("box.urdf", open(urdf_path, "rb"), "application/xml"), "metadata": (None, data_json)},
+    )
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    data = response.json()
+    assert data["artifact"]["artifact_id"] is not None
+
+    # Uploads an STL.
+    stl_path = Path(__file__).parent / "assets" / "teapot.stl"
+    data_json = json.dumps({"artifact_type": "stl", "listing_id": listing_id})
+    response = await app_client.post(
+        "/artifacts/upload",
+        headers=auth_headers,
+        files={"file": ("teapot.stl", open(stl_path, "rb"), "application/octet-stream"), "metadata": (None, data_json)},
+    )
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    data = response.json()
+    assert data["artifact"]["artifact_id"] is not None
+
     # Searches for listings.
     response = await app_client.get(
         "/listings/search",

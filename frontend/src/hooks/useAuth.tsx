@@ -1,15 +1,16 @@
-import { BACKEND_URL } from "constants/backend";
-import type { paths } from "gen/api";
-import api from "hooks/api";
-import createClient, { Client } from "openapi-fetch";
 import {
-  createContext,
   ReactNode,
+  createContext,
   useCallback,
   useContext,
   useState,
 } from "react";
 import { useNavigate } from "react-router-dom";
+
+import { BACKEND_URL } from "constants/env";
+import type { paths } from "gen/api";
+import api from "hooks/api";
+import createClient, { Client } from "openapi-fetch";
 
 const AUTH_KEY_ID = "AUTH";
 
@@ -48,6 +49,8 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
   const [apiKeyId, setApiKeyId] = useState<string | null>(
     getLocalStorageAuth(),
   );
+
+  console.log(BACKEND_URL);
 
   const client = createClient<paths>({
     baseUrl: BACKEND_URL,

@@ -80,7 +80,7 @@ async def github_code(
     if "access_token" not in (response_json := oauth_response.json()):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token not found in response from Github")
 
-    # access token is used to retrieve user oauth details
+    # Access token is used to retrieve user oauth details.
     access_token = response_json["access_token"]
     headers.update({"Authorization": f"Bearer {access_token}"})
     oauth_response = await github_req(headers)

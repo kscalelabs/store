@@ -69,7 +69,7 @@ class EnvironmentSettings:
     user: UserSettings = field(default_factory=UserSettings)
     crypto: CryptoSettings = field(default_factory=CryptoSettings)
     email: EmailSettings = field(default_factory=EmailSettings)
-    image: ArtifactSettings = field(default_factory=ArtifactSettings)
+    artifact: ArtifactSettings = field(default_factory=ArtifactSettings)
     s3: S3Settings = field(default_factory=S3Settings)
     dynamo: DynamoSettings = field(default_factory=DynamoSettings)
     site: SiteSettings = field(default_factory=SiteSettings)

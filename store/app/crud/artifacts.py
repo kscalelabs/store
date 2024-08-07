@@ -4,11 +4,13 @@ import asyncio
 import io
 import logging
 from typing import Any, BinaryIO, Literal
+from xml.etree import ElementTree as ET
 
 from PIL import Image
+from stl import Mode as STLMode, mesh as stlmesh
 
 from store.app.crud.base import BaseCrud, ItemNotFoundError
-from store.app.errors import NotAuthorizedError
+from store.app.errors import BadArtifactError, NotAuthorizedError
 from store.app.model import (
     Artifact,
     ArtifactSize,
@@ -19,6 +21,7 @@ from store.app.model import (
     get_content_type,
 )
 from store.settings import settings
+from store.utils import save_xml
 
 logger = logging.getLogger(__name__)
 
@@ -28,9 +31,7 @@ class ArtifactsCrud(BaseCrud):
     def get_gsis(cls) -> set[str]:
         return super().get_gsis().union({"user_id", "listing_id"})
 
-    def _crop_image(self, image: Image.Image, size: tuple[int, int]) -> io.BytesIO:
-        image_bytes = io.BytesIO()
-
+    async def _crop_image(self, image: Image.Image, size: tuple[int, int]) -> io.BytesIO:
         # Simply squashes the image to the desired size.
         # image_resized = image.resize(size, resample=Image.Resampling.BICUBIC)
         # Finds a bounding box of the image and crops it to the desired size.
@@ -47,18 +48,19 @@ class ArtifactsCrud(BaseCrud):
             upper = (image.height - new_height) // 2
         right = left + new_width
         lower = upper + new_height
-        image_resized = image.crop((left, upper, right, lower))
+        image = image.crop((left, upper, right, lower))
 
         # Resize the image to the desired size.
-        image_resized = image_resized.resize(size, resample=Image.Resampling.BICUBIC)
+        image = image.resize(size, resample=Image.Resampling.BICUBIC)
 
         # Save the image to a byte stream.
-        image_resized.save(image_bytes, format="PNG", optimize=True, quality=settings.image.quality)
+        image_bytes = io.BytesIO()
+        image.save(image_bytes, format="PNG", optimize=True, quality=settings.artifact.quality)
         image_bytes.seek(0)
         return image_bytes
 
     async def _upload_cropped_image(self, image: Image.Image, name: str, image_id: str, size: ArtifactSize) -> None:
-        image_bytes = self._crop_image(image, SizeMapping[size])
+        image_bytes = await self._crop_image(image, SizeMapping[size])
         filename = get_artifact_name(image_id, "image", size)
         await self._upload_to_s3(image_bytes, name, filename, "image/png")
 
@@ -100,7 +102,39 @@ class ArtifactsCrud(BaseCrud):
     async def get_raw_artifact(self, artifact_id: str) -> Artifact | None:
         return await self._get_item(artifact_id, Artifact)
 
-    async def _upload_raw_artifact(
+    async def _upload_stl(
+        self,
+        name: str,
+        file: io.BytesIO | BinaryIO,
+        listing: Listing,
+        user_id: str,
+        description: str | None = None,
+    ) -> Artifact:
+        if listing.user_id != user_id:
+            raise NotAuthorizedError("User does not have permission to upload artifacts to this listing")
+
+        # Converts the mesh to a binary STL file.
+        mesh = stlmesh.Mesh.from_file(None, calculate_normals=True, fh=file)
+        out_file = io.BytesIO()
+        mesh.save(name, fh=out_file, mode=STLMode.BINARY)
+        out_file.seek(0)
+
+        # Saves the artifact to S3.
+        content_type = get_content_type("stl")
+        artifact = Artifact.create(
+            user_id=user_id,
+            listing_id=listing.id,
+            name=name,
+            artifact_type="stl",
+            description=description,
+        )
+        await asyncio.gather(
+            self._upload_to_s3(out_file, name, get_artifact_name(artifact.id, "stl"), content_type),
+            self._add_item(artifact),
+        )
+        return artifact
+
+    async def _upload_xml(
         self,
         name: str,
         file: io.BytesIO | BinaryIO,
@@ -111,6 +145,21 @@ class ArtifactsCrud(BaseCrud):
     ) -> Artifact:
         if listing.user_id != user_id:
             raise NotAuthorizedError("User does not have permission to upload artifacts to this listing")
+
+        # Standardizes the XML file.
+        try:
+            tree = ET.parse(file)
+        except Exception:
+            raise BadArtifactError("Invalid XML file")
+
+        # TODO: Remap the STL or OBJ file paths.
+
+        # Converts to byte stream.
+        out_file = io.BytesIO()
+        save_xml(out_file, tree)
+        out_file.seek(0)
+
+        # Saves the artifact to S3.
         content_type = get_content_type(artifact_type)
         artifact = Artifact.create(
             user_id=user_id,
@@ -137,8 +186,12 @@ class ArtifactsCrud(BaseCrud):
         match artifact_type:
             case "image":
                 return await self._upload_image(name, file, listing, user_id, description)
+            case "stl":
+                return await self._upload_stl(name, file, listing, user_id, description)
+            case "urdf" | "mjcf":
+                return await self._upload_xml(name, file, listing, user_id, artifact_type, description)
             case _:
-                return await self._upload_raw_artifact(name, file, listing, user_id, artifact_type, description)
+                raise BadArtifactError(f"Invalid artifact type: {artifact_type}")
 
     async def _remove_image(self, artifact: Artifact, user_id: str) -> None:
         if artifact.user_id != user_id:
@@ -151,7 +204,7 @@ class ArtifactsCrud(BaseCrud):
     async def _remove_raw_artifact(
         self,
         artifact: Artifact,
-        artifact_type: Literal["urdf", "mjcf"],
+        artifact_type: Literal["urdf", "mjcf", "stl"],
         user_id: str,
     ) -> None:
         if artifact.user_id != user_id:

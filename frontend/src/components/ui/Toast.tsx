@@ -1,4 +1,3 @@
-import { Button } from "components/ui/Button/Button";
 import { useEffect } from "react";
 import {
   FaCheckCircle,
@@ -7,6 +6,8 @@ import {
   FaTimes,
   FaTimesCircle,
 } from "react-icons/fa";
+
+import { Button } from "components/ui/Button/Button";
 
 export type ToastKind = "success" | "error" | "warning" | "info";
 

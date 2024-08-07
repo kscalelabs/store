@@ -1,8 +1,10 @@
-import { useDarkMode } from "hooks/useDarkMode";
 import { useState } from "react";
 import { FaMoon, FaSun, FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "./Sidebar";
+
+import { useDarkMode } from "hooks/useDarkMode";
+
+import Sidebar from "components/nav/Sidebar";
 
 const ICON_SIZE = 20;
 

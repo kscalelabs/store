@@ -1,11 +1,13 @@
-import { useDebounce } from "@uidotdev/usehooks";
-import ListingGrid from "components/listings/ListingGrid";
-import { Input } from "components/ui/Input/Input";
-import { useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
 import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
+
+import { useDebounce } from "@uidotdev/usehooks";
+import { useAlertQueue } from "hooks/useAlertQueue";
+import { useAuthentication } from "hooks/useAuth";
+
+import ListingGrid from "components/listings/ListingGrid";
+import { Input } from "components/ui/Input/Input";
 
 const Browse = () => {
   const auth = useAuthentication();

@@ -30,7 +30,7 @@ start-backend:
 	@fastapi dev 'store/app/main.py' --port 8080
 
 start-frontend:
-	@cd frontend && npm start
+	@cd frontend && npm run dev
 
 start-docker-dynamodb:
 	@docker kill store-db || true
