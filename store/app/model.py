@@ -117,7 +117,7 @@ ArtifactType = Literal["image", "urdf", "mjcf", "stl"]
 
 UPLOAD_CONTENT_TYPE_OPTIONS: dict[ArtifactType, set[str]] = {
     # Image
-    "image": {"image/png", "image/jpeg", "image/jpg"},
+    "image": {"image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"},
     # XML
     "urdf": {"application/xml"},
     "mjcf": {"application/xml"},
