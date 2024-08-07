@@ -1,17 +1,38 @@
-import { useState } from "react";
+/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
+
+/* eslint-disable react/no-unknown-property */
+import { Suspense, useState } from "react";
 import { FaCaretSquareDown, FaCaretSquareUp, FaTimes } from "react-icons/fa";
 
+import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
+import { Canvas } from "@react-three/fiber";
+import { useLoader } from "@react-three/fiber";
 import { components } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
+import { Object3D } from "three";
+import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
 
+import Editor from "components/Editor";
+import Loader from "components/Loader";
+import { Panel } from "components/MultiLeva";
 import ListingFileUpload from "components/listing/ListingFileUpload";
 import { Button } from "components/ui/Button/Button";
 
-// const Model = ({ url }: { url: string }) => {
-//   const stl = useLoader(STLLoader, url);
-//   return <primitive object={stl} />;
-// };
+export const Model = ({ url }: { url: string }) => {
+  const geom = useLoader(STLLoader, url);
+  return (
+    <>
+      <mesh>
+        <primitive object={geom} attach="geometry" />
+        <meshStandardMaterial color={"orange"} />
+      </mesh>
+      <ambientLight />
+      <pointLight position={[10, 10, 10]} />
+    </>
+  );
+};
 
 interface SingleStlViewerProps {
   url: string;
@@ -19,22 +40,30 @@ interface SingleStlViewerProps {
 
 const SingleStlViewer = (props: SingleStlViewerProps) => {
   const { url } = props;
+  const [selected, setSelected] = useState<Object3D[]>();
 
-  // const { addErrorAlert } = useAlertQueue();
-
-  // const handleError = (error) => {
-  //   addErrorAlert(error);
-  // };
-
-  // return (
-  //   <Canvas onError={handleError}>
-  //     <ambientLight />
-  //     <pointLight position={[10, 10, 10]} />
-  //     <Model url={url} />
-  //   </Canvas>
-  // );
-
-  return <div>{url}</div>;
+  return (
+    <>
+      <Canvas>
+        <Suspense fallback={<Loader />}>
+          <PerspectiveCamera
+            makeDefault
+            fov={60}
+            aspect={window.innerWidth / window.innerHeight}
+            position={[3, 0.15, 3]}
+            near={1}
+            far={5000}
+            position-z={600}
+          ></PerspectiveCamera>
+          <Editor setSelected={setSelected} url={url} />
+          <directionalLight color={0xeb4634} position={[1, 0.75, 0.5]} />
+          <directionalLight color={0xccccff} position={[-1, 0.75, -0.5]} />
+        </Suspense>
+        <OrbitControls />
+      </Canvas>
+      <Panel selected={selected} />
+    </>
+  );
 };
 
 interface Props {
