@@ -1,6 +1,4 @@
-import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LoginSchema, LoginType } from "types";
@@ -8,6 +6,7 @@ import { LoginSchema, LoginType } from "types";
 import { Button } from "components/ui/Button/Button";
 import ErrorMessage from "components/ui/ErrorMessage";
 import { Input } from "components/ui/Input/Input";
+import PasswordInput from "components/ui/Input/PasswordInput";
 
 const LoginForm = () => {
   const {
@@ -20,6 +19,7 @@ const LoginForm = () => {
 
   const onSubmit: SubmitHandler<LoginType> = async (data: LoginType) => {
     // TODO: Add an api endpoint to send the credentials details to backend and email verification.
+    console.log(data);
   };
 
   return (

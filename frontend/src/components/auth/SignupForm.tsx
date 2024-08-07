@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 
@@ -9,6 +8,7 @@ import zxcvbn from "zxcvbn";
 import { Button } from "components/ui/Button/Button";
 import ErrorMessage from "components/ui/ErrorMessage";
 import { Input } from "components/ui/Input/Input";
+import PasswordInput from "components/ui/Input/PasswordInput";
 
 const SignupForm = () => {
   const {
@@ -35,6 +35,7 @@ const SignupForm = () => {
     }
 
     // TODO: Add an api endpoint to send the credentials details to backend and email verification.
+    console.log(data);
   };
 
   return (

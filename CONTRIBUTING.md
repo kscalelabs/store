@@ -152,7 +152,7 @@ npm install
 To serve the React frontend in development mode:
 
 ```bash
-npm start
+npm run dev
 ```
 
 To build the React frontend for production:

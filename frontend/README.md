@@ -15,7 +15,7 @@ npm install
 Start server:
 
 ```bash
-npm start
+npm run dev
 ```
 
 Build static files:
