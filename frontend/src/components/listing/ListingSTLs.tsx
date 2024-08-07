@@ -77,7 +77,7 @@ const ListingSTLs = (props: Props) => {
 
   return stls.length > 0 || edit ? (
     <div className="flex flex-col items-center justify-center my-4 p-4 relative">
-      {stls.length > 0 && (
+      {stls.length > 0 ? (
         <>
           <Button
             onClick={() => setCollapsed(!collapsed)}
@@ -114,6 +114,10 @@ const ListingSTLs = (props: Props) => {
             </div>
           )}
         </>
+      ) : (
+        <p>
+          <strong>STLs</strong>
+        </p>
       )}
       {edit && (
         <ListingFileUpload

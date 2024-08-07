@@ -48,7 +48,7 @@ const ListingImages = (props: Props) => {
 
   return images.length > 0 || edit ? (
     <div className="flex flex-col items-center justify-center my-4 p-4 relative">
-      {images.length > 0 && (
+      {images.length > 0 ? (
         <>
           <Button
             onClick={() => setCollapsed(!collapsed)}
@@ -89,6 +89,10 @@ const ListingImages = (props: Props) => {
             </div>
           )}
         </>
+      ) : (
+        <p>
+          <strong>Images</strong>
+        </p>
       )}
       {edit && (
         <ListingFileUpload
