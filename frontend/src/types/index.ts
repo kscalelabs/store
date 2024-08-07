@@ -30,7 +30,7 @@ export const SignUpSchema = z
       .string({
         required_error: "Password required.",
       })
-      .min(4, { message: "Password must be at least 4 characters long." })
+      .min(8, { message: "Password must be at least 8 characters long." })
       .refine(
         (password) => {
           const result = zxcvbn(password);
