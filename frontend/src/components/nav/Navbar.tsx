@@ -10,7 +10,6 @@ const ICON_SIZE = 20;
 
 const Navbar = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
-  console.log(showSidebar);
   const { darkMode, setDarkMode } = useDarkMode();
   const navigate = useNavigate();
 

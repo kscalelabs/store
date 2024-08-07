@@ -81,7 +81,6 @@ interface Props {
 }
 
 const Sidebar = ({ show, onClose }: Props) => {
-  console.log(`sidebar state: ${show}`);
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthentication();
 
@@ -89,21 +88,23 @@ const Sidebar = ({ show, onClose }: Props) => {
     <div>
       {show ? (
         <div
-          className="fixed top-0 right-0 z-40 w-64 h-screen p-4 overflow-y-auto transition-transform bg-white dark:bg-gray-800"
+          className="fixed top-0 right-0 z-40 w-full sm:w-64 h-screen p-4 overflow-y-auto transition-transform bg-white dark:bg-gray-800"
           tabIndex={-1}>
-          <h5
-            id="drawer-navigation-label"
-            className="text-base font-semibold text-gray-500 uppercase dark:text-gray-300">
-            SETTINGS
-          </h5>
+          <div className="flex justify-between items-center">
+            <h5
+              id="drawer-navigation-label"
+              className="text-base font-semibold text-gray-500 uppercase dark:text-gray-300">
+              SETTINGS
+            </h5>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 absolute top-2.5 end-2.5 inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white">
-            <FaTimes />
-            <span className="sr-only">Close menu</span>
-          </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white">
+              <FaTimes />
+              <span className="sr-only">Close menu</span>
+            </button>
+          </div>
           <div className="py-4 overflow-y-auto">
             <ul className="space-y-1">
               <SidebarItem
