@@ -1,18 +1,17 @@
-import { useLoader } from "@react-three/fiber";
-import ListingFileUpload from "components/listing/ListingFileUpload";
-import { Button } from "components/ui/Button/Button";
+import { useState } from "react";
+import { FaCaretSquareDown, FaCaretSquareUp, FaTimes } from "react-icons/fa";
+
 import { components } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
-import { useState } from "react";
-import { FaCaretSquareDown, FaCaretSquareUp, FaTimes } from "react-icons/fa";
-import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
-import { OBJLoader } from 'three/addons/loaders/OBJLoader';
 
-const Model = ({ url }: { url: string }) => {
-  const stl = useLoader(STLLoader, url);
-  return <primitive object={stl} />;
-};
+import ListingFileUpload from "components/listing/ListingFileUpload";
+import { Button } from "components/ui/Button/Button";
+
+// const Model = ({ url }: { url: string }) => {
+//   const stl = useLoader(STLLoader, url);
+//   return <primitive object={stl} />;
+// };
 
 interface SingleStlViewerProps {
   url: string;

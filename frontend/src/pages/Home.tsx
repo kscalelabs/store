@@ -1,12 +1,14 @@
-import Features from "components/home/Features";
-import { Button } from "components/ui/Button/Button";
-import { useDarkMode } from "hooks/useDarkMode";
 import { useMemo } from "react";
 import { isMobile } from "react-device-detect";
 import { FaArrowRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import LandingDark from "../images/LandingDark.png";
-import LandingLight from "../images/LandingLight.png";
+
+import { useDarkMode } from "hooks/useDarkMode";
+import LandingDark from "images/LandingDark.png";
+import LandingLight from "images/LandingLight.png";
+
+import Features from "components/home/Features";
+import { Button } from "components/ui/Button/Button";
 
 const Home = () => {
   const navigate = useNavigate();

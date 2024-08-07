@@ -1,8 +1,11 @@
-import Spinner from "components/ui/Spinner";
+import { useEffect, useState } from "react";
+
 import { components } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
-import { useEffect, useState } from "react";
+
+import Spinner from "components/ui/Spinner";
+
 import ListingImages from "./ListingImages";
 import ListingSTLs from "./ListingSTLs";
 

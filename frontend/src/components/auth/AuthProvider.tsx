@@ -1,6 +1,7 @@
-import { Button } from "components/ui/Button/Button";
 import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
+
+import { Button } from "components/ui/Button/Button";
 
 interface AuthProvider {
   handleGoogleSubmit?: () => void;

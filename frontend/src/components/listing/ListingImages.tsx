@@ -1,10 +1,12 @@
-import ListingFileUpload from "components/listing/ListingFileUpload";
-import { Button } from "components/ui/Button/Button";
+import { useState } from "react";
+import { FaCaretSquareDown, FaCaretSquareUp, FaTimes } from "react-icons/fa";
+
 import { components } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
-import { useState } from "react";
-import { FaCaretSquareDown, FaCaretSquareUp, FaTimes } from "react-icons/fa";
+
+import ListingFileUpload from "components/listing/ListingFileUpload";
+import { Button } from "components/ui/Button/Button";
 
 interface Props {
   listingId: string;

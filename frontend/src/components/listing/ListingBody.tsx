@@ -1,4 +1,5 @@
 import { paths } from "gen/api";
+
 import ListingArtifacts from "./ListingArtifacts";
 import ListingChildren from "./ListingChildren";
 import ListingDescription from "./ListingDescription";

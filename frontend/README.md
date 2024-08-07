@@ -8,7 +8,7 @@ Install requirements:
 
 ```bash
 cd frontend # This directory
-nvm use 20.10.0
+nvm use v22.6.0
 npm install
 ```
 

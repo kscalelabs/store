@@ -1,8 +1,11 @@
-import Spinner from "components/ui/Spinner";
+import { useEffect, useState } from "react";
+
 import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
-import { useEffect, useState } from "react";
+
+import Spinner from "components/ui/Spinner";
+
 import ListingGridCard from "./ListingGridCard";
 
 type ListingInfo =

@@ -1,10 +1,13 @@
+import { useEffect, useState } from "react";
+
+import { useAlertQueue } from "hooks/useAlertQueue";
+import { useAuthentication } from "hooks/useAuth";
+
 import BackButton from "components/ui/Button/BackButton";
 import { Card, CardContent, CardFooter, CardHeader } from "components/ui/Card";
 import Header from "components/ui/Header";
 import Spinner from "components/ui/Spinner";
-import { useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
-import { useEffect, useState } from "react";
+
 import AuthProvider from "./AuthProvider";
 import LoginForm from "./LoginForm";
 import SignupForm from "./SignupForm";

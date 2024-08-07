@@ -1,3 +1,10 @@
+import { useCallback, useState } from "react";
+
+import { components } from "gen/api";
+import { useAlertQueue } from "hooks/useAlertQueue";
+import { useAuthentication } from "hooks/useAuth";
+import { Paperclip } from "lucide-react";
+
 import {
   FileInput,
   FileSubmitButton,
@@ -6,11 +13,6 @@ import {
   FileUploaderItem,
 } from "components/listing/FileUpload";
 import Spinner from "components/ui/Spinner";
-import { components } from "gen/api";
-import { useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
-import { Paperclip } from "lucide-react";
-import { useCallback, useState } from "react";
 
 interface Props {
   artifactType: string;

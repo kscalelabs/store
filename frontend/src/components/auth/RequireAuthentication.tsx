@@ -1,6 +1,8 @@
-import LogInModal from "components/auth/AuthenticationModal";
-import { useAuthentication } from "hooks/useAuth";
 import React from "react";
+
+import { useAuthentication } from "hooks/useAuth";
+
+import LogInModal from "components/auth/AuthenticationModal";
 
 interface Props {
   children: React.ReactNode;

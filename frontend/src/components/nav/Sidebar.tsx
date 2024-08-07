@@ -1,5 +1,3 @@
-import clsx from "clsx";
-import { useAuthentication } from "hooks/useAuth";
 import {
   FaBookOpen,
   FaDoorClosed,
@@ -14,6 +12,9 @@ import {
   FaUserCircle,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+
+import clsx from "clsx";
+import { useAuthentication } from "hooks/useAuth";
 
 interface SidebarItemProps {
   title: string;
