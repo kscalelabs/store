@@ -62,7 +62,7 @@ jobs:
       - name: Replace S3 bucket contents
         run: |
           aws s3 rm s3://${{ secrets.AWS_FRONTEND_S3_BUCKET }} --recursive
-          aws s3 cp frontend/build s3://${{ secrets.AWS_FRONTEND_S3_BUCKET }} --recursive
+          aws s3 cp frontend/dist s3://${{ secrets.AWS_FRONTEND_S3_BUCKET }} --recursive
           aws cloudfront create-invalidation --distribution-id ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
 
   build-and-deploy-backend:
