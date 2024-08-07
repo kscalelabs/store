@@ -113,7 +113,7 @@ export AWS_SECRET_ACCESS_KEY=test
 export AWS_ENDPOINT_URL_S3='http://127.0.0.1:4566'
 
 # For letting the frontend know the backend URL.
-export REACT_APP_BACKEND_URL='http://127.0.0.1:8080'
+export VITE_APP_BACKEND_URL='http://127.0.0.1:8080'
 
 # For SMTP
 export SMTP_HOST='smtp.gmail.com'
@@ -169,13 +169,13 @@ npm run format
 
 ### Google Client ID
 
-You will need to set `REACT_APP_GOOGLE_CLIENT_ID`. To do this, first create a Google client id (see [this LogRocket post](https://blog.logrocket.com/guide-adding-google-login-react-app/)). Then create a `.env.local` file in the `frontend` directory and add the following line:
+You will need to set `VITE_APP_GOOGLE_CLIENT_ID`. To do this, first create a Google client id (see [this LogRocket post](https://blog.logrocket.com/guide-adding-google-login-react-app/)). Then create a `.env.local` file in the `frontend` directory and add the following line:
 
 ```
-REACT_APP_GOOGLE_CLIENT_ID=your-client-id
+VITE_APP_GOOGLE_CLIENT_ID=your-client-id
 ```
 
-Additionally, you should set `REACT_APP_BACKEND_URL` to the URL of the FastAPI backend. This should be `http://127.0.0.1:8080` when developing locally.
+Additionally, you should set `VITE_APP_BACKEND_URL` to the URL of the FastAPI backend. This should be `http://127.0.0.1:8080` when developing locally.
 
 ## Testing
 

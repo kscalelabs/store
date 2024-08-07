@@ -19,8 +19,7 @@ const LoginForm = () => {
   });
 
   const onSubmit: SubmitHandler<LoginType> = async (data: LoginType) => {
-    // TODO: Add an API endpoint to send the credentials details to backend and handle authentication.
-    console.log(data);
+    // TODO: Add an api endpoint to send the credentials details to backend and email verification.
   };
 
   return (

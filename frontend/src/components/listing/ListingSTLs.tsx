@@ -20,8 +20,14 @@ interface SingleStlViewerProps {
 const SingleStlViewer = (props: SingleStlViewerProps) => {
   const { url } = props;
 
+  const { addErrorAlert } = useAlertQueue();
+
+  const handleError = (error) => {
+    addErrorAlert(error);
+  };
+
   // return (
-  //   <Canvas onError={(error) => console.log(error)}>
+  //   <Canvas onError={handleError}>
   //     <ambientLight />
   //     <pointLight position={[10, 10, 10]} />
   //     <Model url={url} />
