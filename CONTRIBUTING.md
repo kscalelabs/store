@@ -48,6 +48,7 @@ And initialize the artifact bucket:
 
 ```
 aws s3api create-bucket --bucket artifacts
+aws s3api put-bucket-cors --bucket artifacts --cors-configuration file://local-cors-config.json
 ```
 
 #### Admin Panel
