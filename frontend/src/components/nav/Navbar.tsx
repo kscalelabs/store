@@ -10,6 +10,7 @@ const ICON_SIZE = 20;
 
 const Navbar = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
+  console.log(showSidebar);
   const { darkMode, setDarkMode } = useDarkMode();
   const navigate = useNavigate();
 
@@ -19,8 +20,7 @@ const Navbar = () => {
         <div className="flex flex-wrap items-center justify-between p-4">
           <button
             onClick={() => navigate("/")}
-            className="flex items-center space-x-3 rtl:space-x-reverse"
-          >
+            className="flex items-center space-x-3 rtl:space-x-reverse">
             <span className="self-center text-2xl font-semibold whitespace-nowrap">
               Robolist
             </span>
