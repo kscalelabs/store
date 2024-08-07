@@ -1,6 +1,7 @@
+import { useEffect, useState } from "react";
+
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
-import { useEffect, useState } from "react";
 
 const useGetUserListing = ({
   pageNumber,

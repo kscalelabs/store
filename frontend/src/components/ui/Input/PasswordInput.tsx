@@ -1,5 +1,3 @@
-import ErrorMessage from "components/ui/ErrorMessage";
-import { Input } from "components/ui/Input/Input";
 import React, { useState } from "react";
 import {
   FieldErrors,
@@ -8,7 +6,11 @@ import {
   UseFormRegister,
 } from "react-hook-form";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+
 import zxcvbn from "zxcvbn";
+
+import ErrorMessage from "components/ui/ErrorMessage";
+import { Input } from "components/ui/Input/Input";
 
 interface PasswordInputProps<T extends FieldValues> {
   placeholder: string;

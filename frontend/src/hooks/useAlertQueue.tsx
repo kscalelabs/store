@@ -1,15 +1,26 @@
-import Toast from "components/ui/Toast";
-import { humanReadableError } from "constants/backend";
 import {
-  createContext,
   ReactNode,
+  createContext,
   useCallback,
   useContext,
   useState,
 } from "react";
 
+import Toast from "components/ui/Toast";
+
 const DELAY = 3000;
 const MAX_ALERTS = 5;
+
+// eslint-disable-next-line
+export const humanReadableError = (error: any | undefined) => {
+  if (typeof error === "string") {
+    return error;
+  }
+  if (error?.message) {
+    return error.message;
+  }
+  return "An unknown error occurred";
+};
 
 type AlertType = "error" | "success" | "info";
 

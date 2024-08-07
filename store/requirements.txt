@@ -25,5 +25,8 @@ httpx
 # Deployment dependencies.
 uvicorn[standard]
 
+# Processing dependencies.
+numpy-stl
+
 # Types
 types-aioboto3[dynamodb, s3]

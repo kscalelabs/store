@@ -8,14 +8,14 @@ Install requirements:
 
 ```bash
 cd frontend # This directory
-nvm use 20.10.0
+nvm use v22.6.0
 npm install
 ```
 
 Start server:
 
 ```bash
-npm start
+npm run dev
 ```
 
 Build static files:

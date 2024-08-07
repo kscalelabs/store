@@ -1,12 +1,14 @@
+import { SubmitHandler, useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+import { SignUpSchema, SignupType } from "types";
+import zxcvbn from "zxcvbn";
+
 import { Button } from "components/ui/Button/Button";
 import ErrorMessage from "components/ui/ErrorMessage";
 import { Input } from "components/ui/Input/Input";
 import PasswordInput from "components/ui/Input/PasswordInput";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
-import { SignUpSchema, SignupType } from "types";
-import zxcvbn from "zxcvbn";
 
 const SignupForm = () => {
   const {

@@ -426,7 +426,7 @@ export interface components {
              * Artifact Type
              * @enum {string}
              */
-            artifact_type: "image" | "urdf" | "mjcf";
+            artifact_type: "image" | "urdf" | "mjcf" | "stl";
             /** Description */
             description: string | null;
             /** Timestamp */
@@ -1006,7 +1006,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                artifact_type: "image" | "urdf" | "mjcf";
+                artifact_type: "image" | "urdf" | "mjcf" | "stl";
                 artifact_id: string;
             };
             cookie?: never;

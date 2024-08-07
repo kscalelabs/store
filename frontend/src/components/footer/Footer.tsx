@@ -1,10 +1,12 @@
 import { FaDiscord, FaGithub, FaLinkedinIn } from "react-icons/fa";
 import { Link, useLocation } from "react-router-dom";
+
 import {
   DiscordPrimaryColor,
   GithubPrimaryColor,
   LinkedinPrimaryColor,
 } from "types/colors";
+
 import SocialLink from "./SocialLink";
 
 const Footer = () => {

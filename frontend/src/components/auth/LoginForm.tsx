@@ -1,10 +1,12 @@
+import { SubmitHandler, useForm } from "react-hook-form";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+import { LoginSchema, LoginType } from "types";
+
 import { Button } from "components/ui/Button/Button";
 import ErrorMessage from "components/ui/ErrorMessage";
 import { Input } from "components/ui/Input/Input";
 import PasswordInput from "components/ui/Input/PasswordInput";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { LoginSchema, LoginType } from "types";
 
 const LoginForm = () => {
   const {
@@ -16,7 +18,7 @@ const LoginForm = () => {
   });
 
   const onSubmit: SubmitHandler<LoginType> = async (data: LoginType) => {
-    // TODO: Add an API endpoint to send the credentials details to backend and handle authentication.
+    // TODO: Add an api endpoint to send the credentials details to backend and email verification.
     console.log(data);
   };
 

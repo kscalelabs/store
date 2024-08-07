@@ -278,8 +278,6 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
                 else:
                     chunk_ids_to_items[item_id] = [item]
 
-            print(chunk_ids_to_items)
-
             # Adds the items to the list.
             items += [chunk_ids_to_items.get(id, []) for id in chunk]
 
