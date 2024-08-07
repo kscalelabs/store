@@ -96,8 +96,7 @@ const Home = () => {
   return (
     <div>
       {isMobile ? renderMobileHero() : renderDesktopHero()}
-      {isMobile ? "Mobile" : "Desktop"}
-      {/* <Features /> */}
+      <Features />
     </div>
   );
 };

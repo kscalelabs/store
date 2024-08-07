@@ -43,7 +43,8 @@ const SidebarItem = ({
                   icon && "mr-4",
                   size === "sm" && "text-sm",
                   size === "lg" && "text-lg",
-                )}>
+                )}
+              >
                 {title}
               </span>
               {icon}
@@ -56,7 +57,8 @@ const SidebarItem = ({
                   icon && "ml-4",
                   size === "sm" && "text-sm",
                   size === "lg" && "text-lg",
-                )}>
+                )}
+              >
                 {title}
               </span>
             </>
@@ -89,18 +91,21 @@ const Sidebar = ({ show, onClose }: Props) => {
       {show ? (
         <div
           className="fixed top-0 right-0 z-40 w-full sm:w-64 h-screen p-4 overflow-y-auto transition-transform bg-white dark:bg-gray-800"
-          tabIndex={-1}>
+          tabIndex={-1}
+        >
           <div className="flex justify-between items-center">
             <h5
               id="drawer-navigation-label"
-              className="text-base font-semibold text-gray-500 uppercase dark:text-gray-300">
+              className="text-base font-semibold text-gray-500 uppercase dark:text-gray-300"
+            >
               SETTINGS
             </h5>
 
             <button
               type="button"
               onClick={onClose}
-              className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white">
+              className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+            >
               <FaTimes />
               <span className="sr-only">Close menu</span>
             </button>

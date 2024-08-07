@@ -16,12 +16,12 @@ import {
   useDropzone,
 } from "react-dropzone";
 
+import { useAlertQueue } from "hooks/useAlertQueue";
 import { Trash2 as RemoveIcon } from "lucide-react";
 import { cn } from "utils";
 
 import { buttonVariants } from "components/ui/Button/Button";
 import { Input } from "components/ui/Input/Input";
-import { useAlertQueue } from "hooks/useAlertQueue";
 
 type DirectionOptions = "rtl" | "ltr" | undefined;
 
