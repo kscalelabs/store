@@ -44,23 +44,23 @@ const ListingImages = (props: Props) => {
     }
   };
 
-  return (
+  return images.length > 0 || edit ? (
     <div className="flex flex-col items-center justify-center my-4 p-4 relative">
-      <Button
-        onClick={() => setCollapsed(!collapsed)}
-        variant="outline"
-        className="mt-2 mb-4 text-3xl p-6"
-      >
-        Images
-        {collapsed ? (
-          <FaCaretSquareUp className="ml-4 text-gray-700" />
-        ) : (
-          <FaCaretSquareDown className="ml-4 text-gray-700" />
-        )}
-      </Button>
-      {!collapsed && (
-        <div>
-          {images.length > 0 && (
+      {images.length > 0 && (
+        <>
+          <Button
+            onClick={() => setCollapsed(!collapsed)}
+            variant="outline"
+            className="mt-2 mb-4 text-md p-4"
+          >
+            Images
+            {collapsed ? (
+              <FaCaretSquareUp className="ml-4 text-gray-700" />
+            ) : (
+              <FaCaretSquareDown className="ml-4 text-gray-700" />
+            )}
+          </Button>
+          {!collapsed && (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2 mx-auto">
               {images.map((image) => (
                 <div
@@ -86,20 +86,22 @@ const ListingImages = (props: Props) => {
               ))}
             </div>
           )}
-          {edit && (
-            <ListingFileUpload
-              artifactType="image"
-              fileExtensions={[".jpg", ".jpeg", ".png"]}
-              maxSize={4 * 1024 * 1024}
-              listingId={listingId}
-              onUpload={(artifact) => {
-                setImages([...images, artifact.artifact]);
-              }}
-            />
-          )}
-        </div>
+        </>
+      )}
+      {edit && (
+        <ListingFileUpload
+          artifactType="image"
+          fileExtensions={[".jpg", ".jpeg", ".png"]}
+          maxSize={4 * 1024 * 1024}
+          listingId={listingId}
+          onUpload={(artifact) => {
+            setImages([...images, artifact.artifact]);
+          }}
+        />
       )}
     </div>
+  ) : (
+    <></>
   );
 };
 
