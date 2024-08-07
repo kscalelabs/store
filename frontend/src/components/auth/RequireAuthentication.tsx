@@ -2,28 +2,11 @@ import React from "react";
 
 import { useAuthentication } from "hooks/useAuth";
 
-import LogInModal from "components/auth/AuthenticationModal";
+import AuthBlock from "./AuthBlock";
 
 interface Props {
   children: React.ReactNode;
 }
-
-const StaticBackground = () => {
-  return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        zIndex: -1,
-        width: "100vw",
-        height: "100vh",
-        backgroundColor: "black",
-        opacity: 0.5,
-      }}
-    />
-  );
-};
 
 const RequireAuthentication = (props: Props) => {
   const { children } = props;
@@ -32,10 +15,11 @@ const RequireAuthentication = (props: Props) => {
   return isAuthenticated ? (
     <>{children}</>
   ) : (
-    <>
-      <StaticBackground />
-      <LogInModal />
-    </>
+    <div className="flex justify-center items-center">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+        <AuthBlock />
+      </div>
+    </div>
   );
 };
 
