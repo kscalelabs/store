@@ -43,14 +43,16 @@ const Home = () => {
             <Button
               onClick={() => navigate(`/browse`)}
               variant="primary"
-              size="lg">
+              size="lg"
+            >
               Browse
               <FaArrowRight className="ml-2" />
             </Button>
             <Button
               onClick={() => navigate(`/create`)}
               variant="secondary"
-              size="lg">
+              size="lg"
+            >
               Create
             </Button>
           </div>
@@ -77,14 +79,16 @@ const Home = () => {
             <Button
               onClick={() => navigate(`/browse`)}
               variant="primary"
-              size="lg">
+              size="lg"
+            >
               Browse
               <FaArrowRight className="ml-2" />
             </Button>
             <Button
               onClick={() => navigate(`/create`)}
               variant="secondary"
-              size="lg">
+              size="lg"
+            >
               Create
             </Button>
           </div>
