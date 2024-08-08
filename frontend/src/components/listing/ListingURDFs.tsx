@@ -18,7 +18,7 @@ const SingleURDFViewer = (props: SingleURDFViewerProps) => {
   const { url, name } = props;
 
   return (
-    <Link to={url}>{name}</Link>
+    <Link to={url} className="link">{name}</Link>
   );
 };
 
@@ -77,18 +77,18 @@ const ListingURDFs = (props: Props) => {
             )}
           </Button>
           {!collapsed && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2 mx-auto">
+            <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 justify-between w-full">
               {URDFs.map((urdf) => (
                 <div
                   key={urdf.artifact_id}
-                  className="bg-background rounded-lg p-2 relative"
+                  className="bg-background p-2"
                 >
                   <SingleURDFViewer url={urdf.url} name={urdf.name}/>
                   {edit && (
                     <Button
                       onClick={() => onDelete(urdf.artifact_id)}
                       variant="destructive"
-                      className="absolute top-5 right-5 rounded-full"
+                      className="ml-2"
                       disabled={deletingIds.includes(urdf.artifact_id)}
                     >
                       <FaTimes />
