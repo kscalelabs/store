@@ -47,12 +47,12 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
     assert data["artifact"]["artifact_id"] is not None
 
     # Uploads a URDF.
-    urdf_path = Path(__file__).parent / "assets" / "sample.urdf"
+    urdf_path = Path(__file__).parent / "assets" / "urdf.tar.gz"
     data_json = json.dumps({"artifact_type": "urdf", "listing_id": listing_id})
     response = await app_client.post(
         "/artifacts/upload",
         headers=auth_headers,
-        files={"file": ("box.urdf", open(urdf_path, "rb"), "application/xml"), "metadata": (None, data_json)},
+        files={"file": ("box.urdf", open(urdf_path, "rb"), "application/gzip"), "metadata": (None, data_json)},
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
