@@ -84,7 +84,7 @@ pip install -e '.[dev]'  # Using vanilla pip
 Serve the FastAPI application in development mode:
 
 ```bash
-ROBOLIST_ENVIRONMENT=local fastapi dev 'store/app/main.py' --port 8080  # On port 8080 to avoid conflicts with Docker
+make start-backend
 ```
 
 ### Keeping Frontend and Backend In Sync
