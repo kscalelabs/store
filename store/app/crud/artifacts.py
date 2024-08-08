@@ -4,7 +4,6 @@ import asyncio
 import io
 import logging
 from typing import Any, BinaryIO, Literal
-from xml.etree import ElementTree as ET
 
 from PIL import Image
 from stl import Mode as STLMode, mesh as stlmesh
@@ -21,7 +20,6 @@ from store.app.model import (
     get_content_type,
 )
 from store.settings import settings
-from store.utils import save_xml
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +132,7 @@ class ArtifactsCrud(BaseCrud):
         )
         return artifact
 
-    async def _upload_xml(
+    async def _upload_tar_gz(
         self,
         name: str,
         file: io.BytesIO | BinaryIO,
@@ -145,19 +143,6 @@ class ArtifactsCrud(BaseCrud):
     ) -> Artifact:
         if listing.user_id != user_id:
             raise NotAuthorizedError("User does not have permission to upload artifacts to this listing")
-
-        # Standardizes the XML file.
-        try:
-            tree = ET.parse(file)
-        except Exception:
-            raise BadArtifactError("Invalid XML file")
-
-        # TODO: Remap the STL or OBJ file paths.
-
-        # Converts to byte stream.
-        out_file = io.BytesIO()
-        save_xml(out_file, tree)
-        out_file.seek(0)
 
         # Saves the artifact to S3.
         content_type = get_content_type(artifact_type)
@@ -189,7 +174,7 @@ class ArtifactsCrud(BaseCrud):
             case "stl":
                 return await self._upload_stl(name, file, listing, user_id, description)
             case "urdf" | "mjcf":
-                return await self._upload_xml(name, file, listing, user_id, artifact_type, description)
+                return await self._upload_tar_gz(name, file, listing, user_id, artifact_type, description)
             case _:
                 raise BadArtifactError(f"Invalid artifact type: {artifact_type}")
 

@@ -8,6 +8,7 @@ import Spinner from "components/ui/Spinner";
 
 import ListingImages from "./ListingImages";
 import ListingSTLs from "./ListingSTLs";
+import ListingURDFs from "./ListingURDFs";
 
 interface Props {
   listingId: string;
@@ -57,6 +58,7 @@ const ListingArtifacts = (props: Props) => {
         allArtifacts={artifacts}
       />
       <ListingSTLs listingId={listingId} edit={edit} allArtifacts={artifacts} />
+      <ListingURDFs listingId={listingId} edit={edit} allArtifacts={artifacts} />
     </div>
   );
 };
