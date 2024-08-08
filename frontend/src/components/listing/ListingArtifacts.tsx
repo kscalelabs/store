@@ -58,7 +58,11 @@ const ListingArtifacts = (props: Props) => {
         allArtifacts={artifacts}
       />
       <ListingSTLs listingId={listingId} edit={edit} allArtifacts={artifacts} />
-      <ListingURDFs listingId={listingId} edit={edit} allArtifacts={artifacts} />
+      <ListingURDFs
+        listingId={listingId}
+        edit={edit}
+        allArtifacts={artifacts}
+      />
     </div>
   );
 };

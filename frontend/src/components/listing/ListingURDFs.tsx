@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { FaCaretSquareDown, FaCaretSquareUp, FaTimes } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 import { components } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
@@ -7,7 +8,6 @@ import { useAuthentication } from "hooks/useAuth";
 
 import ListingFileUpload from "components/listing/ListingFileUpload";
 import { Button } from "components/ui/Button/Button";
-import { Link } from "react-router-dom";
 
 interface SingleURDFViewerProps {
   url: string;
@@ -18,7 +18,9 @@ const SingleURDFViewer = (props: SingleURDFViewerProps) => {
   const { url, name } = props;
 
   return (
-    <Link to={url} className="link">{name}</Link>
+    <Link to={url} className="link">
+      {name}
+    </Link>
   );
 };
 
@@ -79,11 +81,8 @@ const ListingURDFs = (props: Props) => {
           {!collapsed && (
             <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 justify-between w-full">
               {URDFs.map((urdf) => (
-                <div
-                  key={urdf.artifact_id}
-                  className="bg-background p-2"
-                >
-                  <SingleURDFViewer url={urdf.url} name={urdf.name}/>
+                <div key={urdf.artifact_id} className="bg-background p-2">
+                  <SingleURDFViewer url={urdf.url} name={urdf.name} />
                   {edit && (
                     <Button
                       onClick={() => onDelete(urdf.artifact_id)}
