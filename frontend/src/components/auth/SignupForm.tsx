@@ -2,6 +2,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAlertQueue } from "hooks/useAlertQueue";
 import { SignUpSchema, SignupType } from "types";
 import zxcvbn from "zxcvbn";
 
@@ -24,18 +25,20 @@ const SignupForm = () => {
   const confirmPassword = watch("confirmPassword") || "";
   const passwordStrength = password.length > 0 ? zxcvbn(password).score : 0;
 
+  const { addAlert, addErrorAlert } = useAlertQueue();
+
   const onSubmit: SubmitHandler<SignupType> = async (data: SignupType) => {
     // Exit account creation early if password too weak or not matching
     if (passwordStrength < 2) {
-      console.log("Please enter a stronger a password");
+      addErrorAlert("Please enter a stronger password");
       return;
     } else if (password !== confirmPassword) {
-      console.log("Passwords do not match");
+      addErrorAlert("Passwords do not match");
       return;
     }
 
     // TODO: Add an api endpoint to send the credentials details to backend and email verification.
-    console.log(data);
+    addAlert(`Not yet implemented: ${data.email}`, "success");
   };
 
   return (
