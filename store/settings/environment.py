@@ -56,12 +56,12 @@ class AuthSettings:
 
 @dataclass
 class EmailSettings:
-    host: str = field(default=II("oc.env:SMTP_HOST"))
+    host: str = field(default=II("oc.env:ROBOLIST_SMTP_HOST"))
     port: int = field(default=587)
-    username: str = field(default=II("oc.env:SMTP_USERNAME"))
-    password: str = field(default=II("oc.env:SMTP_PASSWORD"))
-    sender_email: str = field(default=II("oc.env:SMTP_SENDER_EMAIL"))
-    sender_name: str = field(default=II("oc.env:SMTP_SENDER_NAME"))
+    username: str = field(default=II("oc.env:ROBOLIST_SMTP_USERNAME"))
+    password: str = field(default=II("oc.env:ROBOLIST_SMTP_PASSWORD"))
+    sender_email: str = field(default=II("oc.env:ROBOLIST_SMTP_SENDER_EMAIL"))
+    sender_name: str = field(default=II("oc.env:ROBOLIST_SMTP_SENDER_NAME"))
     use_smtp: bool = field(default=False)
 
 
