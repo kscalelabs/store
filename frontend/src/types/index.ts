@@ -18,6 +18,17 @@ export const LoginSchema = z.object({
 
 export type LoginType = z.infer<typeof LoginSchema>;
 
+export const EmailSignUpSchema = z.object({
+  email: z
+    .string({
+      required_error: "Email required.",
+    })
+    .min(3, { message: "Email required." })
+    .email("Invalid email."),
+});
+
+export type EmailSignUpType = z.infer<typeof EmailSignUpSchema>;
+
 export const SignUpSchema = z
   .object({
     email: z
