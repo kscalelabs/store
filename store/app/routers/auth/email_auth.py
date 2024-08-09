@@ -59,7 +59,7 @@ async def verify_email(token: str) -> dict[str, str]:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User not found")
         if user.email_verified_at is not None:
             return {"message": "Email already verified"}
-        await crud.verify_user(user)
+        await crud.verify_user(user, token)
     return {"message": "Email verified successfully"}
 
 
