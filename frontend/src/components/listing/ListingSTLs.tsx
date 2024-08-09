@@ -52,7 +52,8 @@ const SingleStlViewer = (props: SingleStlViewerProps) => {
             aspect={window.innerWidth / window.innerHeight}
             position={[3, 0.15, 3]}
             near={1}
-            far={5000}
+            zoom={10}
+            far={1000}
             position-z={600}
           ></PerspectiveCamera>
           <Editor setSelected={setSelected} url={url} />
