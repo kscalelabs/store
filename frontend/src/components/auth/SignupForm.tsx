@@ -9,6 +9,9 @@ import { Button } from "components/ui/Button/Button";
 import ErrorMessage from "components/ui/ErrorMessage";
 import { Input } from "components/ui/Input/Input";
 import PasswordInput from "components/ui/Input/PasswordInput";
+import { useAuthentication } from "hooks/useAuth";
+import { useAlertQueue } from "hooks/useAlertQueue";
+import { useState } from "react";
 
 const SignupForm = () => {
   const {
@@ -20,9 +23,13 @@ const SignupForm = () => {
     resolver: zodResolver(SignUpSchema),
   });
 
+  const auth = useAuthentication();
+  const {addErrorAlert} = useAlertQueue();
+
   const password = watch("password") || "";
   const confirmPassword = watch("confirmPassword") || "";
   const passwordStrength = password.length > 0 ? zxcvbn(password).score : 0;
+  const [registered, setRegistered] = useState(false);
 
   const onSubmit: SubmitHandler<SignupType> = async (data: SignupType) => {
     // Exit account creation early if password too weak or not matching
@@ -34,9 +41,27 @@ const SignupForm = () => {
       return;
     }
 
-    // TODO: Add an api endpoint to send the credentials details to backend and email verification.
-    console.log(data);
+    // Add an api endpoint to send the credentials details to backend and email verification.
+    const { error } = await auth.client.POST(
+      "/auth/signup",
+      {
+        body: {
+          "email": data.email,
+          "password": data.password, 
+        }
+      }
+    )
+
+    if (error) {
+      addErrorAlert(error);
+    } else {
+      setRegistered(true);
+    }
   };
+
+  if (registered) {
+    return <p>You have successfully registered an account. Check your email for a verification link and then login to the website.</p>
+  }
 
   return (
     <form

@@ -1,21 +1,25 @@
 from datetime import datetime, timedelta
-from pydantic import EmailStr
-from store.app.crud.users import UserCrud
-from store.settings import settings
-from jose import JWTError, jwt
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
+
+from store.app.crud.users import UserCrud
+from store.app.model import User
+from store.settings import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
-def create_access_token(data: dict):
+
+def create_access_token(data: dict) -> str:
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=settings.auth.access_token_expire_minutes)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, settings.auth.secret_key, algorithm=settings.auth.algorithm)
     return encoded_jwt
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+
+async def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -28,7 +32,6 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-   
 
     async with UserCrud() as crud:
         user = await crud.get_user_from_email(email)  # Remove EmailStr() wrapper
@@ -36,5 +39,6 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
             raise credentials_exception
     return user
 
-def decode_token(token: str):
+
+def decode_token(token: str) -> dict[str, any]:
     return jwt.decode(token, settings.auth.secret_key, algorithms=[settings.auth.algorithm])

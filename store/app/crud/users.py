@@ -139,8 +139,7 @@ class UserCrud(BaseCrud):
         await self._delete_item(token)
 
     async def create_user(self, user: UserCreate) -> User:
-        hashed_password = pwd_context.hash(user.password)
-        new_user = User.create(email=user.email, hashed_password=hashed_password)
+        new_user = User.create(email=user.email, password=user.password)
         await self._add_item(new_user, unique_fields=["email"])
         return new_user
 
