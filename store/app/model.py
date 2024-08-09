@@ -119,8 +119,8 @@ UPLOAD_CONTENT_TYPE_OPTIONS: dict[ArtifactType, set[str]] = {
     # Image
     "image": {"image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"},
     # XML
-    "urdf": {"application/xml"},
-    "mjcf": {"application/xml"},
+    "urdf": {"application/gzip"},
+    "mjcf": {"application/gzip"},
     # Binary or text
     "stl": {"application/octet-stream", "text/xml"},
 }
@@ -129,8 +129,8 @@ DOWNLOAD_CONTENT_TYPE: dict[ArtifactType, str] = {
     # Image
     "image": "image/png",
     # XML
-    "urdf": "application/xml",
-    "mjcf": "application/xml",
+    "urdf": "application/gzip",
+    "mjcf": "application/gzip",
     # Binary
     "stl": "application/octet-stream",
 }
@@ -149,9 +149,9 @@ def get_artifact_name(id: str, artifact_type: ArtifactType, size: ArtifactSize =
             height, width = SizeMapping[size]
             return f"{id}_{size}_{height}x{width}.png"
         case "urdf":
-            return f"{id}.urdf"
+            return f"{id}.tar.gz"
         case "mjcf":
-            return f"{id}.xml"
+            return f"{id}.tar.gz"
         case "stl":
             return f"{id}.stl"
         case _:
