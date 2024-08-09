@@ -1,6 +1,7 @@
 import { SubmitHandler, useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAlertQueue } from "hooks/useAlertQueue";
 import { LoginSchema, LoginType } from "types";
 
 import { Button } from "components/ui/Button/Button";
@@ -17,9 +18,11 @@ const LoginForm = () => {
     resolver: zodResolver(LoginSchema),
   });
 
+  const { addAlert } = useAlertQueue();
+
   const onSubmit: SubmitHandler<LoginType> = async (data: LoginType) => {
     // TODO: Add an api endpoint to send the credentials details to backend and email verification.
-    console.log(data);
+    addAlert(`Not yet implemented: ${data.email}`, "success");
   };
 
   return (

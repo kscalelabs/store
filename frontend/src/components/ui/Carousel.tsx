@@ -1,4 +1,4 @@
-import { FaCaretLeft } from "react-icons/fa";
+import { FaCaretLeft, FaCaretRight } from "react-icons/fa";
 
 interface Props {
   items: {
@@ -11,8 +11,6 @@ const Carousel = ({ items }: Props) => {
   if (items.length === 0) {
     return <></>;
   }
-
-  console.log("items:", items);
 
   return (
     <div className="relative w-full">
@@ -61,7 +59,7 @@ const Carousel = ({ items }: Props) => {
         className="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
         data-carousel-next
       >
-        <FaCaretLeft className="w-4 h-4 text-white dark:text-gray-800 rtl:rotate-180" />
+        <FaCaretRight className="w-4 h-4 text-white dark:text-gray-800 rtl:rotate-180" />
         <span className="sr-only">Next</span>
       </button>
     </div>
