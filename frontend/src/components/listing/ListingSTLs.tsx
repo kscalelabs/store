@@ -48,11 +48,10 @@ const SingleStlViewer = (props: SingleStlViewerProps) => {
         <Suspense fallback={<Loader />}>
           <PerspectiveCamera
             makeDefault
-            fov={60}
+            fov={10}
             aspect={window.innerWidth / window.innerHeight}
             position={[3, 0.15, 3]}
             near={1}
-            zoom={10}
             far={1000}
             position-z={600}
           ></PerspectiveCamera>
@@ -122,7 +121,7 @@ const ListingSTLs = (props: Props) => {
             )}
           </Button>
           {!collapsed && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2 mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mx-auto h-96">
               {stls.map((stl) => (
                 <div
                   key={stl.artifact_id}
