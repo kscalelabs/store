@@ -21,7 +21,6 @@ class EmailSignUpResponse(BaseModel):
 
 class GetTokenResponse(BaseModel):
     email: str
-    created_at: str
 
 
 class DeleteTokenResponse(BaseModel):
@@ -44,11 +43,12 @@ async def create_signup_token(data: EmailSignUpRequest) -> EmailSignUpResponse:
 
 # GET: Retrieve Signup Token
 @email_signup_router.get("/get/{id}", response_model=GetTokenResponse)
-async def get_signup_token(id: str, crud: EmailSignUpCrud = Depends()) -> GetTokenResponse:
-    signup_token = await crud.get_email_signup_token(id)
-    if not signup_token:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Token not found.")
-    return signup_token
+async def get_signup_token(id: str) -> GetTokenResponse:
+    async with EmailSignUpCrud() as crud:  # Properly enter the context manager
+        signup_token = await crud.get_email_signup_token(id)
+        if not signup_token:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Token not found.")
+        return signup_token
 
 
 # DELETE: Delete Signup Token

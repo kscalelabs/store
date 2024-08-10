@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
@@ -7,11 +7,14 @@ import { useAuthentication } from "hooks/useAuth";
 
 import SignupForm from "components/auth/SignupForm";
 import { Button } from "components/ui/Button/Button";
+import { Card, CardContent, CardHeader } from "components/ui/Card";
+import Header from "components/ui/Header";
 
 type EmailSignUpResponse =
   paths["/email-signup/get/{id}"]["get"]["responses"][200]["content"]["application/json"];
 
 const Register = () => {
+  const navigate = useNavigate();
   const { addErrorAlert } = useAlertQueue();
   const { id } = useParams();
   const [signUpToken, setSignUpToken] = useState<EmailSignUpResponse | null>(
@@ -47,22 +50,32 @@ const Register = () => {
     fetchSignUpToken();
   }, [id]);
 
-  if (!signUpToken) {
-    return (
-      <div>
-        <h1>Invalid Sign Up Link</h1>
-        <Button
-          variant="outline"
-          className="w-full text-white bg-blue-600 hover:bg-opacity-70"
-        >
-          Login / Signup
-        </Button>
-      </div>
-    );
-  }
   return (
-    <div>
-      <SignupForm />
+    <div className="flex flex-col items-center mt-20">
+      <Card className="w-[400px] shadow-md bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg">
+        <CardHeader>
+          <Header title="Register" />
+        </CardHeader>
+        {signUpToken ? (
+          <CardContent>
+            <SignupForm />
+          </CardContent>
+        ) : (
+          <CardContent>
+            <div className="text-center">
+              <p className="text-lg mb-8">Invalid Sign Up Link</p>
+              <Button
+                variant="outline"
+                className="w-full text-white bg-blue-600 hover:bg-opacity-70"
+                onClick={() => {
+                  navigate("/login");
+                }}>
+                Login / Signup
+              </Button>
+            </div>
+          </CardContent>
+        )}
+      </Card>
     </div>
   );
 };

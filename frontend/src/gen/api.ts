@@ -474,8 +474,6 @@ export interface components {
         GetTokenResponse: {
             /** Email */
             email: string;
-            /** Created At */
-            created_at: string;
         };
         /** GithubAuthRequest */
         GithubAuthRequest: {
