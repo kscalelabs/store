@@ -1,5 +1,5 @@
 import { SubmitHandler, useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAlertQueue } from "hooks/useAlertQueue";
@@ -19,6 +19,7 @@ interface SignupFormProps {
 const SignupForm: React.FC<SignupFormProps> = ({ signupTokenId }) => {
   const auth = useAuthentication();
   const { addAlert, addErrorAlert } = useAlertQueue();
+  const navigate = useNavigate();
 
   const {
     register,
@@ -32,8 +33,6 @@ const SignupForm: React.FC<SignupFormProps> = ({ signupTokenId }) => {
   const password = watch("password") || "";
   const confirmPassword = watch("confirmPassword") || "";
   const passwordStrength = password.length > 0 ? zxcvbn(password).score : 0;
-
-  const { addAlert, addErrorAlert } = useAlertQueue();
 
   const onSubmit: SubmitHandler<SignupType> = async (data: SignupType) => {
     // Exit account creation early if password too weak or not matching
@@ -58,9 +57,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ signupTokenId }) => {
         addErrorAlert(error);
       } else {
         addAlert("Registration successful! You can now log in.", "success");
-
-        // Redirect to login page or other page
-        // Sign user in
+        navigate("/login");
+        // Sign user in automatically?
       }
     } catch (err) {
       addErrorAlert(err);
