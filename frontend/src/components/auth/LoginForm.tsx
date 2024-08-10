@@ -2,6 +2,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAlertQueue } from "hooks/useAlertQueue";
+import { useAuthentication } from "hooks/useAuth";
 import { LoginSchema, LoginType } from "types";
 
 import { Button } from "components/ui/Button/Button";
@@ -18,11 +19,27 @@ const LoginForm = () => {
     resolver: zodResolver(LoginSchema),
   });
 
-  const { addAlert } = useAlertQueue();
+  const { addAlert, addErrorAlert } = useAlertQueue();
+  const auth = useAuthentication();
 
   const onSubmit: SubmitHandler<LoginType> = async (data: LoginType) => {
-    // TODO: Add an api endpoint to send the credentials details to backend and email verification.
-    addAlert(`Not yet implemented: ${data.email}`, "success");
+    try {
+      const { data: response, error } = await auth.client.POST("/users/login", {
+        body: data,
+      });
+
+      if (error) {
+        addErrorAlert(error);
+      } else {
+        addAlert(`Login successful! Welcome, back!`, "success");
+
+        // Successful Login
+        // TODO: authenticated login state
+        console.log(JSON.stringify(response));
+      }
+    } catch {
+      addErrorAlert("An unexpected error occurred during login.");
+    }
   };
 
   return (

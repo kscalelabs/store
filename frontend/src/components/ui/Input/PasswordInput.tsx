@@ -110,7 +110,8 @@ const PasswordInput = <T extends FieldValues>({
           <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             Password Strength:{" "}
             <span
-              className={`font-semibold text-${getStrengthColor(passwordStrength)}`}>
+              className={`font-semibold text-${getStrengthColor(passwordStrength)}`}
+            >
               {getStrengthLabel(passwordStrength)}
             </span>
           </div>

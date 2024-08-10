@@ -6,6 +6,7 @@ from typing import Annotated, Literal, overload
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.security.utils import get_authorization_scheme_param
+from pydantic import EmailStr
 from pydantic.main import BaseModel as PydanticBaseModel
 
 from store.app.crud.base import ItemNotFoundError
@@ -16,6 +17,8 @@ from store.app.errors import NotAuthenticatedError
 from store.app.model import User, UserPermission
 from store.app.routers.auth.github import github_auth_router
 from store.app.utils.email import send_delete_email
+from store.app.utils.password import verify_password
+from store.utils import new_uuid
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +136,9 @@ class SendRegister(BaseModel):
 
 
 class UserRegister(BaseModel):
-    token: str
+    signup_token_id: str
+    email: str
+    password: str
 
 
 class UserInfoResponse(BaseModel):
@@ -182,16 +187,10 @@ class PublicUserInfoResponse(BaseModel):
     users: list[SinglePublicUserInfoResponseItem]
 
 
-class UserRegister(BaseModel):
-    signup_token_id: str
-    email: str
-    password: str
-
-
 @users_router.post("/register", response_model=SinglePublicUserInfoResponseItem)
 async def register_user(
     data: UserRegister, email_signup_crud: EmailSignUpCrud = Depends(), user_crud: UserCrud = Depends()
-):
+) -> SinglePublicUserInfoResponseItem:  # Added return type annotation
     async with email_signup_crud, user_crud:
         signup_token = await email_signup_crud.get_email_signup_token(data.signup_token_id)
         if not signup_token:
@@ -206,6 +205,35 @@ async def register_user(
         user = await user_crud._create_user_from_email(email=signup_token.email, password=data.password)
 
         return SinglePublicUserInfoResponseItem(id=user.id, email=user.email)
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class LoginResponse(BaseModel):
+    user_id: str
+    token: str
+
+
+@users_router.post("/login", response_model=LoginResponse)
+async def login_user(
+    data: LoginRequest, user_crud: UserCrud = Depends()
+) -> LoginResponse:  # Added return type annotation
+    async with user_crud:
+        # Fetch user by email
+        user = await user_crud.get_user_from_email(data.email)
+        if not user:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+
+        # Verify password
+        if not verify_password(data.password, user.hashed_password):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+
+        token = new_uuid()
+
+        return LoginResponse(user_id=user.id, token=token)
 
 
 @users_router.get("/batch", response_model=PublicUserInfoResponse)
