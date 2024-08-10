@@ -7,32 +7,17 @@ import { FaCaretSquareDown, FaCaretSquareUp, FaTimes } from "react-icons/fa";
 
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { useLoader } from "@react-three/fiber";
+import { cx } from "class-variance-authority";
 import { components } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 import { Object3D } from "three";
-import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
 
 import Editor from "components/Editor";
 import Loader from "components/Loader";
 import { Panel } from "components/MultiLeva";
 import ListingFileUpload from "components/listing/ListingFileUpload";
 import { Button } from "components/ui/Button/Button";
-
-export const Model = ({ url }: { url: string }) => {
-  const geom = useLoader(STLLoader, url);
-  return (
-    <>
-      <mesh>
-        <primitive object={geom} attach="geometry" />
-        <meshStandardMaterial color={"orange"} />
-      </mesh>
-      <ambientLight />
-      <pointLight position={[10, 10, 10]} />
-    </>
-  );
-};
 
 interface SingleStlViewerProps {
   url: string;
@@ -48,13 +33,11 @@ const SingleStlViewer = (props: SingleStlViewerProps) => {
         <Suspense fallback={<Loader />}>
           <PerspectiveCamera
             makeDefault
-            fov={60}
+            fov={50}
             aspect={window.innerWidth / window.innerHeight}
-            position={[3, 0.15, 3]}
-            near={1}
-            zoom={10}
-            far={1000}
-            position-z={600}
+            position={[10, 8, 25]}
+            near={0.1}
+            far={500}
           ></PerspectiveCamera>
           <Editor setSelected={setSelected} url={url} />
           <directionalLight color={0xeb4634} position={[1, 0.75, 0.5]} />
@@ -85,6 +68,10 @@ const ListingSTLs = (props: Props) => {
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
   const [collapsed, setCollapsed] = useState<boolean>(true);
 
+  const [currentIdUnchecked, setCurrentId] = useState<number>(0);
+  const currentId = Math.min(Math.max(currentIdUnchecked, 0), stls.length - 1);
+  const stl = stls.length === 0 ? null : stls[currentId];
+
   const onDelete = async (stlId: string) => {
     setDeletingIds([...deletingIds, stlId]);
 
@@ -100,14 +87,17 @@ const ListingSTLs = (props: Props) => {
     if (error) {
       addErrorAlert(error);
     } else {
+      if (currentId >= stls.length) {
+        setCurrentId(stls.length - 1);
+      }
       setStls(stls.filter((stl) => stl.artifact_id !== stlId));
       setDeletingIds(deletingIds.filter((id) => id !== stlId));
     }
   };
 
-  return stls.length > 0 || edit ? (
+  return stl !== null || edit ? (
     <div className="flex flex-col items-center justify-center my-4 p-4 relative">
-      {stls.length > 0 ? (
+      {stl !== null ? (
         <>
           <Button
             onClick={() => setCollapsed(!collapsed)}
@@ -121,26 +111,46 @@ const ListingSTLs = (props: Props) => {
               <FaCaretSquareDown className="ml-4 text-gray-700" />
             )}
           </Button>
-          {!collapsed && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2 mx-auto">
-              {stls.map((stl) => (
-                <div
-                  key={stl.artifact_id}
-                  className="bg-background rounded-lg p-2 relative"
-                >
-                  <SingleStlViewer url={stl.url} />
-                  {edit && (
-                    <Button
-                      onClick={() => onDelete(stl.artifact_id)}
-                      variant="destructive"
-                      className="absolute top-5 right-5 rounded-full"
-                      disabled={deletingIds.includes(stl.artifact_id)}
-                    >
-                      <FaTimes />
-                    </Button>
+          {!collapsed && stls.length > 1 && (
+            <div className="inline-flex rounded-md shadow-sm mb-2">
+              {stls.map((stl, idx) => (
+                <button
+                  type="button"
+                  className={cx(
+                    "py-1",
+                    idx === currentId
+                      ? "bg-gray-100 dark:bg-gray-600"
+                      : "bg-white dark:bg-gray-800",
+                    idx === 0 && "rounded-l-md border-l",
+                    idx === stls.length - 1 && "rounded-r-md border-r",
+                    "px-4 py-2 text-sm font-medium border-t border-b border-gray-200 hover:bg-gray-100",
                   )}
-                </div>
+                  key={stl.artifact_id}
+                  onClick={() => setCurrentId(idx)}
+                >
+                  {idx + 1}
+                </button>
               ))}
+            </div>
+          )}
+          {!collapsed && (
+            <div className="grid grid-cols-1 gap-2 mx-auto w-full aspect-square border-2 border-background rounded-lg p-2">
+              <div
+                key={stl.artifact_id}
+                className="bg-background rounded-lg p-2 relative"
+              >
+                <SingleStlViewer url={stl.url} />
+                {edit && (
+                  <Button
+                    onClick={() => onDelete(stl.artifact_id)}
+                    variant="destructive"
+                    className="absolute top-5 right-5 rounded-full"
+                    disabled={deletingIds.includes(stl.artifact_id)}
+                  >
+                    <FaTimes />
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </>

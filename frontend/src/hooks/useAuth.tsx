@@ -50,8 +50,6 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
     getLocalStorageAuth(),
   );
 
-  console.log(BACKEND_URL);
-
   const client = createClient<paths>({
     baseUrl: BACKEND_URL,
   });

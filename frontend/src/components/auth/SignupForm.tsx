@@ -33,13 +33,15 @@ const SignupForm: React.FC<SignupFormProps> = ({ signupTokenId }) => {
   const confirmPassword = watch("confirmPassword") || "";
   const passwordStrength = password.length > 0 ? zxcvbn(password).score : 0;
 
+  const { addAlert, addErrorAlert } = useAlertQueue();
+
   const onSubmit: SubmitHandler<SignupType> = async (data: SignupType) => {
     // Exit account creation early if password too weak or not matching
     if (passwordStrength < 2) {
-      console.log("Please enter a stronger a password");
+      addErrorAlert("Please enter a stronger password");
       return;
     } else if (password !== confirmPassword) {
-      console.log("Passwords do not match");
+      addErrorAlert("Passwords do not match");
       return;
     }
 
