@@ -2,7 +2,7 @@
 // @ts-nocheck
 
 /* eslint-disable react/no-unknown-property */
-import { Suspense, useRef, useState } from "react";
+import { Suspense, useRef } from "react";
 import { FaTimes } from "react-icons/fa";
 
 import {
@@ -34,7 +34,8 @@ const Model = ({ url }: ModelProps) => {
         receiveShadow
         position={[0, 0, 0]}
         rotation={[0, 0, 0]}
-        scale={10}>
+        scale={10}
+      >
         <primitive
           ref={ref}
           object={robot}
@@ -68,7 +69,8 @@ const UrdfRenderer = ({ url, edit, onDelete, disabled }: Props) => {
           position={[25, 25, 25]}
           up={[0, 0, 1]}
           near={0.1}
-          far={500}></PerspectiveCamera>
+          far={500}
+        ></PerspectiveCamera>
         <directionalLight color={0xeb4634} position={[1, 0.75, 0.5]} />
         <directionalLight color={0xccccff} position={[-1, 0.75, -0.5]} />
         <OrbitControls zoomSpeed={0.2} />
@@ -83,7 +85,8 @@ const UrdfRenderer = ({ url, edit, onDelete, disabled }: Props) => {
           onClick={onDelete}
           variant="destructive"
           className="absolute top-5 right-5 rounded-full"
-          disabled={disabled ?? false}>
+          disabled={disabled ?? false}
+        >
           <FaTimes />
         </Button>
       )}
