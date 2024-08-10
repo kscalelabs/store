@@ -119,10 +119,10 @@ UPLOAD_CONTENT_TYPE_OPTIONS: dict[ArtifactType, set[str]] = {
     # Image
     "image": {"image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"},
     # XML
-    "urdf": {"application/xml"},
-    "mjcf": {"application/xml"},
+    "urdf": {"application/octet-stream", "text/xml", "application/xml"},
+    "mjcf": {"application/octet-stream", "text/xml", "application/xml"},
     # Binary or text
-    "stl": {"application/octet-stream", "text/xml"},
+    "stl": {"application/octet-stream", "text/plain"},
 }
 
 DOWNLOAD_CONTENT_TYPE: dict[ArtifactType, str] = {

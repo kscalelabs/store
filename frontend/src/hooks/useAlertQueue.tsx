@@ -8,7 +8,7 @@ import {
 
 import Toast from "components/ui/Toast";
 
-const DELAY = 3000;
+const DELAY = 5000;
 const MAX_ALERTS = 5;
 
 // eslint-disable-next-line
@@ -18,6 +18,9 @@ export const humanReadableError = (error: any | undefined) => {
   }
   if (error?.message) {
     return error.message;
+  }
+  if (error?.detail) {
+    return error.detail;
   }
   return "An unknown error occurred";
 };

@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import clsx from "clsx";
 import { paths } from "gen/api";
 
-import Image from "components/Image";
+import ImagePlaceholder from "components/ImagePlaceholder";
 import { RenderDescription } from "components/listing/ListingDescription";
 import { Card, CardContent, CardHeader, CardTitle } from "components/ui/Card";
 
@@ -44,7 +44,7 @@ const ListingGridCard = (props: Props) => {
           />
         </div>
       ) : (
-        <Image />
+        <ImagePlaceholder />
       )}
       <div className="px-4 py-4 h-full">
         <CardHeader>
