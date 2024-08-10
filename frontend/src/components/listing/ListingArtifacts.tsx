@@ -8,6 +8,7 @@ import Spinner from "components/ui/Spinner";
 
 import ListingImages from "./ListingImages";
 import ListingSTLs from "./ListingSTLs";
+import ListingURDFs from "./ListingURDFs";
 
 interface Props {
   listingId: string;
@@ -52,6 +53,11 @@ const ListingArtifacts = (props: Props) => {
   ) : (
     <div className="flex flex-col">
       <ListingImages
+        listingId={listingId}
+        edit={edit}
+        allArtifacts={artifacts}
+      />
+      <ListingURDFs
         listingId={listingId}
         edit={edit}
         allArtifacts={artifacts}

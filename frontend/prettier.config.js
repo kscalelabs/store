@@ -3,7 +3,6 @@ module.exports = {
   tabWidth: 2,
   trailingComma: "all",
   singleQuote: false,
-  jsxBracketSameLine: true,
   semi: true,
   plugins: ["@trivago/prettier-plugin-sort-imports"],
   importOrder: [

@@ -58,6 +58,11 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
     data = response.json()
     assert data["artifact"]["artifact_id"] is not None
 
+    # Downloads the URDF.
+    artifact_id = data["artifact"]["artifact_id"]
+    response = await app_client.get(f"/artifacts/download/{artifact_id}", headers=auth_headers)
+    assert response.status_code == status.HTTP_200_OK, response.content
+
     # Uploads an STL.
     stl_path = Path(__file__).parent / "assets" / "teapot.stl"
     data_json = json.dumps({"artifact_type": "stl", "listing_id": listing_id})

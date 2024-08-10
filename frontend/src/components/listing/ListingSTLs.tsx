@@ -1,49 +1,14 @@
-import { Suspense, useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { FaCaretSquareDown, FaCaretSquareUp, FaTimes } from "react-icons/fa";
 
-import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
 import { cx } from "class-variance-authority";
 import { components } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
-import { Object3D } from "three";
 
-import Editor from "components/Editor";
-import Loader from "components/Loader";
-import { Panel } from "components/MultiLeva";
 import ListingFileUpload from "components/listing/ListingFileUpload";
+import StlRenderer from "components/listing/renderers/StlRenderer";
 import { Button } from "components/ui/Button/Button";
-
-interface SingleStlViewerProps {
-  url: string;
-}
-
-const SingleStlViewer = (props: SingleStlViewerProps) => {
-  const { url } = props;
-  const [selected, setSelected] = useState<Object3D[]>();
-
-  return (
-    <>
-      <Canvas>
-        <Suspense fallback={<Loader />}>
-          <PerspectiveCamera
-            makeDefault
-            fov={50}
-            aspect={window.innerWidth / window.innerHeight}
-            position={[10, 8, 25]}
-            near={0.1}
-            far={500}></PerspectiveCamera>
-          <Editor setSelected={setSelected} url={url} />
-          <directionalLight color={0xeb4634} position={[1, 0.75, 0.5]} />
-          <directionalLight color={0xccccff} position={[-1, 0.75, -0.5]} />
-        </Suspense>
-        <OrbitControls />
-      </Canvas>
-      <Panel selected={selected} />
-    </>
-  );
-};
 
 interface Props {
   listingId: string;
@@ -60,12 +25,24 @@ const ListingSTLs = (props: Props) => {
   const [stls, setStls] = useState<
     components["schemas"]["ListArtifactsResponse"]["artifacts"]
   >(allArtifacts.filter((a) => a.artifact_type === "stl"));
+  const [stl, setStl] = useState<
+    components["schemas"]["ListArtifactsResponse"]["artifacts"][0] | null
+  >(null);
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
   const [collapsed, setCollapsed] = useState<boolean>(true);
+  const [currentId, setCurrentId] = useState<number>(0);
 
-  const [currentIdUnchecked, setCurrentId] = useState<number>(0);
-  const currentId = Math.min(Math.max(currentIdUnchecked, 0), stls.length - 1);
-  const stl = stls.length === 0 ? null : stls[currentId];
+  useEffect(() => {
+    if (stl !== null) {
+      return;
+    }
+
+    if (currentId >= stls.length || currentId < 0) {
+      setCurrentId(Math.min(Math.max(currentId, 0), stls.length - 1));
+    } else {
+      setStl(stls[currentId]);
+    }
+  }, [stl, stls, currentId]);
 
   const onDelete = async (stlId: string) => {
     setDeletingIds([...deletingIds, stlId]);
@@ -82,10 +59,8 @@ const ListingSTLs = (props: Props) => {
     if (error) {
       addErrorAlert(error);
     } else {
-      if (currentId >= stls.length) {
-        setCurrentId(stls.length - 1);
-      }
       setStls(stls.filter((stl) => stl.artifact_id !== stlId));
+      setStl(null);
       setDeletingIds(deletingIds.filter((id) => id !== stlId));
     }
   };
@@ -120,7 +95,10 @@ const ListingSTLs = (props: Props) => {
                     "px-4 py-2 text-sm font-medium border-t border-b border-gray-200 hover:bg-gray-100",
                   )}
                   key={stl.artifact_id}
-                  onClick={() => setCurrentId(idx)}>
+                  onClick={() => {
+                    setCurrentId(idx);
+                    setStl(null);
+                  }}>
                   {idx + 1}
                 </button>
               ))}
@@ -131,16 +109,12 @@ const ListingSTLs = (props: Props) => {
               <div
                 key={stl.artifact_id}
                 className="bg-background rounded-lg p-2 relative">
-                <SingleStlViewer url={stl.url} />
-                {edit && (
-                  <Button
-                    onClick={() => onDelete(stl.artifact_id)}
-                    variant="destructive"
-                    className="absolute top-5 right-5 rounded-full"
-                    disabled={deletingIds.includes(stl.artifact_id)}>
-                    <FaTimes />
-                  </Button>
-                )}
+                <StlRenderer
+                  url={stl.url}
+                  edit={edit}
+                  onDelete={() => onDelete(stl.artifact_id)}
+                  disabled={deletingIds.includes(stl.artifact_id)}
+                />
               </div>
             </div>
           )}
