@@ -379,7 +379,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/email-signup/get/{token}": {
+    "/email-signup/get/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -387,7 +387,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Signup Token */
-        get: operations["get_signup_token_email_signup_get__token__get"];
+        get: operations["get_signup_token_email_signup_get__id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -396,7 +396,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/email-signup/delete/{token}": {
+    "/email-signup/delete/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -407,7 +407,7 @@ export interface paths {
         put?: never;
         post?: never;
         /** Delete Signup Token */
-        delete: operations["delete_signup_token_email_signup_delete__token__delete"];
+        delete: operations["delete_signup_token_email_signup_delete__id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1272,12 +1272,12 @@ export interface operations {
             };
         };
     };
-    get_signup_token_email_signup_get__token__get: {
+    get_signup_token_email_signup_get__id__get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                token: string;
+                id: string;
             };
             cookie?: never;
         };
@@ -1303,12 +1303,12 @@ export interface operations {
             };
         };
     };
-    delete_signup_token_email_signup_delete__token__delete: {
+    delete_signup_token_email_signup_delete__id__delete: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                token: string;
+                id: string;
             };
             cookie?: never;
         };

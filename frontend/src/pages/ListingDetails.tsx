@@ -21,7 +21,7 @@ const RenderListing = (props: RenderListingProps) => {
   const { listing } = props;
 
   return (
-    <div className="container mx-auto max-w-4xl shadow-md rounded-lg bg-white dark:bg-gray-800 dark:text-white border bg-card text-card-foreground shadow relative">
+    <div className="container mx-auto max-w-4xl shadow-md rounded-lg bg-white dark:bg-gray-800 dark:text-white border bg-card text-card-foreground relative">
       <ListingHeader
         listingId={listing.id}
         title={listing.name}

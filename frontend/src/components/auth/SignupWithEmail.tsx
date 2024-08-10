@@ -26,7 +26,6 @@ const SignupWithEmail = () => {
   });
 
   const onSubmit = async ({ email }: EmailSignupType) => {
-    console.log(`email: ${email}`);
     const { data, error } = await auth.client.POST("/email-signup/create/", {
       body: {
         email,
@@ -38,7 +37,8 @@ const SignupWithEmail = () => {
     } else {
       const responseData = data as EmailSignUpResponse;
       const successMessage =
-        responseData?.message || "Sign-up email sent! Check your inbox.";
+        responseData?.message ||
+        "Sign up email sent! Follow the link sent to you to continue registration.";
       addAlert(successMessage, "success");
     }
   };

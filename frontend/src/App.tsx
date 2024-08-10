@@ -40,7 +40,7 @@ const App = () => {
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/logout" element={<Logout />} />
-                      <Route path="/register/:token" element={<Register />} />
+                      <Route path="/register/:id" element={<Register />} />
                       <Route path="/create" element={<Create />} />
                       <Route path="/browse/:page?" element={<Browse />} />
                       <Route path="/item/:id" element={<ListingDetails />} />

@@ -9,44 +9,45 @@ import SignupForm from "components/auth/SignupForm";
 import { Button } from "components/ui/Button/Button";
 
 type EmailSignUpResponse =
-  paths["/email-signup/get/{token}"]["get"]["responses"][200]["content"]["application/json"];
+  paths["/email-signup/get/{id}"]["get"]["responses"][200]["content"]["application/json"];
 
 const Register = () => {
   const { addErrorAlert } = useAlertQueue();
-  const { token } = useParams();
-  const [emailToken, setEmailToken] = useState<EmailSignUpResponse | null>(
+  const { id } = useParams();
+  const [signUpToken, setSignUpToken] = useState<EmailSignUpResponse | null>(
     null,
   );
   const auth = useAuthentication();
 
   useEffect(() => {
-    const fetchListing = async () => {
-      if (token === undefined) {
+    const fetchSignUpToken = async () => {
+      console.log(`id in useEffect: ${id}`);
+      if (id === undefined) {
         return;
       }
 
       try {
         const { data, error } = await auth.client.GET(
-          "/email-signup/get/{token}",
+          "/email-signup/get/{id}",
           {
             params: {
-              path: { token },
+              path: { id },
             },
           },
         );
         if (error) {
           addErrorAlert(error);
         } else {
-          setEmailToken(data);
+          setSignUpToken(data);
         }
       } catch (err) {
         addErrorAlert(err);
       }
     };
-    fetchListing();
-  }, [token]);
+    fetchSignUpToken();
+  }, [id]);
 
-  if (!emailToken) {
+  if (!signUpToken) {
     return (
       <div>
         <h1>Invalid Sign Up Link</h1>

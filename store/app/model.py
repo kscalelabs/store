@@ -80,11 +80,10 @@ class EmailSignUpToken(RobolistBaseModel):
     """
 
     email: EmailStr
-    token: str
 
     @classmethod
     def create(cls, email: str) -> Self:
-        return cls(email=email, token=new_uuid())
+        return cls(id=new_uuid(), email=email)
 
 
 class OAuthKey(RobolistBaseModel):
