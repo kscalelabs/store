@@ -45,17 +45,19 @@ async def create_signup_token(data: EmailSignUpRequest) -> EmailSignUpResponse:
 # GET: Retrieve Signup Token
 @email_signup_router.get("/get/{id}", response_model=GetTokenResponse)
 async def get_signup_token(id: str) -> GetTokenResponse:
-    async with EmailSignUpCrud() as crud:  # Properly enter the context manager
+    async with EmailSignUpCrud() as crud:
         signup_token = await crud.get_email_signup_token(id)
         if not signup_token:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Token not found.")
-        return signup_token
+
+        # Map the EmailSignUpToken to GetTokenResponse
+        return GetTokenResponse(id=signup_token.id, email=signup_token.email)
 
 
 # DELETE: Delete Signup Token
 @email_signup_router.delete("/delete/{id}", response_model=DeleteTokenResponse)
 async def delete_signup_token(id: str, crud: EmailSignUpCrud = Depends()) -> DeleteTokenResponse:
-    deleted = await crud.delete_email_signup_token(id)
-    if not deleted:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Token not found.")
+    await crud.delete_email_signup_token(id)
+
+    # The return value should be a DeleteTokenResponse, not None
     return {"message": "Token deleted successfully."}

@@ -218,17 +218,15 @@ class LoginResponse(BaseModel):
 
 
 @users_router.post("/login", response_model=LoginResponse)
-async def login_user(
-    data: LoginRequest, user_crud: UserCrud = Depends()
-) -> LoginResponse:  # Added return type annotation
+async def login_user(data: LoginRequest, user_crud: UserCrud = Depends()) -> LoginResponse:
     async with user_crud:
         # Fetch user by email
         user = await user_crud.get_user_from_email(data.email)
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
 
-        # Verify password
-        if not verify_password(data.password, user.hashed_password):
+        # Ensure `hashed_password` is not None before verifying
+        if user.hashed_password is None or not verify_password(data.password, user.hashed_password):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
 
         token = new_uuid()
