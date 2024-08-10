@@ -40,7 +40,7 @@ class ListArtifactsResponse(BaseModel):
     artifacts: list[ListArtifactsItem]
 
 
-@artifacts_router.get("/{listing_id}", response_model=ListArtifactsResponse)
+@artifacts_router.get("/list/{listing_id}", response_model=ListArtifactsResponse)
 async def list_artifacts(listing_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> ListArtifactsResponse:
     return ListArtifactsResponse(
         artifacts=[

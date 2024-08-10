@@ -14,11 +14,6 @@ type MeshType = "wireframe" | "basic";
 
 const MeshTypes: MeshType[] = ["wireframe", "basic"];
 
-interface ModelProps {
-  url: string;
-  meshType: MeshType;
-}
-
 const getMaterial = (meshType: MeshType) => {
   switch (meshType) {
     case "wireframe":
@@ -35,6 +30,11 @@ const getMaterial = (meshType: MeshType) => {
       );
   }
 };
+
+interface ModelProps {
+  url: string;
+  meshType: MeshType;
+}
 
 const Model = ({ url, meshType }: ModelProps) => {
   const geom = useLoader(STLLoader, url);
@@ -56,6 +56,8 @@ interface Props {
 
 const StlRenderer = ({ url, edit, onDelete, disabled }: Props) => {
   const [meshType, setMeshType] = useState<MeshType>("basic");
+
+  console.log("stl", url);
 
   return (
     <>

@@ -31,11 +31,14 @@ const ListingArtifacts = (props: Props) => {
     }
 
     const fetchArtifacts = async () => {
-      const { data, error } = await auth.client.GET("/artifacts/{listing_id}", {
-        params: {
-          path: { listing_id: listingId },
+      const { data, error } = await auth.client.GET(
+        "/artifacts/list/{listing_id}",
+        {
+          params: {
+            path: { listing_id: listingId },
+          },
         },
-      });
+      );
 
       if (error) {
         addErrorAlert(error);

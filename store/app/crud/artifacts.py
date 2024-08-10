@@ -169,7 +169,7 @@ class ArtifactsCrud(BaseCrud):
             description=description,
         )
         await asyncio.gather(
-            self._upload_to_s3(file, name, get_artifact_name(artifact.id, artifact_type), content_type),
+            self._upload_to_s3(out_file, name, get_artifact_name(artifact.id, artifact_type), content_type),
             self._add_item(artifact),
         )
         return artifact

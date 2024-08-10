@@ -2,7 +2,7 @@
 // @ts-nocheck
 
 /* eslint-disable react/no-unknown-property */
-import { Suspense, useRef, useState } from "react";
+import { Suspense, useRef } from "react";
 import { FaTimes } from "react-icons/fa";
 
 import {
@@ -19,24 +19,13 @@ import URDFLoader from "urdf-loader";
 import Loader from "components/listing/renderers/Loader";
 import { Button } from "components/ui/Button/Button";
 
-type MeshType = "wireframe" | "basic";
-
-const MeshTypes: MeshType[] = ["wireframe", "basic"];
-
 interface ModelProps {
   url: string;
-  meshType: MeshType;
 }
 
-const Model = ({ url, meshType }: ModelProps) => {
-  // TODO: Go back to using URL.
-  const filepath =
-    "https://raw.githubusercontent.com/facebookresearch/fairo/main/polymetis/polymetis/data/franka_panda/panda_arm.urdf";
-
-  console.log(url, meshType);
-
+const Model = ({ url }: ModelProps) => {
   const ref = useRef<Group>();
-  const robot = useLoader(URDFLoader, filepath);
+  const robot = useLoader(URDFLoader, url);
 
   return (
     <group>
@@ -70,8 +59,6 @@ interface Props {
 }
 
 const UrdfRenderer = ({ url, edit, onDelete, disabled }: Props) => {
-  const [meshType, setMeshType] = useState<MeshType>("basic");
-
   return (
     <>
       <Canvas>
@@ -89,7 +76,7 @@ const UrdfRenderer = ({ url, edit, onDelete, disabled }: Props) => {
         <OrbitControls zoomSpeed={0.2} />
         <Suspense fallback={<Loader />}>
           <Center>
-            <Model url={url} meshType={meshType} />
+            <Model url={url} />
           </Center>
         </Suspense>
       </Canvas>
@@ -103,17 +90,6 @@ const UrdfRenderer = ({ url, edit, onDelete, disabled }: Props) => {
           <FaTimes />
         </Button>
       )}
-      <Button
-        onClick={() => {
-          setMeshType(
-            MeshTypes[(MeshTypes.indexOf(meshType) + 1) % MeshTypes.length],
-          );
-        }}
-        variant="outline"
-        className="absolute bottom-5 right-5 rounded-full"
-      >
-        <code>{meshType}</code>
-      </Button>
     </>
   );
 };

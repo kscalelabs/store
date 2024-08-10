@@ -129,8 +129,8 @@ DOWNLOAD_CONTENT_TYPE: dict[ArtifactType, str] = {
     # Image
     "image": "image/png",
     # XML
-    "urdf": "application/xml",
-    "mjcf": "application/xml",
+    "urdf": "application/octet-stream",
+    "mjcf": "application/octet-stream",
     # Binary
     "stl": "application/octet-stream",
 }
