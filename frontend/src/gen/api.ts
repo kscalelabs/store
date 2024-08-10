@@ -294,7 +294,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/artifacts/{listing_id}": {
+    "/artifacts/list/{listing_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -302,7 +302,7 @@ export interface paths {
             cookie?: never;
         };
         /** List Artifacts */
-        get: operations["list_artifacts_artifacts__listing_id__get"];
+        get: operations["list_artifacts_artifacts_list__listing_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1033,7 +1033,7 @@ export interface operations {
             };
         };
     };
-    list_artifacts_artifacts__listing_id__get: {
+    list_artifacts_artifacts_list__listing_id__get: {
         parameters: {
             query?: never;
             header?: never;

@@ -19,24 +19,13 @@ import URDFLoader from "urdf-loader";
 import Loader from "components/listing/renderers/Loader";
 import { Button } from "components/ui/Button/Button";
 
-type MeshType = "wireframe" | "basic";
-
-const MeshTypes: MeshType[] = ["wireframe", "basic"];
-
 interface ModelProps {
   url: string;
-  meshType: MeshType;
 }
 
-const Model = ({ url, meshType }: ModelProps) => {
-  // TODO: Go back to using URL.
-  const filepath =
-    "https://raw.githubusercontent.com/facebookresearch/fairo/main/polymetis/polymetis/data/franka_panda/panda_arm.urdf";
-
-  console.log(url, meshType);
-
+const Model = ({ url }: ModelProps) => {
   const ref = useRef<Group>();
-  const robot = useLoader(URDFLoader, filepath);
+  const robot = useLoader(URDFLoader, url);
 
   return (
     <group>
@@ -45,8 +34,7 @@ const Model = ({ url, meshType }: ModelProps) => {
         receiveShadow
         position={[0, 0, 0]}
         rotation={[0, 0, 0]}
-        scale={10}
-      >
+        scale={10}>
         <primitive
           ref={ref}
           object={robot}
@@ -70,8 +58,6 @@ interface Props {
 }
 
 const UrdfRenderer = ({ url, edit, onDelete, disabled }: Props) => {
-  const [meshType, setMeshType] = useState<MeshType>("basic");
-
   return (
     <>
       <Canvas>
@@ -82,14 +68,13 @@ const UrdfRenderer = ({ url, edit, onDelete, disabled }: Props) => {
           position={[25, 25, 25]}
           up={[0, 0, 1]}
           near={0.1}
-          far={500}
-        ></PerspectiveCamera>
+          far={500}></PerspectiveCamera>
         <directionalLight color={0xeb4634} position={[1, 0.75, 0.5]} />
         <directionalLight color={0xccccff} position={[-1, 0.75, -0.5]} />
         <OrbitControls zoomSpeed={0.2} />
         <Suspense fallback={<Loader />}>
           <Center>
-            <Model url={url} meshType={meshType} />
+            <Model url={url} />
           </Center>
         </Suspense>
       </Canvas>
@@ -98,22 +83,10 @@ const UrdfRenderer = ({ url, edit, onDelete, disabled }: Props) => {
           onClick={onDelete}
           variant="destructive"
           className="absolute top-5 right-5 rounded-full"
-          disabled={disabled ?? false}
-        >
+          disabled={disabled ?? false}>
           <FaTimes />
         </Button>
       )}
-      <Button
-        onClick={() => {
-          setMeshType(
-            MeshTypes[(MeshTypes.indexOf(meshType) + 1) % MeshTypes.length],
-          );
-        }}
-        variant="outline"
-        className="absolute bottom-5 right-5 rounded-full"
-      >
-        <code>{meshType}</code>
-      </Button>
     </>
   );
 };

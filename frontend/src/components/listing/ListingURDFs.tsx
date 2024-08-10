@@ -26,7 +26,7 @@ const ListingURDFs = (props: Props) => {
     components["schemas"]["ListArtifactsResponse"]["artifacts"]
   >(allArtifacts.filter((a) => a.artifact_type === "urdf"));
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
-  const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [collapsed, setCollapsed] = useState<boolean>(true);
 
   const [currentIdUnchecked, setCurrentId] = useState<number>(0);
   const currentId = Math.min(Math.max(currentIdUnchecked, 0), urdfs.length - 1);
