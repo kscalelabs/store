@@ -1,5 +1,5 @@
-import { startTransition, useEffect, useState } from "react";
-import { FaCaretSquareDown, FaCaretSquareUp, FaTimes } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { FaCaretSquareDown, FaCaretSquareUp } from "react-icons/fa";
 
 import { cx } from "class-variance-authority";
 import { components } from "gen/api";
@@ -72,7 +72,8 @@ const ListingSTLs = (props: Props) => {
           <Button
             onClick={() => setCollapsed(!collapsed)}
             variant="outline"
-            className="mt-2 mb-4 text-md p-4">
+            className="mt-2 mb-4 text-md p-4"
+          >
             STLs
             {collapsed ? (
               <FaCaretSquareUp className="ml-4 text-gray-700" />
@@ -98,7 +99,8 @@ const ListingSTLs = (props: Props) => {
                   onClick={() => {
                     setCurrentId(idx);
                     setStl(null);
-                  }}>
+                  }}
+                >
                   {idx + 1}
                 </button>
               ))}
@@ -108,7 +110,8 @@ const ListingSTLs = (props: Props) => {
             <div className="grid grid-cols-1 gap-2 mx-auto w-full aspect-square border-2 border-background rounded-lg p-2">
               <div
                 key={stl.artifact_id}
-                className="bg-background rounded-lg p-2 relative">
+                className="bg-background rounded-lg p-2 relative"
+              >
                 <StlRenderer
                   url={stl.url}
                   edit={edit}

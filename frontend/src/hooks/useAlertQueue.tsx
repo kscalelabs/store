@@ -96,7 +96,8 @@ export const AlertQueueProvider = (props: AlertQueueProviderProps) => {
         removeAlert,
         addAlert,
         addErrorAlert,
-      }}>
+      }}
+    >
       {children}
     </AlertQueueContext.Provider>
   );

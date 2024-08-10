@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unknown-property */
 import { Suspense, useRef, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 
@@ -9,7 +10,7 @@ import {
 } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useLoader } from "@react-three/fiber";
-import { Group, LoadingManager } from "three";
+import { Group } from "three";
 import URDFLoader from "urdf-loader";
 
 import Loader from "components/listing/renderers/Loader";
@@ -23,23 +24,6 @@ interface ModelProps {
   url: string;
   meshType: MeshType;
 }
-
-const getMaterial = (meshType: MeshType) => {
-  switch (meshType) {
-    case "wireframe":
-      return <meshBasicMaterial attach="material" wireframe />;
-    case "basic":
-    default:
-      return (
-        <meshStandardMaterial
-          attach="material"
-          color="white"
-          roughness={0.5}
-          metalness={0.5}
-        />
-      );
-  }
-};
 
 const Model = ({ url, meshType }: ModelProps) => {
   // TODO: Go back to using URL.
@@ -58,7 +42,8 @@ const Model = ({ url, meshType }: ModelProps) => {
         receiveShadow
         position={[0, 0, 0]}
         rotation={[0, 0, 0]}
-        scale={10}>
+        scale={10}
+      >
         <primitive
           ref={ref}
           object={robot}
@@ -94,7 +79,8 @@ const UrdfRenderer = ({ url, edit, onDelete, disabled }: Props) => {
           position={[25, 25, 25]}
           up={[0, 0, 1]}
           near={0.1}
-          far={500}></PerspectiveCamera>
+          far={500}
+        ></PerspectiveCamera>
         <directionalLight color={0xeb4634} position={[1, 0.75, 0.5]} />
         <directionalLight color={0xccccff} position={[-1, 0.75, -0.5]} />
         <OrbitControls zoomSpeed={0.2} />
@@ -109,7 +95,8 @@ const UrdfRenderer = ({ url, edit, onDelete, disabled }: Props) => {
           onClick={onDelete}
           variant="destructive"
           className="absolute top-5 right-5 rounded-full"
-          disabled={disabled ?? false}>
+          disabled={disabled ?? false}
+        >
           <FaTimes />
         </Button>
       )}
@@ -120,7 +107,8 @@ const UrdfRenderer = ({ url, edit, onDelete, disabled }: Props) => {
           );
         }}
         variant="outline"
-        className="absolute bottom-5 right-5 rounded-full">
+        className="absolute bottom-5 right-5 rounded-full"
+      >
         <code>{meshType}</code>
       </Button>
     </>

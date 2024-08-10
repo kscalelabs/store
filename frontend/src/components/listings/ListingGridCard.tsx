@@ -33,7 +33,8 @@ const ListingGridCard = (props: Props) => {
       )}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
-      onClick={() => navigate(`/item/${listingId}`)}>
+      onClick={() => navigate(`/item/${listingId}`)}
+    >
       {listing?.image_url ? (
         <div className="w-full aspect-square">
           <img

@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unknown-property */
 import { Suspense, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 
@@ -66,7 +67,8 @@ const StlRenderer = ({ url, edit, onDelete, disabled }: Props) => {
           position={[25, 25, 0]}
           up={[0, 0, 1]}
           near={0.1}
-          far={500}></PerspectiveCamera>
+          far={500}
+        ></PerspectiveCamera>
         <directionalLight color={0xeb4634} position={[1, 0.75, 0.5]} />
         <directionalLight color={0xccccff} position={[-1, 0.75, -0.5]} />
         <OrbitControls zoomSpeed={0.2} />
@@ -81,7 +83,8 @@ const StlRenderer = ({ url, edit, onDelete, disabled }: Props) => {
           onClick={onDelete}
           variant="destructive"
           className="absolute top-5 right-5 rounded-full"
-          disabled={disabled ?? false}>
+          disabled={disabled ?? false}
+        >
           <FaTimes />
         </Button>
       )}
@@ -92,7 +95,8 @@ const StlRenderer = ({ url, edit, onDelete, disabled }: Props) => {
           );
         }}
         variant="outline"
-        className="absolute bottom-5 right-5 rounded-full">
+        className="absolute bottom-5 right-5 rounded-full"
+      >
         <code>{meshType}</code>
       </Button>
     </>

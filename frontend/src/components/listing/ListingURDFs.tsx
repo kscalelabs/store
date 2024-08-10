@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaCaretSquareDown, FaCaretSquareUp, FaTimes } from "react-icons/fa";
+import { FaCaretSquareDown, FaCaretSquareUp } from "react-icons/fa";
 
 import { cx } from "class-variance-authority";
 import { components } from "gen/api";
@@ -62,7 +62,8 @@ const ListingURDFs = (props: Props) => {
           <Button
             onClick={() => setCollapsed(!collapsed)}
             variant="outline"
-            className="mt-2 mb-4 text-md p-4">
+            className="mt-2 mb-4 text-md p-4"
+          >
             URDFs
             {collapsed ? (
               <FaCaretSquareUp className="ml-4 text-gray-700" />
@@ -85,7 +86,8 @@ const ListingURDFs = (props: Props) => {
                     "px-4 py-2 text-sm font-medium border-t border-b border-gray-200 hover:bg-gray-100",
                   )}
                   key={urdf.artifact_id}
-                  onClick={() => setCurrentId(idx)}>
+                  onClick={() => setCurrentId(idx)}
+                >
                   {idx + 1}
                 </button>
               ))}
@@ -95,7 +97,8 @@ const ListingURDFs = (props: Props) => {
             <div className="grid grid-cols-1 gap-2 mx-auto w-full aspect-square border-2 border-background rounded-lg p-2">
               <div
                 key={urdf.artifact_id}
-                className="bg-background rounded-lg p-2 relative">
+                className="bg-background rounded-lg p-2 relative"
+              >
                 <UrdfRenderer
                   url={urdf.url}
                   edit={edit}
