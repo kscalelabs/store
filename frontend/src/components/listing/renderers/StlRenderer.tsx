@@ -69,7 +69,7 @@ const StlRenderer = ({ url, edit, onDelete, disabled }: Props) => {
           far={500}></PerspectiveCamera>
         <directionalLight color={0xeb4634} position={[1, 0.75, 0.5]} />
         <directionalLight color={0xccccff} position={[-1, 0.75, -0.5]} />
-        <OrbitControls />
+        <OrbitControls zoomSpeed={0.2} />
         <Suspense fallback={<Loader />}>
           <Center>
             <Model url={url} meshType={meshType} />

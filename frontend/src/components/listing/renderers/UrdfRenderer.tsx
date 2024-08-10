@@ -42,10 +42,11 @@ const getMaterial = (meshType: MeshType) => {
 };
 
 const Model = ({ url, meshType }: ModelProps) => {
+  // TODO: Go back to using URL.
   const filepath =
     "https://raw.githubusercontent.com/facebookresearch/fairo/main/polymetis/polymetis/data/franka_panda/panda_arm.urdf";
 
-  console.log(url);
+  console.log(url, meshType);
 
   const ref = useRef<Group>();
   const robot = useLoader(URDFLoader, filepath);
@@ -96,7 +97,7 @@ const UrdfRenderer = ({ url, edit, onDelete, disabled }: Props) => {
           far={500}></PerspectiveCamera>
         <directionalLight color={0xeb4634} position={[1, 0.75, 0.5]} />
         <directionalLight color={0xccccff} position={[-1, 0.75, -0.5]} />
-        <OrbitControls />
+        <OrbitControls zoomSpeed={0.2} />
         <Suspense fallback={<Loader />}>
           <Center>
             <Model url={url} meshType={meshType} />
