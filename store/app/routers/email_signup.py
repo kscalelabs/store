@@ -20,6 +20,7 @@ class EmailSignUpResponse(BaseModel):
 
 
 class GetTokenResponse(BaseModel):
+    id: str
     email: str
 
 

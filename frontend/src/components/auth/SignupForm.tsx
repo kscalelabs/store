@@ -2,6 +2,8 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAlertQueue } from "hooks/useAlertQueue";
+import { useAuthentication } from "hooks/useAuth";
 import { SignUpSchema, SignupType } from "types";
 import zxcvbn from "zxcvbn";
 
@@ -10,7 +12,14 @@ import ErrorMessage from "components/ui/ErrorMessage";
 import { Input } from "components/ui/Input/Input";
 import PasswordInput from "components/ui/Input/PasswordInput";
 
-const SignupForm = () => {
+interface SignupFormProps {
+  signupTokenId: string;
+}
+
+const SignupForm: React.FC<SignupFormProps> = ({ signupTokenId }) => {
+  const auth = useAuthentication();
+  const { addAlert, addErrorAlert } = useAlertQueue();
+
   const {
     register,
     handleSubmit,
@@ -34,15 +43,33 @@ const SignupForm = () => {
       return;
     }
 
-    // TODO: Add an api endpoint to send the credentials details to backend and email verification.
+    try {
+      const { error } = await auth.client.POST("/users/register", {
+        body: {
+          signup_token_id: signupTokenId,
+          email: data.email,
+          password: data.password,
+        },
+      });
+
+      if (error) {
+        addErrorAlert(error);
+      } else {
+        addAlert("Registration successful! You can now log in.", "success");
+
+        // Redirect to login page or other page
+        // Sign user in
+      }
+    } catch (err) {
+      addErrorAlert(err);
+    }
     console.log(data);
   };
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="grid grid-cols-1 space-y-6"
-    >
+      className="grid grid-cols-1 space-y-6">
       {/* Email Input */}
       <div className="relative">
         <Input placeholder="Email" type="text" {...register("email")} />
@@ -79,8 +106,7 @@ const SignupForm = () => {
       {/* Signup Button */}
       <Button
         variant="outline"
-        className="w-full text-white bg-blue-600 hover:bg-opacity-70"
-      >
+        className="w-full text-white bg-blue-600 hover:bg-opacity-70">
         Sign up
       </Button>
     </form>

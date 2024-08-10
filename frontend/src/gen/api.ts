@@ -56,6 +56,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/register": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register User */
+        post: operations["register_user_users_register_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/batch": {
         parameters: {
             query?: never;
@@ -472,6 +489,8 @@ export interface components {
         };
         /** GetTokenResponse */
         GetTokenResponse: {
+            /** Id */
+            id: string;
             /** Email */
             email: string;
         };
@@ -610,6 +629,15 @@ export interface components {
             /** Permissions */
             permissions: "is_admin"[] | null;
         };
+        /** UserRegister */
+        UserRegister: {
+            /** Signup Token Id */
+            signup_token_id: string;
+            /** Email */
+            email: string;
+            /** Password */
+            password: string;
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -704,6 +732,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": boolean;
+                };
+            };
+        };
+    };
+    register_user_users_register_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UserRegister"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SinglePublicUserInfoResponseItem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

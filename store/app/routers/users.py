@@ -9,6 +9,8 @@ from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel as PydanticBaseModel
 
 from store.app.crud.base import ItemNotFoundError
+from store.app.crud.email_signup import EmailSignUpCrud
+from store.app.crud.users import UserCrud
 from store.app.db import Crud
 from store.app.errors import NotAuthenticatedError
 from store.app.model import User, UserPermission
@@ -178,6 +180,32 @@ class SinglePublicUserInfoResponseItem(BaseModel):
 
 class PublicUserInfoResponse(BaseModel):
     users: list[SinglePublicUserInfoResponseItem]
+
+
+class UserRegister(BaseModel):
+    signup_token_id: str
+    email: str
+    password: str
+
+
+@users_router.post("/register", response_model=SinglePublicUserInfoResponseItem)
+async def register_user(
+    data: UserRegister, email_signup_crud: EmailSignUpCrud = Depends(), user_crud: UserCrud = Depends()
+):
+    async with email_signup_crud, user_crud:
+        signup_token = await email_signup_crud.get_email_signup_token(data.signup_token_id)
+        if not signup_token:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid or expired registration token")
+
+        # Check if a user with this email already exists
+        existing_user = await user_crud.get_user_from_email(signup_token.email)
+        if existing_user:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists")
+
+        # Create the user
+        user = await user_crud._create_user_from_email(email=signup_token.email, password=data.password)
+
+        return SinglePublicUserInfoResponseItem(id=user.id, email=user.email)
 
 
 @users_router.get("/batch", response_model=PublicUserInfoResponse)

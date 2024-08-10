@@ -10,21 +10,19 @@ import { Button } from "components/ui/Button/Button";
 import { Card, CardContent, CardHeader } from "components/ui/Card";
 import Header from "components/ui/Header";
 
-type EmailSignUpResponse =
+type GetEmailSignUpTokenResponse =
   paths["/email-signup/get/{id}"]["get"]["responses"][200]["content"]["application/json"];
 
 const Register = () => {
   const navigate = useNavigate();
+  const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
   const { id } = useParams();
-  const [signUpToken, setSignUpToken] = useState<EmailSignUpResponse | null>(
-    null,
-  );
-  const auth = useAuthentication();
+  const [signupToken, setSignupToken] =
+    useState<GetEmailSignUpTokenResponse | null>(null);
 
   useEffect(() => {
     const fetchSignUpToken = async () => {
-      console.log(`id in useEffect: ${id}`);
       if (id === undefined) {
         return;
       }
@@ -41,7 +39,7 @@ const Register = () => {
         if (error) {
           addErrorAlert(error);
         } else {
-          setSignUpToken(data);
+          setSignupToken(data);
         }
       } catch (err) {
         addErrorAlert(err);
@@ -56,9 +54,9 @@ const Register = () => {
         <CardHeader>
           <Header title="Register" />
         </CardHeader>
-        {signUpToken ? (
+        {signupToken ? (
           <CardContent>
-            <SignupForm />
+            <SignupForm signupTokenId={signupToken.id} />
           </CardContent>
         ) : (
           <CardContent>
