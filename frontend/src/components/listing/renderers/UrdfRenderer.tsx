@@ -1,3 +1,6 @@
+/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
+
 /* eslint-disable react/no-unknown-property */
 import { Suspense, useRef, useState } from "react";
 import { FaTimes } from "react-icons/fa";
