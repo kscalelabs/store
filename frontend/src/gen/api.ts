@@ -362,6 +362,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/email-signup/create/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Signup Token */
+        post: operations["create_signup_token_email_signup_create__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/email-signup/get/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Signup Token */
+        get: operations["get_signup_token_email_signup_get__token__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/email-signup/delete/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Signup Token */
+        delete: operations["delete_signup_token_email_signup_delete__token__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -376,10 +427,28 @@ export interface components {
             /** Metadata */
             metadata: string;
         };
+        /** DeleteTokenResponse */
+        DeleteTokenResponse: {
+            /** Message */
+            message: string;
+        };
         /** DumpListingsResponse */
         DumpListingsResponse: {
             /** Listings */
             listings: components["schemas"]["Listing"][];
+        };
+        /** EmailSignUpRequest */
+        EmailSignUpRequest: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+        };
+        /** EmailSignUpResponse */
+        EmailSignUpResponse: {
+            /** Message */
+            message: string;
         };
         /** GetBatchListingsResponse */
         GetBatchListingsResponse: {
@@ -400,6 +469,13 @@ export interface components {
             tags: string[];
             /** Owner Is User */
             owner_is_user: boolean;
+        };
+        /** GetTokenResponse */
+        GetTokenResponse: {
+            /** Email */
+            email: string;
+            /** Created At */
+            created_at: string;
         };
         /** GithubAuthRequest */
         GithubAuthRequest: {
@@ -1150,6 +1226,101 @@ export interface operations {
                 };
                 content: {
                     "application/json": boolean;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_signup_token_email_signup_create__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EmailSignUpRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EmailSignUpResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_signup_token_email_signup_get__token__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetTokenResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_signup_token_email_signup_delete__token__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DeleteTokenResponse"];
                 };
             };
             /** @description Validation Error */

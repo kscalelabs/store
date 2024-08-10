@@ -74,17 +74,17 @@ class User(RobolistBaseModel):
 
 
 class EmailSignUpToken(RobolistBaseModel):
-    """
-    Object created when user attempts to sign up with email.
+    """Object created when user attempts to sign up with email.
 
-    Will be checked by register dynamic route
+    Will be checked by register dynamic route to render SignupForm is authorized.
     """
 
+    email: EmailStr
     token: str
 
     @classmethod
-    def create(cls) -> Self:
-        return cls(token=new_uuid())
+    def create(cls, email: str) -> Self:
+        return cls(email=email, token=new_uuid())
 
 
 class OAuthKey(RobolistBaseModel):

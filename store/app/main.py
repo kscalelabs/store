@@ -10,8 +10,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from store.app.db import create_tables
-from store.app.errors import InternalError, ItemNotFoundError, NotAuthenticatedError, NotAuthorizedError
+from store.app.errors import (
+    InternalError,
+    ItemNotFoundError,
+    NotAuthenticatedError,
+    NotAuthorizedError,
+)
 from store.app.routers.artifacts import artifacts_router
+from store.app.routers.email_signup import email_signup_router
 from store.app.routers.listings import listings_router
 from store.app.routers.users import users_router
 from store.settings import settings
@@ -93,6 +99,7 @@ async def read_root() -> bool:
 app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(listings_router, prefix="/listings", tags=["listings"])
 app.include_router(artifacts_router, prefix="/artifacts", tags=["artifacts"])
+app.include_router(email_signup_router, prefix="/email-signup", tags=["email-signup"])
 
 # For running with debugger
 if __name__ == "__main__":
