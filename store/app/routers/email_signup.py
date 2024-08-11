@@ -36,7 +36,9 @@ async def create_signup_token(data: EmailSignUpRequest) -> EmailSignUpResponse:
             signup_token = await crud.create_email_signup_token(data.email)
             await send_register_email(email=data.email, token=signup_token.id)
 
-            return {"message": "Sign up email sent! Follow the link sent to you to continue registration."}
+            return EmailSignUpResponse(
+                message="Sign up email sent! Follow the link sent to you to continue registration."
+            )
         except Exception as e:
             print(f"Error creating signup token: {e}")
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -57,7 +59,8 @@ async def get_signup_token(id: str) -> GetTokenResponse:
 # DELETE: Delete Signup Token
 @email_signup_router.delete("/delete/{id}", response_model=DeleteTokenResponse)
 async def delete_signup_token(id: str, crud: EmailSignUpCrud = Depends()) -> DeleteTokenResponse:
-    await crud.delete_email_signup_token(id)
+    deleted = await crud.delete_email_signup_token(id)
+    if not deleted:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Token not found.")
 
-    # The return value should be a DeleteTokenResponse, not None
-    return {"message": "Token deleted successfully."}
+    return DeleteTokenResponse(message="Token deleted successfully.")

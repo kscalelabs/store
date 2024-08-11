@@ -35,7 +35,7 @@ async def send_register_email(email: str, token: str) -> None:
         f"""
             <h1><code>K-Scale Labs</code></h1>
             <h2><code>register</code></h2>
-            <p>Click <a href="{settings.site.homepage}/register/{token}">here</a> to register.</p>
+            <p>Click <a href="{settings.site.homepage}/register/{token}">here</a> to continue registration.</p>
         """
     )
 

@@ -31,11 +31,8 @@ const LoginForm = () => {
       if (error) {
         addErrorAlert(error);
       } else {
-        addAlert(`Login successful! Welcome, back!`, "success");
-
-        // Successful Login
-        // TODO: authenticated login state
-        console.log(JSON.stringify(response));
+        addAlert(`Logged in! Welcome back!`, "success");
+        auth.login(response.token);
       }
     } catch {
       addErrorAlert("An unexpected error occurred during login.");
