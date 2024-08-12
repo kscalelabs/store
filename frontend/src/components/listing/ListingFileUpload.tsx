@@ -76,14 +76,9 @@ const ListingFileUpload = (props: Props) => {
       <FileInput>
         <div className="flex justify-center pt-3 pb-4 w-full h-32">
           <div className="text-sm align-middle h-full justify-center flex flex-col">
+            <div className="text-center">Drag and drop or click to browse</div>
             <div className="text-center">
-              <span>Drag and drop</span>
-            </div>
-            <div className="text-center">
-              <span>or</span>
-            </div>
-            <div className="text-center">
-              <span>click to browse</span>
+              File extensions: {fileExtensions.join(", ")}
             </div>
           </div>
         </div>
