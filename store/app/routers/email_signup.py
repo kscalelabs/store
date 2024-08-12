@@ -28,9 +28,9 @@ class DeleteTokenResponse(BaseModel):
     message: str
 
 
-# POST: Create Signup Token
 @email_signup_router.post("/create/", response_model=EmailSignUpResponse)
 async def create_signup_token(data: EmailSignUpRequest) -> EmailSignUpResponse:
+    """Creates a signup token and emails it to the user."""
     async with EmailSignUpCrud() as crud:
         try:
             signup_token = await crud.create_email_signup_token(data.email)
