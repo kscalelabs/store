@@ -67,7 +67,8 @@ const Signup = () => {
                 className="w-full text-white bg-blue-600 hover:bg-opacity-70"
                 onClick={() => {
                   navigate("/login");
-                }}>
+                }}
+              >
                 Login / Signup
               </Button>
             </div>
