@@ -1,4 +1,4 @@
-"""This module defines the FastAPI routes for managing email sign-up tokens."""
+"""This module defines the FastAPI routes for managing email related API routes."""
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr
@@ -6,7 +6,7 @@ from pydantic import BaseModel, EmailStr
 from store.app.crud.email_signup import EmailSignUpCrud
 from store.app.utils.email import send_register_email
 
-email_signup_router = APIRouter()
+email_router = APIRouter()
 
 
 # Request Model
@@ -28,7 +28,7 @@ class DeleteTokenResponse(BaseModel):
     message: str
 
 
-@email_signup_router.post("/create/", response_model=EmailSignUpResponse)
+@email_router.post("/create/", response_model=EmailSignUpResponse)
 async def create_signup_token(data: EmailSignUpRequest) -> EmailSignUpResponse:
     """Creates a signup token and emails it to the user."""
     async with EmailSignUpCrud() as crud:
@@ -44,9 +44,9 @@ async def create_signup_token(data: EmailSignUpRequest) -> EmailSignUpResponse:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-# GET: Retrieve Signup Token
-@email_signup_router.get("/get/{id}", response_model=GetTokenResponse)
+@email_router.get("/signup/get/{id}", response_model=GetTokenResponse)
 async def get_signup_token(id: str) -> GetTokenResponse:
+    """Attempts to get a email sign up token given an id."""
     async with EmailSignUpCrud() as crud:
         signup_token = await crud.get_email_signup_token(id)
         if not signup_token:
@@ -56,8 +56,8 @@ async def get_signup_token(id: str) -> GetTokenResponse:
         return GetTokenResponse(id=signup_token.id, email=signup_token.email)
 
 
-# DELETE: Delete Signup Token
-@email_signup_router.delete("/delete/{id}", response_model=DeleteTokenResponse)
+@email_router.delete("/signup/delete/{id}", response_model=DeleteTokenResponse)
 async def delete_signup_token(id: str, crud: EmailSignUpCrud = Depends()) -> DeleteTokenResponse:
+    """Deletes email signup token given an id."""
     await crud.delete_email_signup_token(id)
     return DeleteTokenResponse(message="Token deleted successfully.")

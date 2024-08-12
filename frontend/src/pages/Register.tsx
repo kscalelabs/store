@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader } from "components/ui/Card";
 import Header from "components/ui/Header";
 
 type GetEmailSignUpTokenResponse =
-  paths["/email-signup/get/{id}"]["get"]["responses"][200]["content"]["application/json"];
+  paths["/email/signup/get/{id}"]["get"]["responses"][200]["content"]["application/json"];
 
 const Register = () => {
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ const Register = () => {
 
       try {
         const { data, error } = await auth.client.GET(
-          "/email-signup/get/{id}",
+          "/email/signup/get/{id}",
           {
             params: {
               path: { id },

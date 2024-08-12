@@ -396,7 +396,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/email-signup/create/": {
+    "/email/signup/create/": {
         parameters: {
             query?: never;
             header?: never;
@@ -413,7 +413,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/email-signup/get/{id}": {
+    "/email/signup/get/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -430,7 +430,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/email-signup/delete/{id}": {
+    "/email/signup/delete/{id}": {
         parameters: {
             query?: never;
             header?: never;
