@@ -13,7 +13,7 @@ import Header from "components/ui/Header";
 type GetEmailSignUpTokenResponse =
   paths["/email/signup/get/{id}"]["get"]["responses"][200]["content"]["application/json"];
 
-const Register = () => {
+const Signup = () => {
   const navigate = useNavigate();
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
@@ -52,7 +52,7 @@ const Register = () => {
     <div className="flex flex-col items-center mt-20">
       <Card className="w-[400px] shadow-md bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg">
         <CardHeader>
-          <Header title="Register" />
+          <Header title="Sign Up" />
         </CardHeader>
         {signupToken ? (
           <CardContent>
@@ -67,8 +67,7 @@ const Register = () => {
                 className="w-full text-white bg-blue-600 hover:bg-opacity-70"
                 onClick={() => {
                   navigate("/login");
-                }}
-              >
+                }}>
                 Login / Signup
               </Button>
             </div>
@@ -79,4 +78,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Signup;

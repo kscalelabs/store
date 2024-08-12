@@ -76,7 +76,7 @@ class User(RobolistBaseModel):
 class EmailSignUpToken(RobolistBaseModel):
     """Object created when user attempts to sign up with email.
 
-    Will be checked by register dynamic route to render SignupForm is authorized.
+    Will be checked by signup dynamic route to render SignupForm if authorized.
     """
 
     email: EmailStr

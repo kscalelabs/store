@@ -45,7 +45,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ signupTokenId }) => {
     }
 
     try {
-      const { error } = await auth.client.POST("/users/register", {
+      const { error } = await auth.client.POST("/users/signup", {
         body: {
           signup_token_id: signupTokenId,
           email: data.email,
@@ -69,8 +69,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ signupTokenId }) => {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="grid grid-cols-1 space-y-6"
-    >
+      className="grid grid-cols-1 space-y-6">
       {/* Email Input */}
       <div className="relative">
         <Input placeholder="Email" type="text" {...register("email")} />
@@ -107,8 +106,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ signupTokenId }) => {
       {/* Signup Button */}
       <Button
         variant="outline"
-        className="w-full text-white bg-blue-600 hover:bg-opacity-70"
-      >
+        className="w-full text-white bg-blue-600 hover:bg-opacity-70">
         Sign up
       </Button>
     </form>

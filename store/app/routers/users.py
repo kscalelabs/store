@@ -130,10 +130,6 @@ def validate_email(email: str) -> str:
     return email
 
 
-class SendRegister(BaseModel):
-    email: str
-
-
 class UserRegister(BaseModel):
     signup_token_id: str
     email: str
@@ -186,7 +182,7 @@ class PublicUserInfoResponse(BaseModel):
     users: list[SinglePublicUserInfoResponseItem]
 
 
-@users_router.post("/register", response_model=SinglePublicUserInfoResponseItem)
+@users_router.post("/signup", response_model=SinglePublicUserInfoResponseItem)
 async def register_user(
     data: UserRegister, email_signup_crud: EmailSignUpCrud = Depends(), user_crud: UserCrud = Depends()
 ) -> SinglePublicUserInfoResponseItem:  # Added return type annotation

@@ -56,7 +56,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/users/register": {
+    "/users/signup": {
         parameters: {
             query?: never;
             header?: never;
@@ -66,7 +66,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Register User */
-        post: operations["register_user_users_register_post"];
+        post: operations["register_user_users_signup_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -405,7 +405,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create Signup Token */
+        /**
+         * Create Signup Token
+         * @description Creates a signup token and emails it to the user.
+         */
         post: operations["create_signup_token_email_signup_create__post"];
         delete?: never;
         options?: never;
@@ -420,7 +423,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Signup Token */
+        /**
+         * Get Signup Token
+         * @description Attempts to get a email sign up token given an id.
+         */
         get: operations["get_signup_token_email_signup_get__id__get"];
         put?: never;
         post?: never;
@@ -440,7 +446,10 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** Delete Signup Token */
+        /**
+         * Delete Signup Token
+         * @description Deletes email signup token given an id.
+         */
         delete: operations["delete_signup_token_email_signup_delete__id__delete"];
         options?: never;
         head?: never;
@@ -770,7 +779,7 @@ export interface operations {
             };
         };
     };
-    register_user_users_register_post: {
+    register_user_users_signup_post: {
         parameters: {
             query?: never;
             header?: never;

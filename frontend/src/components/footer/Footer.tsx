@@ -18,7 +18,7 @@ const Footer = () => {
   const showFooter =
     pathname?.startsWith("/browse") === false &&
     pathname?.startsWith("/login") === false &&
-    pathname?.startsWith("/register") === false;
+    pathname?.startsWith("/signup") === false;
 
   if (!showFooter) {
     return null;
@@ -34,24 +34,21 @@ const Footer = () => {
               href="https://www.linkedin.com/company/kscale"
               ariaLabel="Visit K-Scale's LinkedIn Page"
               bgColor={LinkedinPrimaryColor}
-              ringColor="focus:ring-sky-500"
-            >
+              ringColor="focus:ring-sky-500">
               <FaLinkedinIn />
             </SocialLink>
             <SocialLink
               href="https://github.com/kscalelabs/store"
               ariaLabel="Visit K-Scale's Github Page"
               bgColor={GithubPrimaryColor}
-              ringColor="focus:ring-black"
-            >
+              ringColor="focus:ring-black">
               <FaGithub />
             </SocialLink>
             <SocialLink
               href="https://discord.gg/rhCy6UdBRD"
               ariaLabel="Join K-Scale's Discord"
               bgColor={DiscordPrimaryColor}
-              ringColor="focus:ring-black"
-            >
+              ringColor="focus:ring-black">
               <FaDiscord />
             </SocialLink>
           </div>
@@ -63,8 +60,7 @@ const Footer = () => {
               href="https://kscale.dev/about/"
               className="hover:text-gray-500"
               target="_blank"
-              rel="noopener noreferrer"
-            >
+              rel="noopener noreferrer">
               About us
             </a>
             <a href="" className="hover:text-gray-500">

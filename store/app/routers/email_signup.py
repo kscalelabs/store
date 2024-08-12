@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr
 
 from store.app.crud.email_signup import EmailSignUpCrud
-from store.app.utils.email import send_register_email
+from store.app.utils.email import send_signup_email
 
 email_router = APIRouter()
 
@@ -28,13 +28,13 @@ class DeleteTokenResponse(BaseModel):
     message: str
 
 
-@email_router.post("/create/", response_model=EmailSignUpResponse)
+@email_router.post("/signup/create/", response_model=EmailSignUpResponse)
 async def create_signup_token(data: EmailSignUpRequest) -> EmailSignUpResponse:
     """Creates a signup token and emails it to the user."""
     async with EmailSignUpCrud() as crud:
         try:
             signup_token = await crud.create_email_signup_token(data.email)
-            await send_register_email(email=data.email, token=signup_token.id)
+            await send_signup_email(email=data.email, token=signup_token.id)
 
             return EmailSignUpResponse(
                 message="Sign up email sent! Follow the link sent to you to continue registration."
