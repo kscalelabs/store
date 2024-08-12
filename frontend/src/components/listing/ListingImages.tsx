@@ -97,7 +97,7 @@ const ListingImages = (props: Props) => {
       {edit && (
         <ListingFileUpload
           artifactType="image"
-          fileExtensions={[".jpg", ".jpeg", ".png"]}
+          fileExtensions={[".jpg", ".jpeg", ".png", ".webp"]}
           maxSize={4 * 1024 * 1024}
           listingId={listingId}
           onUpload={(artifact) => {
