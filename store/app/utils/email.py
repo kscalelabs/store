@@ -30,16 +30,16 @@ async def send_email(subject: str, body: str, to: str) -> None:
     await smtp_client.quit()
 
 
-async def send_register_email(email: str, token: str) -> None:
+async def send_signup_email(email: str, token: str) -> None:
     body = textwrap.dedent(
         f"""
             <h1><code>K-Scale Labs</code></h1>
             <h2><code>register</code></h2>
-            <p>Click <a href="{settings.site.homepage}/register/{token}">here</a> to register.</p>
+            <p>Click <a href="{settings.site.homepage}/signup/{token}">here</a> to continue registration.</p>
         """
     )
 
-    await send_email(subject="Verify Email", body=body, to=email)
+    await send_email(subject="Register", body=body, to=email)
 
 
 async def send_reset_password_email(email: str, token: str) -> None:

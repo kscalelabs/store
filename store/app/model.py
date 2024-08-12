@@ -43,7 +43,6 @@ class User(RobolistBaseModel):
     permissions: set[UserPermission] | None = None
     created_at: int
     updated_at: int
-    email_verified_at: int | None = None
     github_id: str | None = None
     google_id: str | None = None
 
@@ -72,6 +71,19 @@ class User(RobolistBaseModel):
 
     def verify_email(self) -> None:
         self.email_verified_at = int(time.time())
+
+
+class EmailSignUpToken(RobolistBaseModel):
+    """Object created when user attempts to sign up with email.
+
+    Will be checked by signup dynamic route to render SignupForm if authorized.
+    """
+
+    email: EmailStr
+
+    @classmethod
+    def create(cls, email: str) -> Self:
+        return cls(id=new_uuid(), email=email)
 
 
 class OAuthKey(RobolistBaseModel):

@@ -10,7 +10,7 @@ import Spinner from "components/ui/Spinner";
 
 import AuthProvider from "./AuthProvider";
 import LoginForm from "./LoginForm";
-import SignupForm from "./SignupForm";
+import SignupWithEmail from "./SignupWithEmail";
 
 export const AuthBlockInner = () => {
   const auth = useAuthentication();
@@ -66,7 +66,9 @@ export const AuthBlockInner = () => {
 
   return (
     <>
-      <CardContent>{isSignup ? <SignupForm /> : <LoginForm />}</CardContent>
+      <CardContent>
+        {isSignup ? <SignupWithEmail /> : <LoginForm />}
+      </CardContent>
       <CardFooter>
         <AuthProvider handleGithubSubmit={handleGithubSubmit} />
       </CardFooter>

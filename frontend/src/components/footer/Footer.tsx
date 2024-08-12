@@ -17,7 +17,8 @@ const Footer = () => {
   // - to hide footer on a page add path to this
   const showFooter =
     pathname?.startsWith("/browse") === false &&
-    pathname?.startsWith("/login") === false;
+    pathname?.startsWith("/login") === false &&
+    pathname?.startsWith("/signup") === false;
 
   if (!showFooter) {
     return null;

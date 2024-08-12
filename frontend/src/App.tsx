@@ -15,6 +15,7 @@ import Login from "pages/Login";
 import Logout from "pages/Logout";
 import NotFound from "pages/NotFound";
 import Profile from "pages/Profile";
+import Signup from "pages/Signup";
 
 import Container from "components/Container";
 import NotFoundRedirect from "components/NotFoundRedirect";
@@ -39,6 +40,7 @@ const App = () => {
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/logout" element={<Logout />} />
+                      <Route path="/signup/:id" element={<Signup />} />
                       <Route path="/create" element={<Create />} />
                       <Route path="/browse/:page?" element={<Browse />} />
                       <Route path="/item/:id" element={<ListingDetails />} />

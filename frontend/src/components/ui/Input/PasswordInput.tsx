@@ -43,17 +43,17 @@ const PasswordInput = <T extends FieldValues>({
   const getStrengthColor = (score: number) => {
     switch (score) {
       case 0:
-        return "bg-red-500";
+        return "red-500";
       case 1:
-        return "bg-orange-500";
+        return "orange-500";
       case 2:
-        return "bg-yellow-500";
+        return "yellow-500";
       case 3:
-        return "bg-blue-500";
+        return "blue-500";
       case 4:
-        return "bg-green-500";
+        return "green-500";
       default:
-        return "bg-gray-300";
+        return "gray-300";
     }
   };
 
@@ -103,12 +103,17 @@ const PasswordInput = <T extends FieldValues>({
         <>
           <div className="mt-4 h-2 w-full bg-gray-200 rounded">
             <div
-              className={`h-full ${getStrengthColor(passwordStrength)} rounded`}
+              className={`h-full bg-${getStrengthColor(passwordStrength)} rounded`}
               style={{ width: `${(passwordStrength + 1) * 20}%` }}
             />
           </div>
-          <div className="mt-2 text-sm text-gray-600">
-            Password Strength: {getStrengthLabel(passwordStrength)}
+          <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            Password Strength:{" "}
+            <span
+              className={`font-semibold text-${getStrengthColor(passwordStrength)}`}
+            >
+              {getStrengthLabel(passwordStrength)}
+            </span>
           </div>
           {passwordStrength < 2 ? (
             <div className="mt-1 text-xs text-red-500">

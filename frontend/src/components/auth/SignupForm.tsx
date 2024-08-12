@@ -1,8 +1,9 @@
 import { SubmitHandler, useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAlertQueue } from "hooks/useAlertQueue";
+import { useAuthentication } from "hooks/useAuth";
 import { SignUpSchema, SignupType } from "types";
 import zxcvbn from "zxcvbn";
 
@@ -11,7 +12,15 @@ import ErrorMessage from "components/ui/ErrorMessage";
 import { Input } from "components/ui/Input/Input";
 import PasswordInput from "components/ui/Input/PasswordInput";
 
-const SignupForm = () => {
+interface SignupFormProps {
+  signupTokenId: string;
+}
+
+const SignupForm: React.FC<SignupFormProps> = ({ signupTokenId }) => {
+  const auth = useAuthentication();
+  const { addAlert, addErrorAlert } = useAlertQueue();
+  const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
@@ -25,8 +34,6 @@ const SignupForm = () => {
   const confirmPassword = watch("confirmPassword") || "";
   const passwordStrength = password.length > 0 ? zxcvbn(password).score : 0;
 
-  const { addAlert, addErrorAlert } = useAlertQueue();
-
   const onSubmit: SubmitHandler<SignupType> = async (data: SignupType) => {
     // Exit account creation early if password too weak or not matching
     if (passwordStrength < 2) {
@@ -37,8 +44,26 @@ const SignupForm = () => {
       return;
     }
 
-    // TODO: Add an api endpoint to send the credentials details to backend and email verification.
-    addAlert(`Not yet implemented: ${data.email}`, "success");
+    try {
+      const { error } = await auth.client.POST("/users/signup", {
+        body: {
+          signup_token_id: signupTokenId,
+          email: data.email,
+          password: data.password,
+        },
+      });
+
+      if (error) {
+        addErrorAlert(error);
+      } else {
+        addAlert("Registration successful! You can now log in.", "success");
+        navigate("/login");
+        // Sign user in automatically?
+      }
+    } catch (err) {
+      addErrorAlert(err);
+    }
+    console.log(data);
   };
 
   return (
