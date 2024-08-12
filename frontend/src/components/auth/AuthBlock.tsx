@@ -32,6 +32,12 @@ export const AuthBlockInner = () => {
     }
   };
 
+  const handleGoogleSubmit = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault();
+  };
+
   useEffect(() => {
     (async () => {
       // Get the code from the query string to carry out OAuth login.
@@ -70,7 +76,10 @@ export const AuthBlockInner = () => {
         {isSignup ? <SignupWithEmail /> : <LoginForm />}
       </CardContent>
       <CardFooter>
-        <AuthProvider handleGithubSubmit={handleGithubSubmit} />
+        <AuthProvider
+          handleGithubSubmit={handleGithubSubmit}
+          handleGoogleSubmit={handleGoogleSubmit}
+        />
       </CardFooter>
       <CardFooter>
         <BackButton

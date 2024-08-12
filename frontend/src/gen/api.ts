@@ -175,6 +175,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/google/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Google Login Endpoint */
+        post: operations["google_login_endpoint_users_google_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/listings/search": {
         parameters: {
             query?: never;
@@ -451,6 +468,11 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AuthResponse */
+        AuthResponse: {
+            /** Api Key */
+            api_key: string;
+        };
         /** Body_upload_artifacts_upload_post */
         Body_upload_artifacts_upload_post: {
             /**
@@ -520,6 +542,11 @@ export interface components {
         GithubAuthResponse: {
             /** Api Key */
             api_key: string;
+        };
+        /** GoogleLogin */
+        GoogleLogin: {
+            /** Token */
+            token: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -938,6 +965,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GithubAuthResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    google_login_endpoint_users_google_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GoogleLogin"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthResponse"];
                 };
             };
             /** @description Validation Error */

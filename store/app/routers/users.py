@@ -16,6 +16,7 @@ from store.app.db import Crud
 from store.app.errors import NotAuthenticatedError
 from store.app.model import User, UserPermission
 from store.app.routers.auth.github import github_auth_router
+from store.app.routers.auth.google import google_auth_router
 from store.app.utils.email import send_delete_email
 from store.app.utils.password import verify_password
 
@@ -262,3 +263,4 @@ async def get_user_info_by_id_endpoint(
 
 
 users_router.include_router(github_auth_router, prefix="/github")
+users_router.include_router(google_auth_router, prefix="/google")
