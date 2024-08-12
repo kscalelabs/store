@@ -129,8 +129,7 @@ export GITHUB_CLIENT_ID=''
 export GITHUB_CLIENT_SECRET=''
 
 # For Google OAuth
-export GOOGLE_CLIENT_ID=''
-export GOOGLE_CLIENT_SECRET=''
+export VITE_GOOGLE_CLIENT_ID=''
 ```
 
 ### Github OAuth Configuration
