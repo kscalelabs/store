@@ -59,8 +59,5 @@ async def get_signup_token(id: str) -> GetTokenResponse:
 # DELETE: Delete Signup Token
 @email_signup_router.delete("/delete/{id}", response_model=DeleteTokenResponse)
 async def delete_signup_token(id: str, crud: EmailSignUpCrud = Depends()) -> DeleteTokenResponse:
-    deleted = await crud.delete_email_signup_token(id)
-    if not deleted:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Token not found.")
-
+    await crud.delete_email_signup_token(id)
     return DeleteTokenResponse(message="Token deleted successfully.")
