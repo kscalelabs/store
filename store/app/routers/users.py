@@ -204,6 +204,9 @@ async def register_user(
         # Create the user
         user = await user_crud._create_user_from_email(email=signup_token.email, password=data.password)
 
+        # Delete the signup token
+        email_signup_crud.delete_email_signup_token(data.signup_token_id)
+
         return SinglePublicUserInfoResponseItem(id=user.id, email=user.email)
 
 
