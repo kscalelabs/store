@@ -18,7 +18,6 @@ from store.app.model import User, UserPermission
 from store.app.routers.auth.github import github_auth_router
 from store.app.utils.email import send_delete_email
 from store.app.utils.password import verify_password
-from store.utils import new_uuid
 
 logger = logging.getLogger(__name__)
 
@@ -232,9 +231,13 @@ async def login_user(data: LoginRequest, user_crud: UserCrud = Depends()) -> Log
         if user.hashed_password is None or not verify_password(data.password, user.hashed_password):
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
 
-        token = new_uuid()
+        api_key = await user_crud.add_api_key(
+            user.id,
+            source="oauth",
+            permissions="full",
+        )
 
-        return LoginResponse(user_id=user.id, token=token)
+        return LoginResponse(user_id=user.id, token=api_key.id)
 
 
 @users_router.get("/batch", response_model=PublicUserInfoResponse)
