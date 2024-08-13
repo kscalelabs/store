@@ -47,12 +47,18 @@ class UserCrud(BaseCrud):
     """OAuth sign up, creates user and links OAuthKey"""
 
     async def _create_user_from_oauth(self, email: str, provider: str, user_token: str) -> User:
-        user = User.create(email=email, password=None)
-        if provider == "github":
-            user.github_id = user_token
+        user = await self.get_user_from_email(email)
+        if user is None:
+            user = User.create(email=email, password=None)
+            if provider == "github":
+                user.github_id = user_token
+            elif provider == "google":
+                user.google_id = user_token
+            await self._add_item(user, unique_fields=["email"])
+        elif provider == "github":
+            await self._update_item(user.id, User, {"github_id": user_token})
         elif provider == "google":
-            user.google_id = user_token
-        await self._add_item(user, unique_fields=["email"])
+            await self._update_item(user.id, User, {"google_id": user_token})
         oauth_key = OAuthKey.create(user_id=user.id, provider=provider, user_token=user_token)
         await self._add_item(oauth_key, unique_fields=["user_token"])
         return user
