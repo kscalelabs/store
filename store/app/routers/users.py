@@ -139,6 +139,9 @@ class UserSignup(BaseModel):
 
 class UserInfoResponse(BaseModel):
     user_id: str
+    email: str
+    github_id: str | None
+    google_id: str | None
     permissions: set[UserPermission] | None
 
 
@@ -149,6 +152,9 @@ async def get_user_info_endpoint(
     try:
         return UserInfoResponse(
             user_id=user.id,
+            email=user.email,
+            google_id=user.google_id,
+            github_id=user.github_id,
             permissions=user.permissions,
         )
     except ValueError:

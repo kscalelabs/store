@@ -696,6 +696,12 @@ export interface components {
         UserInfoResponse: {
             /** User Id */
             user_id: string;
+            /** Email */
+            email: string;
+            /** Github Id */
+            github_id: string | null;
+            /** Google Id */
+            google_id: string | null;
             /** Permissions */
             permissions: "is_admin"[] | null;
         };
