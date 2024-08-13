@@ -16,6 +16,7 @@ from store.app.db import Crud
 from store.app.errors import NotAuthenticatedError
 from store.app.model import User, UserPermission
 from store.app.routers.auth.github import github_auth_router
+from store.app.routers.auth.google import google_auth_router
 from store.app.utils.email import send_delete_email
 from store.app.utils.password import verify_password
 
@@ -130,7 +131,7 @@ def validate_email(email: str) -> str:
     return email
 
 
-class UserRegister(BaseModel):
+class UserSignup(BaseModel):
     signup_token_id: str
     email: str
     password: str
@@ -184,7 +185,7 @@ class PublicUserInfoResponse(BaseModel):
 
 @users_router.post("/signup", response_model=SinglePublicUserInfoResponseItem)
 async def register_user(
-    data: UserRegister, email_signup_crud: EmailSignUpCrud = Depends(), user_crud: UserCrud = Depends()
+    data: UserSignup, email_signup_crud: EmailSignUpCrud = Depends(), user_crud: UserCrud = Depends()
 ) -> SinglePublicUserInfoResponseItem:  # Added return type annotation
     async with email_signup_crud, user_crud:
         signup_token = await email_signup_crud.get_email_signup_token(data.signup_token_id)
@@ -258,3 +259,4 @@ async def get_user_info_by_id_endpoint(
 
 
 users_router.include_router(github_auth_router, prefix="/github")
+users_router.include_router(google_auth_router, prefix="/google")

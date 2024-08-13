@@ -85,8 +85,8 @@ class UserCrud(BaseCrud):
     async def delete_github_token(self, github_id: str) -> None:
         await self._delete_item(await self._get_oauth_key(github_auth_key(github_id), throw_if_missing=True))
 
-    async def get_user_from_google_token(self, token: str, email: str) -> User | None:
-        auth_key = google_auth_key(token)
+    async def get_user_from_google_token(self, email: str) -> User:
+        auth_key = google_auth_key(email)
         user = await self._get_user_from_auth_key(auth_key)
         if user is not None:
             return user
@@ -139,7 +139,7 @@ async def test_adhoc() -> None:
 
         await crud.get_user_from_github_token(token="gh_token_example", email="oauth_github@kscale.dev")
 
-        await crud.get_user_from_google_token(token="google_token_example", email="oauth_google@kscale.dev")
+        await crud.get_user_from_google_token(email="oauth_google@kscale.dev")
 
 
 if __name__ == "__main__":

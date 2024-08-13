@@ -39,7 +39,7 @@ async def send_signup_email(email: str, token: str) -> None:
         """
     )
 
-    await send_email(subject="Register", body=body, to=email)
+    await send_email(subject="Signup", body=body, to=email)
 
 
 async def send_reset_password_email(email: str, token: str) -> None:
