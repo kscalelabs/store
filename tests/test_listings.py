@@ -13,7 +13,7 @@ from store.app.db import create_tables
 async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
     await create_tables()
 
-    # Register.
+    # Signup.
     response = await app_client.post("/users/github/code", json={"code": "test_code"})
     assert response.status_code == status.HTTP_200_OK, response.json()
     token = response.json()["api_key"]
