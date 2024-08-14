@@ -45,6 +45,10 @@ class User(RobolistBaseModel):
     updated_at: int
     github_id: str | None = None
     google_id: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    name: str | None = None
+    bio: str | None = None
 
     @classmethod
     def create(
@@ -71,6 +75,20 @@ class User(RobolistBaseModel):
 
     def verify_email(self) -> None:
         self.email_verified_at = int(time.time())
+
+
+class UserPublic(BaseModel):
+    """Defines public user model for frontend.
+
+    Omits private/sesnsitive user fields. Is the return type for
+    retrieving user data on frontend (for public profile pages, etc).
+    """
+
+    id: str
+    email: EmailStr
+    permissions: set[UserPermission] | None = None
+    created_at: int
+    updated_at: int
 
 
 class EmailSignUpToken(RobolistBaseModel):

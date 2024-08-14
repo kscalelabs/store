@@ -264,5 +264,15 @@ async def get_user_info_by_id_endpoint(
     return SinglePublicUserInfoResponseItem(id=user.id, email=user.email)
 
 
+@users_router.get("/public/{id}", response_model=SinglePublicUserInfoResponseItem)
+async def get_public_user_info_by_id_endpoint(
+    id: str, user_crud: UserCrud = Depends()
+) -> SinglePublicUserInfoResponseItem:
+    user = await user_crud.get_user_public(id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return SinglePublicUserInfoResponseItem(id=user.id, email=user.email)
+
+
 users_router.include_router(github_auth_router, prefix="/github")
 users_router.include_router(google_auth_router, prefix="/google")
