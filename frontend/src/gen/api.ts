@@ -701,10 +701,7 @@ export interface components {
         SinglePublicUserInfoResponseItem: {
             /** Id */
             id: string;
-            /**
-             * Email
-             * Format: email
-             */
+            /** Email */
             email: string;
             /** Permissions */
             permissions?: "is_admin"[] | null;
@@ -725,31 +722,8 @@ export interface components {
         SingleUserInfoResponseItem: {
             /** Id */
             id: string;
-            /**
-             * Email
-             * Format: email
-             */
+            /** Email */
             email: string;
-            /** Hashed Password */
-            hashed_password?: string | null;
-            /** Permissions */
-            permissions?: "is_admin"[] | null;
-            /** Created At */
-            created_at: number;
-            /** Updated At */
-            updated_at: number;
-            /** Github Id */
-            github_id?: string | null;
-            /** Google Id */
-            google_id?: string | null;
-            /** First Name */
-            first_name?: string | null;
-            /** Last Name */
-            last_name?: string | null;
-            /** Name */
-            name?: string | null;
-            /** Bio */
-            bio?: string | null;
         };
         /** UpdateArtifactRequest */
         UpdateArtifactRequest: {
@@ -796,10 +770,7 @@ export interface components {
         UserPublic: {
             /** Id */
             id: string;
-            /**
-             * Email
-             * Format: email
-             */
+            /** Email */
             email: string;
             /** Permissions */
             permissions?: "is_admin"[] | null;
@@ -942,7 +913,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SinglePublicUserInfoResponseItem"];
+                    "application/json": components["schemas"]["SingleUserInfoResponseItem"];
                 };
             };
             /** @description Validation Error */

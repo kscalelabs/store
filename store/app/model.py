@@ -9,7 +9,7 @@ import time
 from datetime import datetime, timedelta
 from typing import Literal, Self
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 from store.app.utils.password import hash_password
 from store.settings import settings
@@ -38,7 +38,7 @@ class User(RobolistBaseModel):
     left empty if the user signed up with Google or Github OAuth.
     """
 
-    email: EmailStr
+    email: str
     hashed_password: str | None = None
     permissions: set[UserPermission] | None = None
     created_at: int
@@ -85,7 +85,7 @@ class UserPublic(BaseModel):
     """
 
     id: str
-    email: EmailStr
+    email: str
     permissions: set[UserPermission] | None = None
     created_at: int | None = None
     updated_at: int | None = None
@@ -101,7 +101,7 @@ class EmailSignUpToken(RobolistBaseModel):
     Will be checked by signup dynamic route to render SignupForm if authorized.
     """
 
-    email: EmailStr
+    email: str
 
     @classmethod
     def create(cls, email: str) -> Self:
