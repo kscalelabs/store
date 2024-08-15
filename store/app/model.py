@@ -87,8 +87,12 @@ class UserPublic(BaseModel):
     id: str
     email: EmailStr
     permissions: set[UserPermission] | None = None
-    created_at: int
-    updated_at: int
+    created_at: int | None = None
+    updated_at: int | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    name: str | None = None
+    bio: str | None = None
 
 
 class EmailSignUpToken(RobolistBaseModel):

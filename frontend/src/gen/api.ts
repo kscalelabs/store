@@ -107,6 +107,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/public/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Users Batch Endpoint */
+        get: operations["get_users_batch_endpoint_users_public_batch_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/{id}": {
         parameters: {
             query?: never;
@@ -684,8 +701,55 @@ export interface components {
         SinglePublicUserInfoResponseItem: {
             /** Id */
             id: string;
-            /** Email */
+            /**
+             * Email
+             * Format: email
+             */
             email: string;
+            /** Permissions */
+            permissions?: "is_admin"[] | null;
+            /** Created At */
+            created_at?: number | null;
+            /** Updated At */
+            updated_at?: number | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Bio */
+            bio?: string | null;
+        };
+        /** SingleUserInfoResponseItem */
+        SingleUserInfoResponseItem: {
+            /** Id */
+            id: string;
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Hashed Password */
+            hashed_password?: string | null;
+            /** Permissions */
+            permissions?: "is_admin"[] | null;
+            /** Created At */
+            created_at: number;
+            /** Updated At */
+            updated_at: number;
+            /** Github Id */
+            github_id?: string | null;
+            /** Google Id */
+            google_id?: string | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Bio */
+            bio?: string | null;
         };
         /** UpdateArtifactRequest */
         UpdateArtifactRequest: {
@@ -721,6 +785,36 @@ export interface components {
             google_id: string | null;
             /** Permissions */
             permissions: "is_admin"[] | null;
+        };
+        /**
+         * UserPublic
+         * @description Defines public user model for frontend.
+         *
+         *     Omits private/sesnsitive user fields. Is the return type for
+         *     retrieving user data on frontend (for public profile pages, etc).
+         */
+        UserPublic: {
+            /** Id */
+            id: string;
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Permissions */
+            permissions?: "is_admin"[] | null;
+            /** Created At */
+            created_at?: number | null;
+            /** Updated At */
+            updated_at?: number | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Bio */
+            bio?: string | null;
         };
         /** UserSignup */
         UserSignup: {
@@ -926,6 +1020,37 @@ export interface operations {
             };
         };
     };
+    get_users_batch_endpoint_users_public_batch_get: {
+        parameters: {
+            query: {
+                ids: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicUserInfoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_user_info_by_id_endpoint_users__id__get: {
         parameters: {
             query?: never;
@@ -943,7 +1068,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SinglePublicUserInfoResponseItem"];
+                    "application/json": components["schemas"]["SingleUserInfoResponseItem"];
                 };
             };
             /** @description Validation Error */
@@ -974,7 +1099,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SinglePublicUserInfoResponseItem"];
+                    "application/json": components["schemas"]["UserPublic"];
                 };
             };
             /** @description Validation Error */
