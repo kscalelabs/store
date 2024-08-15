@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic.main import BaseModel
 
 from store.app.db import Crud
+from store.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -29,11 +30,20 @@ async def get_google_user_email(token: str) -> str:
         return (await response.json())["email"]
 
 
+class ClientIdResponse(BaseModel):
+    client_id: str
+
+
+@google_auth_router.get("/client-id", response_model=ClientIdResponse)
+async def google_client_id_endpoint() -> ClientIdResponse:
+    return ClientIdResponse(client_id=settings.oauth.google_client_id)
+
+
 class AuthResponse(BaseModel):
     api_key: str
 
 
-@google_auth_router.post("/login")
+@google_auth_router.post("/login", response_model=AuthResponse)
 async def google_login_endpoint(
     data: GoogleLogin,
     crud: Annotated[Crud, Depends(Crud.get)],

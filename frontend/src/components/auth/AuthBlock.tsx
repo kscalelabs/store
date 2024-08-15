@@ -3,14 +3,13 @@ import { useEffect, useState } from "react";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
+import AuthProvider from "components/auth/AuthProvider";
+import LoginForm from "components/auth/LoginForm";
+import SignupWithEmail from "components/auth/SignupWithEmail";
 import BackButton from "components/ui/Button/BackButton";
 import { Card, CardContent, CardFooter, CardHeader } from "components/ui/Card";
 import Header from "components/ui/Header";
 import Spinner from "components/ui/Spinner";
-
-import AuthProvider from "./AuthProvider";
-import LoginForm from "./LoginForm";
-import SignupWithEmail from "./SignupWithEmail";
 
 export const AuthBlockInner = () => {
   const auth = useAuthentication();
@@ -18,19 +17,6 @@ export const AuthBlockInner = () => {
 
   const [isSignup, setIsSignup] = useState(false);
   const [useSpinner, setUseSpinner] = useState(false);
-
-  const handleGithubSubmit = async (
-    event: React.MouseEvent<HTMLButtonElement>,
-  ) => {
-    event.preventDefault();
-
-    const { data, error } = await auth.client.GET("/users/github/login");
-    if (error) {
-      addErrorAlert(error);
-    } else {
-      window.open(data, "_self");
-    }
-  };
 
   useEffect(() => {
     (async () => {
@@ -70,7 +56,7 @@ export const AuthBlockInner = () => {
         {isSignup ? <SignupWithEmail /> : <LoginForm />}
       </CardContent>
       <CardFooter>
-        <AuthProvider handleGithubSubmit={handleGithubSubmit} />
+        <AuthProvider />
       </CardFooter>
       <CardFooter>
         <BackButton

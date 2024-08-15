@@ -3,22 +3,13 @@ import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
-import { GOOGLE_CLIENT_ID } from "constants/env";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
 import { Button } from "components/ui/Button/Button";
+import Spinner from "components/ui/Spinner";
 
-interface AuthProvider {
-  handleGoogleSubmit?: (
-    event: React.MouseEvent<HTMLButtonElement>,
-  ) => Promise<void>;
-  handleGithubSubmit?: (
-    event: React.MouseEvent<HTMLButtonElement>,
-  ) => Promise<void>;
-}
-
-const GoogleAuthComponentInner = () => {
+const GoogleAuthButton = () => {
   const [credential, setCredential] = useState<string | null>(null);
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
@@ -31,6 +22,7 @@ const GoogleAuthComponentInner = () => {
             token: credential,
           },
         });
+
         if (error) {
           addErrorAlert(error);
         } else {
@@ -40,7 +32,7 @@ const GoogleAuthComponentInner = () => {
     })();
   }, [credential]);
 
-  const login = useGoogleLogin({
+  const handleGoogleLogin = useGoogleLogin({
     onSuccess: (tokenResponse) => {
       const returnedCredential = tokenResponse.access_token;
       if (returnedCredential === undefined) {
@@ -62,14 +54,78 @@ const GoogleAuthComponentInner = () => {
       variant={"outline"}
       size={"lg"}
       className="w-full hover:bg-gray-100 dark:hover:bg-gray-600"
-      onClick={() => login()}
+      onClick={() => handleGoogleLogin()}
+      disabled={credential !== null}
     >
       <FcGoogle className="w-5 h-5" />
     </Button>
   );
 };
 
-const AuthProvider = ({ handleGithubSubmit }: AuthProvider) => {
+const GoogleAuthButtonWrapper = () => {
+  const [googleClientId, setGoogleClientId] = useState<string | null>(null);
+  const auth = useAuthentication();
+  const { addErrorAlert } = useAlertQueue();
+
+  useEffect(() => {
+    (async () => {
+      if (googleClientId !== null) return;
+
+      const { data, error } = await auth.client.GET("/users/google/client-id");
+      if (error) {
+        addErrorAlert(error);
+      } else {
+        setGoogleClientId(data.client_id);
+      }
+    })();
+  }, [googleClientId]);
+
+  return googleClientId === null ? (
+    <Button
+      variant={"outline"}
+      size={"lg"}
+      className="w-full hover:bg-gray-100 dark:hover:bg-gray-600"
+      disabled={true}
+    >
+      <Spinner />
+    </Button>
+  ) : (
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <GoogleAuthButton />
+    </GoogleOAuthProvider>
+  );
+};
+
+const GithubAuthButton = () => {
+  const auth = useAuthentication();
+  const { addErrorAlert } = useAlertQueue();
+
+  const handleGithubSubmit = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+  ) => {
+    event.preventDefault();
+
+    const { data, error } = await auth.client.GET("/users/github/login");
+    if (error) {
+      addErrorAlert(error);
+    } else {
+      window.open(data, "_self");
+    }
+  };
+
+  return (
+    <Button
+      variant="outline"
+      size="lg"
+      className="w-full hover:bg-gray-100 dark:hover:bg-gray-600"
+      onClick={handleGithubSubmit}
+    >
+      <FaGithub className="w-5 h-5" />
+    </Button>
+  );
+};
+
+const AuthProvider = () => {
   return (
     <div className="flex flex-col w-full">
       <div className="flex justify-center items-center mb-4">
@@ -79,19 +135,10 @@ const AuthProvider = ({ handleGithubSubmit }: AuthProvider) => {
       </div>
       <div className="flex items-center w-full gap-x-2">
         {/* Google */}
-        <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-          <GoogleAuthComponentInner />
-        </GoogleOAuthProvider>
+        <GoogleAuthButtonWrapper />
 
         {/* Github */}
-        <Button
-          variant="outline"
-          size="lg"
-          className="w-full hover:bg-gray-100 dark:hover:bg-gray-600"
-          onClick={handleGithubSubmit}
-        >
-          <FaGithub className="w-5 h-5" />
-        </Button>
+        <GithubAuthButton />
       </div>
     </div>
   );

@@ -42,29 +42,35 @@ const ProfileDetails = () => {
   useEffect(() => {
     const fetchUser = async () => {
       if (id === undefined) {
-        return;
-      }
-
-      try {
-        const { data, error } = await auth.client.GET("/users/public/{id}", {
-          params: {
-            path: { id },
-          },
-        });
+        const { data, error } = await auth.client.GET("/users/public/me");
 
         if (error) {
           addErrorAlert(error);
         } else {
-          setUser(data as UserResponse); // Ensure correct typing
+          setUser(data);
         }
-      } catch (err) {
-        addErrorAlert(err);
+      } else {
+        try {
+          const { data, error } = await auth.client.GET("/users/public/{id}", {
+            params: {
+              path: { id },
+            },
+          });
+
+          if (error) {
+            addErrorAlert(error);
+          } else {
+            setUser(data);
+          }
+        } catch (err) {
+          addErrorAlert(err);
+        }
       }
     };
     fetchUser();
   }, [id]);
 
-  return user && id ? (
+  return user ? (
     <RenderProfile user={user} />
   ) : (
     <div className="flex justify-center items-center pt-8">

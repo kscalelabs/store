@@ -2,7 +2,7 @@
 
 import logging
 from email.utils import parseaddr as parse_email_address
-from typing import Annotated, Literal, overload
+from typing import Annotated, Literal, Self, overload
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.security.utils import get_authorization_scheme_param
@@ -137,7 +137,7 @@ class UserSignup(BaseModel):
     password: str
 
 
-class UserInfoResponse(BaseModel):
+class MyUserInfoResponse(BaseModel):
     user_id: str
     email: str
     github_id: str | None
@@ -145,12 +145,12 @@ class UserInfoResponse(BaseModel):
     permissions: set[UserPermission] | None
 
 
-@users_router.get("/me", response_model=UserInfoResponse)
+@users_router.get("/me", response_model=MyUserInfoResponse)
 async def get_user_info_endpoint(
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
-) -> UserInfoResponse | None:
+) -> MyUserInfoResponse | None:
     try:
-        return UserInfoResponse(
+        return MyUserInfoResponse(
             user_id=user.id,
             email=user.email,
             google_id=user.google_id,
@@ -180,16 +180,23 @@ async def logout_user_endpoint(
     return True
 
 
-class SingleUserInfoResponseItem(BaseModel):
+class UserInfoResponseItem(BaseModel):
     id: str
     email: str
 
+    @classmethod
+    def from_user(cls, user: User) -> Self:
+        return cls(
+            id=user.id,
+            email=user.email,
+        )
 
-class UserInfoResponse(BaseModel):
-    users: list[SingleUserInfoResponseItem]
+
+class UsersInfoResponse(BaseModel):
+    users: list[UserInfoResponseItem]
 
 
-class SinglePublicUserInfoResponseItem(BaseModel):
+class PublicUserInfoResponseItem(BaseModel):
     id: str
     email: str
     permissions: set[UserPermission] | None = None
@@ -200,15 +207,29 @@ class SinglePublicUserInfoResponseItem(BaseModel):
     name: str | None = None
     bio: str | None = None
 
+    @classmethod
+    def from_user(cls, user: User | UserPublic) -> Self:
+        return cls(
+            id=user.id,
+            email=user.email,
+            permissions=user.permissions,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            name=user.name,
+            bio=user.bio,
+        )
 
-class PublicUserInfoResponse(BaseModel):
-    users: list[SinglePublicUserInfoResponseItem]
+
+class PublicUsersInfoResponse(BaseModel):
+    users: list[PublicUserInfoResponseItem]
 
 
-@users_router.post("/signup", response_model=SingleUserInfoResponseItem)
+@users_router.post("/signup", response_model=UserInfoResponseItem)
 async def register_user(
     data: UserSignup, email_signup_crud: EmailSignUpCrud = Depends(), user_crud: UserCrud = Depends()
-) -> SingleUserInfoResponseItem:
+) -> UserInfoResponseItem:
     async with email_signup_crud, user_crud:
         signup_token = await email_signup_crud.get_email_signup_token(data.signup_token_id)
         if not signup_token:
@@ -221,7 +242,7 @@ async def register_user(
         user = await user_crud._create_user_from_email(email=signup_token.email, password=data.password)
         # Delete the signup token
         await email_signup_crud.delete_email_signup_token(data.signup_token_id)
-        return SingleUserInfoResponseItem(id=user.id, email=user.email)
+        return UserInfoResponseItem(id=user.id, email=user.email)
 
 
 class LoginRequest(BaseModel):
@@ -255,40 +276,48 @@ async def login_user(data: LoginRequest, user_crud: UserCrud = Depends()) -> Log
         return LoginResponse(user_id=user.id, token=api_key.id)
 
 
-@users_router.get("/batch", response_model=PublicUserInfoResponse)
+@users_router.get("/batch", response_model=PublicUsersInfoResponse)
 async def get_users_batch_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
     ids: list[str] = Query(...),
-) -> PublicUserInfoResponse:
+) -> PublicUsersInfoResponse:
     users = await crud.get_user_batch(ids)
-    return UserInfoResponse(users=[SingleUserInfoResponseItem(user) for user in users])
+    return PublicUsersInfoResponse(users=[PublicUserInfoResponseItem.from_user(user) for user in users])
 
 
-@users_router.get("/public/batch", response_model=PublicUserInfoResponse)
+@users_router.get("/public/batch", response_model=PublicUsersInfoResponse)
 async def get_users_public_batch_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
     ids: list[str] = Query(...),
-) -> PublicUserInfoResponse:
+) -> PublicUsersInfoResponse:
     users = await crud.get_user_batch(ids)
-    return PublicUserInfoResponse(users=[SinglePublicUserInfoResponseItem(user) for user in users])
+    return PublicUsersInfoResponse(users=[PublicUserInfoResponseItem.from_user(user) for user in users])
 
 
-@users_router.get("/{id}", response_model=SingleUserInfoResponseItem)
-async def get_user_info_by_id_endpoint(id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> SingleUserInfoResponseItem:
+@users_router.get("/{id}", response_model=UserInfoResponseItem)
+async def get_user_info_by_id_endpoint(id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> UserInfoResponseItem:
     user = await crud.get_user(id)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return SingleUserInfoResponseItem(user)
+    return UserInfoResponseItem.from_user(user)
+
+
+@users_router.get("/public/me", response_model=UserPublic)
+async def get_my_public_user_info_endpoint(
+    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+) -> PublicUserInfoResponseItem:
+    return PublicUserInfoResponseItem.from_user(user)
 
 
 @users_router.get("/public/{id}", response_model=UserPublic)
 async def get_public_user_info_by_id_endpoint(
-    id: str, user_crud: UserCrud = Depends()
-) -> SinglePublicUserInfoResponseItem:
+    id: str,
+    user_crud: Annotated[Crud, Depends(Crud.get)],
+) -> PublicUserInfoResponseItem:
     user = await user_crud.get_user_public(id)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    return SinglePublicUserInfoResponseItem(user)
+    return PublicUserInfoResponseItem.from_user(user)
 
 
 users_router.include_router(github_auth_router, prefix="/github")

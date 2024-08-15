@@ -44,7 +44,6 @@ jobs:
       - name: Write .env.production
         working-directory: frontend
         run: |
-          echo "VITE_APP_GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" >> .env.production
           echo "VITE_APP_BACKEND_URL=${{ secrets.BACKEND_URL }}" >> .env.production
 
       - name: Build frontend
