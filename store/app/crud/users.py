@@ -5,7 +5,14 @@ import warnings
 from typing import Literal, overload
 
 from store.app.crud.base import BaseCrud
-from store.app.model import APIKey, APIKeyPermissionSet, APIKeySource, OAuthKey, User
+from store.app.model import (
+    APIKey,
+    APIKeyPermissionSet,
+    APIKeySource,
+    OAuthKey,
+    User,
+    UserPublic,
+)
 from store.settings import settings
 from store.utils import cache_async_result
 
@@ -36,6 +43,14 @@ class UserCrud(BaseCrud):
 
     async def get_user(self, id: str, throw_if_missing: bool = False) -> User | None:
         return await self._get_item(id, User, throw_if_missing=throw_if_missing)
+
+    """For safely retrieving public user data for display on profile pages"""
+
+    async def get_user_public(self, id: str, throw_if_missing: bool = False) -> UserPublic | None:
+        user = await self.get_user(id, throw_if_missing=throw_if_missing)
+        if user is None:
+            return None
+        return UserPublic(**user.model_dump())
 
     """Standard sign up with email and password, leaves oauth providers empty"""
 

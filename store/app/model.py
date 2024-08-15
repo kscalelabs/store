@@ -9,7 +9,7 @@ import time
 from datetime import datetime, timedelta
 from typing import Literal, Self
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 
 from store.app.utils.password import hash_password
 from store.settings import settings
@@ -38,13 +38,17 @@ class User(RobolistBaseModel):
     left empty if the user signed up with Google or Github OAuth.
     """
 
-    email: EmailStr
+    email: str
     hashed_password: str | None = None
     permissions: set[UserPermission] | None = None
     created_at: int
     updated_at: int
     github_id: str | None = None
     google_id: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    name: str | None = None
+    bio: str | None = None
 
     @classmethod
     def create(
@@ -73,13 +77,31 @@ class User(RobolistBaseModel):
         self.email_verified_at = int(time.time())
 
 
+class UserPublic(BaseModel):
+    """Defines public user model for frontend.
+
+    Omits private/sesnsitive user fields. Is the return type for
+    retrieving user data on frontend (for public profile pages, etc).
+    """
+
+    id: str
+    email: str
+    permissions: set[UserPermission] | None = None
+    created_at: int | None = None
+    updated_at: int | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    name: str | None = None
+    bio: str | None = None
+
+
 class EmailSignUpToken(RobolistBaseModel):
     """Object created when user attempts to sign up with email.
 
     Will be checked by signup dynamic route to render SignupForm if authorized.
     """
 
-    email: EmailStr
+    email: str
 
     @classmethod
     def create(cls, email: str) -> Self:

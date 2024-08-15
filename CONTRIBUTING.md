@@ -123,18 +123,15 @@ export SMTP_SENDER_EMAIL=''
 export SMTP_PASSWORD=''
 export SMTP_SENDER_NAME=''
 export SMTP_USERNAME=''
-
-# For Github OAuth
-export GITHUB_CLIENT_ID=''
-export GITHUB_CLIENT_SECRET=''
-
-# For Google OAuth
-export VITE_GOOGLE_CLIENT_ID=''
 ```
+
+### Google OAuth Configuration
+
+The repository's local configuration comes with Google OAuth credentials for a test application. Alternatively, you can set up your own Google OAuth application to test the application locally, by following the instructions [here](https://blog.logrocket.com/guide-adding-google-login-react-app/).
 
 ### Github OAuth Configuration
 
-To run Github OAuth locally, you must follow these steps:
+The repository's local configuration comes with Github OAuth credentials for a test application. Alternatively, you can set up your own Github OAuth application to test the application locally:
 
 1. Create an OAuth App on [Github Developer Settings](https://github.com/settings/developers)
 2. Set both Homepage URL and Authorization callback URL to `http://127.0.0.1:3000/login` before you `Update application` on Github Oauth App configuration
@@ -167,16 +164,6 @@ To run code formatting:
 ```bash
 npm run format
 ```
-
-### Google Client ID
-
-You will need to set `VITE_APP_GOOGLE_CLIENT_ID`. To do this, first create a Google client id (see [this LogRocket post](https://blog.logrocket.com/guide-adding-google-login-react-app/)). Then create a `.env.local` file in the `frontend` directory and add the following line:
-
-```
-VITE_APP_GOOGLE_CLIENT_ID=your-client-id
-```
-
-Additionally, you should set `VITE_APP_BACKEND_URL` to the URL of the FastAPI backend. This should be `http://127.0.0.1:8080` when developing locally.
 
 ## Testing
 

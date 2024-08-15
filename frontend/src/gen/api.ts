@@ -107,6 +107,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/public/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Users Public Batch Endpoint */
+        get: operations["get_users_public_batch_endpoint_users_public_batch_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/{id}": {
         parameters: {
             query?: never;
@@ -116,6 +133,40 @@ export interface paths {
         };
         /** Get User Info By Id Endpoint */
         get: operations["get_user_info_by_id_endpoint_users__id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/public/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get My Public User Info Endpoint */
+        get: operations["get_my_public_user_info_endpoint_users_public_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/public/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Public User Info By Id Endpoint */
+        get: operations["get_public_user_info_by_id_endpoint_users_public__id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -169,6 +220,23 @@ export interface paths {
          *         UserInfoResponse.
          */
         post: operations["github_code_users_github_code_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/google/client-id": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Google Client Id Endpoint */
+        get: operations["google_client_id_endpoint_users_google_client_id_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -492,6 +560,11 @@ export interface components {
             /** Metadata */
             metadata: string;
         };
+        /** ClientIdResponse */
+        ClientIdResponse: {
+            /** Client Id */
+            client_id: string;
+        };
         /** DeleteTokenResponse */
         DeleteTokenResponse: {
             /** Message */
@@ -644,6 +717,19 @@ export interface components {
             /** Token */
             token: string;
         };
+        /** MyUserInfoResponse */
+        MyUserInfoResponse: {
+            /** User Id */
+            user_id: string;
+            /** Email */
+            email: string;
+            /** Github Id */
+            github_id: string | null;
+            /** Google Id */
+            google_id: string | null;
+            /** Permissions */
+            permissions: "is_admin"[] | null;
+        };
         /** NewListingRequest */
         NewListingRequest: {
             /** Name */
@@ -658,17 +744,31 @@ export interface components {
             /** Listing Id */
             listing_id: string;
         };
-        /** PublicUserInfoResponse */
-        PublicUserInfoResponse: {
-            /** Users */
-            users: components["schemas"]["SinglePublicUserInfoResponseItem"][];
-        };
-        /** SinglePublicUserInfoResponseItem */
-        SinglePublicUserInfoResponseItem: {
+        /** PublicUserInfoResponseItem */
+        PublicUserInfoResponseItem: {
             /** Id */
             id: string;
             /** Email */
             email: string;
+            /** Permissions */
+            permissions?: "is_admin"[] | null;
+            /** Created At */
+            created_at?: number | null;
+            /** Updated At */
+            updated_at?: number | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Bio */
+            bio?: string | null;
+        };
+        /** PublicUsersInfoResponse */
+        PublicUsersInfoResponse: {
+            /** Users */
+            users: components["schemas"]["PublicUserInfoResponseItem"][];
         };
         /** UpdateArtifactRequest */
         UpdateArtifactRequest: {
@@ -692,18 +792,39 @@ export interface components {
         UploadArtifactResponse: {
             artifact: components["schemas"]["ListArtifactsItem"];
         };
-        /** UserInfoResponse */
-        UserInfoResponse: {
-            /** User Id */
-            user_id: string;
+        /** UserInfoResponseItem */
+        UserInfoResponseItem: {
+            /** Id */
+            id: string;
             /** Email */
             email: string;
-            /** Github Id */
-            github_id: string | null;
-            /** Google Id */
-            google_id: string | null;
+        };
+        /**
+         * UserPublic
+         * @description Defines public user model for frontend.
+         *
+         *     Omits private/sesnsitive user fields. Is the return type for
+         *     retrieving user data on frontend (for public profile pages, etc).
+         */
+        UserPublic: {
+            /** Id */
+            id: string;
+            /** Email */
+            email: string;
             /** Permissions */
-            permissions: "is_admin"[] | null;
+            permissions?: "is_admin"[] | null;
+            /** Created At */
+            created_at?: number | null;
+            /** Updated At */
+            updated_at?: number | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Bio */
+            bio?: string | null;
         };
         /** UserSignup */
         UserSignup: {
@@ -767,7 +888,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UserInfoResponse"];
+                    "application/json": components["schemas"]["MyUserInfoResponse"];
                 };
             };
         };
@@ -831,7 +952,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SinglePublicUserInfoResponseItem"];
+                    "application/json": components["schemas"]["UserInfoResponseItem"];
                 };
             };
             /** @description Validation Error */
@@ -895,7 +1016,38 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PublicUserInfoResponse"];
+                    "application/json": components["schemas"]["PublicUsersInfoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_users_public_batch_endpoint_users_public_batch_get: {
+        parameters: {
+            query: {
+                ids: string[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicUsersInfoResponse"];
                 };
             };
             /** @description Validation Error */
@@ -926,7 +1078,58 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SinglePublicUserInfoResponseItem"];
+                    "application/json": components["schemas"]["UserInfoResponseItem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_my_public_user_info_endpoint_users_public_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserPublic"];
+                };
+            };
+        };
+    };
+    get_public_user_info_by_id_endpoint_users_public__id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserPublic"];
                 };
             };
             /** @description Validation Error */
@@ -989,6 +1192,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    google_client_id_endpoint_users_google_client_id_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientIdResponse"];
                 };
             };
         };

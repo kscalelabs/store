@@ -4,7 +4,16 @@ import asyncio
 import io
 import itertools
 import logging
-from typing import Any, AsyncContextManager, BinaryIO, Callable, Literal, Self, TypeVar, overload
+from typing import (
+    Any,
+    AsyncContextManager,
+    BinaryIO,
+    Callable,
+    Literal,
+    Self,
+    TypeVar,
+    overload,
+)
 
 import aioboto3
 from boto3.dynamodb.conditions import Attr, Key
@@ -77,18 +86,33 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     async def _add_item(self, item: RobolistBaseModel, unique_fields: list[str] | None = None) -> None:
         table = await self.db.Table(TABLE_NAME)
         item_data = item.model_dump()
+
+        # Ensure no empty strings are present
+        item_data = {k: v for k, v in item_data.items() if v is not None and v != ""}
+
+        # DynamoDB-specific requirements
         if "type" in item_data:
             raise InternalError("Cannot add item with 'type' attribute")
         item_data["type"] = item.__class__.__name__
+
+        # Prepare the condition expression
         condition = "attribute_not_exists(id)"
         if unique_fields:
             for field in unique_fields:
                 assert hasattr(item, field), f"Item does not have field {field}"
             condition += " AND " + " AND ".join(f"attribute_not_exists({field})" for field in unique_fields)
-        await table.put_item(
-            Item=item_data,
-            ConditionExpression=condition,
-        )
+
+        # Log the item data before insertion for debugging purposes
+        logger.info(f"Inserting item into DynamoDB: {item_data}")
+
+        try:
+            await table.put_item(
+                Item=item_data,
+                ConditionExpression=condition,
+            )
+        except ClientError as e:
+            logger.error(f"Failed to insert item into DynamoDB: {e}")
+            raise
 
     async def _delete_item(self, item: RobolistBaseModel | str) -> None:
         table = await self.db.Table(TABLE_NAME)

@@ -63,7 +63,6 @@ const SignupForm: React.FC<SignupFormProps> = ({ signupTokenId }) => {
     } catch (err) {
       addErrorAlert(err);
     }
-    console.log(data);
   };
 
   return (
