@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
 
 # Installs the project.
-RUN pip install --no-cache-dir -e .
+RUN pip install --no-cache-dir .
 
 # Expose the port that the application runs on.
 EXPOSE 8080
