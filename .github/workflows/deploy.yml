@@ -44,7 +44,7 @@ jobs:
       - name: Write .env.production
         working-directory: frontend
         env:
-          BACKEND_URL: ${{ secrets.BACKEND_URL }}
+          BACKEND_URL: ${{ env.BACKEND_URL }}
         run: |
           echo "VITE_APP_BACKEND_URL=${BACKEND_URL}" >> .env.production
 
