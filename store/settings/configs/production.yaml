@@ -1,7 +1,7 @@
 crypto:
   jwt_secret: ${oc.env:JWT_SECRET}
 dynamo:
-  table_name: robolist
+  table_name: kscale-store
 site:
-  homepage: https://robolist.xyz
-  artifact_base_url: https://media.robolist.xyz
+  homepage: https://kscale.store
+  artifact_base_url: https://media.kscale.store

@@ -22,14 +22,14 @@ from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 from types_aiobotocore_s3.service_resource import S3ServiceResource
 
 from store.app.errors import InternalError, ItemNotFoundError
-from store.app.model import RobolistBaseModel
+from store.app.model import StoreBaseModel
 from store.settings import settings
 
 TABLE_NAME = settings.dynamo.table_name
 
 logger = logging.getLogger(__name__)
 
-T = TypeVar("T", bound=RobolistBaseModel)
+T = TypeVar("T", bound=StoreBaseModel)
 
 DEFAULT_CHUNK_SIZE = 100
 DEFAULT_SCAN_LIMIT = 1000
@@ -83,7 +83,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             to_close.append(self.__s3)
         await asyncio.gather(*(resource.__aexit__(exc_type, exc_val, exc_tb) for resource in to_close))
 
-    async def _add_item(self, item: RobolistBaseModel, unique_fields: list[str] | None = None) -> None:
+    async def _add_item(self, item: StoreBaseModel, unique_fields: list[str] | None = None) -> None:
         table = await self.db.Table(TABLE_NAME)
         item_data = item.model_dump()
 
@@ -114,7 +114,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             logger.error(f"Failed to insert item into DynamoDB: {e}")
             raise
 
-    async def _delete_item(self, item: RobolistBaseModel | str) -> None:
+    async def _delete_item(self, item: StoreBaseModel | str) -> None:
         table = await self.db.Table(TABLE_NAME)
         await table.delete_item(Key={"id": item if isinstance(item, str) else item.id})
 

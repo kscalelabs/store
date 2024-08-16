@@ -26,7 +26,7 @@ def _load_settings(environment: str) -> EnvironmentSettings:
 
 
 def _load_environment_settings() -> EnvironmentSettings:
-    environment = os.environ["ROBOLIST_ENVIRONMENT"]
+    environment = os.environ["ENVIRONMENT"]
     return _load_settings(environment)
 
 

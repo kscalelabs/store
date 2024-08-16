@@ -11,7 +11,7 @@ from moto.dynamodb import mock_dynamodb
 from moto.server import ThreadedMotoServer
 from pytest_mock.plugin import MockerFixture, MockType
 
-os.environ["ROBOLIST_ENVIRONMENT"] = "local"
+os.environ["ENVIRONMENT"] = "local"
 
 
 def pytest_collection_modifyitems(items: list[Function]) -> None:

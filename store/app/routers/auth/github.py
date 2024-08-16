@@ -15,14 +15,13 @@ logger = logging.getLogger(__name__)
 github_auth_router = APIRouter()
 
 
-@github_auth_router.get("/login")
-async def github_login() -> str:
-    """Gives the user a redirect url to login with github.
+class ClientIdResponse(BaseModel):
+    client_id: str
 
-    Returns:
-        Github oauth redirect url.
-    """
-    return f"https://github.com/login/oauth/authorize?scope=user:email&client_id={settings.oauth.github_client_id}"
+
+@github_auth_router.get("/client-id", response_model=ClientIdResponse)
+async def github_client_id_endpoint() -> ClientIdResponse:
+    return ClientIdResponse(client_id=settings.oauth.github_client_id)
 
 
 async def github_access_token_req(params: dict[str, str], headers: dict[str, str]) -> HttpxResponse:

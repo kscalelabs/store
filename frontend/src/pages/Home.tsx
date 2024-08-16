@@ -30,16 +30,11 @@ const Home = () => {
       {renderImage}
       <div className="absolute inset-0 backdrop-blur-sm bg-white/40 dark:bg-black/40 px-20 py-12 lg:w-1/2 shadow-sm">
         <div className="relative mx-auto max-w-2xl mt-10 px-6 lg:px-16">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl leading-none font-bold tracking-tight text-white">
-            Robolist
+          <h1 className="max-w-2xl mb-4 text-4xl font-extrabold leading-none tracking-tight md:text-5xl xl:text-6xl text-white">
+            Buy, sell and build
+            <br /> humanoid robots
           </h1>
-          <p className="mt-4 text-base lg:text-lg text-white">
-            Buy and sell robots and robot parts,
-            <br /> share hardware and software,
-            <br /> and connect with other robot enthusiasts,
-            <br /> all in one place.
-          </p>
-          <div className="flex gap-4 mx-auto mt-12 max-w-2xl lg:mx-0 lg:max-w-none">
+          <div className="flex gap-4 mx-auto mt-8 max-w-2xl lg:mx-0 lg:max-w-none">
             <Button
               onClick={() => navigate(`/browse`)}
               variant="primary"
@@ -56,6 +51,16 @@ const Home = () => {
               Create
             </Button>
           </div>
+          <p className="mt-8 text-white text-sm italic">
+            Build with ❤️ by{" "}
+            <a
+              href="https://kscalelabs.com"
+              target="_blank"
+              className="underline"
+            >
+              K-Scale Labs
+            </a>
+          </p>
         </div>
       </div>
     </div>
@@ -67,7 +72,7 @@ const Home = () => {
       <div className="absolute inset-x-0 bottom-0 h-1/2 backdrop-blur-sm bg-white/40 dark:bg-black/40 px-6 py-8 shadow-sm">
         <div className="relative mx-auto max-w-sm px-4">
           <h1 className="text-3xl font-bold tracking-tight text-white">
-            Robolist
+            K-Scale Store
           </h1>
           <p className="mt-2 text-sm text-white">
             Buy and sell robots and robot parts,

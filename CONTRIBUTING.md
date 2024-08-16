@@ -98,14 +98,14 @@ openapi-typescript http://localhost:8080/openapi.json --output src/gen/api.ts  #
 
 ### Configuration
 
-Settings for the app backend live in the `store/settings/` directory. To configure which set of settings you are using, set `ROBOLIST_ENVIRONMENT`. It is the stem of one of the config files in the `store/settings/configs/` directory. When developing locally this should usually just be `local`
+Settings for the app backend live in the `store/settings/` directory. To configure which set of settings you are using, set `ENVIRONMENT`. It is the stem of one of the config files in the `store/settings/configs/` directory. When developing locally this should usually just be `local`
 
 To locally develop, put these following environment variables in env.sh file and when you run the server locally,
 run: `source env.sh` in every new terminal :
 
 ```
 # Specifies a local environment versus production environment.
-export ROBOLIST_ENVIRONMENT=local
+export ENVIRONMENT=local
 
 # For AWS
 export AWS_DEFAULT_REGION='us-east-1'
