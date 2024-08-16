@@ -16,8 +16,8 @@ from store.settings import settings
 from store.utils import new_uuid
 
 
-class RobolistBaseModel(BaseModel):
-    """Defines the base model for Robolist database rows.
+class StoreBaseModel(BaseModel):
+    """Defines the base model for store database rows.
 
     Our database architecture uses a single table with a single primary key
     (the `id` field). This class provides a common interface for all models
@@ -30,7 +30,7 @@ class RobolistBaseModel(BaseModel):
 UserPermission = Literal["is_admin"]
 
 
-class User(RobolistBaseModel):
+class User(StoreBaseModel):
     """Defines the user model for the API.
 
     Users are defined by their id and email (both unique).
@@ -95,7 +95,7 @@ class UserPublic(BaseModel):
     bio: str | None = None
 
 
-class EmailSignUpToken(RobolistBaseModel):
+class EmailSignUpToken(StoreBaseModel):
     """Object created when user attempts to sign up with email.
 
     Will be checked by signup dynamic route to render SignupForm if authorized.
@@ -108,7 +108,7 @@ class EmailSignUpToken(RobolistBaseModel):
         return cls(id=new_uuid(), email=email)
 
 
-class OAuthKey(RobolistBaseModel):
+class OAuthKey(StoreBaseModel):
     """Keys for OAuth providers which identify users."""
 
     user_id: str
@@ -125,7 +125,7 @@ APIKeyPermission = Literal["read", "write", "admin"]
 APIKeyPermissionSet = set[APIKeyPermission] | Literal["full", None]
 
 
-class APIKey(RobolistBaseModel):
+class APIKey(StoreBaseModel):
     """The API key is used for querying the API.
 
     Downstream users keep the API key, and it is used to authenticate
@@ -200,7 +200,7 @@ def get_content_type(artifact_type: ArtifactType) -> str:
     return DOWNLOAD_CONTENT_TYPE[artifact_type]
 
 
-class Artifact(RobolistBaseModel):
+class Artifact(StoreBaseModel):
     """Defines an artifact that some user owns, like an image or uploaded file.
 
     Artifacts are stored in S3 and are accessible through CloudFront.
@@ -239,7 +239,7 @@ class Artifact(RobolistBaseModel):
         )
 
 
-class Listing(RobolistBaseModel):
+class Listing(StoreBaseModel):
     """Defines a recursively-defined listing.
 
     Listings can have sub-listings with their component parts. They can also
@@ -268,7 +268,7 @@ class Listing(RobolistBaseModel):
         )
 
 
-class ListingTag(RobolistBaseModel):
+class ListingTag(StoreBaseModel):
     """Marks a listing as having a given tag.
 
     This is useful for tagging listings with metadata, like "robot", "gripper",

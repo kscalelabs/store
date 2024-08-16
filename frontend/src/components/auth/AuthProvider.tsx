@@ -9,6 +9,9 @@ import { useAuthentication } from "hooks/useAuth";
 import { Button } from "components/ui/Button/Button";
 import Spinner from "components/ui/Spinner";
 
+const GITHUB_OAUTH_URL_BASE =
+  "https://github.com/login/oauth/authorize?scope=user:email&client_id=";
+
 const GoogleAuthButton = () => {
   const [credential, setCredential] = useState<string | null>(null);
   const auth = useAuthentication();
@@ -97,28 +100,40 @@ const GoogleAuthButtonWrapper = () => {
 };
 
 const GithubAuthButton = () => {
+  const [githubClientId, setGithubClientId] = useState<string | null>(null);
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
 
-  const handleGithubSubmit = async (
-    event: React.MouseEvent<HTMLButtonElement>,
-  ) => {
-    event.preventDefault();
+  useEffect(() => {
+    (async () => {
+      if (githubClientId !== null) return;
 
-    const { data, error } = await auth.client.GET("/users/github/login");
-    if (error) {
-      addErrorAlert(error);
-    } else {
-      window.open(data, "_self");
-    }
-  };
+      const { data, error } = await auth.client.GET("/users/github/client-id");
+      if (error) {
+        addErrorAlert(error);
+      } else {
+        setGithubClientId(data.client_id);
+      }
+    })();
+  }, [githubClientId]);
 
-  return (
+  return githubClientId === null ? (
+    <Button
+      variant={"outline"}
+      size={"lg"}
+      className="w-full hover:bg-gray-100 dark:hover:bg-gray-600"
+      disabled={true}
+    >
+      <Spinner />
+    </Button>
+  ) : (
     <Button
       variant="outline"
       size="lg"
       className="w-full hover:bg-gray-100 dark:hover:bg-gray-600"
-      onClick={handleGithubSubmit}
+      onClick={() => {
+        window.open(`${GITHUB_OAUTH_URL_BASE}${githubClientId}`, "_self");
+      }}
     >
       <FaGithub className="w-5 h-5" />
     </Button>

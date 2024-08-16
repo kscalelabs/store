@@ -19,7 +19,7 @@
 
 </div>
 
-# RoboList
+# K-Scale Store
 
 This is the code for our online store. This is a simple store for buying and selling robots and robot parts.
 

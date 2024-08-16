@@ -4,7 +4,7 @@ s3:
   bucket: artifacts
   prefix: ""
 dynamo:
-  table_name: robolist-local
+  table_name: kscale-store-local
 site:
   homepage: http://127.0.0.1:3000
   artifact_base_url: http://127.0.0.1:4566/artifacts

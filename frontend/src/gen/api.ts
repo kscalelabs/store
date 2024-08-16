@@ -175,21 +175,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/users/github/login": {
+    "/users/github/client-id": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /**
-         * Github Login
-         * @description Gives the user a redirect url to login with github.
-         *
-         *     Returns:
-         *         Github oauth redirect url.
-         */
-        get: operations["github_login_users_github_login_get"];
+        /** Github Client Id Endpoint */
+        get: operations["github_client_id_endpoint_users_github_client_id_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1143,7 +1137,7 @@ export interface operations {
             };
         };
     };
-    github_login_users_github_login_get: {
+    github_client_id_endpoint_users_github_client_id_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1158,7 +1152,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": string;
+                    "application/json": components["schemas"]["ClientIdResponse"];
                 };
             };
         };
