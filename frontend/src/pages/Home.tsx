@@ -32,7 +32,7 @@ const Home = () => {
         <div className="relative mx-auto max-w-2xl mt-10 px-6 lg:px-16">
           <h1 className="max-w-2xl mb-4 text-4xl font-extrabold leading-none tracking-tight md:text-5xl xl:text-6xl text-white">
             Buy, sell and build
-            <br /> humanoid robots
+            <br /> droids
           </h1>
           <div className="flex gap-4 mx-auto mt-8 max-w-2xl lg:mx-0 lg:max-w-none">
             <Button
