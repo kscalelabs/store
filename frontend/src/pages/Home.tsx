@@ -52,7 +52,7 @@ const Home = () => {
             </Button>
           </div>
           <p className="mt-8 text-white text-sm italic">
-            Build with ❤️ by{" "}
+            Built with ❤️ by{" "}
             <a
               href="https://kscalelabs.com"
               target="_blank"
