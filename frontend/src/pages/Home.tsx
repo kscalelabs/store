@@ -56,7 +56,8 @@ const Home = () => {
             <a
               href="https://kscalelabs.com"
               target="_blank"
-              className="underline" rel="noreferrer"
+              className="underline"
+              rel="noreferrer"
             >
               K-Scale Labs
             </a>
