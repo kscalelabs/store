@@ -20,5 +20,8 @@ RUN pip install --no-cache-dir .
 # Expose the port that the application runs on.
 EXPOSE 8080
 
+# Sets environment variables.
+ENV ENVIRONMENT=production
+
 # Run the FastAPI application.
-CMD ["ENVIRONMENT=production", "fastapi", "run", "store/app/main.py", "--port", "8080"]
+CMD ["fastapi", "run", "store/app/main.py", "--port", "8080"]
