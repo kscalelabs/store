@@ -5,6 +5,7 @@ import { components } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
+import RequireAuthentication from "components/auth/RequireAuthentication";
 import ListingFileUpload from "components/listing/ListingFileUpload";
 import MeshRenderer from "components/listing/MeshRenderer";
 import { Button } from "components/ui/Button/Button";
@@ -102,7 +103,7 @@ const ListingMeshes = (props: Props) => {
             Meshes
           </Button>
           {!collapsed && (
-            <>
+            <RequireAuthentication>
               <div className="grid gap-2 md:gap-4 mx-auto w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 mt-4">
                 {meshes.map((mesh, idx) => (
                   <Tooltip key={idx} content={mesh.name}>
@@ -135,7 +136,7 @@ const ListingMeshes = (props: Props) => {
                 onDelete={() => onDelete(mesh[1].artifact_id)}
                 disabled={deletingIds.includes(mesh[1].artifact_id)}
               />
-            </>
+            </RequireAuthentication>
           )}
         </>
       ) : (
