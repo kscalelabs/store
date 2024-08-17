@@ -222,10 +222,12 @@ class ArtifactsCrud(BaseCrud):
                 await self._remove_raw_artifact(artifact, artifact.artifact_type, user_id)
 
     async def get_listing_artifacts(self, listing_id: str) -> list[Artifact]:
-        return await self._get_items_from_secondary_index("listing_id", listing_id, Artifact)
+        artifacts = await self._get_items_from_secondary_index("listing_id", listing_id, Artifact)
+        return sorted(artifacts, key=lambda a: a.timestamp)
 
     async def get_listings_artifacts(self, listing_ids: list[str]) -> list[list[Artifact]]:
-        return await self._get_items_from_secondary_index_batch("listing_id", listing_ids, Artifact)
+        artifact_chunks = await self._get_items_from_secondary_index_batch("listing_id", listing_ids, Artifact)
+        return [sorted(artifacts, key=lambda a: a.timestamp) for artifacts in artifact_chunks]
 
     async def edit_artifact(
         self,

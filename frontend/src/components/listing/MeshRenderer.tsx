@@ -168,7 +168,7 @@ const MeshRenderer = ({ url, name, edit, onDelete, disabled, kind }: Props) => {
               MeshTypes[(MeshTypes.indexOf(meshType) + 1) % MeshTypes.length],
             );
           }}
-          variant="outline"
+          variant="secondary"
           className="rounded-full"
         >
           <code>{meshType}</code>
@@ -183,7 +183,7 @@ const MeshRenderer = ({ url, name, edit, onDelete, disabled, kind }: Props) => {
                 setClickedCopyButton(false);
               }, 1000);
             }}
-            variant="outline"
+            variant="secondary"
             className="rounded-full w-full"
             disabled={clickedCopyButton}
           >
@@ -195,7 +195,7 @@ const MeshRenderer = ({ url, name, edit, onDelete, disabled, kind }: Props) => {
           <>
             <Button
               onClick={() => setConfirmDelete(true)}
-              variant="outline"
+              variant="secondary"
               className="rounded-full"
               disabled={disabled ?? false}
             >
@@ -204,7 +204,7 @@ const MeshRenderer = ({ url, name, edit, onDelete, disabled, kind }: Props) => {
             {confirmDelete && (
               <div className="absolute inset-0 flex items-center justify-center z-50">
                 <div className="bg-white rounded-lg shadow-lg p-4">
-                  <p className="text-lg">
+                  <p className="text-lg mb-2">
                     Are you sure you want to delete this artifact?
                   </p>
                   <div className="flex justify-center space-x-4">
@@ -213,13 +213,13 @@ const MeshRenderer = ({ url, name, edit, onDelete, disabled, kind }: Props) => {
                         onDelete?.();
                         setConfirmDelete(false);
                       }}
-                      variant="outline"
+                      variant="secondary"
                     >
                       <code>yes</code>
                     </Button>
                     <Button
                       onClick={() => setConfirmDelete(false)}
-                      variant="outline"
+                      variant="secondary"
                     >
                       <code>no</code>
                     </Button>

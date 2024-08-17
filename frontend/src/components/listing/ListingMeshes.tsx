@@ -92,13 +92,13 @@ const ListingMeshes = (props: Props) => {
         <>
           <Button
             onClick={() => setCollapsed(!collapsed)}
-            variant="outline"
+            variant="primary"
             className="text-md p-4 w-full"
           >
             {collapsed ? (
-              <FaCaretSquareUp className="mr-4 text-gray-700" />
+              <FaCaretSquareUp className="mr-2" />
             ) : (
-              <FaCaretSquareDown className="mr-4 text-gray-700" />
+              <FaCaretSquareDown className="mr-2" />
             )}
             Meshes
           </Button>
@@ -109,6 +109,8 @@ const ListingMeshes = (props: Props) => {
                   <Tooltip key={idx} content={mesh.name}>
                     <Button
                       onClick={() => {
+                        if (idx === currentId) return;
+
                         setChangeMeshDisabled(true);
                         setCurrentId(idx);
                         setMesh(null);
@@ -117,7 +119,7 @@ const ListingMeshes = (props: Props) => {
                           setChangeMeshDisabled(false);
                         }, 300);
                       }}
-                      variant={idx === currentId ? "primary" : "outline"}
+                      variant={idx === currentId ? "primary" : "secondary"}
                       className="rounded-full w-full"
                       disabled={changeMeshDisabled}
                     >

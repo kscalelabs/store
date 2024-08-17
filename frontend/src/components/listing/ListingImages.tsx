@@ -57,15 +57,15 @@ const ListingImages = (props: Props) => {
         <>
           <Button
             onClick={() => setCollapsed(!collapsed)}
-            variant="outline"
+            variant="primary"
             className="text-md p-4 w-full"
           >
-            Images
             {collapsed ? (
-              <FaCaretSquareUp className="ml-4 text-gray-700" />
+              <FaCaretSquareUp className="mr-2" />
             ) : (
-              <FaCaretSquareDown className="ml-4 text-gray-700" />
+              <FaCaretSquareDown className="mr-2" />
             )}
+            Images
           </Button>
           {!collapsed && (
             <>
