@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 
 from store.app.db import create_tables
 from store.app.errors import (
+    BadArtifactError,
     InternalError,
     ItemNotFoundError,
     NotAuthenticatedError,
@@ -88,6 +89,14 @@ async def not_authorized_exception_handler(request: Request, exc: NotAuthorizedE
     return JSONResponse(
         status_code=status.HTTP_403_FORBIDDEN,
         content={"message": "Not authorized.", "detail": str(exc)},
+    )
+
+
+@app.exception_handler(BadArtifactError)
+async def bad_artifact_exception_handler(request: Request, exc: BadArtifactError) -> JSONResponse:
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"message": "Bad artifact.", "detail": str(exc)},
     )
 
 

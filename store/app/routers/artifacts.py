@@ -25,18 +25,27 @@ artifacts_router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-@artifacts_router.get("/url/{artifact_type}/{artifact_id}")
+@artifacts_router.get("/url/{artifact_type}/{listing_id}/{name}")
 async def artifact_url(
     artifact_type: ArtifactType,
-    artifact_id: str,
+    listing_id: str,
+    name: str,
     size: ArtifactSize = "large",
 ) -> RedirectResponse:
     # TODO: Use CloudFront API to return a signed CloudFront URL.
-    return RedirectResponse(url=get_artifact_url(artifact_id, artifact_type, size))
+    return RedirectResponse(
+        url=get_artifact_url(
+            artifact_type=artifact_type,
+            listing_id=listing_id,
+            name=name,
+            size=size,
+        )
+    )
 
 
 class ListArtifactsItem(BaseModel):
     artifact_id: str
+    listing_id: str
     name: str
     artifact_type: ArtifactType
     description: str | None
@@ -54,11 +63,12 @@ async def list_artifacts(listing_id: str, crud: Annotated[Crud, Depends(Crud.get
         artifacts=[
             ListArtifactsItem(
                 artifact_id=artifact.id,
+                listing_id=artifact.listing_id,
                 name=artifact.name,
                 artifact_type=artifact.artifact_type,
                 description=artifact.description,
                 timestamp=artifact.timestamp,
-                url=get_artifact_url(artifact.id, artifact.artifact_type),
+                url=get_artifact_url(artifact=artifact),
             )
             for artifact in await crud.get_listing_artifacts(listing_id)
         ],
@@ -124,6 +134,13 @@ async def upload(
     data = UploadArtifactRequest.model_validate_json(metadata)
     filenames = [validate_file(file) for file in files]
 
+    # Makes sure that filenames are unique.
+    if len(set(filename for filename, _ in filenames)) != len(filenames):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Duplicate filenames were provided",
+        )
+
     # Checks that the listing is valid.
     listing = await crud.get_listing(data.listing_id)
     if listing is None:
@@ -151,11 +168,12 @@ async def upload(
         artifacts=[
             ListArtifactsItem(
                 artifact_id=artifact.id,
+                listing_id=artifact.listing_id,
                 name=artifact.name,
                 artifact_type=artifact.artifact_type,
                 description=artifact.description,
                 timestamp=artifact.timestamp,
-                url=get_artifact_url(artifact.id, artifact.artifact_type),
+                url=get_artifact_url(artifact=artifact),
             )
             for artifact in artifacts
         ]

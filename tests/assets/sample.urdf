@@ -18,7 +18,7 @@
         <visual>
             <origin xyz="0.0 0.0 0.4" rpy="0.0 0.0 0.0" />
             <geometry>
-                <sphere radius="0.2" />
+                <mesh filename="teapot.stl"/>
             </geometry>
             <material name="Red">
                 <color rgba="1.0 0.0 0.0 1.0"/>

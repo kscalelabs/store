@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 class ArtifactsCrud(BaseCrud):
     @classmethod
     def get_gsis(cls) -> set[str]:
-        return super().get_gsis().union({"user_id", "listing_id"})
+        return super().get_gsis().union({"user_id", "listing_id", "name"})
 
     async def _crop_image(self, image: Image.Image, size: tuple[int, int]) -> io.BytesIO:
         # Simply squashes the image to the desired size.
@@ -59,10 +59,10 @@ class ArtifactsCrud(BaseCrud):
         image_bytes.seek(0)
         return image_bytes
 
-    async def _upload_cropped_image(self, image: Image.Image, name: str, image_id: str, size: ArtifactSize) -> None:
+    async def _upload_cropped_image(self, image: Image.Image, artifact: Artifact, size: ArtifactSize) -> None:
         image_bytes = await self._crop_image(image, SizeMapping[size])
-        filename = get_artifact_name(image_id, "image", size)
-        await self._upload_to_s3(image_bytes, name, filename, "image/png")
+        filename = get_artifact_name(artifact=artifact, size=size)
+        await self._upload_to_s3(image_bytes, artifact.name, filename, "image/png")
 
     async def _upload_image(
         self,
@@ -86,15 +86,7 @@ class ArtifactsCrud(BaseCrud):
         image = Image.open(file)
 
         await asyncio.gather(
-            *(
-                self._upload_cropped_image(
-                    image=image,
-                    name=name,
-                    image_id=artifact.id,
-                    size=size,
-                )
-                for size in SizeMapping.keys()
-            ),
+            *(self._upload_cropped_image(image=image, artifact=artifact, size=size) for size in SizeMapping.keys()),
             self._add_item(artifact),
         )
         return artifact
@@ -129,7 +121,7 @@ class ArtifactsCrud(BaseCrud):
             description=description,
         )
         await asyncio.gather(
-            self._upload_to_s3(out_file, name, get_artifact_name(artifact.id, "stl"), content_type),
+            self._upload_to_s3(out_file, name, get_artifact_name(artifact=artifact), content_type),
             self._add_item(artifact),
         )
         return artifact
@@ -169,7 +161,7 @@ class ArtifactsCrud(BaseCrud):
             description=description,
         )
         await asyncio.gather(
-            self._upload_to_s3(out_file, name, get_artifact_name(artifact.id, artifact_type), content_type),
+            self._upload_to_s3(out_file, name, get_artifact_name(artifact=artifact), content_type),
             self._add_item(artifact),
         )
         return artifact
@@ -183,6 +175,10 @@ class ArtifactsCrud(BaseCrud):
         artifact_type: ArtifactType,
         description: str | None = None,
     ) -> Artifact:
+        # Validates that the name is unique.
+        if await self.has_artifact_named(name):
+            raise BadArtifactError("An artifact with this name already exists")
+
         match artifact_type:
             case "image":
                 return await self._upload_image(name, file, listing, user_id, description)
@@ -197,20 +193,19 @@ class ArtifactsCrud(BaseCrud):
         if artifact.user_id != user_id:
             raise NotAuthorizedError("User does not have permission to delete this image")
         await asyncio.gather(
-            *(self._delete_from_s3(get_artifact_name(artifact.id, "image", size)) for size in SizeMapping.keys()),
+            *(self._delete_from_s3(get_artifact_name(artifact=artifact, size=size)) for size in SizeMapping.keys()),
             self._delete_item(artifact),
         )
 
     async def _remove_raw_artifact(
         self,
         artifact: Artifact,
-        artifact_type: Literal["urdf", "mjcf", "stl"],
         user_id: str,
     ) -> None:
         if artifact.user_id != user_id:
             raise NotAuthorizedError("User does not have permission to delete this artifact")
         await asyncio.gather(
-            self._delete_from_s3(get_artifact_name(artifact.id, artifact_type)),
+            self._delete_from_s3(get_artifact_name(artifact=artifact)),
             self._delete_item(artifact),
         )
 
@@ -219,7 +214,7 @@ class ArtifactsCrud(BaseCrud):
             case "image":
                 await self._remove_image(artifact, user_id)
             case _:
-                await self._remove_raw_artifact(artifact, artifact.artifact_type, user_id)
+                await self._remove_raw_artifact(artifact, user_id)
 
     async def get_listing_artifacts(self, listing_id: str) -> list[Artifact]:
         artifacts = await self._get_items_from_secondary_index("listing_id", listing_id, Artifact)
@@ -228,6 +223,9 @@ class ArtifactsCrud(BaseCrud):
     async def get_listings_artifacts(self, listing_ids: list[str]) -> list[list[Artifact]]:
         artifact_chunks = await self._get_items_from_secondary_index_batch("listing_id", listing_ids, Artifact)
         return [sorted(artifacts, key=lambda a: a.timestamp) for artifacts in artifact_chunks]
+
+    async def has_artifact_named(self, filename: str) -> bool:
+        return len(await self._get_items_from_secondary_index("name", filename, Artifact)) > 0
 
     async def edit_artifact(
         self,

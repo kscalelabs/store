@@ -47,15 +47,9 @@ interface UrdfModelProps {
 
 const UrdfModel = ({ url, meshType }: UrdfModelProps) => {
   const ref = useRef<Group>();
-  const [robot, setRobot] = useState<Group>();
+  const geom = useLoader(URDFLoader, url);
 
-  const loader = new URDFLoader();
-
-  loader.load(url, (robot) => {
-    setRobot(robot);
-  });
-
-  return robot ? (
+  return (
     <group>
       <mesh
         castShadow
@@ -66,7 +60,7 @@ const UrdfModel = ({ url, meshType }: UrdfModelProps) => {
       >
         <primitive
           ref={ref}
-          object={robot}
+          object={geom}
           position={[0, 0, 0]}
           dispose={null}
           castShadow
@@ -77,7 +71,7 @@ const UrdfModel = ({ url, meshType }: UrdfModelProps) => {
         <shadowMaterial opacity={0.25} />
       </Plane>
     </group>
-  ) : null;
+  );
 };
 
 interface StlModelProps {
