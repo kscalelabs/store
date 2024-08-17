@@ -74,13 +74,14 @@ export const AuthBlockInner = () => {
 
 interface AuthBlockProps {
   title?: string;
+  onClosed?: () => void;
 }
 
-const AuthBlock: React.FC<AuthBlockProps> = ({ title }) => {
+const AuthBlock: React.FC<AuthBlockProps> = ({ title, onClosed }) => {
   return (
     <Card className="w-[400px] shadow-md bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg">
       <CardHeader>
-        <Header title={title} />
+        <Header title={title} onClosed={onClosed} />
       </CardHeader>
       <AuthBlockInner />
     </Card>

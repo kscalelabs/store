@@ -1,5 +1,6 @@
 """Defines the router endpoints for handling listing artifacts."""
 
+import asyncio
 import logging
 from typing import Annotated
 
@@ -8,7 +9,14 @@ from fastapi.responses import RedirectResponse
 from pydantic.main import BaseModel
 
 from store.app.db import Crud
-from store.app.model import UPLOAD_CONTENT_TYPE_OPTIONS, ArtifactSize, ArtifactType, User, get_artifact_url
+from store.app.model import (
+    UPLOAD_CONTENT_TYPE_OPTIONS,
+    ArtifactSize,
+    ArtifactType,
+    User,
+    get_artifact_type,
+    get_artifact_url,
+)
 from store.app.routers.users import get_session_user_with_write_permission
 from store.settings import settings
 
@@ -57,7 +65,7 @@ async def list_artifacts(listing_id: str, crud: Annotated[Crud, Depends(Crud.get
     )
 
 
-def validate_file(file: UploadFile, artifact_type: ArtifactType) -> str:
+def validate_file(file: UploadFile) -> tuple[str, ArtifactType]:
     if file.filename is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -83,35 +91,38 @@ def validate_file(file: UploadFile, artifact_type: ArtifactType) -> str:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Artifact content type was not provided",
         )
+
+    # Parses the artifact type from the content type and filename.
+    artifact_type = get_artifact_type(content_type, file.filename)
     if content_type not in UPLOAD_CONTENT_TYPE_OPTIONS[artifact_type]:
         content_type_options_string = ", ".join(UPLOAD_CONTENT_TYPE_OPTIONS[artifact_type])
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid content type {content_type}; expected one of {content_type_options_string}",
         )
-    return file.filename
+
+    return file.filename, artifact_type
 
 
 class UploadArtifactRequest(BaseModel):
-    artifact_type: ArtifactType
     listing_id: str
     description: str | None = None
 
 
 class UploadArtifactResponse(BaseModel):
-    artifact: ListArtifactsItem
+    artifacts: list[ListArtifactsItem]
 
 
 @artifacts_router.post("/upload", response_model=UploadArtifactResponse)
 async def upload(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
-    file: UploadFile,
+    files: list[UploadFile],
     metadata: Annotated[str, Form()],
 ) -> UploadArtifactResponse:
     # Converts the metadata JSON string to a Pydantic model.
     data = UploadArtifactRequest.model_validate_json(metadata)
-    filename = validate_file(file, data.artifact_type)
+    filenames = [validate_file(file) for file in files]
 
     # Checks that the listing is valid.
     listing = await crud.get_listing(data.listing_id)
@@ -122,23 +133,32 @@ async def upload(
         )
 
     # Uploads the artifact and adds it to the listing.
-    artifact = await crud.upload_artifact(
-        file=file.file,
-        name=filename,
-        listing=listing,
-        user_id=user.id,
-        artifact_type=data.artifact_type,
-        description=data.description,
+    artifacts = await asyncio.gather(
+        *(
+            crud.upload_artifact(
+                file=file.file,
+                name=filename,
+                listing=listing,
+                user_id=user.id,
+                artifact_type=artifact_type,
+                description=data.description,
+            )
+            for file, (filename, artifact_type) in zip(files, filenames)
+        )
     )
+
     return UploadArtifactResponse(
-        artifact=ListArtifactsItem(
-            artifact_id=artifact.id,
-            name=artifact.name,
-            artifact_type=artifact.artifact_type,
-            description=artifact.description,
-            timestamp=artifact.timestamp,
-            url=get_artifact_url(artifact.id, artifact.artifact_type),
-        ),
+        artifacts=[
+            ListArtifactsItem(
+                artifact_id=artifact.id,
+                name=artifact.name,
+                artifact_type=artifact.artifact_type,
+                description=artifact.description,
+                timestamp=artifact.timestamp,
+                url=get_artifact_url(artifact.id, artifact.artifact_type),
+            )
+            for artifact in artifacts
+        ]
     )
 
 

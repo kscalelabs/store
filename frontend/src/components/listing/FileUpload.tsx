@@ -27,7 +27,6 @@ type DirectionOptions = "rtl" | "ltr" | undefined;
 
 type FileUploaderContextType = {
   dropzoneState: DropzoneState;
-  isLOF: boolean;
   isFileTooBig: boolean;
   removeFileFromSet: (index: number) => void;
   activeIndex: number;
@@ -75,19 +74,16 @@ export const FileUploader = forwardRef<
     const { addErrorAlert } = useAlertQueue();
 
     const [isFileTooBig, setIsFileTooBig] = useState(false);
-    const [isLOF, setIsLOF] = useState(false);
     const [activeIndex, setActiveIndex] = useState(-1);
     const {
       accept = {
         "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp"],
-        "application/xm": [".urdf"],
+        "application/xml": [".urdf"],
       },
-      maxFiles = 1,
       maxSize = 4 * 1024 * 1024,
       multiple = true,
     } = dropzoneOptions;
 
-    const reSelectAll = maxFiles === 1 ? true : reSelect;
     const direction: DirectionOptions = dir === "rtl" ? "rtl" : "ltr";
 
     const removeFileFromSet = useCallback(
@@ -165,14 +161,12 @@ export const FileUploader = forwardRef<
 
         const newValues: File[] = value ? [...value] : [];
 
-        if (reSelectAll) {
+        if (reSelect) {
           newValues.splice(0, newValues.length);
         }
 
         files.forEach((file) => {
-          if (newValues.length < maxFiles) {
-            newValues.push(file);
-          }
+          newValues.push(file);
         });
 
         onValueChange(newValues);
@@ -192,21 +186,16 @@ export const FileUploader = forwardRef<
           }
         }
       },
-      [reSelectAll, value],
+      [reSelect, value],
     );
 
     useEffect(() => {
       if (!value) return;
-      if (value.length === maxFiles) {
-        setIsLOF(true);
-        return;
-      }
-      setIsLOF(false);
-    }, [value, maxFiles]);
+    }, [value]);
 
     const opts = dropzoneOptions
       ? dropzoneOptions
-      : { accept, maxFiles, maxSize, multiple };
+      : { accept, maxSize, multiple };
 
     const dropzoneState = useDropzone({
       ...opts,
@@ -219,7 +208,6 @@ export const FileUploader = forwardRef<
       <FileUploaderContext.Provider
         value={{
           dropzoneState,
-          isLOF,
           isFileTooBig,
           removeFileFromSet,
           activeIndex,
@@ -319,16 +307,10 @@ export const FileInput = forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => {
-  const { dropzoneState, isFileTooBig, isLOF } = useFileUpload();
-  const rootProps = isLOF ? {} : dropzoneState.getRootProps();
+  const { dropzoneState, isFileTooBig } = useFileUpload();
+  const rootProps = dropzoneState.getRootProps();
   return (
-    <div
-      ref={ref}
-      {...props}
-      className={`relative w-full ${
-        isLOF ? "opacity-50 cursor-not-allowed " : "cursor-pointer "
-      }`}
-    >
+    <div ref={ref} {...props} className="relative w-full cursor-pointer">
       <div
         className={cn(
           `w-full rounded-lg duration-300 ease-in-out border-2 border-dashed
@@ -345,12 +327,7 @@ export const FileInput = forwardRef<
       >
         {children}
       </div>
-      <Input
-        ref={dropzoneState.inputRef}
-        disabled={isLOF}
-        {...dropzoneState.getInputProps()}
-        className={`${isLOF ? "cursor-not-allowed" : ""}`}
-      />
+      <Input ref={dropzoneState.inputRef} {...dropzoneState.getInputProps()} />
     </div>
   );
 });
@@ -361,12 +338,10 @@ export const FileSubmitButton = forwardRef<
   HTMLButtonElement,
   React.ButtonHTMLAttributes<HTMLButtonElement>
 >(({ children, className, ...props }, ref) => {
-  const { isLOF } = useFileUpload();
   return (
     <button
       ref={ref}
       type="button"
-      disabled={!isLOF}
       className={cn(
         buttonVariants({ variant: "primary" }),
         "w-full",

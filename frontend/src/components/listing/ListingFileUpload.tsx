@@ -15,15 +15,16 @@ import {
 import Spinner from "components/ui/Spinner";
 
 interface Props {
-  artifactType: string;
-  fileExtensions: string[];
+  accept: {
+    [key: string]: string[];
+  };
   maxSize: number;
   listingId: string;
   onUpload: (artifact: components["schemas"]["UploadArtifactResponse"]) => void;
 }
 
 const ListingFileUpload = (props: Props) => {
-  const { artifactType, fileExtensions, maxSize, listingId, onUpload } = props;
+  const { accept, maxSize, listingId, onUpload } = props;
 
   const { addErrorAlert } = useAlertQueue();
   const auth = useAuthentication();
@@ -38,27 +39,24 @@ const ListingFileUpload = (props: Props) => {
 
     setUploading(true);
     (async () => {
-      await Promise.all(
-        files.map(async (file: File) => {
-          const { data, error } = await auth.api.upload(file, {
-            artifact_type: artifactType,
-            listing_id: listingId,
-          });
+      const { data, error } = await auth.api.upload(files, {
+        listing_id: listingId,
+      });
 
-          if (error) {
-            addErrorAlert(error);
-          } else {
-            setFiles(null);
-            onUpload(data);
-          }
-        }),
-      );
+      if (error) {
+        addErrorAlert(error);
+      } else {
+        setFiles(null);
+        onUpload(data);
+      }
       setUploading(false);
     })();
   }, [files, auth, listingId, addErrorAlert]);
 
+  const fileExtensions = Object.values(accept).flat();
+
   return uploading ? (
-    <div className="my-4 w-full flex justify-center">
+    <div className="w-full flex justify-center mt-4">
       <Spinner />
     </div>
   ) : (
@@ -66,15 +64,13 @@ const ListingFileUpload = (props: Props) => {
       value={files}
       onValueChange={setFiles}
       dropzoneOptions={{
-        accept: {
-          "image/*": fileExtensions,
-        },
+        accept,
         maxSize,
       }}
-      className="relative bg-background rounded-lg pt-4 pb-2 px-2"
+      className="relative bg-background mt-4 rounded-lg"
     >
       <FileInput>
-        <div className="flex justify-center pt-3 pb-4 w-full h-32">
+        <div className="flex justify-center w-full h-32">
           <div className="align-middle h-full justify-center flex flex-col">
             <div className="text-center">Drag and drop or click to browse</div>
             <div className="text-center">

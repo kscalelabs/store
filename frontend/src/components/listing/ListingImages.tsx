@@ -8,10 +8,13 @@ import { useAuthentication } from "hooks/useAuth";
 import ListingFileUpload from "components/listing/ListingFileUpload";
 import { Button } from "components/ui/Button/Button";
 
+type AllArtifactsType =
+  components["schemas"]["ListArtifactsResponse"]["artifacts"];
+
 interface Props {
   listingId: string;
   edit: boolean;
-  allArtifacts: components["schemas"]["ListArtifactsResponse"]["artifacts"];
+  allArtifacts: AllArtifactsType;
 }
 
 const ListingImages = (props: Props) => {
@@ -20,11 +23,13 @@ const ListingImages = (props: Props) => {
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
 
-  const [images, setImages] = useState<
-    components["schemas"]["ListArtifactsResponse"]["artifacts"]
-  >(allArtifacts.filter((a) => a.artifact_type === "image"));
+  const [images, setImages] = useState<AllArtifactsType>(
+    allArtifacts.filter((a) => a.artifact_type === "image"),
+  );
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
   const [collapsed, setCollapsed] = useState<boolean>(false);
+
+  const [showImageModal, setShowImageModal] = useState<number | null>(null);
 
   const onDelete = async (imageId: string) => {
     setDeletingIds([...deletingIds, imageId]);
@@ -47,13 +52,13 @@ const ListingImages = (props: Props) => {
   };
 
   return images.length > 0 || edit ? (
-    <div className="flex flex-col items-center justify-center my-4 p-4 relative">
+    <div className="flex flex-col items-center justify-center relative">
       {images.length > 0 ? (
         <>
           <Button
             onClick={() => setCollapsed(!collapsed)}
             variant="outline"
-            className="mt-2 mb-4 text-md p-4"
+            className="text-md p-4 w-full"
           >
             Images
             {collapsed ? (
@@ -63,30 +68,52 @@ const ListingImages = (props: Props) => {
             )}
           </Button>
           {!collapsed && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-2 mx-auto">
-              {images.map((image) => (
+            <>
+              <div className="grid gap-2 md:gap-4 mx-auto w-full grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 mt-4">
+                {images.map((image, idx) => (
+                  <div
+                    key={image.artifact_id}
+                    className="bg-background relative p"
+                  >
+                    <div className="bg-white rounded-lg w-full">
+                      <img
+                        src={image.url}
+                        alt={image.name}
+                        className="aspect-square cursor-pointer"
+                        onClick={() => setShowImageModal(idx)}
+                      />
+                    </div>
+                    {edit && (
+                      <Button
+                        onClick={() => onDelete(image.artifact_id)}
+                        variant="destructive"
+                        className="absolute top-2 right-2 rounded-full"
+                        disabled={deletingIds.includes(image.artifact_id)}
+                      >
+                        <FaTimes />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {showImageModal !== null && (
                 <div
-                  key={image.artifact_id}
-                  className="bg-background rounded-lg p-2 relative"
+                  className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                  onClick={() => setShowImageModal(null)}
                 >
-                  <img
-                    src={image.url}
-                    alt={image.name}
-                    className="rounded-lg w-full aspect-square"
-                  />
-                  {edit && (
-                    <Button
-                      onClick={() => onDelete(image.artifact_id)}
-                      variant="destructive"
-                      className="absolute top-5 right-5 rounded-full"
-                      disabled={deletingIds.includes(image.artifact_id)}
-                    >
-                      <FaTimes />
-                    </Button>
-                  )}
+                  <div
+                    className="absolute bg-white rounded-lg p-4 max-w-4xl max-h-4xl m-4"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <img
+                      src={images[showImageModal].url}
+                      alt={images[showImageModal].name}
+                      className="max-h-full max-w-full"
+                    />
+                  </div>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </>
       ) : (
@@ -96,12 +123,13 @@ const ListingImages = (props: Props) => {
       )}
       {edit && (
         <ListingFileUpload
-          artifactType="image"
-          fileExtensions={[".jpg", ".jpeg", ".png", ".webp"]}
+          accept={{
+            "image/*": [".jpg", ".jpeg", ".png", ".webp"],
+          }}
           maxSize={4 * 1024 * 1024}
           listingId={listingId}
           onUpload={(artifact) => {
-            setImages([...images, artifact.artifact]);
+            setImages([...images, ...artifact.artifacts]);
           }}
         />
       )}
