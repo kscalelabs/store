@@ -103,7 +103,7 @@ const ListingMeshes = (props: Props) => {
             Meshes
           </Button>
           {!collapsed && (
-            <RequireAuthentication>
+            <RequireAuthentication onClosed={() => setCollapsed(true)}>
               <div className="grid gap-2 md:gap-4 mx-auto w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 mt-4">
                 {meshes.map((mesh, idx) => (
                   <Tooltip key={idx} content={mesh.name}>
