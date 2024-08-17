@@ -42,7 +42,7 @@ const ListingMeshes = (props: Props) => {
   const [meshes, setMeshes] = useState<AllArtifactsType>(
     allArtifacts
       .filter((a) => ["stl", "urdf"].includes(a.artifact_type))
-      .sort((a) => (a.artifact_type === "urdf" ? 1 : -1)),
+      .sort((a) => (a.artifact_type === "urdf" ? -1 : 1)),
   );
   const [mesh, setMesh] = useState<MeshAndArtifactType | null>(null);
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
@@ -104,7 +104,7 @@ const ListingMeshes = (props: Props) => {
           </Button>
           {!collapsed && (
             <RequireAuthentication onClosed={() => setCollapsed(true)}>
-              <div className="grid gap-2 md:gap-4 mx-auto w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 mt-4">
+              <div className="grid gap-2 md:gap-4 mx-auto w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 mt-4 max-h-96 overflow-y-auto">
                 {meshes.map((mesh, idx) => (
                   <Tooltip key={idx} content={mesh.name}>
                     <Button
@@ -155,7 +155,10 @@ const ListingMeshes = (props: Props) => {
           maxSize={4 * 1024 * 1024}
           listingId={listingId}
           onUpload={(artifact) => {
-            setMeshes([...meshes, ...artifact.artifacts]);
+            setMeshes([
+              ...meshes,
+              ...artifact.artifacts.filter((a) => a.is_new === true),
+            ]);
           }}
         />
       )}

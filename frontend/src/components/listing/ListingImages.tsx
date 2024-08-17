@@ -129,7 +129,10 @@ const ListingImages = (props: Props) => {
           maxSize={4 * 1024 * 1024}
           listingId={listingId}
           onUpload={(artifact) => {
-            setImages([...images, ...artifact.artifacts]);
+            setImages([
+              ...images,
+              ...artifact.artifacts.filter((a) => a.is_new === true),
+            ]);
           }}
         />
       )}

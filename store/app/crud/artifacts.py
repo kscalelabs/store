@@ -124,6 +124,11 @@ class ArtifactsCrud(BaseCrud):
             self._upload_to_s3(out_file, name, get_artifact_name(artifact=artifact), content_type),
             self._add_item(artifact),
         )
+
+        # Closes the file handlers when done.
+        file.close()
+        out_file.close()
+
         return artifact
 
     async def _upload_xml(
@@ -174,18 +179,20 @@ class ArtifactsCrud(BaseCrud):
         user_id: str,
         artifact_type: ArtifactType,
         description: str | None = None,
-    ) -> Artifact:
+    ) -> tuple[Artifact, bool]:
         listing_artifacts = await self.get_listing_artifacts(listing.id)
-        if any(a.name == name for a in listing_artifacts):
-            raise BadArtifactError("An artifact with the same name already exists for this listing")
+        matching_artifact = next((a for a in listing_artifacts if a.name == name), None)
+        if matching_artifact is not None:
+            # raise BadArtifactError(f"An artifact with the name '{name}' already exists for this listing")
+            return matching_artifact, False
 
         match artifact_type:
             case "image":
-                return await self._upload_image(name, file, listing, user_id, description)
+                return await self._upload_image(name, file, listing, user_id, description), True
             case "stl":
-                return await self._upload_stl(name, file, listing, user_id, description)
+                return await self._upload_stl(name, file, listing, user_id, description), True
             case "urdf" | "mjcf":
-                return await self._upload_xml(name, file, listing, user_id, artifact_type, description)
+                return await self._upload_xml(name, file, listing, user_id, artifact_type, description), True
             case _:
                 raise BadArtifactError(f"Invalid artifact type: {artifact_type}")
 
