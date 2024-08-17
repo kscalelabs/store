@@ -27,7 +27,7 @@ const ListingImages = (props: Props) => {
     allArtifacts.filter((a) => a.artifact_type === "image"),
   );
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
-  const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [collapsed, setCollapsed] = useState<boolean>(true);
 
   const [showImageModal, setShowImageModal] = useState<number | null>(null);
 
@@ -79,7 +79,7 @@ const ListingImages = (props: Props) => {
                       <img
                         src={image.url}
                         alt={image.name}
-                        className="aspect-square cursor-pointer"
+                        className="aspect-square cursor-pointer rounded-lg"
                         onClick={() => setShowImageModal(idx)}
                       />
                     </div>
