@@ -185,41 +185,6 @@ const Sidebar = ({ show, onClose }: Props) => {
               )}
             </ul>
           </div>
-          {/* Aligned to bottom */}
-          <div className="absolute bottom-4 right-4">
-            <ul className="space-y-1 font-medium mt-4">
-              <SidebarItem
-                title="About"
-                icon={<FaQuestion />}
-                onClick={() => {
-                  navigate("/about");
-                  onClose();
-                }}
-                size="sm"
-                align="right"
-              />
-              <SidebarItem
-                title="Privacy Policy"
-                icon={<FaLock />}
-                onClick={() => {
-                  navigate("/privacy");
-                  onClose();
-                }}
-                size="sm"
-                align="right"
-              />
-              <SidebarItem
-                title="Terms of Service"
-                icon={<FaScroll />}
-                onClick={() => {
-                  navigate("/tos");
-                  onClose();
-                }}
-                size="sm"
-                align="right"
-              />
-            </ul>
-          </div>
         </div>
       ) : null}
     </div>

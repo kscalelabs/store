@@ -203,7 +203,7 @@ const MeshRenderer = ({ url, name, edit, onDelete, disabled, kind }: Props) => {
             </Button>
             {confirmDelete && (
               <div className="absolute inset-0 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg shadow-lg p-4">
+                <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-4">
                   <p className="text-lg mb-2">
                     Are you sure you want to delete this artifact?
                   </p>
