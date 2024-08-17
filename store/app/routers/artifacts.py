@@ -11,6 +11,7 @@ from pydantic.main import BaseModel
 from store.app.db import Crud
 from store.app.model import (
     UPLOAD_CONTENT_TYPE_OPTIONS,
+    Artifact,
     ArtifactSize,
     ArtifactType,
     User,
@@ -149,20 +150,26 @@ async def upload(
             detail="Could not find listing associated with the given id",
         )
 
-    # Uploads the artifact and adds it to the listing.
-    artifacts = await asyncio.gather(
-        *(
-            crud.upload_artifact(
-                file=file.file,
-                name=filename,
-                listing=listing,
-                user_id=user.id,
-                artifact_type=artifact_type,
-                description=data.description,
+    # Uploads the artifacts in chunks and adds them to the listing.
+    artifacts: list[Artifact] = []
+    for chunk_start in range(0, len(files), settings.artifact.upload_chunk_size):
+        files_chunk = files[chunk_start : chunk_start + settings.artifact.upload_chunk_size]
+        filenames_chunk = filenames[chunk_start : chunk_start + settings.artifact.upload_chunk_size]
+        artifacts.extend(
+            await asyncio.gather(
+                *(
+                    crud.upload_artifact(
+                        file=file.file,
+                        name=filename,
+                        listing=listing,
+                        user_id=user.id,
+                        artifact_type=artifact_type,
+                        description=data.description,
+                    )
+                    for file, (filename, artifact_type) in zip(files_chunk, filenames_chunk)
+                )
             )
-            for file, (filename, artifact_type) in zip(files, filenames)
         )
-    )
 
     return UploadArtifactResponse(
         artifacts=[

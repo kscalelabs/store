@@ -44,6 +44,7 @@ class ArtifactSettings:
     min_bytes: int = field(default=16)
     max_bytes: int = field(default=1536 * 1536 * 25)
     quality: int = field(default=80)
+    upload_chunk_size: int = field(default=10)
 
 
 @dataclass

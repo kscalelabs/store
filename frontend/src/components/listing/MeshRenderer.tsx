@@ -51,13 +51,7 @@ const UrdfModel = ({ url, meshType }: UrdfModelProps) => {
 
   return (
     <group>
-      <mesh
-        castShadow
-        receiveShadow
-        position={[0, 0, 0]}
-        rotation={[0, 0, 0]}
-        scale={10}
-      >
+      <mesh castShadow receiveShadow position={[0, 0, 0]} rotation={[0, 0, 0]}>
         <primitive
           ref={ref}
           object={geom}
@@ -67,7 +61,7 @@ const UrdfModel = ({ url, meshType }: UrdfModelProps) => {
         />
         {getMaterial(meshType)}
       </mesh>
-      <Plane receiveShadow rotation={[0, 0, 0]} args={[1000, 1000]} scale={30}>
+      <Plane receiveShadow rotation={[0, 0, 0]} args={[100, 100]}>
         <shadowMaterial opacity={0.25} />
       </Plane>
     </group>
@@ -134,10 +128,10 @@ const MeshRenderer = ({ url, name, edit, onDelete, disabled, kind }: Props) => {
           makeDefault
           fov={50}
           aspect={window.innerWidth / window.innerHeight}
-          position={[25, 25, 0]}
+          position={[1, 1, 0]}
           up={[0, 0, 1]}
           near={0.1}
-          far={500}
+          far={14}
         ></PerspectiveCamera>
         <directionalLight color={0xeb4634} position={[1, 0.75, 0.5]} />
         <directionalLight color={0xccccff} position={[-1, 0.75, -0.5]} />

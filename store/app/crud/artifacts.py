@@ -124,6 +124,11 @@ class ArtifactsCrud(BaseCrud):
             self._upload_to_s3(out_file, name, get_artifact_name(artifact=artifact), content_type),
             self._add_item(artifact),
         )
+
+        # Closes the file handlers when done.
+        file.close()
+        out_file.close()
+
         return artifact
 
     async def _upload_xml(
@@ -176,8 +181,10 @@ class ArtifactsCrud(BaseCrud):
         description: str | None = None,
     ) -> Artifact:
         listing_artifacts = await self.get_listing_artifacts(listing.id)
-        if any(a.name == name for a in listing_artifacts):
-            raise BadArtifactError("An artifact with the same name already exists for this listing")
+        matching_artifact = next((a for a in listing_artifacts if a.name == name), None)
+        if matching_artifact is not None:
+            # raise BadArtifactError(f"An artifact with the name '{name}' already exists for this listing")
+            return matching_artifact
 
         match artifact_type:
             case "image":
