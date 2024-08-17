@@ -4,11 +4,9 @@ import { components } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
+import ListingImages from "components/listing/ListingImages";
+import ListingMeshes from "components/listing/ListingMeshes";
 import Spinner from "components/ui/Spinner";
-
-import ListingImages from "./ListingImages";
-import ListingSTLs from "./ListingSTLs";
-import ListingURDFs from "./ListingURDFs";
 
 interface Props {
   listingId: string;
@@ -54,18 +52,17 @@ const ListingArtifacts = (props: Props) => {
       <Spinner />
     </div>
   ) : (
-    <div className="flex flex-col">
+    <div className="flex flex-col gap-4 my-4">
       <ListingImages
         listingId={listingId}
         edit={edit}
         allArtifacts={artifacts}
       />
-      <ListingURDFs
+      <ListingMeshes
         listingId={listingId}
         edit={edit}
         allArtifacts={artifacts}
       />
-      <ListingSTLs listingId={listingId} edit={edit} allArtifacts={artifacts} />
     </div>
   );
 };

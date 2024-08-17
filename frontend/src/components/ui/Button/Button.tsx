@@ -1,4 +1,4 @@
-import * as React from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 
 import { Slot } from "@radix-ui/react-slot";
 import { type VariantProps, cva } from "class-variance-authority";
@@ -44,9 +44,10 @@ export interface ButtonProps
   asChild?: boolean;
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
+
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
@@ -58,4 +59,46 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 Button.displayName = "Button";
 
-export { Button, buttonVariants };
+const ScrollableButton = ({ children, ...props }: ButtonProps) => {
+  const codeRef = useRef<HTMLDivElement>(null);
+  const [isOverflowing, setIsOverflowing] = useState(false);
+  const [mouseOver, setMouseOver] = useState(false);
+  const [scrollWidth, setScrollWidth] = useState(0);
+  const [clientWidth, setClientWidth] = useState(0);
+
+  useEffect(() => {
+    const codeElement = codeRef.current;
+    if (codeElement) {
+      const isOverflow = codeElement.scrollWidth > codeElement.clientWidth;
+      setIsOverflowing(isOverflow);
+      setScrollWidth(codeElement.scrollWidth);
+      setClientWidth(codeElement.clientWidth);
+    }
+  }, [children]);
+
+  return (
+    <Button {...props}>
+      <div
+        ref={codeRef}
+        className="overflow-hidden"
+        onMouseEnter={() => setMouseOver(true)}
+        onMouseLeave={() => setMouseOver(false)}
+      >
+        <div
+          className={isOverflowing && mouseOver ? "animate-scroll" : ""}
+          style={{
+            display: "inline-block",
+            animation:
+              isOverflowing && mouseOver
+                ? `scroll ${(scrollWidth - clientWidth) / 50}s linear infinite`
+                : "none",
+          }}
+        >
+          {children}
+        </div>
+      </div>
+    </Button>
+  );
+};
+
+export { Button, ScrollableButton, buttonVariants };

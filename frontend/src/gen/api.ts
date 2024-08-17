@@ -546,11 +546,8 @@ export interface components {
         };
         /** Body_upload_artifacts_upload_post */
         Body_upload_artifacts_upload_post: {
-            /**
-             * File
-             * Format: binary
-             */
-            file: string;
+            /** Files */
+            files: string[];
             /** Metadata */
             metadata: string;
         };
@@ -784,7 +781,8 @@ export interface components {
         };
         /** UploadArtifactResponse */
         UploadArtifactResponse: {
-            artifact: components["schemas"]["ListArtifactsItem"];
+            /** Artifacts */
+            artifacts: components["schemas"]["ListArtifactsItem"][];
         };
         /** UserInfoResponseItem */
         UserInfoResponseItem: {

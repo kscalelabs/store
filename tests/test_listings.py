@@ -36,44 +36,47 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
     image = Image.new("RGB", (100, 100))
     image_path = Path(tmpdir) / "test.png"
     image.save(image_path)
-    data_json = json.dumps({"artifact_type": "image", "listing_id": listing_id})
+    data_json = json.dumps({"listing_id": listing_id})
     response = await app_client.post(
         "/artifacts/upload",
         headers=auth_headers,
-        files={"file": ("test.png", open(image_path, "rb"), "image/png"), "metadata": (None, data_json)},
+        files={"files": ("test.png", open(image_path, "rb"), "image/png"), "metadata": (None, data_json)},
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
-    assert data["artifact"]["artifact_id"] is not None
+    assert data["artifacts"][0]["artifact_id"] is not None
 
     # Uploads a URDF.
     urdf_path = Path(__file__).parent / "assets" / "sample.urdf"
-    data_json = json.dumps({"artifact_type": "urdf", "listing_id": listing_id})
+    data_json = json.dumps({"listing_id": listing_id})
     response = await app_client.post(
         "/artifacts/upload",
         headers=auth_headers,
-        files={"file": ("box.urdf", open(urdf_path, "rb"), "application/xml"), "metadata": (None, data_json)},
+        files={"files": ("box.urdf", open(urdf_path, "rb"), "application/xml"), "metadata": (None, data_json)},
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
-    assert data["artifact"]["artifact_id"] is not None
+    assert data["artifacts"][0]["artifact_id"] is not None
 
     # Gets the URDF URL.
-    artifact_id = data["artifact"]["artifact_id"]
+    artifact_id = data["artifacts"][0]["artifact_id"]
     response = await app_client.get(f"/artifacts/url/urdf/{artifact_id}", headers=auth_headers)
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT, response.content
 
     # Uploads an STL.
     stl_path = Path(__file__).parent / "assets" / "teapot.stl"
-    data_json = json.dumps({"artifact_type": "stl", "listing_id": listing_id})
+    data_json = json.dumps({"listing_id": listing_id})
     response = await app_client.post(
         "/artifacts/upload",
         headers=auth_headers,
-        files={"file": ("teapot.stl", open(stl_path, "rb"), "application/octet-stream"), "metadata": (None, data_json)},
+        files={
+            "files": ("teapot.stl", open(stl_path, "rb"), "application/octet-stream"),
+            "metadata": (None, data_json),
+        },
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
-    assert data["artifact"]["artifact_id"] is not None
+    assert data["artifacts"][0]["artifact_id"] is not None
 
     # Searches for listings.
     response = await app_client.get(

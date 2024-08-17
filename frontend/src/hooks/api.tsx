@@ -9,20 +9,19 @@ export default class api {
   }
 
   public async upload(
-    file: File,
+    files: File[],
     request: {
-      artifact_type: string;
       listing_id: string;
     },
   ) {
     return await this.client.POST("/artifacts/upload", {
       body: {
-        file: "",
+        files: [],
         metadata: "image",
       },
       bodySerializer() {
         const fd = new FormData();
-        fd.append("file", file);
+        files.forEach((file) => fd.append("files", file));
         fd.append("metadata", JSON.stringify(request));
         return fd;
       },

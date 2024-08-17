@@ -175,6 +175,32 @@ SizeMapping: dict[ArtifactSize, tuple[int, int]] = {
 }
 
 
+def get_artifact_type(content_type: str, filename: str) -> ArtifactType:
+    # Attempts to determine from file extension.
+    extension = filename.split(".")[-1].lower()
+    if extension in ("png", "jpeg", "jpg", "gif", "webp"):
+        return "image"
+    if extension in ("urdf", "xml"):
+        return "urdf"
+    if extension in ("mjcf",):
+        return "mjcf"
+    if extension in ("stl",):
+        return "stl"
+
+    # Attempts to determine from content type.
+    if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["image"]:
+        return "image"
+    if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["urdf"]:
+        return "urdf"
+    if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["mjcf"]:
+        return "mjcf"
+    if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["stl"]:
+        return "stl"
+
+    # Throws a value error if the type cannot be determined.
+    raise ValueError(f"Unknown content type for file: {filename}")
+
+
 def get_artifact_name(id: str, artifact_type: ArtifactType, size: ArtifactSize = "large") -> str:
     match artifact_type:
         case "image":
