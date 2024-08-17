@@ -179,20 +179,20 @@ class ArtifactsCrud(BaseCrud):
         user_id: str,
         artifact_type: ArtifactType,
         description: str | None = None,
-    ) -> Artifact:
+    ) -> tuple[Artifact, bool]:
         listing_artifacts = await self.get_listing_artifacts(listing.id)
         matching_artifact = next((a for a in listing_artifacts if a.name == name), None)
         if matching_artifact is not None:
             # raise BadArtifactError(f"An artifact with the name '{name}' already exists for this listing")
-            return matching_artifact
+            return matching_artifact, False
 
         match artifact_type:
             case "image":
-                return await self._upload_image(name, file, listing, user_id, description)
+                return await self._upload_image(name, file, listing, user_id, description), True
             case "stl":
-                return await self._upload_stl(name, file, listing, user_id, description)
+                return await self._upload_stl(name, file, listing, user_id, description), True
             case "urdf" | "mjcf":
-                return await self._upload_xml(name, file, listing, user_id, artifact_type, description)
+                return await self._upload_xml(name, file, listing, user_id, artifact_type, description), True
             case _:
                 raise BadArtifactError(f"Invalid artifact type: {artifact_type}")
 

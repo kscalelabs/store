@@ -52,6 +52,7 @@ class ListArtifactsItem(BaseModel):
     description: str | None
     timestamp: int
     url: str
+    is_new: bool | None = None
 
 
 class ListArtifactsResponse(BaseModel):
@@ -151,7 +152,7 @@ async def upload(
         )
 
     # Uploads the artifacts in chunks and adds them to the listing.
-    artifacts: list[Artifact] = []
+    artifacts: list[tuple[Artifact, bool]] = []
     for chunk_start in range(0, len(files), settings.artifact.upload_chunk_size):
         files_chunk = files[chunk_start : chunk_start + settings.artifact.upload_chunk_size]
         filenames_chunk = filenames[chunk_start : chunk_start + settings.artifact.upload_chunk_size]
@@ -181,8 +182,9 @@ async def upload(
                 description=artifact.description,
                 timestamp=artifact.timestamp,
                 url=get_artifact_url(artifact=artifact),
+                is_new=is_new,
             )
-            for artifact in artifacts
+            for artifact, is_new in artifacts
         ]
     )
 

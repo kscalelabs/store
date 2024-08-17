@@ -88,7 +88,9 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
             "metadata": (None, data_json),
         },
     )
-    assert response.status_code == status.HTTP_400_BAD_REQUEST, response.json()
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    data = response.json()
+    assert data["artifacts"][0]["is_new"] is False
 
     # Searches for listings.
     response = await app_client.get(

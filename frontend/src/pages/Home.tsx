@@ -34,7 +34,7 @@ const Home = () => {
             Buy, Sell,
             <br /> Build, and
             <br /> Share
-            <br /> Androids
+            <br /> Droids
           </h1>
           <div className="flex gap-4 mx-auto mt-8 max-w-2xl lg:mx-0 lg:max-w-none">
             <Button

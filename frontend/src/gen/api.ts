@@ -645,6 +645,8 @@ export interface components {
             timestamp: number;
             /** Url */
             url: string;
+            /** Is New */
+            is_new?: boolean | null;
         };
         /** ListArtifactsResponse */
         ListArtifactsResponse: {

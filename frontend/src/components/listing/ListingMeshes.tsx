@@ -155,7 +155,10 @@ const ListingMeshes = (props: Props) => {
           maxSize={4 * 1024 * 1024}
           listingId={listingId}
           onUpload={(artifact) => {
-            setMeshes([...meshes, ...artifact.artifacts]);
+            setMeshes([
+              ...meshes,
+              ...artifact.artifacts.filter((a) => a.is_new === true),
+            ]);
           }}
         />
       )}
