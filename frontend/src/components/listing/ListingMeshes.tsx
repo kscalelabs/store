@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { FaCaretSquareDown, FaCaretSquareUp } from "react-icons/fa";
 
 import { components } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
-import RequireAuthentication from "components/auth/RequireAuthentication";
 import ListingFileUpload from "components/listing/ListingFileUpload";
 import MeshRenderer from "components/listing/MeshRenderer";
 import { Button } from "components/ui/Button/Button";
@@ -33,27 +32,6 @@ const getMeshType = (artifactType: ArtifactType["artifact_type"]): MeshType => {
   }
 };
 
-const getOrderedMeshes = (meshes: MeshAndArtifactType[]) => {
-  return meshes.sort((a, b) => {
-    if (a[0] === "stl" && b[0] === "urdf") {
-      return 1;
-    } else if (a[0] === "urdf" && b[0] === "stl") {
-      return -1;
-    } else {
-      return 0;
-    }
-  });
-};
-
-const getMeshesFromAllArtifacts = (
-  artifacts: AllArtifactsType,
-): MeshAndArtifactType[] => {
-  const meshes: MeshAndArtifactType[] = artifacts
-    .filter((artifact) => ["stl", "urdf"].includes(artifact.artifact_type))
-    .map((artifact) => [getMeshType(artifact.artifact_type), artifact]);
-  return getOrderedMeshes(meshes);
-};
-
 const ListingMeshes = (props: Props) => {
   const { listingId, edit, allArtifacts } = props;
 
@@ -63,7 +41,7 @@ const ListingMeshes = (props: Props) => {
   const [meshes, setMeshes] = useState<AllArtifactsType>(
     allArtifacts
       .filter((a) => ["stl", "urdf"].includes(a.artifact_type))
-      .sort((a, b) => (a.artifact_type === "urdf" ? 1 : -1)),
+      .sort((a) => (a.artifact_type === "urdf" ? 1 : -1)),
   );
   const [mesh, setMesh] = useState<MeshAndArtifactType | null>(null);
   const [deletingIds, setDeletingIds] = useState<string[]>([]);

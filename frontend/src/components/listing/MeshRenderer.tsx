@@ -12,7 +12,7 @@ import {
 } from "@react-three/drei";
 import { Canvas, useLoader } from "@react-three/fiber";
 import { cx } from "class-variance-authority";
-import { DefaultLoadingManager, Group, LoadingManager } from "three";
+import { Group } from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
 import URDFLoader from "urdf-loader";
 
@@ -96,7 +96,13 @@ const StlModel = ({ url, meshType }: StlModelProps) => {
   );
 };
 
-const Model = ({ url, meshType, kind }: any) => {
+interface ModelProps {
+  url: string;
+  meshType: MeshType;
+  kind: "stl" | "urdf";
+}
+
+const Model = ({ url, meshType, kind }: ModelProps) => {
   switch (kind) {
     case "stl":
       return <StlModel url={url} meshType={meshType} />;
