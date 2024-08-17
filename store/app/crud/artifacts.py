@@ -175,9 +175,9 @@ class ArtifactsCrud(BaseCrud):
         artifact_type: ArtifactType,
         description: str | None = None,
     ) -> Artifact:
-        # Validates that the name is unique.
-        if await self.has_artifact_named(name):
-            raise BadArtifactError("An artifact with this name already exists")
+        listing_artifacts = await self.get_listing_artifacts(listing.id)
+        if any(a.name == name for a in listing_artifacts):
+            raise BadArtifactError("An artifact with the same name already exists for this listing")
 
         match artifact_type:
             case "image":
@@ -223,9 +223,6 @@ class ArtifactsCrud(BaseCrud):
     async def get_listings_artifacts(self, listing_ids: list[str]) -> list[list[Artifact]]:
         artifact_chunks = await self._get_items_from_secondary_index_batch("listing_id", listing_ids, Artifact)
         return [sorted(artifacts, key=lambda a: a.timestamp) for artifacts in artifact_chunks]
-
-    async def has_artifact_named(self, filename: str) -> bool:
-        return len(await self._get_items_from_secondary_index("name", filename, Artifact)) > 0
 
     async def edit_artifact(
         self,
