@@ -390,7 +390,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/artifacts/url/{artifact_type}/{artifact_id}": {
+    "/artifacts/url/{artifact_type}/{listing_id}/{name}": {
         parameters: {
             query?: never;
             header?: never;
@@ -398,7 +398,7 @@ export interface paths {
             cookie?: never;
         };
         /** Artifact Url */
-        get: operations["artifact_url_artifacts_url__artifact_type___artifact_id__get"];
+        get: operations["artifact_url_artifacts_url__artifact_type___listing_id___name__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -630,6 +630,8 @@ export interface components {
         ListArtifactsItem: {
             /** Artifact Id */
             artifact_id: string;
+            /** Listing Id */
+            listing_id: string;
             /** Name */
             name: string;
             /**
@@ -1491,7 +1493,7 @@ export interface operations {
             };
         };
     };
-    artifact_url_artifacts_url__artifact_type___artifact_id__get: {
+    artifact_url_artifacts_url__artifact_type___listing_id___name__get: {
         parameters: {
             query?: {
                 size?: "small" | "large";
@@ -1499,7 +1501,8 @@ export interface operations {
             header?: never;
             path: {
                 artifact_type: "image" | "urdf" | "mjcf" | "stl";
-                artifact_id: string;
+                listing_id: string;
+                name: string;
             };
             cookie?: never;
         };

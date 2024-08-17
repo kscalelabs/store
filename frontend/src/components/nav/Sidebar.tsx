@@ -4,10 +4,7 @@ import {
   FaDoorOpen,
   FaHome,
   FaKey,
-  FaLock,
   FaPen,
-  FaQuestion,
-  FaScroll,
   FaTimes,
   FaUserCircle,
 } from "react-icons/fa";

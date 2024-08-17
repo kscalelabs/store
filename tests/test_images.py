@@ -45,8 +45,9 @@ async def test_user_auth_functions(app_client: AsyncClient, tmpdir: Path) -> Non
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
     assert data["artifacts"] is not None
-    image_id = data["artifacts"][0]["artifact_id"]
+    listing_id = data["artifacts"][0]["listing_id"]
+    name = data["artifacts"][0]["name"]
 
     # Gets the URLs for various sizes of images.
-    response = await app_client.get(f"/artifacts/url/image/{image_id}", params={"size": "small"})
+    response = await app_client.get(f"/artifacts/url/image/{listing_id}/{name}", params={"size": "small"})
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT, response.json()

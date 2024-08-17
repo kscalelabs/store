@@ -11,6 +11,7 @@ from typing import Literal, Self
 
 from pydantic import BaseModel
 
+from store.app.errors import InternalError
 from store.app.utils.password import hash_password
 from store.settings import settings
 from store.utils import new_uuid
@@ -201,27 +202,6 @@ def get_artifact_type(content_type: str, filename: str) -> ArtifactType:
     raise ValueError(f"Unknown content type for file: {filename}")
 
 
-def get_artifact_name(id: str, artifact_type: ArtifactType, size: ArtifactSize = "large") -> str:
-    match artifact_type:
-        case "image":
-            if size is None:
-                raise ValueError("Image artifacts should have a size")
-            height, width = SizeMapping[size]
-            return f"{id}_{size}_{height}x{width}.png"
-        case "urdf":
-            return f"{id}.urdf"
-        case "mjcf":
-            return f"{id}.xml"
-        case "stl":
-            return f"{id}.stl"
-        case _:
-            raise ValueError(f"Unknown artifact type: {artifact_type}")
-
-
-def get_artifact_url(id: str, artifact_type: ArtifactType, size: ArtifactSize = "large") -> str:
-    return f"{settings.site.artifact_base_url}/{get_artifact_name(id, artifact_type, size)}"
-
-
 def get_content_type(artifact_type: ArtifactType) -> str:
     return DOWNLOAD_CONTENT_TYPE[artifact_type]
 
@@ -312,3 +292,50 @@ class ListingTag(StoreBaseModel):
             listing_id=listing_id,
             name=tag,
         )
+
+
+def get_artifact_name(
+    *,
+    artifact: Artifact | None = None,
+    listing_id: str | None = None,
+    name: str | None = None,
+    artifact_type: ArtifactType | None = None,
+    size: ArtifactSize = "large",
+) -> str:
+    if artifact:
+        listing_id = artifact.listing_id
+        name = artifact.name
+        artifact_type = artifact.artifact_type
+    elif not listing_id or not name or not artifact_type:
+        raise InternalError("Must provide artifact or listing_id, name, and artifact_type")
+
+    match artifact_type:
+        case "image":
+            height, width = SizeMapping[size]
+            return f"{listing_id}/{size}_{height}x{width}_{name}"
+        case "urdf":
+            return f"{listing_id}/{name}"
+        case "mjcf":
+            return f"{listing_id}/{name}"
+        case "stl":
+            return f"{listing_id}/{name}"
+        case _:
+            raise ValueError(f"Unknown artifact type: {artifact_type}")
+
+
+def get_artifact_url(
+    *,
+    artifact: Artifact | None = None,
+    artifact_type: ArtifactType | None = None,
+    listing_id: str | None = None,
+    name: str | None = None,
+    size: ArtifactSize = "large",
+) -> str:
+    artifact_name = get_artifact_name(
+        artifact=artifact,
+        listing_id=listing_id,
+        name=name,
+        artifact_type=artifact_type,
+        size=size,
+    )
+    return f"{settings.site.artifact_base_url}/{artifact_name}"

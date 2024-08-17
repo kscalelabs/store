@@ -61,13 +61,13 @@ export const RenderDescription = ({ description }: RenderDescriptionProps) => {
             <h4 className="text-md mb-2 font-bold">{children}</h4>
           ),
           img: ({ src, alt }) => (
-            <div
+            <span
               className="flex flex-col justify-center w-full mx-auto gap-2 my-4 md:w-2/3 lg:w-1/2 cursor-pointer"
               onClick={() => src && setImageModal([src, alt ?? ""])}
             >
               <img src={src} alt={alt} className="rounded-lg" />
-              {alt && <p className="text-sm text-center">{alt}</p>}
-            </div>
+              {alt && <span className="text-sm text-center">{alt}</span>}
+            </span>
           ),
         }}
       >

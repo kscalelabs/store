@@ -59,8 +59,9 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
     assert data["artifacts"][0]["artifact_id"] is not None
 
     # Gets the URDF URL.
-    artifact_id = data["artifacts"][0]["artifact_id"]
-    response = await app_client.get(f"/artifacts/url/urdf/{artifact_id}", headers=auth_headers)
+    listing_id = data["artifacts"][0]["listing_id"]
+    name = data["artifacts"][0]["name"]
+    response = await app_client.get(f"/artifacts/url/urdf/{listing_id}/{name}", headers=auth_headers)
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT, response.content
 
     # Uploads an STL.
@@ -77,6 +78,17 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
     assert data["artifacts"][0]["artifact_id"] is not None
+
+    # Ensures that trying to upload the same STL again fails.
+    response = await app_client.post(
+        "/artifacts/upload",
+        headers=auth_headers,
+        files={
+            "files": ("teapot.stl", open(stl_path, "rb"), "application/octet-stream"),
+            "metadata": (None, data_json),
+        },
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST, response.json()
 
     # Searches for listings.
     response = await app_client.get(

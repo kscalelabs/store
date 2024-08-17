@@ -66,7 +66,7 @@ async def get_batch_listing_info(
                 child_ids=listing.child_ids,
                 image_url=next(
                     (
-                        get_artifact_url(artifact.id, "image", "small")
+                        get_artifact_url(artifact=artifact, size="small")
                         for artifact in artifacts
                         if artifact.artifact_type == "image"
                     ),
