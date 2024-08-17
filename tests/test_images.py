@@ -39,13 +39,13 @@ async def test_user_auth_functions(app_client: AsyncClient, tmpdir: Path) -> Non
     data_json = json.dumps({"artifact_type": "image", "listing_id": listing_id})
     response = await app_client.post(
         "/artifacts/upload",
-        files={"file": ("test.png", open(image_path, "rb"), "image/png"), "metadata": (None, data_json)},
+        files={"files": ("test.png", open(image_path, "rb"), "image/png"), "metadata": (None, data_json)},
         headers=auth_headers,
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
-    assert data["artifact"] is not None
-    image_id = data["artifact"]["artifact_id"]
+    assert data["artifacts"] is not None
+    image_id = data["artifacts"][0]["artifact_id"]
 
     # Gets the URLs for various sizes of images.
     response = await app_client.get(f"/artifacts/url/image/{image_id}", params={"size": "small"})
