@@ -18,7 +18,8 @@ from store.app.errors import (
     NotAuthorizedError,
 )
 from store.app.routers.artifacts import artifacts_router
-from store.app.routers.email_signup import email_router
+from store.app.routers.email import email_router
+from store.app.routers.keys import keys_router
 from store.app.routers.listings import listings_router
 from store.app.routers.urdf import urdf_router
 from store.app.routers.users import users_router
@@ -107,11 +108,12 @@ async def read_root() -> bool:
     return True
 
 
-app.include_router(users_router, prefix="/users", tags=["users"])
-app.include_router(listings_router, prefix="/listings", tags=["listings"])
 app.include_router(artifacts_router, prefix="/artifacts", tags=["artifacts"])
 app.include_router(email_router, prefix="/email", tags=["email"])
+app.include_router(keys_router, prefix="/keys", tags=["keys"])
+app.include_router(listings_router, prefix="/listings", tags=["listings"])
 app.include_router(urdf_router, prefix="/urdf", tags=["urdf"])
+app.include_router(users_router, prefix="/users", tags=["users"])
 
 # For running with debugger
 if __name__ == "__main__":
