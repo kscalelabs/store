@@ -16,6 +16,7 @@ from store.app.model import (
     get_compression_type,
 )
 from store.app.routers.users import get_session_user_with_write_permission
+from store.settings import settings
 
 urdf_router = APIRouter()
 
@@ -65,6 +66,27 @@ async def set_urdf(
     crud: Annotated[Crud, Depends(Crud.get)],
     file: UploadFile,
 ) -> UrdfResponse:
+    if file.filename is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Artifact filename was not provided",
+        )
+    if file.size is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Artifact size was not provided",
+        )
+    if file.size < settings.artifact.min_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Artifact size is too small; {file.size} is less than {settings.artifact.min_bytes} bytes",
+        )
+    if file.size > settings.artifact.max_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Artifact size is too large; {file.size} is greater than {settings.artifact.max_bytes} bytes",
+        )
+
     # Gets the compression type from the file content type and filename.
     compression_type = get_compression_type(file.content_type, file.filename)
     if compression_type not in ("tgz", "zip"):
