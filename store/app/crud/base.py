@@ -1,13 +1,12 @@
 """Defines the base CRUD interface."""
 
 import asyncio
-import io
 import itertools
 import logging
 from typing import (
+    IO,
     Any,
     AsyncContextManager,
-    BinaryIO,
     Callable,
     Literal,
     Self,
@@ -16,7 +15,7 @@ from typing import (
 )
 
 import aioboto3
-from boto3.dynamodb.conditions import Attr, Key
+from boto3.dynamodb.conditions import Attr, ComparisonCondition, Key
 from botocore.exceptions import ClientError
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 from types_aiobotocore_s3.service_resource import S3ServiceResource
@@ -265,12 +264,16 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         secondary_index_name: str,
         secondary_index_value: str,
         item_class: type[T],
+        additional_filter_expression: ComparisonCondition | None = None,
     ) -> list[T]:
+        filter_expression: ComparisonCondition = Key("type").eq(item_class.__name__)
+        if additional_filter_expression is not None:
+            filter_expression &= additional_filter_expression
         table = await self.db.Table(TABLE_NAME)
         item_dict = await table.query(
             IndexName=self.get_gsi_index_name(secondary_index_name),
             KeyConditionExpression=Key(secondary_index_name).eq(secondary_index_value),
-            FilterExpression=Key("type").eq(item_class.__name__),
+            FilterExpression=filter_expression,
         )
         items = item_dict["Items"]
         return [self._validate_item(item, item_class) for item in items]
@@ -360,7 +363,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             AttributeUpdates={k: {"Value": v, "Action": "PUT"} for k, v in new_values.items() if k != "id"},
         )
 
-    async def _upload_to_s3(self, data: io.BytesIO | BinaryIO, name: str, filename: str, content_type: str) -> None:
+    async def _upload_to_s3(self, data: IO[bytes], name: str, filename: str, content_type: str) -> None:
         """Uploads some data to S3.
 
         Args:
@@ -401,6 +404,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     async def _delete_s3_bucket(self) -> None:
         """Deletes an S3 bucket."""
         bucket = await self.s3.Bucket(settings.s3.bucket)
+        logger.info("Deleting bucket %s", settings.s3.bucket)
         async for obj in bucket.objects.all():
             await obj.delete()
         await bucket.delete()

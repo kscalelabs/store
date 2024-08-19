@@ -20,6 +20,7 @@ from store.app.errors import (
 from store.app.routers.artifacts import artifacts_router
 from store.app.routers.email_signup import email_router
 from store.app.routers.listings import listings_router
+from store.app.routers.urdf import urdf_router
 from store.app.routers.users import users_router
 from store.settings import settings
 
@@ -94,6 +95,7 @@ async def not_authorized_exception_handler(request: Request, exc: NotAuthorizedE
 
 @app.exception_handler(BadArtifactError)
 async def bad_artifact_exception_handler(request: Request, exc: BadArtifactError) -> JSONResponse:
+    print("error:", exc)
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
         content={"message": f"Bad artifact: {exc}", "detail": str(exc)},
@@ -109,6 +111,7 @@ app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(listings_router, prefix="/listings", tags=["listings"])
 app.include_router(artifacts_router, prefix="/artifacts", tags=["artifacts"])
 app.include_router(email_router, prefix="/email", tags=["email"])
+app.include_router(urdf_router, prefix="/urdf", tags=["urdf"])
 
 # For running with debugger
 if __name__ == "__main__":

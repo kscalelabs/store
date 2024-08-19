@@ -8,21 +8,37 @@ export default class api {
     this.client = client;
   }
 
-  public async upload(
-    files: File[],
-    request: {
-      listing_id: string;
-    },
-  ) {
-    return await this.client.POST("/artifacts/upload", {
+  public async upload(files: File[], listing_id: string) {
+    return await this.client.POST("/artifacts/upload/{listing_id}", {
       body: {
         files: [],
-        metadata: "image",
+      },
+      params: {
+        path: {
+          listing_id,
+        },
       },
       bodySerializer() {
         const fd = new FormData();
         files.forEach((file) => fd.append("files", file));
-        fd.append("metadata", JSON.stringify(request));
+        return fd;
+      },
+    });
+  }
+
+  public async uploadUrdf(file: File, listing_id: string) {
+    return await this.client.POST("/urdf/upload/{listing_id}", {
+      body: {
+        file: "",
+      },
+      params: {
+        path: {
+          listing_id,
+        },
+      },
+      bodySerializer() {
+        const fd = new FormData();
+        fd.append("file", file);
         return fd;
       },
     });

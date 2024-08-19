@@ -3,14 +3,16 @@
 import asyncio
 import io
 import logging
-from typing import Any, BinaryIO, Literal
+from typing import IO, Any, Literal
 from xml.etree import ElementTree as ET
 
+import trimesh
+from boto3.dynamodb.conditions import ComparisonCondition
+from fastapi import UploadFile
 from PIL import Image
-from stl import Mode as STLMode, mesh as stlmesh
 
 from store.app.crud.base import BaseCrud, ItemNotFoundError
-from store.app.errors import BadArtifactError, NotAuthorizedError
+from store.app.errors import BadArtifactError
 from store.app.model import (
     Artifact,
     ArtifactSize,
@@ -31,7 +33,7 @@ class ArtifactsCrud(BaseCrud):
     def get_gsis(cls) -> set[str]:
         return super().get_gsis().union({"user_id", "listing_id", "name"})
 
-    async def _crop_image(self, image: Image.Image, size: tuple[int, int]) -> io.BytesIO:
+    async def _crop_image(self, image: Image.Image, size: tuple[int, int]) -> IO[bytes]:
         # Simply squashes the image to the desired size.
         # image_resized = image.resize(size, resample=Image.Resampling.BICUBIC)
         # Finds a bounding box of the image and crops it to the desired size.
@@ -67,15 +69,12 @@ class ArtifactsCrud(BaseCrud):
     async def _upload_image(
         self,
         name: str,
-        file: io.BytesIO | BinaryIO,
+        file: UploadFile,
         listing: Listing,
-        user_id: str,
         description: str | None = None,
     ) -> Artifact:
-        if listing.user_id != user_id:
-            raise NotAuthorizedError("User does not have permission to upload artifacts to this listing")
         artifact = Artifact.create(
-            user_id=user_id,
+            user_id=listing.user_id,
             listing_id=listing.id,
             name=name,
             artifact_type="image",
@@ -83,7 +82,7 @@ class ArtifactsCrud(BaseCrud):
             description=description,
         )
 
-        image = Image.open(file)
+        image = Image.open(io.BytesIO(await file.read()))
 
         await asyncio.gather(
             *(self._upload_cropped_image(image=image, artifact=artifact, size=size) for size in SizeMapping.keys()),
@@ -94,39 +93,32 @@ class ArtifactsCrud(BaseCrud):
     async def get_raw_artifact(self, artifact_id: str) -> Artifact | None:
         return await self._get_item(artifact_id, Artifact)
 
-    async def _upload_stl(
+    async def _upload_mesh(
         self,
         name: str,
-        file: io.BytesIO | BinaryIO,
+        file: UploadFile,
         listing: Listing,
-        user_id: str,
+        artifact_type: Literal["stl", "obj", "ply", "dae"],
         description: str | None = None,
     ) -> Artifact:
-        if listing.user_id != user_id:
-            raise NotAuthorizedError("User does not have permission to upload artifacts to this listing")
-
         # Converts the mesh to a binary STL file.
-        mesh = stlmesh.Mesh.from_file(None, calculate_normals=True, fh=file)
+        file_data = await file.read()
+
+        tmesh = trimesh.load(io.BytesIO(file_data), file_type=artifact_type)
+        if not isinstance(tmesh, trimesh.Trimesh):
+            raise BadArtifactError(f"Invalid mesh file: {name}")
+
         out_file = io.BytesIO()
-        mesh.save(name, fh=out_file, mode=STLMode.BINARY)
+        tmesh.export(out_file, file_type="obj")
         out_file.seek(0)
 
+        # Replaces name suffix.
+        name = f"{name.rsplit('.', 1)[0]}.obj"
+
         # Saves the artifact to S3.
-        content_type = get_content_type("stl")
-        artifact = Artifact.create(
-            user_id=user_id,
-            listing_id=listing.id,
-            name=name,
-            artifact_type="stl",
-            description=description,
-        )
-        await asyncio.gather(
-            self._upload_to_s3(out_file, name, get_artifact_name(artifact=artifact), content_type),
-            self._add_item(artifact),
-        )
+        artifact = await self._upload_and_store(name, out_file, listing, "obj", description)
 
         # Closes the file handlers when done.
-        file.close()
         out_file.close()
 
         return artifact
@@ -134,18 +126,14 @@ class ArtifactsCrud(BaseCrud):
     async def _upload_xml(
         self,
         name: str,
-        file: io.BytesIO | BinaryIO,
+        file: UploadFile,
         listing: Listing,
-        user_id: str,
         artifact_type: Literal["urdf", "mjcf"],
         description: str | None = None,
     ) -> Artifact:
-        if listing.user_id != user_id:
-            raise NotAuthorizedError("User does not have permission to upload artifacts to this listing")
-
         # Standardizes the XML file.
         try:
-            tree = ET.parse(file)
+            tree = ET.parse(io.BytesIO(await file.read()))
         except Exception:
             raise BadArtifactError("Invalid XML file")
 
@@ -157,16 +145,26 @@ class ArtifactsCrud(BaseCrud):
         out_file.seek(0)
 
         # Saves the artifact to S3.
+        return await self._upload_and_store(name, out_file, listing, artifact_type, description)
+
+    async def _upload_and_store(
+        self,
+        name: str,
+        file: IO[bytes],
+        listing: Listing,
+        artifact_type: ArtifactType,
+        description: str | None = None,
+    ) -> Artifact:
         content_type = get_content_type(artifact_type)
         artifact = Artifact.create(
-            user_id=user_id,
+            user_id=listing.user_id,
             listing_id=listing.id,
             name=name,
             artifact_type=artifact_type,
             description=description,
         )
         await asyncio.gather(
-            self._upload_to_s3(out_file, name, get_artifact_name(artifact=artifact), content_type),
+            self._upload_to_s3(file, name, get_artifact_name(artifact=artifact), content_type),
             self._add_item(artifact),
         )
         return artifact
@@ -174,9 +172,8 @@ class ArtifactsCrud(BaseCrud):
     async def upload_artifact(
         self,
         name: str,
-        file: io.BytesIO | BinaryIO,
+        file: UploadFile,
         listing: Listing,
-        user_id: str,
         artifact_type: ArtifactType,
         description: str | None = None,
     ) -> tuple[Artifact, bool]:
@@ -188,43 +185,44 @@ class ArtifactsCrud(BaseCrud):
 
         match artifact_type:
             case "image":
-                return await self._upload_image(name, file, listing, user_id, description), True
-            case "stl":
-                return await self._upload_stl(name, file, listing, user_id, description), True
+                return await self._upload_image(name, file, listing, description), True
+            case "stl" | "obj" | "ply" | "dae":
+                return await self._upload_mesh(name, file, listing, artifact_type, description), True
             case "urdf" | "mjcf":
-                return await self._upload_xml(name, file, listing, user_id, artifact_type, description), True
+                return await self._upload_xml(name, file, listing, artifact_type, description), True
             case _:
                 raise BadArtifactError(f"Invalid artifact type: {artifact_type}")
 
-    async def _remove_image(self, artifact: Artifact, user_id: str) -> None:
-        if artifact.user_id != user_id:
-            raise NotAuthorizedError("User does not have permission to delete this image")
+    async def _remove_image(self, artifact: Artifact) -> None:
         await asyncio.gather(
             *(self._delete_from_s3(get_artifact_name(artifact=artifact, size=size)) for size in SizeMapping.keys()),
             self._delete_item(artifact),
         )
 
-    async def _remove_raw_artifact(
-        self,
-        artifact: Artifact,
-        user_id: str,
-    ) -> None:
-        if artifact.user_id != user_id:
-            raise NotAuthorizedError("User does not have permission to delete this artifact")
+    async def _remove_raw_artifact(self, artifact: Artifact) -> None:
         await asyncio.gather(
             self._delete_from_s3(get_artifact_name(artifact=artifact)),
             self._delete_item(artifact),
         )
 
-    async def remove_artifact(self, artifact: Artifact, user_id: str) -> None:
+    async def remove_artifact(self, artifact: Artifact) -> None:
         match artifact.artifact_type:
             case "image":
-                await self._remove_image(artifact, user_id)
+                await self._remove_image(artifact)
             case _:
-                await self._remove_raw_artifact(artifact, user_id)
+                await self._remove_raw_artifact(artifact)
 
-    async def get_listing_artifacts(self, listing_id: str) -> list[Artifact]:
-        artifacts = await self._get_items_from_secondary_index("listing_id", listing_id, Artifact)
+    async def get_listing_artifacts(
+        self,
+        listing_id: str,
+        additional_filter_expression: ComparisonCondition | None = None,
+    ) -> list[Artifact]:
+        artifacts = await self._get_items_from_secondary_index(
+            "listing_id",
+            listing_id,
+            Artifact,
+            additional_filter_expression=additional_filter_expression,
+        )
         return sorted(artifacts, key=lambda a: a.timestamp)
 
     async def get_listings_artifacts(self, listing_ids: list[str]) -> list[list[Artifact]]:

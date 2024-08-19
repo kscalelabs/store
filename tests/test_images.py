@@ -36,10 +36,9 @@ async def test_user_auth_functions(app_client: AsyncClient, tmpdir: Path) -> Non
     image = Image.new("RGB", (100, 100))
     image_path = Path(tmpdir) / "test.png"
     image.save(image_path)
-    data_json = json.dumps({"artifact_type": "image", "listing_id": listing_id})
     response = await app_client.post(
-        "/artifacts/upload",
-        files={"files": ("test.png", open(image_path, "rb"), "image/png"), "metadata": (None, data_json)},
+        f"/artifacts/upload/{listing_id}",
+        files={"files": ("test.png", open(image_path, "rb"), "image/png")},
         headers=auth_headers,
     )
     assert response.status_code == status.HTTP_200_OK, response.json()

@@ -424,7 +424,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/artifacts/upload": {
+    "/artifacts/upload/{listing_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -434,7 +434,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Upload */
-        post: operations["upload_artifacts_upload_post"];
+        post: operations["upload_artifacts_upload__listing_id__post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -535,21 +535,85 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/urdf/info/{listing_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Urdf */
+        get: operations["get_urdf_urdf_info__listing_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/urdf/upload/{listing_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Urdf */
+        post: operations["set_urdf_urdf_upload__listing_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/urdf/delete/{listing_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Delete Urdf */
+        delete: operations["delete_urdf_urdf_delete__listing_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ArtifactUrls */
+        ArtifactUrls: {
+            /** Small */
+            small?: string | null;
+            /** Large */
+            large: string;
+        };
         /** AuthResponse */
         AuthResponse: {
             /** Api Key */
             api_key: string;
         };
-        /** Body_upload_artifacts_upload_post */
-        Body_upload_artifacts_upload_post: {
+        /** Body_set_urdf_urdf_upload__listing_id__post */
+        Body_set_urdf_urdf_upload__listing_id__post: {
+            /**
+             * File
+             * Format: binary
+             */
+            file: string;
+        };
+        /** Body_upload_artifacts_upload__listing_id__post */
+        Body_upload_artifacts_upload__listing_id__post: {
             /** Files */
             files: string[];
-            /** Metadata */
-            metadata: string;
         };
         /** ClientIdResponse */
         ClientIdResponse: {
@@ -596,8 +660,8 @@ export interface components {
             child_ids: string[];
             /** Tags */
             tags: string[];
-            /** Owner Is User */
-            owner_is_user: boolean;
+            /** Can Edit */
+            can_edit: boolean;
         };
         /** GetTokenResponse */
         GetTokenResponse: {
@@ -634,17 +698,13 @@ export interface components {
             listing_id: string;
             /** Name */
             name: string;
-            /**
-             * Artifact Type
-             * @enum {string}
-             */
-            artifact_type: "image" | "urdf" | "mjcf" | "stl";
+            /** Artifact Type */
+            artifact_type: "image" | ("urdf" | "mjcf") | ("stl" | "obj" | "dae" | "ply") | ("tgz" | "zip");
             /** Description */
             description: string | null;
             /** Timestamp */
             timestamp: number;
-            /** Url */
-            url: string;
+            urls: components["schemas"]["ArtifactUrls"];
             /** Is New */
             is_new?: boolean | null;
         };
@@ -787,6 +847,19 @@ export interface components {
         UploadArtifactResponse: {
             /** Artifacts */
             artifacts: components["schemas"]["ListArtifactsItem"][];
+        };
+        /** UrdfInfo */
+        UrdfInfo: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Url */
+            url: string;
+        };
+        /** UrdfResponse */
+        UrdfResponse: {
+            urdf: components["schemas"]["UrdfInfo"] | null;
+            /** Listing Id */
+            listing_id: string;
         };
         /** UserInfoResponseItem */
         UserInfoResponseItem: {
@@ -1502,7 +1575,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                artifact_type: "image" | "urdf" | "mjcf" | "stl";
+                artifact_type: "image" | ("urdf" | "mjcf") | ("stl" | "obj" | "dae" | "ply") | ("tgz" | "zip");
                 listing_id: string;
                 name: string;
             };
@@ -1561,16 +1634,18 @@ export interface operations {
             };
         };
     };
-    upload_artifacts_upload_post: {
+    upload_artifacts_upload__listing_id__post: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                listing_id: string;
+            };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["Body_upload_artifacts_upload_post"];
+                "multipart/form-data": components["schemas"]["Body_upload_artifacts_upload__listing_id__post"];
             };
         };
         responses: {
@@ -1742,6 +1817,103 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DeleteTokenResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_urdf_urdf_info__listing_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                listing_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrdfResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_urdf_urdf_upload__listing_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                listing_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_set_urdf_urdf_upload__listing_id__post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrdfResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_urdf_urdf_delete__listing_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                listing_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UrdfResponse"];
                 };
             };
             /** @description Validation Error */

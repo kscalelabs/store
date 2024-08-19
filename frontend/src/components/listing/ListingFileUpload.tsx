@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { DropzoneOptions } from "react-dropzone";
 
 import { components } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
@@ -15,16 +16,14 @@ import {
 import Spinner from "components/ui/Spinner";
 
 interface Props {
-  accept: {
-    [key: string]: string[];
-  };
-  maxSize: number;
+  description: string;
   listingId: string;
+  dropzoneOptions: DropzoneOptions;
   onUpload: (artifact: components["schemas"]["UploadArtifactResponse"]) => void;
 }
 
 const ListingFileUpload = (props: Props) => {
-  const { accept, maxSize, listingId, onUpload } = props;
+  const { description, listingId, dropzoneOptions, onUpload } = props;
 
   const { addErrorAlert } = useAlertQueue();
   const auth = useAuthentication();
@@ -39,9 +38,7 @@ const ListingFileUpload = (props: Props) => {
 
     setUploading(true);
     (async () => {
-      const { data, error } = await auth.api.upload(files, {
-        listing_id: listingId,
-      });
+      const { data, error } = await auth.api.upload(files, listingId);
 
       if (error) {
         addErrorAlert(error);
@@ -53,7 +50,9 @@ const ListingFileUpload = (props: Props) => {
     })();
   }, [files, auth, listingId, addErrorAlert]);
 
-  const fileExtensions = Object.values(accept).flat();
+  const fileExtensions = dropzoneOptions.accept
+    ? Object.values(dropzoneOptions.accept).flat()
+    : undefined;
 
   return uploading ? (
     <div className="w-full flex justify-center mt-4">
@@ -63,19 +62,18 @@ const ListingFileUpload = (props: Props) => {
     <FileUploader
       value={files}
       onValueChange={setFiles}
-      dropzoneOptions={{
-        accept,
-        maxSize,
-      }}
+      dropzoneOptions={dropzoneOptions}
       className="relative bg-background mt-4 rounded-lg"
     >
       <FileInput>
         <div className="flex justify-center w-full h-32">
           <div className="align-middle h-full justify-center flex flex-col">
-            <div className="text-center">Drag and drop or click to browse</div>
-            <div className="text-center">
-              File extensions: {fileExtensions.join(", ")}
-            </div>
+            <div className="text-center">{description}</div>
+            {fileExtensions && (
+              <div className="text-center">
+                File extensions: {fileExtensions.join(", ")}
+              </div>
+            )}
           </div>
         </div>
       </FileInput>

@@ -1,101 +1,40 @@
-/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
-
-/* eslint-disable react/no-unknown-property */
 import { Suspense, useRef, useState } from "react";
 
-import {
-  Center,
-  OrbitControls,
-  PerspectiveCamera,
-  Plane,
-} from "@react-three/drei";
+import { Center, OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { Canvas, useLoader } from "@react-three/fiber";
 import { cx } from "class-variance-authority";
 import { Group } from "three";
-import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
-import URDFLoader from "urdf-loader";
+import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
 
 import Loader from "components/listing/Loader";
 import { Button } from "components/ui/Button/Button";
 
-type MeshType = "wireframe" | "basic";
-
-const MeshTypes: MeshType[] = ["wireframe", "basic"];
-
-const getMaterial = (meshType: MeshType) => {
-  switch (meshType) {
-    case "wireframe":
-      return <meshBasicMaterial attach="material" wireframe />;
-    case "basic":
-    default:
-      return (
-        <meshStandardMaterial
-          attach="material"
-          color="white"
-          roughness={0.5}
-          metalness={0.5}
-        />
-      );
-  }
-};
-
-interface UrdfModelProps {
+interface ObjModelProps {
   url: string;
-  meshType: MeshType;
 }
 
-const UrdfModel = ({ url, meshType }: UrdfModelProps) => {
-  const ref = useRef<Group>();
-  const geom = useLoader(URDFLoader, url);
+const ObjModel = ({ url }: ObjModelProps) => {
+  const groupRef = useRef<Group>(null);
+  const geom = useLoader(OBJLoader, url);
 
   return (
-    <group>
-      <mesh castShadow receiveShadow position={[0, 0, 0]} rotation={[0, 0, 0]}>
-        <primitive
-          ref={ref}
-          object={geom}
-          position={[0, 0, 0]}
-          dispose={null}
-          castShadow
-        />
-        {getMaterial(meshType)}
-      </mesh>
-      <Plane receiveShadow rotation={[0, 0, 0]} args={[100, 100]}>
-        <shadowMaterial opacity={0.25} />
-      </Plane>
+    // eslint-disable-next-line react/no-unknown-property
+    <group ref={groupRef} scale={[0.5, 0.5, 0.5]} position={[0, 0, 0]}>
+      {/* eslint-disable-next-line react/no-unknown-property */}
+      <primitive object={geom} />
     </group>
-  );
-};
-
-interface StlModelProps {
-  url: string;
-  meshType: MeshType;
-}
-
-const StlModel = ({ url, meshType }: StlModelProps) => {
-  const geom = useLoader(STLLoader, url);
-
-  return (
-    <mesh scale={1.2} castShadow receiveShadow>
-      <primitive attach="geometry" object={geom}></primitive>
-      {getMaterial(meshType)}
-    </mesh>
   );
 };
 
 interface ModelProps {
   url: string;
-  meshType: MeshType;
-  kind: "stl" | "urdf";
+  kind: "obj";
 }
 
-const Model = ({ url, meshType, kind }: ModelProps) => {
+const Model = ({ url, kind }: ModelProps) => {
   switch (kind) {
-    case "stl":
-      return <StlModel url={url} meshType={meshType} />;
-    case "urdf":
-      return <UrdfModel url={url} meshType={meshType} />;
+    case "obj":
+      return <ObjModel url={url} />;
     default:
       return null;
   }
@@ -107,11 +46,10 @@ interface Props {
   edit?: boolean;
   onDelete?: () => void;
   disabled?: boolean;
-  kind: "stl" | "urdf";
+  kind: "obj";
 }
 
 const MeshRenderer = ({ url, name, edit, onDelete, disabled, kind }: Props) => {
-  const [meshType, setMeshType] = useState<MeshType>("basic");
   const [clickedCopyButton, setClickedCopyButton] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -133,12 +71,14 @@ const MeshRenderer = ({ url, name, edit, onDelete, disabled, kind }: Props) => {
           near={0.1}
           far={14}
         ></PerspectiveCamera>
+        {/* eslint-disable-next-line react/no-unknown-property */}
         <directionalLight color={0xeb4634} position={[1, 0.75, 0.5]} />
+        {/* eslint-disable-next-line react/no-unknown-property */}
         <directionalLight color={0xccccff} position={[-1, 0.75, -0.5]} />
         <OrbitControls zoomSpeed={0.2} />
         <Suspense fallback={<Loader />}>
           <Center>
-            <Model url={url} meshType={meshType} kind={kind} />
+            <Model url={url} kind={kind} />
           </Center>
         </Suspense>
       </Canvas>
@@ -147,20 +87,9 @@ const MeshRenderer = ({ url, name, edit, onDelete, disabled, kind }: Props) => {
       <div
         className={cx(
           "grid grid-cols-1 gap-2 md:gap-4 mx-auto w-full",
-          edit ? "md:grid-cols-3" : "md:grid-cols-2",
+          edit ? "md:grid-cols-2" : "md:grid-cols-1",
         )}
       >
-        <Button
-          onClick={() => {
-            setMeshType(
-              MeshTypes[(MeshTypes.indexOf(meshType) + 1) % MeshTypes.length],
-            );
-          }}
-          variant="secondary"
-          className="rounded-full"
-        >
-          <code>{meshType}</code>
-        </Button>
         <div className="group relative">
           <Button
             onClick={() => {
