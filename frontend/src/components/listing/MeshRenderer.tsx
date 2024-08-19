@@ -1,15 +1,6 @@
-/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
+import { Suspense, useRef, useState } from "react";
 
-/* eslint-disable react/no-unknown-property */
-import { Suspense, useEffect, useRef, useState } from "react";
-
-import {
-  Center,
-  OrbitControls,
-  PerspectiveCamera,
-  Plane,
-} from "@react-three/drei";
+import { Center, OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { Canvas, useLoader } from "@react-three/fiber";
 import { cx } from "class-variance-authority";
 import { Group } from "three";
@@ -23,11 +14,13 @@ interface ObjModelProps {
 }
 
 const ObjModel = ({ url }: ObjModelProps) => {
-  const groupRef = useRef<Group>();
+  const groupRef = useRef<Group>(null);
   const geom = useLoader(OBJLoader, url);
 
   return (
+    // eslint-disable-next-line react/no-unknown-property
     <group ref={groupRef} scale={[0.5, 0.5, 0.5]} position={[0, 0, 0]}>
+      {/* eslint-disable-next-line react/no-unknown-property */}
       <primitive object={geom} />
     </group>
   );
@@ -78,7 +71,9 @@ const MeshRenderer = ({ url, name, edit, onDelete, disabled, kind }: Props) => {
           near={0.1}
           far={14}
         ></PerspectiveCamera>
+        {/* eslint-disable-next-line react/no-unknown-property */}
         <directionalLight color={0xeb4634} position={[1, 0.75, 0.5]} />
+        {/* eslint-disable-next-line react/no-unknown-property */}
         <directionalLight color={0xccccff} position={[-1, 0.75, -0.5]} />
         <OrbitControls zoomSpeed={0.2} />
         <Suspense fallback={<Loader />}>
