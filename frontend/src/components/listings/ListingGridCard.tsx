@@ -5,8 +5,7 @@ import clsx from "clsx";
 import { paths } from "gen/api";
 
 import ImagePlaceholder from "components/ImagePlaceholder";
-import { RenderDescription } from "components/listing/ListingDescription";
-import { Card, CardContent, CardHeader, CardTitle } from "components/ui/Card";
+import { Card, CardHeader, CardTitle } from "components/ui/Card";
 
 type ListingInfo =
   paths["/listings/batch"]["get"]["responses"][200]["content"]["application/json"]["listings"];
@@ -56,15 +55,6 @@ const ListingGridCard = (props: Props) => {
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-gray-500 dark:text-gray-300 max-h-32 overflow-hidden">
-          {listing ? (
-            listing?.description && (
-              <RenderDescription description={listing?.description} />
-            )
-          ) : (
-            <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-6 w-full"></div>
-          )}
-        </CardContent>
       </div>
     </Card>
   );

@@ -109,7 +109,7 @@ const CloseButton = () => {
 
 const ListingHeader = (props: Props) => {
   return (
-    <div className="relative border-b p-4 mb-4">
+    <div className="relative p-4 mb-4">
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4">
         <ListingTitle {...props} />
         <CloseButton />

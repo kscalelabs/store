@@ -1,8 +1,9 @@
 import { paths } from "gen/api";
 
-import ListingArtifacts from "./ListingArtifacts";
-import ListingChildren from "./ListingChildren";
-import ListingDescription from "./ListingDescription";
+import ListingArtifacts from "components/listing/ListingArtifacts";
+import ListingChildren from "components/listing/ListingChildren";
+import ListingDescription from "components/listing/ListingDescription";
+import ListingUrdf from "components/listing/ListingUrdf";
 
 type ListingResponse =
   paths["/listings/{id}"]["get"]["responses"][200]["content"]["application/json"];
@@ -18,13 +19,11 @@ const ListingBody = (props: ListingBodyProps) => {
       <ListingDescription
         listingId={listing.id}
         description={listing.description}
-        edit={listing.owner_is_user}
+        edit={listing.can_edit}
       />
-      <ListingChildren
-        child_ids={listing.child_ids}
-        edit={listing.owner_is_user}
-      />
-      <ListingArtifacts listingId={listing.id} edit={listing.owner_is_user} />
+      <ListingChildren child_ids={listing.child_ids} edit={listing.can_edit} />
+      <ListingUrdf listingId={listing.id} edit={listing.can_edit} />
+      <ListingArtifacts listingId={listing.id} edit={listing.can_edit} />
     </div>
   );
 };

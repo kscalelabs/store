@@ -388,7 +388,7 @@ def get_artifact_name(
         case "image":
             height, width = SizeMapping[size]
             return f"{listing_id}/{size}_{height}x{width}_{name}"
-        case "urdf" | "mjcf" | "stl" | "tgz":
+        case "urdf" | "mjcf" | "stl" | "obj" | "ply" | "dae" | "zip" | "tgz":
             return f"{listing_id}/{name}"
         case _:
             raise ValueError(f"Unknown artifact type: {artifact_type}")
@@ -410,6 +410,24 @@ def get_artifact_url(
         size=size,
     )
     return f"{settings.site.artifact_base_url}/{artifact_name}"
+
+
+def get_artifact_urls(
+    artifact: Artifact | None = None,
+    artifact_type: ArtifactType | None = None,
+    listing_id: str | None = None,
+    name: str | None = None,
+) -> dict[ArtifactSize, str]:
+    return {
+        size: get_artifact_url(
+            artifact=artifact,
+            artifact_type=artifact_type,
+            listing_id=listing_id,
+            name=name,
+            size=size,
+        )
+        for size in SizeMapping.keys()
+    }
 
 
 async def can_write_artifact(user: User, artifact: Artifact) -> bool:

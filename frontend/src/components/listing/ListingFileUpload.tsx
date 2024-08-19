@@ -1,10 +1,5 @@
 import { useCallback, useState } from "react";
-import {
-  DropzoneOptions,
-  DropzoneState,
-  FileRejection,
-  useDropzone,
-} from "react-dropzone";
+import { DropzoneOptions } from "react-dropzone";
 
 import { components } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
@@ -21,13 +16,14 @@ import {
 import Spinner from "components/ui/Spinner";
 
 interface Props {
+  description: string;
   listingId: string;
   dropzoneOptions: DropzoneOptions;
   onUpload: (artifact: components["schemas"]["UploadArtifactResponse"]) => void;
 }
 
 const ListingFileUpload = (props: Props) => {
-  const { dropzoneOptions, listingId, onUpload } = props;
+  const { description, listingId, dropzoneOptions, onUpload } = props;
 
   const { addErrorAlert } = useAlertQueue();
   const auth = useAuthentication();
@@ -74,7 +70,7 @@ const ListingFileUpload = (props: Props) => {
       <FileInput>
         <div className="flex justify-center w-full h-32">
           <div className="align-middle h-full justify-center flex flex-col">
-            <div className="text-center">Drag and drop or click to browse</div>
+            <div className="text-center">{description}</div>
             {fileExtensions && (
               <div className="text-center">
                 File extensions: {fileExtensions.join(", ")}

@@ -194,7 +194,7 @@ class GetListingResponse(BaseModel):
     description: str | None
     child_ids: list[str]
     tags: list[str]
-    owner_is_user: bool
+    can_edit: bool
 
 
 @listings_router.get("/{id}", response_model=GetListingResponse)
@@ -215,5 +215,5 @@ async def get_listing(
         description=listing.description,
         child_ids=listing.child_ids,
         tags=listing_tags,
-        owner_is_user=user is not None and user.id == listing.user_id,
+        can_edit=user is not None and await can_write_listing(user, listing),
     )

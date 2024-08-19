@@ -1,10 +1,10 @@
 """Defines the router endpoints for handling URDFs."""
 
+import asyncio
 import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
-from fastapi.responses import RedirectResponse
 from pydantic.main import BaseModel
 
 from store.app.crud.urdf import URDF_PACKAGE_NAME
@@ -28,11 +28,6 @@ def get_urdf_url(listing_id: str) -> str:
         listing_id=listing_id,
         name=URDF_PACKAGE_NAME,
     )
-
-
-@urdf_router.get("/url/{listing_id}")
-async def artifact_url(listing_id: str) -> RedirectResponse:
-    return RedirectResponse(url=get_urdf_url(listing_id))
 
 
 class UrdfInfo(BaseModel):
@@ -83,7 +78,7 @@ async def set_urdf(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Could not find listing associated with the given id",
         )
-    if not can_write_listing(user, listing):
+    if not await can_write_listing(user, listing):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User does not have permission to upload artifacts to this listing",
@@ -96,3 +91,32 @@ async def set_urdf(
         urdf=UrdfInfo(artifact_id=urdf.id, url=get_urdf_url(listing_id)),
         listing_id=listing_id,
     )
+
+
+@urdf_router.delete("/delete/{listing_id}")
+async def delete_urdf(
+    listing_id: str,
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> UrdfResponse:
+    urdf, listing = await asyncio.gather(
+        crud.get_urdf(listing_id),
+        crud.get_listing(listing_id),
+    )
+    if urdf is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Could not find URDF associated with the given listing id",
+        )
+    if listing is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Could not find listing associated with the given id",
+        )
+    if not await can_write_listing(user, listing):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User does not have permission to delete the URDF for this listing",
+        )
+    await crud.remove_artifact(urdf)
+    return UrdfResponse(urdf=None, listing_id=listing_id)

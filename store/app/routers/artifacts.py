@@ -10,6 +10,7 @@ from pydantic.main import BaseModel
 
 from store.app.db import Crud
 from store.app.model import (
+    Artifact,
     ArtifactSize,
     ArtifactType,
     User,
@@ -18,6 +19,7 @@ from store.app.model import (
     check_content_type,
     get_artifact_type,
     get_artifact_url,
+    get_artifact_urls,
 )
 from store.app.routers.users import get_session_user_with_write_permission
 from store.settings import settings
@@ -45,6 +47,19 @@ async def artifact_url(
     )
 
 
+class ArtifactUrls(BaseModel):
+    small: str | None = None
+    large: str
+
+
+def get_artifact_url_response(artifact: Artifact) -> ArtifactUrls:
+    artifact_urls = get_artifact_urls(artifact=artifact)
+    return ArtifactUrls(
+        small=artifact_urls.get("small"),
+        large=artifact_urls["large"],
+    )
+
+
 class ListArtifactsItem(BaseModel):
     artifact_id: str
     listing_id: str
@@ -52,7 +67,7 @@ class ListArtifactsItem(BaseModel):
     artifact_type: ArtifactType
     description: str | None
     timestamp: int
-    url: str
+    urls: ArtifactUrls
     is_new: bool | None = None
 
 
@@ -71,7 +86,7 @@ async def list_artifacts(listing_id: str, crud: Annotated[Crud, Depends(Crud.get
                 artifact_type=artifact.artifact_type,
                 description=artifact.description,
                 timestamp=artifact.timestamp,
-                url=get_artifact_url(artifact=artifact),
+                urls=get_artifact_url_response(artifact=artifact),
             )
             for artifact in await crud.get_listing_artifacts(listing_id)
         ],
@@ -175,7 +190,7 @@ async def upload(
                 artifact_type=artifact.artifact_type,
                 description=artifact.description,
                 timestamp=artifact.timestamp,
-                url=get_artifact_url(artifact=artifact),
+                urls=get_artifact_url_response(artifact=artifact),
                 is_new=is_new,
             )
             for artifact, is_new in artifacts

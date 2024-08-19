@@ -27,6 +27,7 @@ const Footer = () => {
   return (
     <footer className="bg-gray-50 dark:bg-gray-800 text-sm py-20">
       <div className="flex flex-col gap-4 mx-12 sm:mx-36">
+        {/* Logo and Social Links */}
         <div className="flex flex-row justify-between items-center">
           <span className="text-xl sm:text-2xl">K-Scale Store</span>
           <div className="flex flex-row gap-4 rounded-full">
@@ -56,7 +57,9 @@ const Footer = () => {
             </SocialLink>
           </div>
         </div>
-        <div className="flex flex-row gap-32 sm:gap-56 md:gap-64">
+
+        {/* Footer Links */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div className="flex flex-col items-start gap-2 sm:gap-3">
             <h2 className="text-base sm:text-lg font-semibold mb-1">Company</h2>
             <a
@@ -93,6 +96,8 @@ const Footer = () => {
             </a>
           </div>
         </div>
+
+        {/* Copy Right */}
         <div className="mt-10 text-xs">
           <p>
             <span>©</span> {new Date().getFullYear()} K-Scale Labs

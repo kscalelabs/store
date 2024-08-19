@@ -15,7 +15,7 @@ import trimesh
 from boto3.dynamodb.conditions import Attr
 from fastapi import UploadFile
 
-from store.app.crud.artifacts import MESH_SAVE_TYPE, ArtifactsCrud
+from store.app.crud.artifacts import ArtifactsCrud
 from store.app.errors import BadArtifactError
 from store.app.model import (
     Artifact,
@@ -99,7 +99,7 @@ class UrdfCrud(ArtifactsCrud):
         with tarfile.open(fileobj=tgz_out_file, mode="w:gz") as tar:
             for name, tmesh in meshes:
                 out_file = io.BytesIO()
-                tmesh.export(out_file, file_type=MESH_SAVE_TYPE)
+                tmesh.export(out_file, file_type="obj")
                 info = tarfile.TarInfo(name)
                 info.size = out_file.tell()
                 out_file.seek(0)
@@ -125,8 +125,3 @@ class UrdfCrud(ArtifactsCrud):
         if len(artifacts) > 2:
             await asyncio.gather(*(self.remove_artifact(artifact) for artifact in artifacts[1:]))
         return artifacts[0] if artifacts else None
-
-    async def remove_urdf(self, listing_id: str) -> None:
-        artifact = await self.get_urdf(listing_id)
-        if artifact is not None:
-            await self.remove_artifact(artifact)

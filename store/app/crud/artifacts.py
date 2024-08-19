@@ -27,8 +27,6 @@ from store.utils import save_xml
 
 logger = logging.getLogger(__name__)
 
-MESH_SAVE_TYPE = "stl"
-
 
 class ArtifactsCrud(BaseCrud):
     @classmethod
@@ -109,15 +107,16 @@ class ArtifactsCrud(BaseCrud):
         tmesh = trimesh.load(io.BytesIO(file_data), file_type=artifact_type)
         if not isinstance(tmesh, trimesh.Trimesh):
             raise BadArtifactError(f"Invalid mesh file: {name}")
+
         out_file = io.BytesIO()
-        tmesh.export(out_file, file_type=MESH_SAVE_TYPE)
+        tmesh.export(out_file, file_type="obj")
         out_file.seek(0)
 
         # Replaces name suffix.
-        name = f"{name.rsplit('.', 1)[0]}.{MESH_SAVE_TYPE}"
+        name = f"{name.rsplit('.', 1)[0]}.obj"
 
         # Saves the artifact to S3.
-        artifact = await self._upload_and_store(name, out_file, listing, "stl", description)
+        artifact = await self._upload_and_store(name, out_file, listing, "obj", description)
 
         # Closes the file handlers when done.
         out_file.close()

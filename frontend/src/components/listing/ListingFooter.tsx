@@ -7,7 +7,7 @@ interface Props {
 
 const ListingFooter = ({ listingId, edit }: Props) => {
   return (
-    <div className="relative border-t p-4">
+    <div className="relative p-4">
       <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 items-center">
         <div className="text-gray-600 dark:text-gray-300 italic text-sm">
           {`Listing ID: ${listingId}`}

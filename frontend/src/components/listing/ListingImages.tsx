@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaCaretSquareDown, FaCaretSquareUp, FaTimes } from "react-icons/fa";
+import { FaTimes } from "react-icons/fa";
 
 import { components } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
@@ -27,7 +27,6 @@ const ListingImages = (props: Props) => {
     allArtifacts.filter((a) => a.artifact_type === "image"),
   );
   const [deletingIds, setDeletingIds] = useState<string[]>([]);
-  const [collapsed, setCollapsed] = useState<boolean>(true);
 
   const [showImageModal, setShowImageModal] = useState<number | null>(null);
 
@@ -55,65 +54,46 @@ const ListingImages = (props: Props) => {
     <div className="flex flex-col items-center justify-center relative">
       {images.length > 0 ? (
         <>
-          <Button
-            onClick={() => setCollapsed(!collapsed)}
-            variant="primary"
-            className="text-md p-4 w-full"
-          >
-            {collapsed ? (
-              <FaCaretSquareUp className="mr-2" />
-            ) : (
-              <FaCaretSquareDown className="mr-2" />
-            )}
-            Images
-          </Button>
-          {!collapsed && (
-            <>
-              <div className="grid gap-2 md:gap-4 mx-auto w-full grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 mt-4">
-                {images.map((image, idx) => (
-                  <div
-                    key={image.artifact_id}
-                    className="bg-background relative p"
-                  >
-                    <div className="bg-white rounded-lg w-full">
-                      <img
-                        src={image.url}
-                        alt={image.name}
-                        className="aspect-square cursor-pointer rounded-lg"
-                        onClick={() => setShowImageModal(idx)}
-                      />
-                    </div>
-                    {edit && (
-                      <Button
-                        onClick={() => onDelete(image.artifact_id)}
-                        variant="destructive"
-                        className="absolute top-2 right-2 rounded-full"
-                        disabled={deletingIds.includes(image.artifact_id)}
-                      >
-                        <FaTimes />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              {showImageModal !== null && (
-                <div
-                  className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-                  onClick={() => setShowImageModal(null)}
-                >
-                  <div
-                    className="absolute bg-white rounded-lg p-4 max-w-4xl max-h-4xl m-4"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <img
-                      src={images[showImageModal].url}
-                      alt={images[showImageModal].name}
-                      className="max-h-full max-w-full"
-                    />
-                  </div>
+          <div className="grid gap-2 md:gap-4 mx-auto w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-4">
+            {images.map((image, idx) => (
+              <div key={image.artifact_id} className="bg-background relative p">
+                <div className="bg-white rounded-lg w-full">
+                  <img
+                    src={image.urls.small ?? image.urls.large}
+                    alt={image.name}
+                    className="aspect-square cursor-pointer rounded-lg w-full"
+                    onClick={() => setShowImageModal(idx)}
+                  />
                 </div>
-              )}
-            </>
+                {edit && (
+                  <Button
+                    onClick={() => onDelete(image.artifact_id)}
+                    variant="destructive"
+                    className="absolute top-2 right-2 rounded-full"
+                    disabled={deletingIds.includes(image.artifact_id)}
+                  >
+                    <FaTimes />
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+          {showImageModal !== null && (
+            <div
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+              onClick={() => setShowImageModal(null)}
+            >
+              <div
+                className="absolute bg-white rounded-lg p-4 max-w-4xl max-h-4xl m-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <img
+                  src={images[showImageModal].urls.large}
+                  alt={images[showImageModal].name}
+                  className="max-h-full max-w-full"
+                />
+              </div>
+            </div>
           )}
         </>
       ) : (
@@ -123,6 +103,7 @@ const ListingImages = (props: Props) => {
       )}
       {edit && (
         <ListingFileUpload
+          description="Upload images"
           dropzoneOptions={{
             accept: {
               "image/*": [".jpg", ".jpeg", ".png", ".webp"],

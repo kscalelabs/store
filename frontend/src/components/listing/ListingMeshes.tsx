@@ -11,7 +11,7 @@ import MeshRenderer from "components/listing/MeshRenderer";
 import { Button } from "components/ui/Button/Button";
 import { Tooltip } from "components/ui/ToolTip";
 
-type MeshType = "stl" | "urdf";
+type MeshType = "obj" | "urdf";
 type AllArtifactsType =
   components["schemas"]["ListArtifactsResponse"]["artifacts"];
 type ArtifactType = AllArtifactsType[0];
@@ -25,7 +25,7 @@ interface Props {
 
 const getMeshType = (artifactType: ArtifactType["artifact_type"]): MeshType => {
   switch (artifactType) {
-    case "stl":
+    case "obj":
     case "urdf":
       return artifactType;
     default:
@@ -41,7 +41,7 @@ const ListingMeshes = (props: Props) => {
 
   const [meshes, setMeshes] = useState<AllArtifactsType>(
     allArtifacts
-      .filter((a) => ["stl", "urdf"].includes(a.artifact_type))
+      .filter((a) => ["obj", "urdf"].includes(a.artifact_type))
       .sort((a) => (a.artifact_type === "urdf" ? -1 : 1)),
   );
   const [mesh, setMesh] = useState<MeshAndArtifactType | null>(null);
@@ -131,7 +131,7 @@ const ListingMeshes = (props: Props) => {
                 ))}
               </div>
               <MeshRenderer
-                url={mesh[1].url}
+                url={mesh[1].urls.large}
                 name={mesh[1].name}
                 kind={mesh[0]}
                 edit={edit}
@@ -148,10 +148,12 @@ const ListingMeshes = (props: Props) => {
       )}
       {edit && (
         <ListingFileUpload
+          description="Upload meshes"
           dropzoneOptions={{
             accept: {
               "application/sla": [".stl"],
-              "application/xml": [".urdf"],
+              "application/octet-stream": [".obj"],
+              "model/vnd.collada+xml": [".dae"],
             },
             maxSize: 4 * 1024 * 1024,
           }}

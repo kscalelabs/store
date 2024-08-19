@@ -7,6 +7,7 @@ import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
 import ListingGrid from "components/listings/ListingGrid";
+import { Button } from "components/ui/Button/Button";
 import { Input } from "components/ui/Input/Input";
 
 const Browse = () => {
@@ -85,6 +86,13 @@ const Browse = () => {
               </div>
             )}
           </div>
+          <Button
+            onClick={() => navigate(`/create`)}
+            variant="secondary"
+            size="lg"
+          >
+            Create
+          </Button>
         </div>
 
         {hasButton && (

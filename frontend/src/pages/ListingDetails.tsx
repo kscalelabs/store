@@ -21,14 +21,14 @@ const RenderListing = (props: RenderListingProps) => {
   const { listing } = props;
 
   return (
-    <div className="container mx-auto max-w-4xl shadow-md rounded-lg bg-white dark:bg-gray-800 dark:text-white border bg-card text-card-foreground relative">
+    <div className="container mx-auto max-w-6xl">
       <ListingHeader
         listingId={listing.id}
         title={listing.name}
-        edit={listing.owner_is_user}
+        edit={listing.can_edit}
       />
       <ListingBody listing={listing} />
-      <ListingFooter listingId={listing.id} edit={listing.owner_is_user} />
+      <ListingFooter listingId={listing.id} edit={listing.can_edit} />
     </div>
   );
 };
