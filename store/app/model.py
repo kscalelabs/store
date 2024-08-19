@@ -7,7 +7,7 @@ expects (for example, converting a UUID into a string).
 
 import time
 from datetime import datetime, timedelta
-from typing import Literal, Self
+from typing import Literal, Self, cast, get_args
 
 from pydantic import BaseModel
 
@@ -256,6 +256,13 @@ def get_artifact_type(content_type: str | None, filename: str | None) -> Artifac
 
     # Throws a value error if the type cannot be determined.
     raise ValueError(f"Unknown content type for file: {filename}")
+
+
+def get_compression_type(content_type: str | None, filename: str | None) -> CompressedArtifactType:
+    artifact_type = get_artifact_type(content_type, filename)
+    if artifact_type not in (allowed_types := get_args(CompressedArtifactType)):
+        raise ValueError(f"Artifact type {artifact_type} is not compressed; expected one of {allowed_types}")
+    return cast(CompressedArtifactType, artifact_type)
 
 
 def check_content_type(content_type: str | None, artifact_type: ArtifactType) -> None:

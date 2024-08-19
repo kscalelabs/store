@@ -4,7 +4,7 @@ import asyncio
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.responses import RedirectResponse
 from pydantic.main import BaseModel
 
@@ -122,24 +122,18 @@ def validate_file(file: UploadFile) -> tuple[str, ArtifactType]:
     return file.filename, artifact_type
 
 
-class UploadArtifactRequest(BaseModel):
-    listing_id: str
-    description: str | None = None
-
-
 class UploadArtifactResponse(BaseModel):
     artifacts: list[ListArtifactsItem]
 
 
-@artifacts_router.post("/upload", response_model=UploadArtifactResponse)
+@artifacts_router.post("/upload/{listing_id}", response_model=UploadArtifactResponse)
 async def upload(
+    listing_id: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
     files: list[UploadFile],
-    metadata: Annotated[str, Form()],
 ) -> UploadArtifactResponse:
-    # Converts the metadata JSON string to a Pydantic model.
-    data = UploadArtifactRequest.model_validate_json(metadata)
+    # Checks that the user is not uploading too many files at once.
     if len(files) > settings.artifact.max_concurrent_file_uploads:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -155,7 +149,7 @@ async def upload(
         )
 
     # Checks that the listing is valid.
-    listing = await crud.get_listing(data.listing_id)
+    listing = await crud.get_listing(listing_id)
     if listing is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -175,7 +169,6 @@ async def upload(
                 name=filename,
                 listing=listing,
                 artifact_type=artifact_type,
-                description=data.description,
             )
             for file, (filename, artifact_type) in zip(files, filenames)
         )

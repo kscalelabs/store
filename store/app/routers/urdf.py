@@ -12,8 +12,8 @@ from store.app.db import Crud
 from store.app.model import (
     User,
     can_write_listing,
-    get_artifact_type,
     get_artifact_url,
+    get_compression_type,
 )
 from store.app.routers.users import get_session_user_with_write_permission
 
@@ -65,10 +65,12 @@ async def set_urdf(
     crud: Annotated[Crud, Depends(Crud.get)],
     file: UploadFile,
 ) -> UrdfResponse:
-    if get_artifact_type(file.content_type, file.filename) != "tgz":
+    # Gets the compression type from the file content type and filename.
+    compression_type = get_compression_type(file.content_type, file.filename)
+    if compression_type not in ("tgz", "zip"):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The file must be a .tgz file",
+            detail="The file must be a .tgz or .zip file",
         )
 
     # Checks that the listing is valid.
@@ -85,11 +87,15 @@ async def set_urdf(
         )
 
     # Uploads the URDF for the listing.
-    urdf = await crud.set_urdf(file=file, listing=listing)
+    urdf = await crud.set_urdf(
+        file=file,
+        listing=listing,
+        compression_type=compression_type,
+    )
 
     return UrdfResponse(
-        urdf=UrdfInfo(artifact_id=urdf.id, url=get_urdf_url(listing_id)),
-        listing_id=listing_id,
+        urdf=UrdfInfo(artifact_id=urdf.id, url=get_urdf_url(listing.id)),
+        listing_id=listing.id,
     )
 
 

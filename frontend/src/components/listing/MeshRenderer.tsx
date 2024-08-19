@@ -14,36 +14,9 @@ import { Canvas, useLoader } from "@react-three/fiber";
 import { cx } from "class-variance-authority";
 import { Group } from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
-import URDFLoader from "urdf-loader";
 
 import Loader from "components/listing/Loader";
 import { Button } from "components/ui/Button/Button";
-
-interface UrdfModelProps {
-  url: string;
-}
-
-const UrdfModel = ({ url }: UrdfModelProps) => {
-  const ref = useRef<Group>();
-  const geom = useLoader(URDFLoader, url);
-
-  return (
-    <group>
-      <mesh castShadow receiveShadow position={[0, 0, 0]} rotation={[0, 0, 0]}>
-        <primitive
-          ref={ref}
-          object={geom}
-          position={[0, 0, 0]}
-          dispose={null}
-          castShadow
-        />
-      </mesh>
-      <Plane receiveShadow rotation={[0, 0, 0]} args={[100, 100]}>
-        <shadowMaterial opacity={0.25} />
-      </Plane>
-    </group>
-  );
-};
 
 interface ObjModelProps {
   url: string;
@@ -62,15 +35,13 @@ const ObjModel = ({ url }: ObjModelProps) => {
 
 interface ModelProps {
   url: string;
-  kind: "obj" | "urdf";
+  kind: "obj";
 }
 
 const Model = ({ url, kind }: ModelProps) => {
   switch (kind) {
     case "obj":
       return <ObjModel url={url} />;
-    case "urdf":
-      return <UrdfModel url={url} />;
     default:
       return null;
   }
@@ -82,7 +53,7 @@ interface Props {
   edit?: boolean;
   onDelete?: () => void;
   disabled?: boolean;
-  kind: "obj" | "urdf";
+  kind: "obj";
 }
 
 const MeshRenderer = ({ url, name, edit, onDelete, disabled, kind }: Props) => {

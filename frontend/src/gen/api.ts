@@ -424,7 +424,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/artifacts/upload": {
+    "/artifacts/upload/{listing_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -434,7 +434,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Upload */
-        post: operations["upload_artifacts_upload_post"];
+        post: operations["upload_artifacts_upload__listing_id__post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -610,12 +610,10 @@ export interface components {
              */
             file: string;
         };
-        /** Body_upload_artifacts_upload_post */
-        Body_upload_artifacts_upload_post: {
+        /** Body_upload_artifacts_upload__listing_id__post */
+        Body_upload_artifacts_upload__listing_id__post: {
             /** Files */
             files: string[];
-            /** Metadata */
-            metadata: string;
         };
         /** ClientIdResponse */
         ClientIdResponse: {
@@ -1636,16 +1634,18 @@ export interface operations {
             };
         };
     };
-    upload_artifacts_upload_post: {
+    upload_artifacts_upload__listing_id__post: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                listing_id: string;
+            };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["Body_upload_artifacts_upload_post"];
+                "multipart/form-data": components["schemas"]["Body_upload_artifacts_upload__listing_id__post"];
             };
         };
         responses: {

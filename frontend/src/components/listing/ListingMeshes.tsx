@@ -11,7 +11,7 @@ import MeshRenderer from "components/listing/MeshRenderer";
 import { Button } from "components/ui/Button/Button";
 import { Tooltip } from "components/ui/ToolTip";
 
-type MeshType = "obj" | "urdf";
+type MeshType = "obj";
 type AllArtifactsType =
   components["schemas"]["ListArtifactsResponse"]["artifacts"];
 type ArtifactType = AllArtifactsType[0];
@@ -26,7 +26,6 @@ interface Props {
 const getMeshType = (artifactType: ArtifactType["artifact_type"]): MeshType => {
   switch (artifactType) {
     case "obj":
-    case "urdf":
       return artifactType;
     default:
       throw new Error(`Unknown artifact type: ${artifactType}`);
@@ -40,9 +39,7 @@ const ListingMeshes = (props: Props) => {
   const { addErrorAlert } = useAlertQueue();
 
   const [meshes, setMeshes] = useState<AllArtifactsType>(
-    allArtifacts
-      .filter((a) => ["obj", "urdf"].includes(a.artifact_type))
-      .sort((a) => (a.artifact_type === "urdf" ? -1 : 1)),
+    allArtifacts.filter((a) => ["obj"].includes(a.artifact_type)),
   );
   const [mesh, setMesh] = useState<MeshAndArtifactType | null>(null);
   const [deletingIds, setDeletingIds] = useState<string[]>([]);

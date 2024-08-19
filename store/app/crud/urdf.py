@@ -8,6 +8,7 @@ import asyncio
 import io
 import logging
 import tarfile
+import zipfile
 from typing import IO, Iterator
 from xml.etree import ElementTree as ET
 
@@ -17,10 +18,7 @@ from fastapi import UploadFile
 
 from store.app.crud.artifacts import ArtifactsCrud
 from store.app.errors import BadArtifactError
-from store.app.model import (
-    Artifact,
-    Listing,
-)
+from store.app.model import Artifact, CompressedArtifactType, Listing
 from store.utils import save_xml
 
 logger = logging.getLogger(__name__)
@@ -28,20 +26,32 @@ logger = logging.getLogger(__name__)
 URDF_PACKAGE_NAME = "droid.tgz"
 
 
-def iter_tar_components(file: IO[bytes]) -> Iterator[tuple[str, IO[bytes]]]:
+def iter_components(file: IO[bytes], compression_type: CompressedArtifactType) -> Iterator[tuple[str, IO[bytes]]]:
     """Iterates over the components of a tar file.
 
     Args:
         file: The tar file to iterate over.
+        compression_type: The type of compression used for the file.
 
     Yields:
         A tuple containing the name of the component and its contents.
     """
-    with tarfile.open(fileobj=file, mode="r:gz") as tar:
-        for member in tar.getmembers():
-            if member.isfile() and (data := tar.extractfile(member)) is not None:
-                with data:
-                    yield member.name, data
+    match compression_type:
+        case "zip":
+            with zipfile.ZipFile(file) as zipf:
+                for name in zipf.namelist():
+                    with zipf.open(name) as zipdata:
+                        yield name, zipdata
+
+        case "tgz":
+            with tarfile.open(fileobj=file, mode="r:gz") as tar:
+                for member in tar.getmembers():
+                    if member.isfile() and (tardata := tar.extractfile(member)) is not None:
+                        with tardata:
+                            yield member.name, tardata
+
+        case _:
+            raise ValueError(f"Unknown compression type: {compression_type}")
 
 
 class UrdfCrud(ArtifactsCrud):
@@ -49,17 +59,18 @@ class UrdfCrud(ArtifactsCrud):
         self,
         file: UploadFile,
         listing: Listing,
+        compression_type: CompressedArtifactType,
         description: str | None = None,
     ) -> Artifact:
-        # Removes any existing URDF.
-        await self.remove_urdf(listing.id)
-
         # Unpacks the TAR file, getting meshes and URDFs.
         urdf: tuple[str, ET.ElementTree] | None = None
         meshes: list[tuple[str, trimesh.Trimesh]] = []
-        tar_data = await file.read()
-        for name, data in iter_tar_components(io.BytesIO(tar_data)):
+
+
+        compressed_data = await file.read()
+        for name, data in iter_components(io.BytesIO(compressed_data), compression_type):
             suffix = name.lower().split(".")[-1]
+
             if suffix == "urdf":
                 if urdf is not None:
                     raise BadArtifactError("Multiple URDF files found in TAR.")
@@ -70,8 +81,11 @@ class UrdfCrud(ArtifactsCrud):
                 urdf = name, urdf_tree
 
             elif suffix in ("stl", "ply", "obj", "dae"):
-                tmesh = trimesh.load(data, file_type=suffix)
-                if not isinstance(tmesh, trimesh.Trimesh):
+                try:
+                    tmesh = trimesh.load(data, file_type=suffix)
+                    assert isinstance(tmesh, trimesh.Trimesh)
+                except Exception:
+                    print(data)
                     raise BadArtifactError(f"Invalid mesh file: {name}")
                 meshes.append((name, tmesh))
 

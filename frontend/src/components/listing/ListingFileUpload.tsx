@@ -38,9 +38,7 @@ const ListingFileUpload = (props: Props) => {
 
     setUploading(true);
     (async () => {
-      const { data, error } = await auth.api.upload(files, {
-        listing_id: listingId,
-      });
+      const { data, error } = await auth.api.upload(files, listingId);
 
       if (error) {
         addErrorAlert(error);

@@ -1,8 +1,8 @@
 """Runs tests on the robot APIs."""
 
-import json
 import tarfile
 import tempfile
+import zipfile
 from pathlib import Path
 
 from fastapi import status
@@ -38,11 +38,10 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
     image = Image.new("RGB", (100, 100))
     image_path = Path(tmpdir) / "test.png"
     image.save(image_path)
-    data_json = json.dumps({"listing_id": listing_id})
     response = await app_client.post(
-        "/artifacts/upload",
+        f"/artifacts/upload/{listing_id}",
         headers=auth_headers,
-        files={"files": ("test.png", open(image_path, "rb"), "image/png"), "metadata": (None, data_json)},
+        files={"files": ("test.png", open(image_path, "rb"), "image/png")},
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
@@ -50,11 +49,10 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
 
     # Uploads a URDF.
     urdf_path = Path(__file__).parent / "assets" / "sample.urdf"
-    data_json = json.dumps({"listing_id": listing_id})
     response = await app_client.post(
-        "/artifacts/upload",
+        f"/artifacts/upload/{listing_id}",
         headers=auth_headers,
-        files={"files": ("box.urdf", open(urdf_path, "rb"), "application/xml"), "metadata": (None, data_json)},
+        files={"files": ("box.urdf", open(urdf_path, "rb"), "application/xml")},
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
@@ -68,20 +66,18 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
 
     # Uploads an STL.
     stl_path = Path(__file__).parent / "assets" / "teapot.stl"
-    data_json = json.dumps({"listing_id": listing_id})
     response = await app_client.post(
-        "/artifacts/upload",
+        f"/artifacts/upload/{listing_id}",
         headers=auth_headers,
         files={
             "files": ("teapot.stl", open(stl_path, "rb"), "application/octet-stream"),
-            "metadata": (None, data_json),
         },
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
     assert data["artifacts"][0]["artifact_id"] is not None
 
-    # Uploads a combined URDF + STL.
+    # Uploads a combined URDF + STL as a tarball.
     with tempfile.NamedTemporaryFile(suffix=".tgz") as f:
         with tarfile.open(f.name, "w:gz") as tar:
             tar.add(urdf_path, arcname="box.urdf")
@@ -96,14 +92,26 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
         data = response.json()
         assert data["urdf"]["artifact_id"] is not None
 
+    # Uploads a combined URDF + STL as a zipfile.
+    with tempfile.NamedTemporaryFile(suffix=".zip") as f:
+        with zipfile.ZipFile(f.name, "w") as zipf:
+            zipf.write(urdf_path, arcname="box.urdf")
+            zipf.write(stl_path, arcname="teapot.stl")
+        f.seek(0)
+        response = await app_client.post(
+            f"/urdf/upload/{listing_id}",
+            headers=auth_headers,
+            files={"file": (f.name, open(f.name, "rb"), "application/zip")},
+        )
+        assert response.status_code == status.HTTP_200_OK, response.json()
+        data = response.json()
+        assert data["urdf"]["artifact_id"] is not None
+
     # Ensures that trying to upload the same STL again fails.
     response = await app_client.post(
-        "/artifacts/upload",
+        f"/artifacts/upload/{listing_id}",
         headers=auth_headers,
-        files={
-            "files": ("teapot.stl", open(stl_path, "rb"), "application/octet-stream"),
-            "metadata": (None, data_json),
-        },
+        files={"files": ("teapot.stl", open(stl_path, "rb"), "application/octet-stream")},
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
 
