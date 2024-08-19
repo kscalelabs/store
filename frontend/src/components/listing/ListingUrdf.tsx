@@ -1,15 +1,11 @@
-import { Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { Plane } from "@react-three/drei";
-import { Center, OrbitControls, PerspectiveCamera } from "@react-three/drei";
-import { Canvas, useLoader } from "@react-three/fiber";
 import { components } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 import { Paperclip } from "lucide-react";
-import { Group } from "three";
-import URDFLoader from "urdf-loader";
 
+import RequireAuthentication from "components/auth/RequireAuthentication";
 import {
   FileInput,
   FileSubmitButton,
@@ -17,37 +13,40 @@ import {
   FileUploaderContent,
   FileUploaderItem,
 } from "components/listing/FileUpload";
-import Loader from "components/listing/Loader";
 import { Button } from "components/ui/Button/Button";
 import Spinner from "components/ui/Spinner";
 
 type UrdfResponseType = components["schemas"]["UrdfResponse"];
 
-interface UrdfModelProps {
-  url: string;
-}
+// TODO: Now that we are uploading the URDF as as TAR file, we need to change
+// this so that rather than looking for the unzipped URDF file and meshes,
+// it downloads the entire zipped and validated file.
 
-const UrdfModel = ({ url }: UrdfModelProps) => {
-  const ref = useRef<Group>();
-  const geom = useLoader(URDFLoader, url);
+// interface UrdfModelProps {
+//   url: string;
+// }
 
-  return (
-    <group>
-      <mesh castShadow receiveShadow position={[0, 0, 0]} rotation={[0, 0, 0]}>
-        <primitive
-          ref={ref}
-          object={geom}
-          position={[0, 0, 0]}
-          dispose={null}
-          castShadow
-        />
-      </mesh>
-      <Plane receiveShadow rotation={[0, 0, 0]} args={[100, 100]}>
-        <shadowMaterial opacity={0.25} />
-      </Plane>
-    </group>
-  );
-};
+// const UrdfModel = ({ url }: UrdfModelProps) => {
+//   const ref = useRef<Group>();
+//   const geom = useLoader(URDFLoader, url);
+
+//   return (
+//     <group>
+//       <mesh castShadow receiveShadow position={[0, 0, 0]} rotation={[0, 0, 0]}>
+//         <primitive
+//           ref={ref}
+//           object={geom}
+//           position={[0, 0, 0]}
+//           dispose={null}
+//           castShadow
+//         />
+//       </mesh>
+//       <Plane receiveShadow rotation={[0, 0, 0]} args={[100, 100]}>
+//         <shadowMaterial opacity={0.25} />
+//       </Plane>
+//     </group>
+//   );
+// };
 
 interface Props {
   listingId: string;
@@ -64,6 +63,8 @@ const ListingUrdf = (props: Props) => {
 
   const [files, setFiles] = useState<File[] | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [showUrdf, setShowUrdf] = useState(false);
+  const [clickedCopyButton, setClickedCopyButton] = useState(false);
 
   useEffect(() => {
     if (urdf !== null) {
@@ -104,6 +105,7 @@ const ListingUrdf = (props: Props) => {
       addErrorAlert(error);
     } else {
       setUrdf(null);
+      setConfirmDelete(false);
     }
   };
 
@@ -128,6 +130,18 @@ const ListingUrdf = (props: Props) => {
     setUploading(false);
   };
 
+  const onClickCopyButton = async () => {
+    setClickedCopyButton(true);
+    const url = urdf?.urdf?.url;
+    if (url) {
+      navigator.clipboard.writeText(url);
+    }
+
+    setTimeout(() => {
+      setClickedCopyButton(false);
+    }, 1000);
+  };
+
   return urdf !== null || edit ? (
     <div className="flex flex-col space-y-2 w-full mt-4">
       {urdf === null ? (
@@ -137,25 +151,64 @@ const ListingUrdf = (props: Props) => {
       ) : (
         urdf.urdf !== null && (
           <>
-            <Canvas className="aspect-square rounded-lg">
-              <PerspectiveCamera
-                makeDefault
-                fov={50}
-                aspect={window.innerWidth / window.innerHeight}
-                position={[1, 1, 0]}
-                up={[0, 0, 1]}
-                near={0.1}
-                far={14}
-              ></PerspectiveCamera>
-              <directionalLight color={0xeb4634} position={[1, 0.75, 0.5]} />
-              <directionalLight color={0xccccff} position={[-1, 0.75, -0.5]} />
-              <OrbitControls zoomSpeed={0.2} />
-              <Suspense fallback={<Loader />}>
-                <Center>
-                  <UrdfModel url={urdf.urdf.url} />
-                </Center>
-              </Suspense>
-            </Canvas>
+            {showUrdf ? (
+              <>
+                <div className="flex justify-center">
+                  <Button
+                    onClick={() => setShowUrdf(false)}
+                    variant="secondary"
+                    className="rounded-full"
+                  >
+                    <code>hide urdf</code>
+                  </Button>
+                </div>
+                <RequireAuthentication onClosed={() => setShowUrdf(false)}>
+                  {/* <Canvas className="aspect-square rounded-lg">
+                  <PerspectiveCamera
+                    makeDefault
+                    fov={50}
+                    aspect={window.innerWidth / window.innerHeight}
+                    position={[1, 1, 0]}
+                    up={[0, 0, 1]}
+                    near={0.1}
+                    far={14}
+                  ></PerspectiveCamera>
+                  <directionalLight
+                    color={0xeb4634}
+                    position={[1, 0.75, 0.5]}
+                  />
+                  <directionalLight
+                    color={0xccccff}
+                    position={[-1, 0.75, -0.5]}
+                  />
+                  <OrbitControls zoomSpeed={0.2} />
+                  <Suspense fallback={<Loader />}>
+                    <Center>
+                      <UrdfModel url={urdf.urdf.url} />
+                    </Center>
+                  </Suspense>
+                </Canvas> */}
+                  <Button
+                    onClick={onClickCopyButton}
+                    variant="ghost"
+                    className="rounded-full"
+                    disabled={clickedCopyButton}
+                  >
+                    <code>{clickedCopyButton ? "copied!" : urdf.urdf.url}</code>
+                  </Button>
+                </RequireAuthentication>
+              </>
+            ) : (
+              <div className="flex justify-center">
+                <Button
+                  onClick={() => setShowUrdf(true)}
+                  variant="secondary"
+                  className="rounded-full"
+                >
+                  <code>show urdf</code>
+                </Button>
+              </div>
+            )}
 
             {/* Delete button */}
             {edit && (
@@ -193,47 +246,52 @@ const ListingUrdf = (props: Props) => {
       )}
 
       {/* Upload */}
-      {edit && (
-        <FileUploader
-          value={files}
-          onValueChange={setFiles}
-          dropzoneOptions={{
-            accept: {
-              "application/gzip": [".tar.gz", ".tgz"],
-              "application/zip": [".zip"],
-            },
-            maxSize: 25 * 1024 * 1024,
-            maxFiles: 1,
-          }}
-          className="relative bg-background mt-4 rounded-lg"
-        >
-          <FileInput>
-            <div className="flex justify-center w-full h-32">
-              <div className="align-middle h-full justify-center flex flex-col">
-                <div className="text-center">Upload a new URDF</div>
-                <div className="text-center">
-                  File extensions: .zip, .tgz, .tar.gz
+      {edit &&
+        (uploading ? (
+          <div className="flex justify-center">
+            <Spinner />
+          </div>
+        ) : (
+          <FileUploader
+            value={files}
+            onValueChange={setFiles}
+            dropzoneOptions={{
+              accept: {
+                "application/gzip": [".tar.gz", ".tgz"],
+                "application/zip": [".zip"],
+              },
+              maxSize: 25 * 1024 * 1024,
+              maxFiles: 1,
+            }}
+            className="relative bg-background mt-4 rounded-lg"
+          >
+            <FileInput>
+              <div className="flex justify-center w-full h-32">
+                <div className="align-middle h-full justify-center flex flex-col">
+                  <div className="text-center">Upload a new URDF</div>
+                  <div className="text-center">
+                    File extensions: .zip, .tgz, .tar.gz
+                  </div>
                 </div>
               </div>
-            </div>
-          </FileInput>
-          <FileUploaderContent>
-            {files &&
-              files.length > 0 &&
-              files.map((file, index: number) => (
-                <FileUploaderItem key={index} index={index}>
-                  <Paperclip className="h-4 w-4 stroke-current" />
-                  <span>{file.name}</span>
-                </FileUploaderItem>
-              ))}
-          </FileUploaderContent>
-          {files && files.length > 0 && (
-            <FileSubmitButton onClick={onUpload}>
-              <span>Upload</span>
-            </FileSubmitButton>
-          )}
-        </FileUploader>
-      )}
+            </FileInput>
+            <FileUploaderContent>
+              {files &&
+                files.length > 0 &&
+                files.map((file, index: number) => (
+                  <FileUploaderItem key={index} index={index}>
+                    <Paperclip className="h-4 w-4 stroke-current" />
+                    <span>{file.name}</span>
+                  </FileUploaderItem>
+                ))}
+            </FileUploaderContent>
+            {files && files.length > 0 && (
+              <FileSubmitButton onClick={onUpload}>
+                <span>Upload</span>
+              </FileSubmitButton>
+            )}
+          </FileUploader>
+        ))}
     </div>
   ) : null;
 };

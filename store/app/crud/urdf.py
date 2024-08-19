@@ -9,6 +9,7 @@ import io
 import logging
 import tarfile
 import zipfile
+from pathlib import Path
 from typing import IO, Iterator
 from xml.etree import ElementTree as ET
 
@@ -40,6 +41,9 @@ def iter_components(file: IO[bytes], compression_type: CompressedArtifactType) -
         case "zip":
             with zipfile.ZipFile(file) as zipf:
                 for name in zipf.namelist():
+                    # Fix for MacOS.
+                    if name.startswith("__MACOS"):
+                        continue
                     with zipf.open(name) as zipdata:
                         yield name, zipdata
 
@@ -66,7 +70,6 @@ class UrdfCrud(ArtifactsCrud):
         urdf: tuple[str, ET.ElementTree] | None = None
         meshes: list[tuple[str, trimesh.Trimesh]] = []
 
-
         compressed_data = await file.read()
         for name, data in iter_components(io.BytesIO(compressed_data), compression_type):
             suffix = name.lower().split(".")[-1]
@@ -85,7 +88,7 @@ class UrdfCrud(ArtifactsCrud):
                     tmesh = trimesh.load(data, file_type=suffix)
                     assert isinstance(tmesh, trimesh.Trimesh)
                 except Exception:
-                    print(data)
+                    print(data.read())
                     raise BadArtifactError(f"Invalid mesh file: {name}")
                 meshes.append((name, tmesh))
 
@@ -97,14 +100,16 @@ class UrdfCrud(ArtifactsCrud):
         urdf_name, urdf_tree = urdf
 
         # Checks that all of the mesh files are referenced.
-        mesh_names = {name for name, _ in meshes}
+        mesh_names = {Path(name) for name, _ in meshes}
         for mesh in urdf_tree.iter("mesh"):
             if (filename := mesh.get("filename")) is None:
                 raise BadArtifactError("Mesh element missing filename attribute.")
-            if filename not in mesh_names:
-                raise BadArtifactError(f"Mesh referenced in URDF was not uploaded: {filename}")
-            mesh_names.remove(filename)
-            mesh.set("filename", f"{filename.rsplit('.', 1)[0]}.obj")
+            filepath = Path(filename).relative_to(".")
+            if filepath not in mesh_names:
+                print(mesh_names)
+                raise BadArtifactError(f"Mesh referenced in URDF was not uploaded: {filepath}")
+            mesh_names.remove(filepath)
+            mesh.set("filename", str(filepath.with_suffix(".obj")))
         if mesh_names:
             raise BadArtifactError(f"Mesh files uploaded were not referenced: {mesh_names}")
 
