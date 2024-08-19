@@ -153,6 +153,9 @@ class UserCrud(BaseCrud):
     async def delete_api_key(self, token: APIKey | str) -> None:
         await self._delete_item(token)
 
+    async def list_api_keys(self, user_id: str) -> list[APIKey]:
+        return await self._get_items_from_secondary_index("user_id", user_id, APIKey)
+
 
 async def test_adhoc() -> None:
     async with UserCrud() as crud:

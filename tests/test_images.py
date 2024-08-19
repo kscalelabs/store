@@ -1,6 +1,5 @@
 """Runs tests on the image uploading APIs."""
 
-import json
 from pathlib import Path
 
 from fastapi import status
