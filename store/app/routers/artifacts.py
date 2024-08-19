@@ -10,11 +10,12 @@ from pydantic.main import BaseModel
 
 from store.app.db import Crud
 from store.app.model import (
-    UPLOAD_CONTENT_TYPE_OPTIONS,
-    Artifact,
     ArtifactSize,
     ArtifactType,
     User,
+    can_write_artifact,
+    can_write_listing,
+    check_content_type,
     get_artifact_type,
     get_artifact_url,
 )
@@ -98,20 +99,10 @@ def validate_file(file: UploadFile) -> tuple[str, ArtifactType]:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Artifact size is too large; {file.size} is greater than {settings.artifact.max_bytes} bytes",
         )
-    if (content_type := file.content_type) is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Artifact content type was not provided",
-        )
 
     # Parses the artifact type from the content type and filename.
-    artifact_type = get_artifact_type(content_type, file.filename)
-    if content_type not in UPLOAD_CONTENT_TYPE_OPTIONS[artifact_type]:
-        content_type_options_string = ", ".join(UPLOAD_CONTENT_TYPE_OPTIONS[artifact_type])
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid content type {content_type}; expected one of {content_type_options_string}",
-        )
+    artifact_type = get_artifact_type(file.content_type, file.filename)
+    check_content_type(file.content_type, artifact_type)
 
     return file.filename, artifact_type
 
@@ -134,6 +125,11 @@ async def upload(
 ) -> UploadArtifactResponse:
     # Converts the metadata JSON string to a Pydantic model.
     data = UploadArtifactRequest.model_validate_json(metadata)
+    if len(files) > settings.artifact.max_concurrent_file_uploads:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Too many files were uploaded concurrently",
+        )
     filenames = [validate_file(file) for file in files]
 
     # Makes sure that filenames are unique.
@@ -150,27 +146,25 @@ async def upload(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Could not find listing associated with the given id",
         )
+    if not await can_write_listing(user, listing):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User does not have permission to upload artifacts to this listing",
+        )
 
     # Uploads the artifacts in chunks and adds them to the listing.
-    artifacts: list[tuple[Artifact, bool]] = []
-    for chunk_start in range(0, len(files), settings.artifact.upload_chunk_size):
-        files_chunk = files[chunk_start : chunk_start + settings.artifact.upload_chunk_size]
-        filenames_chunk = filenames[chunk_start : chunk_start + settings.artifact.upload_chunk_size]
-        artifacts.extend(
-            await asyncio.gather(
-                *(
-                    crud.upload_artifact(
-                        file=file.file,
-                        name=filename,
-                        listing=listing,
-                        user_id=user.id,
-                        artifact_type=artifact_type,
-                        description=data.description,
-                    )
-                    for file, (filename, artifact_type) in zip(files_chunk, filenames_chunk)
-                )
+    artifacts = await asyncio.gather(
+        *(
+            crud.upload_artifact(
+                file=file,
+                name=filename,
+                listing=listing,
+                artifact_type=artifact_type,
+                description=data.description,
             )
+            for file, (filename, artifact_type) in zip(files, filenames)
         )
+    )
 
     return UploadArtifactResponse(
         artifacts=[
@@ -204,8 +198,11 @@ async def edit_artifact(
     artifact_info = await crud.get_raw_artifact(id)
     if artifact_info is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Artifact not found")
-    if artifact_info.user_id != user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this artifact")
+    if not await can_write_artifact(user, artifact_info):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to edit this artifact",
+        )
     await crud.edit_artifact(artifact_id=id, name=artifact.name, description=artifact.description)
     return True
 
@@ -222,8 +219,10 @@ async def delete_artifact(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Could not find artifact associated with the given id",
         )
-
-    # Deletes the artifact from the listing.
-    await crud.remove_artifact(artifact, user.id)
-
+    if not await can_write_artifact(user, artifact):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User does not have permission to delete this artifact",
+        )
+    await crud.remove_artifact(artifact)
     return True

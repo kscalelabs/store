@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Awaitable, Callable, Generic, Hashable, ParamSpec, TypeVar, overload
 from xml.etree import ElementTree as ET
 
+import trimesh
+
 Tk = TypeVar("Tk", bound=Hashable)
 Tv = TypeVar("Tv")
 P = ParamSpec("P")

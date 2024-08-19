@@ -148,11 +148,13 @@ const ListingMeshes = (props: Props) => {
       )}
       {edit && (
         <ListingFileUpload
-          accept={{
-            "application/sla": [".stl"],
-            "application/xml": [".urdf"],
+          dropzoneOptions={{
+            accept: {
+              "application/sla": [".stl"],
+              "application/xml": [".urdf"],
+            },
+            maxSize: 4 * 1024 * 1024,
           }}
-          maxSize={4 * 1024 * 1024}
           listingId={listingId}
           onUpload={(artifact) => {
             setMeshes([

@@ -43,7 +43,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
 
     async def _delete_listing_artifacts(self, listing: Listing) -> None:
         artifacts = await self.get_listing_artifacts(listing.id)
-        await asyncio.gather(*[self.remove_artifact(artifact, listing.user_id) for artifact in artifacts])
+        await asyncio.gather(*[self.remove_artifact(artifact) for artifact in artifacts])
 
     async def _delete_listing_tags(self, listing_id: str) -> None:
         listing_tags = await self._get_items_from_secondary_index("listing_id", listing_id, ListingTag)
@@ -51,10 +51,12 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
 
     async def delete_listing(self, listing: Listing) -> None:
         await asyncio.gather(
-            self._delete_item(listing),
             self._delete_listing_artifacts(listing),
             self._delete_listing_tags(listing.id),
         )
+
+        # Only delete the listing after all artifacts have been removed.
+        await self._delete_item(listing)
 
     async def edit_listing(
         self,

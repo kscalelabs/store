@@ -8,10 +8,12 @@ from typing import AsyncGenerator, Literal, Self
 from store.app.crud.artifacts import ArtifactsCrud
 from store.app.crud.base import TABLE_NAME, BaseCrud
 from store.app.crud.listings import ListingsCrud
+from store.app.crud.urdf import UrdfCrud
 from store.app.crud.users import UserCrud
 
 
 class Crud(
+    UrdfCrud,
     UserCrud,
     ListingsCrud,
     ArtifactsCrud,

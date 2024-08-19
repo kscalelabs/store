@@ -27,6 +27,7 @@ uvicorn[standard]
 
 # Processing dependencies.
 numpy-stl
+trimesh
 
 # Types
 types-aioboto3[dynamodb, s3]

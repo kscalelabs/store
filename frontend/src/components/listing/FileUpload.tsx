@@ -76,10 +76,7 @@ export const FileUploader = forwardRef<
     const [isFileTooBig, setIsFileTooBig] = useState(false);
     const [activeIndex, setActiveIndex] = useState(-1);
     const {
-      accept = {
-        "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp"],
-        "application/xml": [".urdf"],
-      },
+      accept,
       maxSize = 4 * 1024 * 1024,
       multiple = true,
     } = dropzoneOptions;

@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
 from store.app.db import Crud
-from store.app.model import Listing, User, get_artifact_url
+from store.app.model import Listing, User, can_write_listing, get_artifact_url
 from store.app.routers.users import (
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
@@ -115,37 +115,8 @@ class NewListingResponse(BaseModel):
 async def add_listing(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
-    # metadata: Annotated[str, Form()],
-    # files: list[UploadFile] = Form(...),
     data: NewListingRequest,
 ) -> NewListingResponse:
-    # # Checks that the content type is valid.
-    # for file in files:
-    #     if file.filename is None:
-    #         raise HTTPException(
-    #             status_code=status.HTTP_400_BAD_REQUEST,
-    #             detail="Image filename was not provided",
-    #         )
-    #     if file.size is None or file.size < settings.image.min_bytes or file.size > settings.image.max_bytes:
-    #         raise HTTPException(
-    #             status_code=status.HTTP_400_BAD_REQUEST,
-    #             detail="Invalid image size",
-    #         )
-    #     if (content_type := file.content_type) is None:
-    #         raise HTTPException(
-    #             status_code=status.HTTP_400_BAD_REQUEST,
-    #             detail="Artifact content type was not provided",
-    #         )
-    #     if content_type not in UPLOAD_CONTENT_TYPE_OPTIONS["image"]:
-    #         content_type_options_string = ", ".join(UPLOAD_CONTENT_TYPE_OPTIONS["image"])
-    #         raise HTTPException(
-    #             status_code=status.HTTP_400_BAD_REQUEST,
-    #             detail=f"Invalid content type {content_type}; expected one of {content_type_options_string}",
-    #         )
-
-    # Converts the metadata JSON string to a Pydantic model.
-    # data = NewListingRequest.model_validate_json(metadata)
-
     # Creates a new listing.
     listing = Listing.create(
         name=data.name,
@@ -154,20 +125,6 @@ async def add_listing(
         child_ids=data.child_ids,
     )
     await crud.add_listing(listing)
-
-    # Uploads all the images.
-    # await asyncio.gather(
-    #     crud.upload_artifact(
-    #         file=file.file,
-    #         name=cast(str, file.filename),  # Validated above.
-    #         listing=listing,
-    #         user_id=user.id,
-    #         artifact_type="image",
-    #         description=data.description,
-    #     )
-    #     for file in files
-    # )
-
     return NewListingResponse(listing_id=listing.id)
 
 
@@ -180,8 +137,11 @@ async def delete_listing(
     listing = await crud.get_listing(listing_id)
     if listing is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
-    if listing.user_id != user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this listing")
+    if not await can_write_listing(user, listing):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to delete this listing.",
+        )
     await crud.delete_listing(listing)
     return True
 
@@ -203,8 +163,11 @@ async def edit_listing(
     listing_info = await crud.get_listing(id)
     if listing_info is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found.")
-    if listing_info.user_id != user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not own this listing.")
+    if not await can_write_listing(user, listing_info):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to edit this listing.",
+        )
     if listing.name is not None and len(listing.name) < 4:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

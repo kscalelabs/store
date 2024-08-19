@@ -148,7 +148,12 @@ class APIKey(StoreBaseModel):
 
 
 ArtifactSize = Literal["small", "large"]
-ArtifactType = Literal["image", "urdf", "mjcf", "stl"]
+
+ImageArtifactType = Literal["image"]
+XMLArtifactType = Literal["urdf", "mjcf"]
+MeshArtifactType = Literal["stl", "obj", "dae", "ply"]
+CompressedArtifactType = Literal["tgz", "zip"]
+ArtifactType = ImageArtifactType | XMLArtifactType | MeshArtifactType | CompressedArtifactType
 
 UPLOAD_CONTENT_TYPE_OPTIONS: dict[ArtifactType, set[str]] = {
     # Image
@@ -156,8 +161,19 @@ UPLOAD_CONTENT_TYPE_OPTIONS: dict[ArtifactType, set[str]] = {
     # XML
     "urdf": {"application/octet-stream", "text/xml", "application/xml"},
     "mjcf": {"application/octet-stream", "text/xml", "application/xml"},
-    # Binary or text
+    # Meshes
     "stl": {"application/octet-stream", "text/plain"},
+    "obj": {"application/octet-stream", "text/plain"},
+    "dae": {"application/octet-stream", "text/plain"},
+    "ply": {"application/octet-stream", "text/plain"},
+    # Compressed
+    "tgz": {
+        "application/gzip",
+        "application/x-gzip",
+        "application/x-tar",
+        "application/x-compressed-tar",
+    },
+    "zip": {"application/zip"},
 }
 
 DOWNLOAD_CONTENT_TYPE: dict[ArtifactType, str] = {
@@ -168,6 +184,12 @@ DOWNLOAD_CONTENT_TYPE: dict[ArtifactType, str] = {
     "mjcf": "application/octet-stream",
     # Binary
     "stl": "application/octet-stream",
+    "obj": "application/octet-stream",
+    "dae": "application/octet-stream",
+    "ply": "application/octet-stream",
+    # Compressed
+    "tgz": "application/gzip",
+    "zip": "application/zip",
 }
 
 SizeMapping: dict[ArtifactSize, tuple[int, int]] = {
@@ -176,30 +198,81 @@ SizeMapping: dict[ArtifactSize, tuple[int, int]] = {
 }
 
 
-def get_artifact_type(content_type: str, filename: str) -> ArtifactType:
+def get_artifact_type(content_type: str | None, filename: str | None) -> ArtifactType:
+    """Determines the artifact type from the content type or filename.
+
+    Args:
+        content_type: The content type of the file.
+        filename: The name of the file.
+
+    Returns:
+        The artifact type.
+
+    Raises:
+        ValueError: If the artifact type cannot be determined.
+    """
     # Attempts to determine from file extension.
-    extension = filename.split(".")[-1].lower()
-    if extension in ("png", "jpeg", "jpg", "gif", "webp"):
-        return "image"
-    if extension in ("urdf", "xml"):
-        return "urdf"
-    if extension in ("mjcf",):
-        return "mjcf"
-    if extension in ("stl",):
-        return "stl"
+    if filename is not None:
+        extension = filename.split(".")[-1].lower()
+        if extension in ("png", "jpeg", "jpg", "gif", "webp"):
+            return "image"
+        if extension in ("urdf",):
+            return "urdf"
+        if extension in ("mjcf", "xml"):
+            return "mjcf"
+        if extension in ("stl",):
+            return "stl"
+        if extension in ("obj",):
+            return "obj"
+        if extension in ("dae",):
+            return "dae"
+        if extension in ("ply",):
+            return "ply"
+        if extension in ("tgz", "tar.gz"):
+            return "tgz"
+        if extension in ("zip",):
+            return "zip"
 
     # Attempts to determine from content type.
-    if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["image"]:
-        return "image"
-    if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["urdf"]:
-        return "urdf"
-    if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["mjcf"]:
-        return "mjcf"
-    if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["stl"]:
-        return "stl"
+    if content_type is not None:
+        if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["image"]:
+            return "image"
+        if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["urdf"]:
+            return "urdf"
+        if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["mjcf"]:
+            return "mjcf"
+        if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["stl"]:
+            return "stl"
+        if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["obj"]:
+            return "obj"
+        if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["dae"]:
+            return "dae"
+        if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["ply"]:
+            return "ply"
+        if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["tgz"]:
+            return "tgz"
+        if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["zip"]:
+            return "zip"
 
     # Throws a value error if the type cannot be determined.
     raise ValueError(f"Unknown content type for file: {filename}")
+
+
+def check_content_type(content_type: str | None, artifact_type: ArtifactType) -> None:
+    """Checks that the content type is valid for the artifact type.
+
+    Args:
+        content_type: The content type of the artifact.
+        artifact_type: The type of the artifact.
+
+    Raises:
+        ValueError: If the content type is not valid for the artifact type.
+    """
+    if content_type is None:
+        raise ValueError("Artifact content type was not provided")
+    if content_type not in UPLOAD_CONTENT_TYPE_OPTIONS[artifact_type]:
+        content_type_options_string = ", ".join(UPLOAD_CONTENT_TYPE_OPTIONS[artifact_type])
+        raise ValueError(f"Invalid content type for artifact; {content_type} not in [{content_type_options_string}]")
 
 
 def get_content_type(artifact_type: ArtifactType) -> str:
@@ -222,6 +295,7 @@ class Artifact(StoreBaseModel):
     sizes: list[ArtifactSize] | None = None
     description: str | None = None
     timestamp: int
+    children: list[str] | None = None
 
     @classmethod
     def create(
@@ -232,6 +306,7 @@ class Artifact(StoreBaseModel):
         artifact_type: ArtifactType,
         sizes: list[ArtifactSize] | None = None,
         description: str | None = None,
+        children: list[str] | None = None,
     ) -> Self:
         return cls(
             id=new_uuid(),
@@ -313,11 +388,7 @@ def get_artifact_name(
         case "image":
             height, width = SizeMapping[size]
             return f"{listing_id}/{size}_{height}x{width}_{name}"
-        case "urdf":
-            return f"{listing_id}/{name}"
-        case "mjcf":
-            return f"{listing_id}/{name}"
-        case "stl":
+        case "urdf" | "mjcf" | "stl" | "tgz":
             return f"{listing_id}/{name}"
         case _:
             raise ValueError(f"Unknown artifact type: {artifact_type}")
@@ -339,3 +410,19 @@ def get_artifact_url(
         size=size,
     )
     return f"{settings.site.artifact_base_url}/{artifact_name}"
+
+
+async def can_write_artifact(user: User, artifact: Artifact) -> bool:
+    if user.permissions is not None and "is_admin" in user.permissions:
+        return True
+    if user.id == artifact.user_id:
+        return True
+    return False
+
+
+async def can_write_listing(user: User, listing: Listing) -> bool:
+    if user.permissions is not None and "is_admin" in user.permissions:
+        return True
+    if user.id == listing.user_id:
+        return True
+    return False

@@ -123,10 +123,12 @@ const ListingImages = (props: Props) => {
       )}
       {edit && (
         <ListingFileUpload
-          accept={{
-            "image/*": [".jpg", ".jpeg", ".png", ".webp"],
+          dropzoneOptions={{
+            accept: {
+              "image/*": [".jpg", ".jpeg", ".png", ".webp"],
+            },
+            maxSize: 4 * 1024 * 1024,
           }}
-          maxSize={4 * 1024 * 1024}
           listingId={listingId}
           onUpload={(artifact) => {
             setImages([
