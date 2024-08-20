@@ -140,19 +140,21 @@ const APIKeys = () => {
             <Spinner />
           ) : (
             <>
-              {apiKeys.map((key) => (
-                <div key={key.token} className="py-4">
-                  <SingleKey
-                    token={key.token}
-                    permissions={key.permissions}
-                    onDelete={() => {
-                      setApiKeys(
-                        apiKeys ? apiKeys.filter((k) => k !== key) : null,
-                      );
-                    }}
-                  />
-                </div>
-              ))}
+              {apiKeys
+                .sort((a, b) => a.token.localeCompare(b.token))
+                .map((key) => (
+                  <div key={key.token} className="py-4">
+                    <SingleKey
+                      token={key.token}
+                      permissions={key.permissions}
+                      onDelete={() => {
+                        setApiKeys(
+                          apiKeys ? apiKeys.filter((k) => k !== key) : null,
+                        );
+                      }}
+                    />
+                  </div>
+                ))}
               <div className="pt-4">
                 <label className="inline-flex items-center cursor-pointer align-middle pr-4">
                   <input

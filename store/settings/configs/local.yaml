@@ -2,7 +2,7 @@ crypto:
   jwt_secret: fakeJwtSecret
 s3:
   bucket: artifacts
-  prefix: ""
+  prefix: media
 dynamo:
   table_name: kscale-store-local
 site:

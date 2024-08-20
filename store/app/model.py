@@ -451,3 +451,15 @@ async def can_write_listing(user: User, listing: Listing) -> bool:
     if user.id == listing.user_id:
         return True
     return False
+
+
+async def can_read_artifact(user: User, artifact: Artifact) -> bool:
+    # For now, all users can read all artifacts. In the future we might change
+    # this so that users can hide their artifacts.
+    return True
+
+
+async def can_read_listing(user: User, listing: Listing) -> bool:
+    # For now, all users can read all listings. In the future we might change
+    # this so that users can hide their listings.
+    return True

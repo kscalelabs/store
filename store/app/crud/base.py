@@ -15,6 +15,7 @@ from typing import (
 )
 
 import aioboto3
+from aiobotocore.response import StreamingBody
 from boto3.dynamodb.conditions import Attr, ComparisonCondition, Key
 from botocore.exceptions import ClientError
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
@@ -374,14 +375,26 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
                 in the file header when the user retrieves it.
         """
         bucket = await self.s3.Bucket(settings.s3.bucket)
-        await bucket.upload_fileobj(
-            data,
-            f"{settings.s3.prefix}{filename}",
-            ExtraArgs={
-                "ContentType": content_type,
-                "ContentDisposition": f'attachment; filename="{name}"',
-            },
+        await bucket.put_object(
+            Key=f"{settings.s3.prefix}{filename}",
+            Body=data,
+            ContentType=content_type,
+            ContentDisposition=f'attachment; filename="{name}"',
         )
+
+    async def _download_from_s3(self, filename: str) -> StreamingBody:
+        """Downloads an object from S3.
+
+        Args:
+            filename: The filename of the object to download.
+
+        Returns:
+            The object data.
+        """
+        bucket = await self.s3.Bucket(settings.s3.bucket)
+        obj = await bucket.Object(f"{settings.s3.prefix}{filename}")
+        data = await obj.get()
+        return data["Body"]
 
     async def _delete_from_s3(self, filename: str) -> None:
         """Deletes an object from S3.

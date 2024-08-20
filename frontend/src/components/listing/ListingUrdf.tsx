@@ -133,9 +133,9 @@ const ListingUrdf = (props: Props) => {
 
   const onClickCopyButton = async () => {
     setClickedCopyButton(true);
-    const url = urdf?.urdf?.url;
-    if (url) {
-      navigator.clipboard.writeText(url);
+    const urdfListingId = urdf?.listing_id;
+    if (urdfListingId) {
+      navigator.clipboard.writeText(urdfListingId);
     }
 
     setTimeout(() => {
@@ -195,7 +195,11 @@ const ListingUrdf = (props: Props) => {
                     className="rounded-full"
                     disabled={clickedCopyButton}
                   >
-                    <code>{clickedCopyButton ? "copied!" : urdf.urdf.url}</code>
+                    <code>
+                      {clickedCopyButton
+                        ? "copied!"
+                        : `kscale urdf get ${urdf.listing_id}`}
+                    </code>
                   </Button>
                 </RequireAuthentication>
               </>

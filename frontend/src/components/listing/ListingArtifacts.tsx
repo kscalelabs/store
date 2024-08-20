@@ -5,7 +5,6 @@ import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
 import ListingImages from "components/listing/ListingImages";
-import ListingMeshes from "components/listing/ListingMeshes";
 import Spinner from "components/ui/Spinner";
 
 interface Props {
@@ -58,11 +57,11 @@ const ListingArtifacts = (props: Props) => {
         edit={edit}
         allArtifacts={artifacts}
       />
-      <ListingMeshes
+      {/* <ListingMeshes
         listingId={listingId}
         edit={edit}
         allArtifacts={artifacts}
-      />
+      /> */}
     </div>
   );
 };
