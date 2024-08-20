@@ -162,6 +162,11 @@ class UserCrud(BaseCrud):
 
         user = await self.get_user(user_id, throw_if_missing=True)
 
+        # Ensure all fields are present
+        for key in User.__annotations__.keys():
+            if not hasattr(user, key):
+                setattr(user, key, None)
+
         for key, value in updates.items():
             if hasattr(user, key):
                 setattr(user, key, value)
