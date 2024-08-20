@@ -354,25 +354,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get Urdf Info */
-        get: operations["get_urdf_info_urdf_info__listing_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/urdf/download/{listing_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Download Urdf */
-        get: operations["download_urdf_urdf_download__listing_id__get"];
+        /** Get Urdf */
+        get: operations["get_urdf_urdf_info__listing_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -936,10 +919,16 @@ export interface components {
             /** Artifacts */
             artifacts: components["schemas"]["ListArtifactsItem"][];
         };
+        /** UrdfInfo */
+        UrdfInfo: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Url */
+            url: string;
+        };
         /** UrdfResponse */
         UrdfResponse: {
-            /** Urdf Id */
-            urdf_id: string | null;
+            urdf: components["schemas"]["UrdfInfo"] | null;
             /** Listing Id */
             listing_id: string;
         };
@@ -1620,7 +1609,7 @@ export interface operations {
             };
         };
     };
-    get_urdf_info_urdf_info__listing_id__get: {
+    get_urdf_urdf_info__listing_id__get: {
         parameters: {
             query?: never;
             header?: never;
@@ -1638,37 +1627,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UrdfResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    download_urdf_urdf_download__listing_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                listing_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

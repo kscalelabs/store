@@ -150,7 +150,7 @@ const ListingUrdf = (props: Props) => {
           <Spinner />
         </div>
       ) : (
-        urdf.urdf_id !== null && (
+        urdf.urdf !== null && (
           <>
             {showUrdf ? (
               <>

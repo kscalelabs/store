@@ -92,6 +92,7 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
         data = response.json()
         assert data["urdf_id"] is not None
 
+    # Downloads and checks that the files were converted to OBJ files.
     response = await app_client.get(f"/urdf/download/{listing_id}", headers=auth_headers)
     assert response.status_code == status.HTTP_200_OK, response.content
     with tempfile.NamedTemporaryFile(suffix=".tgz") as f:
