@@ -44,6 +44,9 @@ def iter_components(file: IO[bytes], compression_type: CompressedArtifactType) -
                     # Fix for MacOS.
                     if name.startswith("__MACOS"):
                         continue
+                    # Ignore folders.
+                    if name.endswith("/"):
+                        continue
                     with zipf.open(name) as zipdata:
                         yield name, zipdata
 
