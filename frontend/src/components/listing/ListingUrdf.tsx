@@ -125,6 +125,7 @@ const ListingUrdf = (props: Props) => {
     if (error) {
       addErrorAlert(error);
     } else {
+      setFiles(null);
       setUrdf(data);
     }
     setUploading(false);
