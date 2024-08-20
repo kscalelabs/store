@@ -2,7 +2,7 @@
 
 import asyncio
 import warnings
-from typing import Literal, overload
+from typing import Any, Literal, overload
 
 from store.app.crud.base import BaseCrud
 from store.app.model import (
@@ -155,6 +155,24 @@ class UserCrud(BaseCrud):
 
     async def list_api_keys(self, user_id: str) -> list[APIKey]:
         return await self._get_items_from_secondary_index("user_id", user_id, APIKey)
+
+    async def update_user(self, user_id: str, updates: dict[str, Any]) -> User:
+        if not updates:
+            raise ValueError("No updates provided")
+
+        user = await self.get_user(user_id, throw_if_missing=True)
+
+        for key, value in updates.items():
+            if hasattr(user, key):
+                setattr(user, key, value)
+            else:
+                raise ValueError(f"Invalid field: {key}")
+
+        user.update_timestamp()
+
+        await self._update_item(user_id, User, user.model_dump())
+
+        return user
 
 
 async def test_adhoc() -> None:

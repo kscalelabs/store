@@ -2,9 +2,9 @@
 
 import logging
 from email.utils import parseaddr as parse_email_address
-from typing import Annotated, Literal, Self, overload
+from typing import Annotated, Any, Literal, Self, overload
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
 from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel
 from pydantic.networks import EmailStr
@@ -65,46 +65,39 @@ async def maybe_get_request_api_key_id(request: Request) -> str | None:
     return await _get_request_api_key_id_base(request, False)
 
 
-async def get_session_user_with_read_permission(
-    crud: Annotated[Crud, Depends(Crud.get)],
-    api_key_id: Annotated[str, Depends(get_request_api_key_id)],
+async def get_session_user_with_permission(
+    permission: str,
+    crud: Crud,
+    api_key_id: str,
 ) -> User:
     try:
         api_key = await crud.get_api_key(api_key_id)
-        if api_key.permissions is None or "read" not in api_key.permissions:
+        if api_key.permissions is None or permission not in api_key.permissions:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
-        try:
-            return await crud.get_user(api_key.user_id, throw_if_missing=True)
-        except ItemNotFoundError:
-            raise NotAuthenticatedError("Not authenticated")
+        return await crud.get_user(api_key.user_id, throw_if_missing=True)
     except ItemNotFoundError:
         raise NotAuthenticatedError("Not authenticated")
+
+
+async def get_session_user_with_read_permission(
+    crud: Crud = Depends(Crud.get),
+    api_key_id: str = Depends(get_request_api_key_id),
+) -> User:
+    return await get_session_user_with_permission("read", crud, api_key_id)
 
 
 async def get_session_user_with_write_permission(
-    crud: Annotated[Crud, Depends(Crud.get)],
-    api_key_id: Annotated[str, Depends(get_request_api_key_id)],
+    crud: Crud = Depends(Crud.get),
+    api_key_id: str = Depends(get_request_api_key_id),
 ) -> User:
-    try:
-        api_key = await crud.get_api_key(api_key_id)
-        if api_key.permissions is None or "write" not in api_key.permissions:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
-        return await crud.get_user(api_key.user_id, throw_if_missing=True)
-    except ItemNotFoundError:
-        raise NotAuthenticatedError("Not authenticated")
+    return await get_session_user_with_permission("write", crud, api_key_id)
 
 
 async def get_session_user_with_admin_permission(
-    crud: Annotated[Crud, Depends(Crud.get)],
-    api_key_id: Annotated[str, Depends(get_request_api_key_id)],
+    crud: Crud = Depends(Crud.get),
+    api_key_id: str = Depends(get_request_api_key_id),
 ) -> User:
-    try:
-        api_key = await crud.get_api_key(api_key_id)
-        if api_key.permissions is None or "admin" not in api_key.permissions:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
-        return await crud.get_user(api_key.user_id, throw_if_missing=True)
-    except ItemNotFoundError:
-        raise NotAuthenticatedError("Not authenticated")
+    return await get_session_user_with_permission("admin", crud, api_key_id)
 
 
 async def maybe_get_user_from_api_key(
@@ -251,14 +244,23 @@ async def login_user(data: LoginRequest, user_crud: UserCrud = Depends()) -> Log
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
 
-        # Ensure `hashed_password` is not None before verifying
-        if user.hashed_password is None or not verify_password(data.password, user.hashed_password):
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+        # Determine if the user logged in via OAuth or hashed password
+        if user.hashed_password is None:
+            # OAuth login
+            if user.google_id or user.github_id:
+                source = "oauth"
+            else:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unknown login source")
+        else:
+            # Password login
+            if not verify_password(data.password, user.hashed_password):
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+            source = "password"
 
         api_key = await user_crud.add_api_key(
             user.id,
-            source="oauth",
-            permissions="full",
+            source=source,
+            permissions="full",  # Users with verified email accounts have full permissions.
         )
 
         return LoginResponse(user_id=user.id, token=api_key.id)
@@ -292,7 +294,7 @@ async def get_user_info_by_id_endpoint(id: str, crud: Annotated[Crud, Depends(Cr
 
 @users_router.get("/public/me", response_model=UserPublic)
 async def get_my_public_user_info_endpoint(
-    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+    user: User = Depends(get_session_user_with_read_permission),
 ) -> PublicUserInfoResponseItem:
     return PublicUserInfoResponseItem.from_user(user)
 
@@ -300,12 +302,31 @@ async def get_my_public_user_info_endpoint(
 @users_router.get("/public/{id}", response_model=UserPublic)
 async def get_public_user_info_by_id_endpoint(
     id: str,
-    user_crud: Annotated[Crud, Depends(Crud.get)],
+    crud: Crud = Depends(Crud.get),
 ) -> PublicUserInfoResponseItem:
-    user = await user_crud.get_user_public(id)
+    user = await crud.get_user_public(id)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return PublicUserInfoResponseItem.from_user(user)
+
+
+@users_router.put("/me", response_model=UserPublic)
+async def update_profile(
+    updates: dict[str, Any] = Body(...),
+    user: User = Depends(get_session_user_with_admin_permission),
+    crud: UserCrud = Depends(),
+):
+    try:
+        logger.info("Updates: %s", updates)
+        updated_user = await crud.update_user(user.id, updates)
+        return updated_user
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while updating the profile.",
+        )
 
 
 users_router.include_router(github_auth_router, prefix="/github")

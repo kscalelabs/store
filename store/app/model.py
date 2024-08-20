@@ -121,7 +121,7 @@ class OAuthKey(StoreBaseModel):
         return cls(id=new_uuid(), user_id=user_id, provider=provider, user_token=user_token)
 
 
-APIKeySource = Literal["user", "oauth"]
+APIKeySource = Literal["user", "oauth", "password"]
 APIKeyPermission = Literal["read", "write", "admin"]
 APIKeyPermissionSet = set[APIKeyPermission] | Literal["full", None]
 

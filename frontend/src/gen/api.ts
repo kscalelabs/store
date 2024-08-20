@@ -407,7 +407,8 @@ export interface paths {
         };
         /** Get User Info Endpoint */
         get: operations["get_user_info_endpoint_users_me_get"];
-        put?: never;
+        /** Update Profile */
+        put: operations["update_profile_users_me_put"];
         post?: never;
         /** Delete User Endpoint */
         delete: operations["delete_user_endpoint_users_me_delete"];
@@ -1722,6 +1723,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MyUserInfoResponse"];
+                };
+            };
+        };
+    };
+    update_profile_users_me_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": Record<string, never>;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserPublic"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

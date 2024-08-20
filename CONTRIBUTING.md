@@ -82,6 +82,12 @@ uv pip install -e '.[dev]'  # If using uv
 pip install -e '.[dev]'  # Using vanilla pip
 ```
 
+If the above is not sufficient and packages are missing you can also try running:
+
+```bash
+uv pip install -r store/requirements.txt -r store/requirements-dev.txt # If using uv
+```
+
 Serve the FastAPI application in development mode:
 
 ```bash
