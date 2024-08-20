@@ -88,7 +88,6 @@ class UrdfCrud(ArtifactsCrud):
                     tmesh = trimesh.load(data, file_type=suffix)
                     assert isinstance(tmesh, trimesh.Trimesh)
                 except Exception:
-                    print(data.read())
                     raise BadArtifactError(f"Invalid mesh file: {name}")
                 meshes.append((name, tmesh))
 
@@ -106,7 +105,6 @@ class UrdfCrud(ArtifactsCrud):
                 raise BadArtifactError("Mesh element missing filename attribute.")
             filepath = Path(filename).relative_to(".")
             if filepath not in mesh_names:
-                print(mesh_names)
                 raise BadArtifactError(f"Mesh referenced in URDF was not uploaded: {filepath}")
             mesh_names.remove(filepath)
             mesh.set("filename", str(filepath.with_suffix(".obj")))
@@ -119,7 +117,8 @@ class UrdfCrud(ArtifactsCrud):
             for name, tmesh in meshes:
                 out_file = io.BytesIO()
                 tmesh.export(out_file, file_type="obj")
-                info = tarfile.TarInfo(name)
+                obj_name = Path(name).with_suffix(".obj").as_posix()
+                info = tarfile.TarInfo(obj_name)
                 info.size = out_file.tell()
                 out_file.seek(0)
                 tar.addfile(info, out_file)
