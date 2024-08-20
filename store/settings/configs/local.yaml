@@ -3,7 +3,6 @@ crypto:
 s3:
   bucket: artifacts
   prefix: media
-  private_prefix: private-media
 dynamo:
   table_name: kscale-store-local
 site:

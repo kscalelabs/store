@@ -364,7 +364,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             AttributeUpdates={k: {"Value": v, "Action": "PUT"} for k, v in new_values.items() if k != "id"},
         )
 
-    async def _upload_to_s3(self, data: IO[bytes], name: str, filename: str, content_type: str, private: bool) -> None:
+    async def _upload_to_s3(self, data: IO[bytes], name: str, filename: str, content_type: str) -> None:
         """Uploads some data to S3.
 
         Args:
@@ -373,28 +373,26 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             filename: The resulting filename in S3 (should be unique).
             content_type: The file content type, for CloudFront to provide
                 in the file header when the user retrieves it.
-            private: Whether the object is in the private S3 bucket.
         """
         bucket = await self.s3.Bucket(settings.s3.bucket)
         await bucket.put_object(
-            Key=f"{settings.s3.private_prefix if private else settings.s3.prefix}{filename}",
+            Key=f"{settings.s3.prefix}{filename}",
             Body=data,
             ContentType=content_type,
             ContentDisposition=f'attachment; filename="{name}"',
         )
 
-    async def _download_from_s3(self, filename: str, private: bool) -> StreamingBody:
+    async def _download_from_s3(self, filename: str) -> StreamingBody:
         """Downloads an object from S3.
 
         Args:
             filename: The filename of the object to download.
-            private: Whether the object is in the private S3 bucket.
 
         Returns:
             The object data.
         """
         bucket = await self.s3.Bucket(settings.s3.bucket)
-        obj = await bucket.Object(f"{settings.s3.private_prefix if private else settings.s3.prefix}{filename}")
+        obj = await bucket.Object(f"{settings.s3.prefix}{filename}")
         data = await obj.get()
         return data["Body"]
 
