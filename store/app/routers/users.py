@@ -80,22 +80,22 @@ async def get_session_user_with_permission(
 
 
 async def get_session_user_with_read_permission(
-    crud: Crud = Depends(Crud.get),
-    api_key_id: str = Depends(get_request_api_key_id),
+    crud: Annotated[Crud, Depends(Crud.get)],
+    api_key_id: Annotated[str, Depends(get_request_api_key_id)],
 ) -> User:
     return await get_session_user_with_permission("read", crud, api_key_id)
 
 
 async def get_session_user_with_write_permission(
-    crud: Crud = Depends(Crud.get),
-    api_key_id: str = Depends(get_request_api_key_id),
+    crud: Annotated[Crud, Depends(Crud.get)],
+    api_key_id: Annotated[str, Depends(get_request_api_key_id)],
 ) -> User:
     return await get_session_user_with_permission("write", crud, api_key_id)
 
 
 async def get_session_user_with_admin_permission(
-    crud: Crud = Depends(Crud.get),
-    api_key_id: str = Depends(get_request_api_key_id),
+    crud: Annotated[Crud, Depends(Crud.get)],
+    api_key_id: Annotated[str, Depends(get_request_api_key_id)],
 ) -> User:
     return await get_session_user_with_permission("admin", crud, api_key_id)
 
@@ -313,8 +313,8 @@ async def get_public_user_info_by_id_endpoint(
 @users_router.put("/me", response_model=UserPublic)
 async def update_profile(
     updates: dict[str, Any] = Body(...),
-    user: User = Depends(get_session_user_with_admin_permission),
-    crud: UserCrud = Depends(),
+    user: User = Annotated[User, Depends(get_session_user_with_admin_permission)],
+    crud: Crud = Depends(Crud.get),
 ) -> UserPublic:
     try:
         logger.info("Updates: %s", updates)

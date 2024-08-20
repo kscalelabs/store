@@ -656,6 +656,12 @@ export interface components {
              */
             file: string;
         };
+        /** Body_update_profile_users_me_put */
+        Body_update_profile_users_me_put: {
+            /** Updates */
+            updates: Record<string, never>;
+            user?: components["schemas"]["User"];
+        };
         /** Body_upload_artifacts_upload__listing_id__post */
         Body_upload_artifacts_upload__listing_id__post: {
             /** Files */
@@ -932,6 +938,40 @@ export interface components {
             urdf: components["schemas"]["UrdfInfo"] | null;
             /** Listing Id */
             listing_id: string;
+        };
+        /**
+         * User
+         * @description Defines the user model for the API.
+         *
+         *     Users are defined by their id and email (both unique).
+         *     Hashed password is set if user signs up with email and password, and is
+         *     left empty if the user signed up with Google or Github OAuth.
+         */
+        User: {
+            /** Id */
+            id: string;
+            /** Email */
+            email: string;
+            /** Hashed Password */
+            hashed_password?: string | null;
+            /** Permissions */
+            permissions?: "is_admin"[] | null;
+            /** Created At */
+            created_at: number;
+            /** Updated At */
+            updated_at: number;
+            /** Github Id */
+            github_id?: string | null;
+            /** Google Id */
+            google_id?: string | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Bio */
+            bio?: string | null;
         };
         /** UserInfoResponseItem */
         UserInfoResponseItem: {
@@ -1736,7 +1776,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": Record<string, never>;
+                "application/json": components["schemas"]["Body_update_profile_users_me_put"];
             };
         };
         responses: {
