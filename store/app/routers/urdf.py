@@ -5,17 +5,19 @@ import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi.responses import StreamingResponse
 from pydantic.main import BaseModel
 
-from store.app.crud.urdf import URDF_PACKAGE_NAME
 from store.app.db import Crud
 from store.app.model import (
+    DOWNLOAD_CONTENT_TYPE,
     User,
+    can_read_artifact,
+    can_read_listing,
     can_write_listing,
-    get_artifact_url,
     get_compression_type,
 )
-from store.app.routers.users import get_session_user_with_write_permission
+from store.app.routers.users import get_session_user_with_read_permission, get_session_user_with_write_permission
 from store.settings import settings
 
 urdf_router = APIRouter()
@@ -23,40 +25,75 @@ urdf_router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-def get_urdf_url(listing_id: str) -> str:
-    return get_artifact_url(
-        artifact_type="urdf",
-        listing_id=listing_id,
-        name=URDF_PACKAGE_NAME,
-    )
-
-
-class UrdfInfo(BaseModel):
-    artifact_id: str
-    url: str
-
-
 class UrdfResponse(BaseModel):
-    urdf: UrdfInfo | None
+    urdf_id: str | None
     listing_id: str
 
 
-@urdf_router.get("/info/{listing_id}", response_model=UrdfResponse)
-async def get_urdf(
+@urdf_router.get("/info/{listing_id}")
+async def get_urdf_info(
     listing_id: str,
     crud: Annotated[Crud, Depends(Crud.get)],
+    user: Annotated[User, Depends(get_session_user_with_read_permission)],
 ) -> UrdfResponse:
+    listing = await crud.get_listing(listing_id)
+    if listing is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Could not find listing associated with the given id",
+        )
+    if not await can_read_listing(user, listing):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User does not have permission to view the URDF for this listing",
+        )
     urdf = await crud.get_urdf(listing_id)
     if urdf is None:
-        return UrdfResponse(urdf=None, listing_id=listing_id)
-    return UrdfResponse(
-        urdf=UrdfInfo(artifact_id=urdf.id, url=get_urdf_url(listing_id)),
-        listing_id=listing_id,
+        return UrdfResponse(urdf_id=None, listing_id=listing_id)
+    if not await can_read_artifact(user, urdf):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User does not have permission to view the URDF for this listing",
+        )
+    return UrdfResponse(urdf_id=urdf.id, listing_id=listing_id)
+
+
+@urdf_router.get("/download/{listing_id}")
+async def download_urdf(
+    listing_id: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+) -> StreamingResponse:
+    listing = await crud.get_listing(listing_id)
+    if listing is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Could not find listing associated with the given id",
+        )
+    if not await can_read_listing(user, listing):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User does not have permission to download the URDF for this listing",
+        )
+    urdf = await crud.get_urdf(listing_id)
+    if urdf is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Could not find URDF associated with the given listing id",
+        )
+    if not await can_read_artifact(user, urdf):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User does not have permission to download the URDF for this listing",
+        )
+    urdf_stream = await crud.stream_artifact(urdf)
+    return StreamingResponse(
+        urdf_stream,
+        media_type=DOWNLOAD_CONTENT_TYPE["urdf"],
+        headers={
+            "Content-Disposition": f"attachment; filename={urdf.name}",
+        },
     )
-
-
-class SetUrdfResponse(BaseModel):
-    urdf: UrdfInfo
 
 
 @urdf_router.post("/upload/{listing_id}")
@@ -116,7 +153,7 @@ async def set_urdf(
     )
 
     return UrdfResponse(
-        urdf=UrdfInfo(artifact_id=urdf.id, url=get_urdf_url(listing.id)),
+        urdf_id=urdf.id,
         listing_id=listing.id,
     )
 
@@ -147,4 +184,4 @@ async def delete_urdf(
             detail="User does not have permission to delete the URDF for this listing",
         )
     await crud.remove_artifact(urdf)
-    return UrdfResponse(urdf=None, listing_id=listing_id)
+    return UrdfResponse(urdf_id=None, listing_id=listing_id)

@@ -90,7 +90,17 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
         )
         assert response.status_code == status.HTTP_200_OK, response.json()
         data = response.json()
-        assert data["urdf"]["artifact_id"] is not None
+        assert data["urdf_id"] is not None
+
+    response = await app_client.get(f"/urdf/download/{listing_id}", headers=auth_headers)
+    assert response.status_code == status.HTTP_200_OK, response.content
+    with tempfile.NamedTemporaryFile(suffix=".tgz") as f:
+        f.write(response.content)
+        f.seek(0)
+        with tarfile.open(f.name, "r:gz") as tar:
+            names = tar.getnames()
+            assert "box.urdf" in names
+            assert "teapot.obj" in names
 
     # Uploads a combined URDF + STL as a zipfile.
     with tempfile.NamedTemporaryFile(suffix=".zip") as f:
@@ -105,7 +115,7 @@ async def test_listings(app_client: AsyncClient, tmpdir: Path) -> None:
         )
         assert response.status_code == status.HTTP_200_OK, response.json()
         data = response.json()
-        assert data["urdf"]["artifact_id"] is not None
+        assert data["urdf_id"] is not None
 
     # Ensures that trying to upload the same STL again fails.
     response = await app_client.post(

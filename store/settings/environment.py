@@ -51,6 +51,7 @@ class ArtifactSettings:
 class S3Settings:
     bucket: str = field(default=II("oc.env:S3_BUCKET"))
     prefix: str = field(default=II("oc.env:S3_PREFIX"))
+    private_prefix: str = field(default=II("oc.env:S3_PRIVATE_PREFIX"))
 
 
 @dataclass

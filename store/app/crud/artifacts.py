@@ -7,6 +7,7 @@ from typing import IO, Any, Literal
 from xml.etree import ElementTree as ET
 
 import trimesh
+from aiobotocore.response import StreamingBody
 from boto3.dynamodb.conditions import ComparisonCondition
 from fastapi import UploadFile
 from PIL import Image
@@ -64,7 +65,7 @@ class ArtifactsCrud(BaseCrud):
     async def _upload_cropped_image(self, image: Image.Image, artifact: Artifact, size: ArtifactSize) -> None:
         image_bytes = await self._crop_image(image, SizeMapping[size])
         filename = get_artifact_name(artifact=artifact, size=size)
-        await self._upload_to_s3(image_bytes, artifact.name, filename, "image/png")
+        await self._upload_to_s3(image_bytes, artifact.name, filename, "image/png", private=False)
 
     async def _upload_image(
         self,
@@ -164,7 +165,7 @@ class ArtifactsCrud(BaseCrud):
             description=description,
         )
         await asyncio.gather(
-            self._upload_to_s3(file, name, get_artifact_name(artifact=artifact), content_type),
+            self._upload_to_s3(file, name, get_artifact_name(artifact=artifact), content_type, private=True),
             self._add_item(artifact),
         )
         return artifact
@@ -204,6 +205,14 @@ class ArtifactsCrud(BaseCrud):
             self._delete_from_s3(get_artifact_name(artifact=artifact)),
             self._delete_item(artifact),
         )
+
+    async def stream_artifact(
+        self,
+        artifact: Artifact,
+        private: bool = True,
+        size: ArtifactSize = "large",
+    ) -> StreamingBody:
+        return await self._download_from_s3(get_artifact_name(artifact=artifact, size=size), private=private)
 
     async def remove_artifact(self, artifact: Artifact) -> None:
         match artifact.artifact_type:
