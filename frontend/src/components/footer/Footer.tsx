@@ -1,6 +1,7 @@
 import { FaDiscord, FaGithub, FaLinkedinIn } from "react-icons/fa";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
+import smallLogo from "assets/small-logo.png";
 import {
   DiscordPrimaryColor,
   GithubPrimaryColor,
@@ -10,6 +11,7 @@ import {
 import SocialLink from "./SocialLink";
 
 const Footer = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const { pathname } = location;
 
@@ -28,8 +30,20 @@ const Footer = () => {
     <footer className="bg-gray-50 dark:bg-gray-800 text-sm py-20">
       <div className="flex flex-col gap-4 mx-12 sm:mx-36">
         {/* Logo and Social Links */}
-        <div className="flex flex-row justify-between items-center">
-          <span className="text-xl sm:text-2xl">K-Scale Store</span>
+        <div className="flex flex-row justify-between items-center mb-8">
+          <a
+            className="flex items-center active cursor-pointer"
+            onClick={() => navigate("/")}
+          >
+            <img
+              src={smallLogo}
+              alt="kscale logo"
+              className="h-8 dark:invert"
+            />
+            <span className="ml-2 text-xl font-bold text-gray-800 dark:text-gray-200">
+              store
+            </span>
+          </a>
           <div className="flex flex-row gap-4 rounded-full">
             <SocialLink
               href="https://www.linkedin.com/company/kscale"
@@ -61,7 +75,7 @@ const Footer = () => {
         {/* Footer Links */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <div className="flex flex-col items-start gap-2 sm:gap-3">
-            <h2 className="text-base sm:text-lg font-semibold mb-1">Company</h2>
+            <h2 className="text-base sm:text-lg font-bold mb-1">Company</h2>
             <a
               href="https://kscalelabs.com"
               className="hover:text-gray-500"
@@ -70,12 +84,17 @@ const Footer = () => {
             >
               Homepage
             </a>
-            <a href="https://blog.kscale.dev" className="hover:text-gray-500">
+            <a
+              href="https://blog.kscale.dev"
+              className="hover:text-gray-500"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Blog
             </a>
           </div>
           <div className="flex flex-col items-start gap-2 sm:gap-3">
-            <h2 className="text-base sm:text-lg font-semibold mb-1">Legal</h2>
+            <h2 className="text-base sm:text-lg font-bold mb-1">Legal</h2>
             <Link to={"/privacy"} className="hover:text-gray-500">
               Privacy Policy
             </Link>
@@ -87,7 +106,7 @@ const Footer = () => {
             </Link>
           </div>
           <div className="flex flex-col items-start gap-2 sm:gap-3">
-            <h2 className="text-base sm:text-lg font-semibold mb-1">Links</h2>
+            <h2 className="text-base sm:text-lg font-bold mb-1">Links</h2>
             <a
               href="https://github.com/kscalelabs/store"
               className="hover:text-gray-500"
@@ -97,8 +116,8 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Copy Right */}
-        <div className="mt-10 text-xs">
+        {/* Copyright */}
+        <div className="mt-10 text-xs text-center">
           <p>
             <span>©</span> {new Date().getFullYear()} K-Scale Labs
           </p>

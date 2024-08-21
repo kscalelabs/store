@@ -1,4 +1,4 @@
-import { FaGear, FaMessage, FaRobot } from "react-icons/fa6";
+import { FaGear, FaLaptop, FaMessage, FaRobot } from "react-icons/fa6";
 
 const Features = () => {
   const features = [
@@ -19,11 +19,12 @@ const Features = () => {
         "Join the K-Scale discord for Q&A and to see what other people are building.",
       icon: <FaMessage />,
     },
-    // {
-    //   name: "Another feature item",
-    //   description: "Description tbd",
-    //   // icon: <Icon />, // tbd
-    // },
+    {
+      name: "Use the best robotics devtools",
+      description:
+        "Use our programming lanuage Klang along with our other AI models and tools.",
+      icon: <FaLaptop />,
+    },
   ];
 
   return (
