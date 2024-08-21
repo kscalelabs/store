@@ -31,3 +31,7 @@ trimesh
 
 # Types
 types-aioboto3[dynamodb, s3]
+
+# Converting files
+pybullet
+mujoco

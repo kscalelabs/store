@@ -7,6 +7,7 @@ interface for handling URDFs.
 import asyncio
 import io
 import logging
+import os
 import tarfile
 import zipfile
 from pathlib import Path
@@ -20,9 +21,11 @@ from fastapi import UploadFile
 from store.app.crud.artifacts import ArtifactsCrud
 from store.app.errors import BadArtifactError
 from store.app.model import Artifact, CompressedArtifactType, Listing
+from store.app.utils.convert import urdf_to_mjcf
 from store.utils import save_xml
 
 logger = logging.getLogger(__name__)
+
 
 URDF_PACKAGE_NAME = "droid.tgz"
 
@@ -71,6 +74,7 @@ class UrdfCrud(ArtifactsCrud):
     ) -> Artifact:
         # Unpacks the TAR file, getting meshes and URDFs.
         urdf: tuple[str, ET.ElementTree] | None = None
+        mjcf: tuple[str, ET.ElementTree] | None = None
         meshes: list[tuple[str, trimesh.Trimesh]] = []
 
         compressed_data = await file.read()
@@ -86,6 +90,15 @@ class UrdfCrud(ArtifactsCrud):
                     raise BadArtifactError("Invalid XML file")
                 urdf = name, urdf_tree
 
+            elif suffix == "xml":
+                if mjcf is not None:
+                    raise BadArtifactError("Multiple MJCF files found in TAR.")
+                try:
+                    mjcf_tree = ET.parse(io.BytesIO(data.read()))
+                except Exception:
+                    raise BadArtifactError("Invalid XML file")
+                mjcf = name, mjcf_tree
+
             elif suffix in ("stl", "ply", "obj", "dae"):
                 try:
                     tmesh = trimesh.load(data, file_type=suffix)
@@ -97,22 +110,45 @@ class UrdfCrud(ArtifactsCrud):
             else:
                 raise BadArtifactError(f"Unknown file type: {name}")
 
+        if urdf is None and mjcf is None:
+            raise BadArtifactError("No URDF or MJCF file found in TAR.")
+
         if urdf is None:
-            raise BadArtifactError("No URDF file found in TAR.")
-        urdf_name, urdf_tree = urdf
+            raise BadArtifactError("URDF -> MJCF is not supported yet.")
+            # mjcf_name, mjcf_tree = mjcf
+            # urdf_name, urdf_tree = os.path.splitext(urdf_name)[0] + ".urdf", mjcf_to_urdf(urdf_tree, meshes)
+            # logger.info(f"Converting MJCF to URDF: {mjcf_name} -> {urdf_name}")
+        elif mjcf is None:
+            urdf_name, urdf_tree = urdf
+
+            # Generate the MJCF if it's not provided
+            try:
+                mjcf_name, mjcf_tree = os.path.splitext(urdf_name)[0] + ".xml", urdf_to_mjcf(urdf_tree, meshes)
+                logger.info(f"Converting URDF to MJCF: {urdf_name} -> {mjcf_name}")
+            except:
+                raise BadArtifactError(
+                    "Failed to convert URDF to MJCF. Make sure mass and inertia of moving bodies are defined."
+                )
+        else:
+            urdf_name, urdf_tree = urdf
+            mjcf_name, mjcf_tree = mjcf
 
         # Checks that all of the mesh files are referenced.
         mesh_names = {Path(name) for name, _ in meshes}
+        mesh_references = {Path(name): False for name, _ in meshes}
         for mesh in urdf_tree.iter("mesh"):
             if (filename := mesh.get("filename")) is None:
                 raise BadArtifactError("Mesh element missing filename attribute.")
             filepath = Path(filename).relative_to(".")
             if filepath not in mesh_names:
                 raise BadArtifactError(f"Mesh referenced in URDF was not uploaded: {filepath}")
-            mesh_names.remove(filepath)
+            mesh_references[filepath] = True
             mesh.set("filename", str(filepath.with_suffix(".obj")))
-        if mesh_names:
-            raise BadArtifactError(f"Mesh files uploaded were not referenced: {mesh_names}")
+
+        logger.info("refs", mesh_references)
+        unreferenced_meshes = [name for name, referenced in mesh_references.items() if not referenced]
+        if unreferenced_meshes:
+            raise BadArtifactError(f"Mesh files uploaded were not referenced: {unreferenced_meshes}")
 
         # Saves everything to a new TAR file, using OBJ files for meshes.
         tgz_out_file = io.BytesIO()
@@ -125,6 +161,7 @@ class UrdfCrud(ArtifactsCrud):
                 info.size = out_file.tell()
                 out_file.seek(0)
                 tar.addfile(info, out_file)
+
             urdf_out_file = io.BytesIO()
             save_xml(urdf_out_file, urdf_tree)
             urdf_out_file.seek(0)
@@ -132,8 +169,16 @@ class UrdfCrud(ArtifactsCrud):
             info.size = len(urdf_out_file.getbuffer())
             tar.addfile(info, urdf_out_file)
 
+            mjcf_out_file = io.BytesIO()
+            save_xml(mjcf_out_file, mjcf_tree)
+            mjcf_out_file.seek(0)
+            info = tarfile.TarInfo(mjcf_name)
+            info.size = len(mjcf_out_file.getbuffer())
+            tar.addfile(info, mjcf_out_file)
+
         # Saves the TAR file to S3.
         tgz_out_file.seek(0)
+
         return await self._upload_and_store(URDF_PACKAGE_NAME, tgz_out_file, listing, "tgz", description)
 
     async def get_urdf(self, listing_id: str) -> Artifact | None:
