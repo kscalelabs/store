@@ -88,13 +88,13 @@ async def set_urdf(
         )
 
     # Gets the compression type from the file content type and filename.
-    compression_type = get_compression_type(file.content_type, file.filename)
-
-    if compression_type not in ("tgz", "zip", "tar.gz"):
+    try:
+        compression_type = get_compression_type(file.content_type, file.filename)
+    except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="The file must be a .zip, .tgz, .tar.gz file",
-        )
+        ) from e
 
     # Checks that the listing is valid.
     listing = await crud.get_listing(listing_id)

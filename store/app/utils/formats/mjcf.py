@@ -1,11 +1,6 @@
 """Defines common types and functions for exporting MJCF files.
 
-API reference:
-https://github.com/google-deepmind/mujoco/blob/main/src/xml/xml_native_writer.cc#L780
-
-Todo:
-    1. Clean up the inertia config
-    2. Add visual and imu support
+These functions are used to adapt the world in a Mujoco XML file.
 """
 
 import glob
@@ -15,6 +10,8 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
+
+import mujoco
 
 
 @dataclass
@@ -468,14 +465,6 @@ class Robot:
         self.tree = ET.parse(self.output_dir / f"{self.robot_name}.xml")
 
     def _set_clean_up(self) -> None:
-        try:
-            import mujoco  # type: ignore[import-not-found]
-        except ImportError as e:
-            raise ImportError(
-                "Please install the package with Mujoco as a dependency, using "
-                "`pip install kscale-onshape-library[mujoco]`"
-            ) from e
-
         # HACK
         # mujoco has a hard time reading meshes
         _copy_stl_files(self.output_dir / "meshes", self.output_dir)

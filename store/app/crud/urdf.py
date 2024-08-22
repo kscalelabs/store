@@ -115,9 +115,7 @@ class UrdfCrud(ArtifactsCrud):
 
         if urdf is None:
             raise BadArtifactError("URDF -> MJCF is not supported yet.")
-            # mjcf_name, mjcf_tree = mjcf
-            # urdf_name, urdf_tree = os.path.splitext(urdf_name)[0] + ".urdf", mjcf_to_urdf(urdf_tree, meshes)
-            # logger.info(f"Converting MJCF to URDF: {mjcf_name} -> {urdf_name}")
+
         elif mjcf is None:
             urdf_name, urdf_tree = urdf
 
@@ -125,10 +123,10 @@ class UrdfCrud(ArtifactsCrud):
             try:
                 mjcf_name, mjcf_tree = os.path.splitext(urdf_name)[0] + ".xml", urdf_to_mjcf(urdf_tree, meshes)
                 logger.info("Converting URDF to MJCF: %s -> %s", urdf_name, mjcf_name)
-            except:
+            except Exception as e:
                 raise BadArtifactError(
                     "Failed to convert URDF to MJCF. Make sure mass and inertia of moving bodies are defined."
-                )
+                ) from e
         else:
             urdf_name, urdf_tree = urdf
             mjcf_name, mjcf_tree = mjcf
@@ -145,7 +143,6 @@ class UrdfCrud(ArtifactsCrud):
             mesh_references[filepath] = True
             mesh.set("filename", str(filepath.with_suffix(".obj")))
 
-        logger.info("refs", mesh_references)
         unreferenced_meshes = [name for name, referenced in mesh_references.items() if not referenced]
         if unreferenced_meshes:
             raise BadArtifactError(f"Mesh files uploaded were not referenced: {unreferenced_meshes}")

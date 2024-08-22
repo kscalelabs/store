@@ -103,7 +103,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             condition += " AND " + " AND ".join(f"attribute_not_exists({field})" for field in unique_fields)
 
         # Log the item data before insertion for debugging purposes
-        logger.info(f"Inserting item into DynamoDB: {item_data}")
+        logger.info("Inserting item into DynamoDB: %s", item_data)
 
         try:
             await table.put_item(
