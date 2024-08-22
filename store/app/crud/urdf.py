@@ -7,7 +7,6 @@ interface for handling URDFs.
 import asyncio
 import io
 import logging
-import os
 import tarfile
 import zipfile
 from pathlib import Path
@@ -90,15 +89,6 @@ class UrdfCrud(ArtifactsCrud):
                     raise BadArtifactError("Invalid XML file")
                 urdf = name, urdf_tree
 
-            elif suffix == "xml":
-                if mjcf is not None:
-                    raise BadArtifactError("Multiple MJCF files found in TAR.")
-                try:
-                    mjcf_tree = ET.parse(io.BytesIO(data))
-                except Exception:
-                    raise BadArtifactError("Invalid XML file")
-                mjcf = name, mjcf_tree
-
             elif suffix in ("stl", "ply", "obj", "dae"):
                 try:
                     tmesh = trimesh.load(io.BytesIO(data), file_type=suffix)
@@ -111,21 +101,18 @@ class UrdfCrud(ArtifactsCrud):
             else:
                 raise BadArtifactError(f"Unknown file type: {name}")
 
-        if urdf is None and mjcf is None:
-            raise BadArtifactError("No URDF or MJCF file found in TAR.")
-
         if urdf is None:
-            raise BadArtifactError("URDF -> MJCF is not supported yet.")
+            raise BadArtifactError("No URDF file found.")
 
-        elif mjcf is None:
+        # Attempts to generate an MJCF file from the URDF.
+        try:
             urdf_name, urdf_tree = urdf
-
-            # Generate the MJCF if it's not provided
-            mjcf_name, mjcf_tree = os.path.splitext(urdf_name)[0] + ".xml", urdf_to_mjcf(urdf_tree, meshes)
+            mjcf_name = Path(urdf_name).with_suffix(".xml").as_posix()
+            mjcf_tree = urdf_to_mjcf(urdf_tree, meshes)
+            mjcf = mjcf_name, mjcf_tree
             logger.info("Converting URDF to MJCF: %s -> %s", urdf_name, mjcf_name)
-        else:
-            urdf_name, urdf_tree = urdf
-            mjcf_name, mjcf_tree = mjcf
+        except Exception:
+            logger.exception("Failed to convert URDF to MJCF")
 
         # Checks that all of the mesh files are referenced.
         mesh_names = {Path(name) for name, _ in meshes}
