@@ -135,7 +135,7 @@ const ListingUrdf = (props: Props) => {
     setClickedCopyButton(true);
     const urdfListingId = urdf?.listing_id;
     if (urdfListingId) {
-      navigator.clipboard.writeText(`kscale urdf get ${urdfListingId}`);
+      navigator.clipboard.writeText(`pip install kscale; kscale urdf get ${urdfListingId}`);
     }
 
     setTimeout(() => {
