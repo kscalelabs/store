@@ -124,7 +124,7 @@ class UrdfCrud(ArtifactsCrud):
             # Generate the MJCF if it's not provided
             try:
                 mjcf_name, mjcf_tree = os.path.splitext(urdf_name)[0] + ".xml", urdf_to_mjcf(urdf_tree, meshes)
-                logger.info(f"Converting URDF to MJCF: {urdf_name} -> {mjcf_name}")
+                logger.info("Converting URDF to MJCF: %s -> %s", urdf_name, mjcf_name)
             except:
                 raise BadArtifactError(
                     "Failed to convert URDF to MJCF. Make sure mass and inertia of moving bodies are defined."
