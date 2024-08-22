@@ -198,7 +198,7 @@ const ListingUrdf = (props: Props) => {
                     <code>
                       {clickedCopyButton
                         ? "copied!"
-                        : `kscale urdf get ${urdf.listing_id}`}
+                        : `pip install kscale; kscale urdf get ${urdf.listing_id}`}
                     </code>
                   </Button>
                 </RequireAuthentication>
