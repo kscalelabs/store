@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 URDF_PACKAGE_NAME = "droid.tgz"
 
 
-def iter_components(file: IO[bytes], compression_type: CompressedArtifactType) -> Iterator[tuple[str, IO[bytes]]]:
+def iter_components(file: IO[bytes], compression_type: CompressedArtifactType) -> Iterator[tuple[str, bytes]]:
     """Iterates over the components of a tar file.
 
     Args:
@@ -45,20 +45,20 @@ def iter_components(file: IO[bytes], compression_type: CompressedArtifactType) -
             with zipfile.ZipFile(file) as zipf:
                 for name in zipf.namelist():
                     # Fix for MacOS.
-                    if name.startswith("__MACOS"):
+                    if any(p.startswith("__MACOS") or p.startswith(".") for p in Path(name).parts):
                         continue
                     # Ignore folders.
                     if name.endswith("/"):
                         continue
                     with zipf.open(name) as zipdata:
-                        yield name, zipdata
+                        yield name, zipdata.read()
 
         case "tgz":
             with tarfile.open(fileobj=file, mode="r:gz") as tar:
                 for member in tar.getmembers():
                     if member.isfile() and (tardata := tar.extractfile(member)) is not None:
                         with tardata:
-                            yield member.name, tardata
+                            yield member.name, tardata.read()
 
         case _:
             raise ValueError(f"Unknown compression type: {compression_type}")
@@ -83,9 +83,9 @@ class UrdfCrud(ArtifactsCrud):
 
             if suffix == "urdf":
                 if urdf is not None:
-                    raise BadArtifactError("Multiple URDF files found in TAR.")
+                    raise BadArtifactError(f"Multiple URDF files found in TAR: {urdf[0]} and {name}")
                 try:
-                    urdf_tree = ET.parse(io.BytesIO(data.read()))
+                    urdf_tree = ET.parse(io.BytesIO(data))
                 except Exception:
                     raise BadArtifactError("Invalid XML file")
                 urdf = name, urdf_tree
@@ -94,17 +94,18 @@ class UrdfCrud(ArtifactsCrud):
                 if mjcf is not None:
                     raise BadArtifactError("Multiple MJCF files found in TAR.")
                 try:
-                    mjcf_tree = ET.parse(io.BytesIO(data.read()))
+                    mjcf_tree = ET.parse(io.BytesIO(data))
                 except Exception:
                     raise BadArtifactError("Invalid XML file")
                 mjcf = name, mjcf_tree
 
             elif suffix in ("stl", "ply", "obj", "dae"):
                 try:
-                    tmesh = trimesh.load(data, file_type=suffix)
-                    assert isinstance(tmesh, trimesh.Trimesh)
-                except Exception:
-                    raise BadArtifactError(f"Invalid mesh file: {name}")
+                    tmesh = trimesh.load(io.BytesIO(data), file_type=suffix)
+                except Exception as e:
+                    raise BadArtifactError(f"Not a valid mesh: {name} ({e})")
+                if not isinstance(tmesh, trimesh.Trimesh):
+                    raise BadArtifactError(f"Invalid mesh file: {name} ({type(tmesh)})")
                 meshes.append((name, tmesh))
 
             else:
@@ -120,13 +121,8 @@ class UrdfCrud(ArtifactsCrud):
             urdf_name, urdf_tree = urdf
 
             # Generate the MJCF if it's not provided
-            try:
-                mjcf_name, mjcf_tree = os.path.splitext(urdf_name)[0] + ".xml", urdf_to_mjcf(urdf_tree, meshes)
-                logger.info("Converting URDF to MJCF: %s -> %s", urdf_name, mjcf_name)
-            except Exception as e:
-                raise BadArtifactError(
-                    "Failed to convert URDF to MJCF. Make sure mass and inertia of moving bodies are defined."
-                ) from e
+            mjcf_name, mjcf_tree = os.path.splitext(urdf_name)[0] + ".xml", urdf_to_mjcf(urdf_tree, meshes)
+            logger.info("Converting URDF to MJCF: %s -> %s", urdf_name, mjcf_name)
         else:
             urdf_name, urdf_tree = urdf
             mjcf_name, mjcf_tree = mjcf

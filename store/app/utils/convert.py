@@ -41,6 +41,7 @@ def urdf_to_mjcf(urdf_tree: ET.ElementTree, meshes: list[tuple[str, trimesh.Trim
             # Save the mesh files
             for mesh_name, mesh in meshes:
                 mesh_path = temp_dir_path / mesh_name
+                mesh_path.parent.mkdir(parents=True, exist_ok=True)
                 mesh.export(mesh_path)
 
             # Loading the URDF file and adapting it to the MJCF format
@@ -89,6 +90,7 @@ def mjcf_to_urdf(mjcf_tree: ET.ElementTree, meshes: list[tuple[str, trimesh.Trim
             # Save the mesh files in the temporary directory
             for mesh_name, mesh in meshes:
                 mesh_path = temp_dir_path / mesh_name
+                mesh_path.parent.mkdir(parents=True, exist_ok=True)
                 mesh.export(mesh_path)
 
             # Set up the Bullet client and load the MJCF file
