@@ -26,6 +26,7 @@ httpx
 uvicorn[standard]
 
 # Processing dependencies.
+numpy<2
 numpy-stl
 trimesh
 
