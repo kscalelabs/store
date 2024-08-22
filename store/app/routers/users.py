@@ -13,7 +13,7 @@ from store.app.crud.base import ItemNotFoundError
 from store.app.crud.users import UserCrud
 from store.app.db import Crud
 from store.app.errors import NotAuthenticatedError
-from store.app.model import User, UserPermission, UserPublic
+from store.app.model import APIKeySource, User, UserPermission, UserPublic
 from store.app.routers.auth.github import github_auth_router
 from store.app.routers.auth.google import google_auth_router
 from store.app.utils.email import send_delete_email
@@ -245,6 +245,7 @@ async def login_user(data: LoginRequest, user_crud: UserCrud = Depends()) -> Log
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
 
         # Determine if the user logged in via OAuth or hashed password
+        source: APIKeySource
         if user.hashed_password is None:
             # OAuth login
             if user.google_id or user.github_id:
@@ -302,7 +303,7 @@ async def get_my_public_user_info_endpoint(
 @users_router.get("/public/{id}", response_model=UserPublic)
 async def get_public_user_info_by_id_endpoint(
     id: str,
-    crud: Crud = Depends(Crud.get),
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> PublicUserInfoResponseItem:
     user = await crud.get_user_public(id)
     if user is None:
@@ -312,9 +313,9 @@ async def get_public_user_info_by_id_endpoint(
 
 @users_router.put("/me", response_model=UserPublic)
 async def update_profile(
-    updates: dict[str, Any] = Body(...),
-    user: User = Annotated[User, Depends(get_session_user_with_admin_permission)],
-    crud: Crud = Depends(Crud.get),
+    updates: Annotated[dict[str, Any], Body(...)],
+    user: Annotated[User, Depends(get_session_user_with_admin_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UserPublic:
     try:
         logger.info("Updates: %s", updates)
