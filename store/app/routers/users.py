@@ -2,9 +2,9 @@
 
 import logging
 from email.utils import parseaddr as parse_email_address
-from typing import Annotated, Any, Literal, Self, overload
+from typing import Annotated, Literal, Self, overload
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel
 from pydantic.networks import EmailStr
@@ -311,15 +311,26 @@ async def get_public_user_info_by_id_endpoint(
     return PublicUserInfoResponseItem.from_user(user)
 
 
+class UpdateUserRequest(BaseModel):
+    email: str | None = None
+    password: str | None = None
+    github_id: str | None = None
+    google_id: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    name: str | None = None
+    bio: str | None = None
+
+
 @users_router.put("/me", response_model=UserPublic)
 async def update_profile(
-    updates: Annotated[dict[str, Any], Body(...)],
+    updates: UpdateUserRequest,
     user: Annotated[User, Depends(get_session_user_with_admin_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UserPublic:
     try:
-        logger.info("Updates: %s", updates)
-        updated_user = await crud.update_user(user.id, updates)
+        update_dict = updates.dict(exclude_unset=True)
+        updated_user = await crud.update_user(user.id, update_dict)
         return UserPublic(**updated_user.model_dump())  # Convert to UserPublic
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

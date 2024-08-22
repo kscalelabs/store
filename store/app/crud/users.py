@@ -174,9 +174,7 @@ class UserCrud(BaseCrud):
                 raise ValueError(f"Invalid field: {key}")
 
         user.update_timestamp()
-
         await self._update_item(user_id, User, user.model_dump())
-
         return user
 
 

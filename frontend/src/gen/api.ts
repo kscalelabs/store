@@ -915,6 +915,25 @@ export interface components {
             /** Tags */
             tags?: string[] | null;
         };
+        /** UpdateUserRequest */
+        UpdateUserRequest: {
+            /** Email */
+            email?: string | null;
+            /** Password */
+            password?: string | null;
+            /** Github Id */
+            github_id?: string | null;
+            /** Google Id */
+            google_id?: string | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Bio */
+            bio?: string | null;
+        };
         /** UploadArtifactResponse */
         UploadArtifactResponse: {
             /** Artifacts */
@@ -1736,7 +1755,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": Record<string, never>;
+                "application/json": components["schemas"]["UpdateUserRequest"];
             };
         };
         responses: {
