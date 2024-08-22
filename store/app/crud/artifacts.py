@@ -106,7 +106,7 @@ class ArtifactsCrud(BaseCrud):
 
         tmesh = trimesh.load(io.BytesIO(file_data), file_type=artifact_type)
         if not isinstance(tmesh, trimesh.Trimesh):
-            raise BadArtifactError(f"Invalid mesh file: {name}")
+            raise BadArtifactError(f"Invalid mesh file: {name} ({type(tmesh)})")
 
         out_file = io.BytesIO()
         tmesh.export(out_file, file_type="obj")

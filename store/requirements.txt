@@ -26,8 +26,13 @@ httpx
 uvicorn[standard]
 
 # Processing dependencies.
+numpy<2
 numpy-stl
 trimesh
 
 # Types
 types-aioboto3[dynamodb, s3]
+
+# Converting files
+pybullet
+mujoco

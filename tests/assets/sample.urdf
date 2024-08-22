@@ -1,266 +1,87 @@
-<robot name="robot">
-    <!-- links -->
-    <link name="root">
+<?xml version="1.0"?>
+<robot name="simple_robot_arm">
+
+    <!-- Base Link -->
+    <link name="base_link">
         <inertial>
-            <origin xyz="0 0 0.5" rpy="0 0 0"/>
-            <mass value="1"/>
-            <inertia ixx="100" ixy="0" ixz="0" iyy="100" iyz="0" izz="100" />
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="1.0"/>
+            <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1"/>
         </inertial>
         <visual>
-            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+            <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-                <box size="0.2 0.2 0.4" />
+                <box size="0.2 0.2 0.2"/>
             </geometry>
-            <material name="Cyan">
-                <color rgba="1.0 1.0 1.0 1.0"/>
-            </material>
+            <material name="blue"/>
         </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.2 0.2 0.2"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <!-- Forearm Link -->
+    <link name="forearm_link">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="0.5"/>
+            <inertia ixx="0.05" ixy="0.0" ixz="0.0" iyy="0.05" iyz="0.0" izz="0.05"/>
+        </inertial>
         <visual>
-            <origin xyz="0.0 0.0 0.4" rpy="0.0 0.0 0.0" />
+            <origin xyz="0 0.2 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.05" length="0.4"/>
+            </geometry>
+            <material name="green"/>
+        </visual>
+        <collision>
+            <origin xyz="0 0.2 0" rpy="0 0 0"/>
+            <geometry>
+                <cylinder radius="0.05" length="0.4"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <!-- Teapot Link -->
+    <link name="teapot_link">
+        <inertial>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <mass value="0.5"/>
+            <inertia ixx="0.05" ixy="0.0" ixz="0.0" iyy="0.05" iyz="0.0" izz="0.05"/>
+        </inertial>
+        <visual>
+            <origin xyz="0 0.2 0" rpy="0 0 0"/>
             <geometry>
                 <mesh filename="teapot.stl"/>
             </geometry>
-            <material name="Red">
-                <color rgba="1.0 0.0 0.0 1.0"/>
-            </material>
+            <material name="red"/>
         </visual>
         <collision>
-            <origin xyz="0.0 0.0 -0.1" rpy="0.0 0.0 0.0" />
+            <origin xyz="0 0.2 0" rpy="0 0 0"/>
             <geometry>
-                <capsule radius="0.2" length="0.2" />
-            </geometry>
-        </collision>
-        <collision>
-            <origin xyz="0 0 0.4" rpy="0 0 0"/>
-            <geometry>
-                <sphere radius="0.2"/>
+                <mesh filename="teapot.stl"/>
             </geometry>
         </collision>
     </link>
 
-    <!-- left arm -->
-    <link name="l_shoulder1">
-        <visual>
-            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-            <geometry>
-                <box size="0.1 0.1 0.1" />
-            </geometry>
-            <material name="Cyan">
-                <color rgba="0 1.0 1.0 1.0"/>
-            </material>
-        </visual>
-    </link>
-    <link name="l_shoulder2">
-        <visual>
-            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-            <geometry>
-                <box size="0.1 0.1 0.1" />
-            </geometry>
-            <material name="Cyan">
-                <color rgba="1.0 1.0 0.0 1.0"/>
-            </material>
-        </visual>
-    </link>
-    <link name="l_shoulder3">
-        <visual>
-            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-            <geometry>
-                <box size="0.1 0.1 0.2" />
-            </geometry>
-            <material name="Cyan">
-                <color rgba="0.5 0.5 0.2 1.0"/>
-            </material>
-        </visual>
-    </link>
-    <link name="l_elbow1">
-        <visual>
-            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-            <geometry>
-                <box size="0.1 0.1 0.2" />
-            </geometry>
-            <material name="Cyan">
-                <color rgba="0.8 0.2 0.2 1.0"/>
-            </material>
-        </visual>
-    </link>
-    <link name="l_wrist1">
-        <visual>
-            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-            <geometry>
-                <cylinder radius="0.1" length="0.2" />
-            </geometry>
-            <material name="Cyan">
-                <color rgba="1.0 0.0 0.0 1.0"/>
-            </material>
-        </visual>
-    </link>
-    <link name="l_wrist2">
-        <visual>
-            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-            <geometry>
-                <box size="0.05 0.08 0.15" />
-            </geometry>
-            <material name="Cyan">
-                <color rgba="0.0 0.0 1.0 1.0"/>
-            </material>
-        </visual>
-    </link>
-
-    <!-- right arm -->
-    <link name="r_shoulder1">
-        <visual>
-            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-            <geometry>
-                <box size="0.1 0.1 0.1" />
-            </geometry>
-            <material name="Cyan">
-                <color rgba="0 1.0 1.0 1.0"/>
-            </material>
-        </visual>
-    </link>
-    <link name="r_shoulder2">
-        <visual>
-            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-            <geometry>
-                <box size="0.1 0.1 0.1" />
-            </geometry>
-            <material name="Cyan">
-                <color rgba="1.0 1.0 0.0 1.0"/>
-            </material>
-        </visual>
-    </link>
-    <link name="r_shoulder3">
-        <visual>
-            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-            <geometry>
-                <box size="0.1 0.1 0.2" />
-            </geometry>
-            <material name="Cyan">
-                <color rgba="0.5 0.5 0.2 1.0"/>
-            </material>
-        </visual>
-    </link>
-    <link name="r_elbow1">
-        <visual>
-            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-            <geometry>
-                <box size="0.1 0.1 0.2" />
-            </geometry>
-            <material name="Cyan">
-                <color rgba="0.8 0.2 0.2 1.0"/>
-            </material>
-        </visual>
-    </link>
-    <link name="r_wrist1">
-        <visual>
-            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-            <geometry>
-                <cylinder radius="0.1" length="0.2" />
-            </geometry>
-            <material name="Cyan">
-                <color rgba="1.0 0.0 0.0 1.0"/>
-            </material>
-        </visual>
-    </link>
-    <link name="r_wrist2">
-        <visual>
-            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
-            <geometry>
-                <box size="0.05 0.08 0.15" />
-            </geometry>
-            <material name="Cyan">
-                <color rgba="0.0 0.0 1.0 1.0"/>
-            </material>
-        </visual>
-    </link>
-
-
-    <!-- joints -->
-    <!-- left arm -->
-    <joint name="l_shoulder_yaw" type="revolute">
-        <origin xyz="0.0 0.2 0.2" />
-        <parent link="root" />
-        <child link="l_shoulder1" />
-        <axis xyz="0 0 1" />
-        <limit lower="-1" upper="1.0" effort="0" velocity="1.0"/>
-    </joint>
-    <joint name="l_shoulder_pitch" type="revolute">
-        <origin xyz="0.0 0.1 0.0" />
-        <parent link="l_shoulder1" />
-        <child link="l_shoulder2" />
-        <axis xyz="0 1 0" />
-        <limit lower="-1" upper="1.0" effort="0" velocity="1.0"/>
-    </joint>
-    <joint name="l_shoulder_roll" type="revolute">
-        <origin xyz="0.0 0.1 0.0" />
-        <parent link="l_shoulder2" />
-        <child link="l_shoulder3" />
-        <axis xyz="1 0 0" />
-        <limit lower="-2" upper="1.0" effort="0" velocity="1.0"/>
-    </joint>
-    <joint name="l_elbow_pitch" type="revolute">
-        <origin xyz="0.0 0.0 -0.2" />
-        <parent link="l_shoulder3" />
-        <child link="l_elbow1" />
-        <axis xyz="0 1 0" />
-        <limit lower="-2" upper="1.0" effort="0" velocity="1.0"/>
-    </joint>
-    <joint name="l_wrist_yaw" type="revolute">
-        <origin xyz="0.0 0.0 -0.2" />
-        <parent link="l_elbow1" />
-        <child link="l_wrist1" />
-        <axis xyz="0 0 1" />
-        <limit lower="-2" upper="1.0" effort="0" velocity="1.0"/>
-    </joint>
-    <joint name="l_wrist_pitch" type="revolute">
-        <origin xyz="0.0 0.0 -0.2" />
-        <parent link="l_wrist1" />
-        <child link="l_wrist2" />
-        <axis xyz="0 1 0" />
-        <limit lower="-2" upper="1.0" effort="0" velocity="1.0"/>
+    <!-- Revolute Joint -->
+    <joint name="shoulder_joint" type="revolute">
+        <parent link="base_link"/>
+        <child link="forearm_link"/>
+        <origin xyz="0 0.1 0" rpy="0 0 0"/>
+        <axis xyz="0 0 1"/>
+        <limit effort="10.0" lower="-1.57" upper="1.57" velocity="1.0"/>
+        <dynamics damping="0.1" friction="0.1"/>
     </joint>
 
-    <!-- right arm -->
-    <joint name="r_shoulder_yaw" type="revolute">
-        <origin xyz="0.0 -0.2 0.2" />
-        <parent link="root" />
-        <child link="r_shoulder1" />
-        <axis xyz="0 0 1" />
-        <limit lower="-1" upper="1.0" effort="0" velocity="1.0"/>
+    <!-- Fixed Joint -->
+    <joint name="forearm_teapot_joint" type="fixed">
+        <parent link="forearm_link"/>
+        <child link="teapot_link"/>
+        <origin xyz="0 0.4 0" rpy="0 0 0"/>
     </joint>
-    <joint name="r_shoulder_pitch" type="revolute">
-        <origin xyz="0.0 -0.1 0.0" />
-        <parent link="r_shoulder1" />
-        <child link="r_shoulder2" />
-        <axis xyz="0 1 0" />
-        <limit lower="-1" upper="1.0" effort="0" velocity="1.0"/>
-    </joint>
-    <joint name="r_shoulder_roll" type="revolute">
-        <origin xyz="0.0 -0.1 0.0" />
-        <parent link="r_shoulder2" />
-        <child link="r_shoulder3" />
-        <axis xyz="1 0 0" />
-        <limit lower="-2" upper="1.0" effort="0" velocity="1.0"/>
-    </joint>
-    <joint name="r_elbow_pitch" type="revolute">
-        <origin xyz="0.0 0.0 -0.2" />
-        <parent link="r_shoulder3" />
-        <child link="r_elbow1" />
-        <axis xyz="0 1 0" />
-        <limit lower="-2" upper="1.0" effort="0" velocity="1.0"/>
-    </joint>
-    <joint name="r_wrist_yaw" type="revolute">
-        <origin xyz="0.0 0.0 -0.2" />
-        <parent link="r_elbow1" />
-        <child link="r_wrist1" />
-        <axis xyz="0 0 1" />
-        <limit lower="-2" upper="1.0" effort="0" velocity="1.0"/>
-    </joint>
-    <joint name="r_wrist_pitch" type="revolute">
-        <origin xyz="0.0 0.0 -0.2" />
-        <parent link="r_wrist1" />
-        <child link="r_wrist2" />
-        <axis xyz="0 1 0" />
-        <limit lower="-2" upper="1.0" effort="0" velocity="1.0"/>
-    </joint>
+
 </robot>

@@ -37,6 +37,8 @@ namespace_packages = false
 module = [
     "boto3.*",
     "moto.*",
+    "mujoco.*",
+    "pybullet_utils.*",
 ]
 
 ignore_missing_imports = true
