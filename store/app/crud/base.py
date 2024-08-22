@@ -24,6 +24,7 @@ from types_aiobotocore_s3.service_resource import S3ServiceResource
 from store.app.errors import InternalError, ItemNotFoundError
 from store.app.model import StoreBaseModel
 from store.settings import settings
+from store.utils import get_cors_origins
 
 TABLE_NAME = settings.dynamo.table_name
 
@@ -413,6 +414,21 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         except ClientError:
             logger.info("Creating %s bucket", settings.s3.bucket)
             await self.s3.create_bucket(Bucket=settings.s3.bucket)
+
+            logger.info("Updating %s CORS configuration", settings.s3.bucket)
+            s3_cors = await self.s3.BucketCors(settings.s3.bucket)
+            await s3_cors.put(
+                CORSConfiguration={
+                    "CORSRules": [
+                        {
+                            "AllowedHeaders": ["*"],
+                            "AllowedMethods": ["GET"],
+                            "AllowedOrigins": get_cors_origins(),
+                            "ExposeHeaders": ["ETag"],
+                        }
+                    ]
+                },
+            )
 
     async def _delete_s3_bucket(self) -> None:
         """Deletes an S3 bucket."""
