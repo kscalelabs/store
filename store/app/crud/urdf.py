@@ -149,12 +149,14 @@ class UrdfCrud(ArtifactsCrud):
             info.size = len(urdf_out_file.getbuffer())
             tar.addfile(info, urdf_out_file)
 
-            mjcf_out_file = io.BytesIO()
-            save_xml(mjcf_out_file, mjcf_tree)
-            mjcf_out_file.seek(0)
-            info = tarfile.TarInfo(mjcf_name)
-            info.size = len(mjcf_out_file.getbuffer())
-            tar.addfile(info, mjcf_out_file)
+            if mjcf is not None:
+                mjcf_name, mjcf_tree = mjcf
+                mjcf_out_file = io.BytesIO()
+                save_xml(mjcf_out_file, mjcf_tree)
+                mjcf_out_file.seek(0)
+                info = tarfile.TarInfo(mjcf_name)
+                info.size = len(mjcf_out_file.getbuffer())
+                tar.addfile(info, mjcf_out_file)
 
         # Saves the TAR file to S3.
         tgz_out_file.seek(0)
