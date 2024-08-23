@@ -98,7 +98,7 @@ class ArtifactsCrud(BaseCrud):
         name: str,
         file: UploadFile,
         listing: Listing,
-        artifact_type: Literal["stl", "obj", "ply", "dae"],
+        artifact_type: Literal["stl", "obj", "ply", "dae", "STL"],
         description: str | None = None,
     ) -> Artifact:
         # Converts the mesh to a binary STL file.
@@ -108,15 +108,16 @@ class ArtifactsCrud(BaseCrud):
         if not isinstance(tmesh, trimesh.Trimesh):
             raise BadArtifactError(f"Invalid mesh file: {name} ({type(tmesh)})")
 
+        # nzhao: Has been modified as this is where we'll want to do the conversion to STL.
         out_file = io.BytesIO()
-        tmesh.export(out_file, file_type="obj")
+        tmesh.export(out_file, file_type="stl")
         out_file.seek(0)
 
         # Replaces name suffix.
-        name = f"{name.rsplit('.', 1)[0]}.obj"
+        name = f"{name.rsplit('.', 1)[0]}.STL"
 
         # Saves the artifact to S3.
-        artifact = await self._upload_and_store(name, out_file, listing, "obj", description)
+        artifact = await self._upload_and_store(name, out_file, listing, "STL", description)
 
         # Closes the file handlers when done.
         out_file.close()
@@ -186,7 +187,7 @@ class ArtifactsCrud(BaseCrud):
         match artifact_type:
             case "image":
                 return await self._upload_image(name, file, listing, description), True
-            case "stl" | "obj" | "ply" | "dae":
+            case "stl" | "obj" | "ply" | "dae" | "STL":
                 return await self._upload_mesh(name, file, listing, artifact_type, description), True
             case "urdf" | "mjcf":
                 return await self._upload_xml(name, file, listing, artifact_type, description), True

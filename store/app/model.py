@@ -183,6 +183,7 @@ DOWNLOAD_CONTENT_TYPE: dict[ArtifactType, str] = {
     "urdf": "application/octet-stream",
     "mjcf": "application/octet-stream",
     # Binary
+    "STL": "application/octet-stream",
     "stl": "application/octet-stream",
     "obj": "application/octet-stream",
     "dae": "application/octet-stream",
@@ -395,7 +396,7 @@ def get_artifact_name(
         case "image":
             height, width = SizeMapping[size]
             return f"{listing_id}/{size}_{height}x{width}_{name}"
-        case "urdf" | "mjcf" | "stl" | "obj" | "ply" | "dae" | "zip" | "tgz":
+        case "urdf" | "mjcf" | "stl" | "obj" | "ply" | "dae" | "zip" | "tgz" | "STL":
             return f"{listing_id}/{name}"
         case _:
             raise ValueError(f"Unknown artifact type: {artifact_type}")

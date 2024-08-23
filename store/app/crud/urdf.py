@@ -20,7 +20,7 @@ from fastapi import UploadFile
 from store.app.crud.artifacts import ArtifactsCrud
 from store.app.errors import BadArtifactError
 from store.app.model import Artifact, CompressedArtifactType, Listing
-from store.app.utils.convert import urdf_to_mjcf
+from store.app.utils.convert import convert_urdf_to_mjcf
 from store.utils import save_xml
 
 logger = logging.getLogger(__name__)
@@ -89,7 +89,7 @@ class UrdfCrud(ArtifactsCrud):
                     raise BadArtifactError("Invalid XML file")
                 urdf = name, urdf_tree
 
-            elif suffix in ("stl", "ply", "obj", "dae"):
+            elif suffix in ("stl", "ply", "obj", "dae", "STL"):
                 try:
                     tmesh = trimesh.load(io.BytesIO(data), file_type=suffix)
                 except Exception as e:
@@ -108,7 +108,7 @@ class UrdfCrud(ArtifactsCrud):
         try:
             urdf_name, urdf_tree = urdf
             mjcf_name = Path(urdf_name).with_suffix(".xml").as_posix()
-            mjcf_tree = urdf_to_mjcf(urdf_tree, meshes)
+            mjcf_tree = convert_urdf_to_mjcf(urdf_tree)
             mjcf = mjcf_name, mjcf_tree
             logger.info("Converting URDF to MJCF: %s -> %s", urdf_name, mjcf_name)
         except Exception:
@@ -124,20 +124,21 @@ class UrdfCrud(ArtifactsCrud):
             if filepath not in mesh_names:
                 raise BadArtifactError(f"Mesh referenced in URDF was not uploaded: {filepath}")
             mesh_references[filepath] = True
-            mesh.set("filename", str(filepath.with_suffix(".obj")))
+            mesh.set("filename", str(filepath.with_suffix(".STL")))
 
         unreferenced_meshes = [name for name, referenced in mesh_references.items() if not referenced]
         if unreferenced_meshes:
             raise BadArtifactError(f"Mesh files uploaded were not referenced: {unreferenced_meshes}")
 
-        # Saves everything to a new TAR file, using OBJ files for meshes.
+        # nzhao: Has been modifeid as this is where we'll want to do the conversion to STL.
+        # Saves everything to a new TAR file, using STL files for meshes.
         tgz_out_file = io.BytesIO()
         with tarfile.open(fileobj=tgz_out_file, mode="w:gz") as tar:
             for name, tmesh in meshes:
                 out_file = io.BytesIO()
-                tmesh.export(out_file, file_type="obj")
-                obj_name = Path(name).with_suffix(".obj").as_posix()
-                info = tarfile.TarInfo(obj_name)
+                tmesh.export(out_file, file_type="stl")
+                stl_name = Path(name).with_suffix(".STL").as_posix()
+                info = tarfile.TarInfo(stl_name)
                 info.size = out_file.tell()
                 out_file.seek(0)
                 tar.addfile(info, out_file)

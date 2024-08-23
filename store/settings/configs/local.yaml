@@ -2,9 +2,9 @@ crypto:
   jwt_secret: fakeJwtSecret
 s3:
   bucket: artifacts
-  prefix: media
+  prefix: media/
 dynamo:
   table_name: kscale-store-local
 site:
   homepage: http://127.0.0.1:3000
-  artifact_base_url: http://127.0.0.1:4566/artifacts
+  artifact_base_url: http://127.0.0.1:4566/artifacts/media

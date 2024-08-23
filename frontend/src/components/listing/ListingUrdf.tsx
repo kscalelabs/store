@@ -15,6 +15,7 @@ import {
 } from "components/listing/FileUpload";
 import { Button } from "components/ui/Button/Button";
 import Spinner from "components/ui/Spinner";
+import WASM from "./wasm";
 
 type UrdfResponseType = components["schemas"]["UrdfResponse"];
 
@@ -152,6 +153,7 @@ const ListingUrdf = (props: Props) => {
       ) : (
         urdf.urdf !== null && (
           <>
+            <WASM url={urdf.urdf.url} />
             {showUrdf ? (
               <>
                 <div className="flex justify-center">

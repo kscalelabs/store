@@ -11,7 +11,7 @@ import MeshRenderer from "components/listing/MeshRenderer";
 import { Button } from "components/ui/Button/Button";
 import { Tooltip } from "components/ui/ToolTip";
 
-type MeshType = "obj";
+type MeshType = "obj" | "stl" | "STL";
 type AllArtifactsType =
   components["schemas"]["ListArtifactsResponse"]["artifacts"];
 type ArtifactType = AllArtifactsType[0];
@@ -26,6 +26,10 @@ interface Props {
 const getMeshType = (artifactType: ArtifactType["artifact_type"]): MeshType => {
   switch (artifactType) {
     case "obj":
+      return artifactType;
+    case "stl":
+      return artifactType;
+    case "STL":
       return artifactType;
     default:
       throw new Error(`Unknown artifact type: ${artifactType}`);
