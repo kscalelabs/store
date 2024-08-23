@@ -376,16 +376,12 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
                 in the file header when the user retrieves it.
         """
         bucket = await self.s3.Bucket(settings.s3.bucket)
-        try:
-            await bucket.put_object(
-                Key=f"{settings.s3.prefix}{filename}",
-                Body=data,
-                ContentType=content_type,
-                ContentDisposition=f'attachment; filename="{name}"',
-            )
-        except ClientError:
-            logger.exception(f"Failed to upload {filename} to S3")
-            raise
+        await bucket.put_object(
+            Key=f"{settings.s3.prefix}{filename}",
+            Body=data,
+            ContentType=content_type,
+            ContentDisposition=f'attachment; filename="{name}"',
+        )
 
     async def _download_from_s3(self, filename: str) -> StreamingBody:
         """Downloads an object from S3.
