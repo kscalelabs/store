@@ -24,7 +24,7 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
         api = OnshapeApi(client)
         document_info = client.parse_url(onshape_url)
         try:
-            api.get_document(document_info.document_id)
+            await api.get_document(document_info.document_id)
             return True
         except Exception as e:
             logger.error("Error: %s", e)
