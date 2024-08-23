@@ -19,7 +19,7 @@ def get_converter() -> Converter:
 
 
 class OnshapeCrud(ListingsCrud, BaseCrud):
-    async def document_exists(self, onshape_url: str) -> bool:
+    async def onshape_document_exists(self, onshape_url: str) -> bool:
         client = OnshapeClient()
         api = OnshapeApi(client)
         document_info = client.parse_url(onshape_url)
@@ -31,7 +31,7 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
             return False
 
     async def add_onshape_url_to_listing(self, listing_id: str, onshape_url: str) -> None:
-        if not await self.document_exists(onshape_url):
+        if not await self.onshape_document_exists(onshape_url):
             raise ValueError("Onshape URL is not accessible")
         await self.edit_listing(
             listing_id=listing_id,
@@ -47,7 +47,7 @@ async def test_adhoc() -> None:
     logging.basicConfig(level=logging.INFO)
 
     async with OnshapeCrud() as crud:
-        document_exists = await crud.document_exists(args.onshape_url)
+        document_exists = await crud.onshape_document_exists(args.onshape_url)
         logger.info("Document exists: %s", document_exists)
 
 
