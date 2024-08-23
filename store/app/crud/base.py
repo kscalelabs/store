@@ -111,8 +111,8 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
                 Item=item_data,
                 ConditionExpression=condition,
             )
-        except ClientError as e:
-            logger.error(f"Failed to insert item into DynamoDB: {e}")
+        except ClientError:
+            logger.exception("Failed to insert item into DynamoDB")
             raise
 
     async def _delete_item(self, item: StoreBaseModel | str) -> None:
@@ -376,12 +376,16 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
                 in the file header when the user retrieves it.
         """
         bucket = await self.s3.Bucket(settings.s3.bucket)
-        await bucket.put_object(
-            Key=f"{settings.s3.prefix}{filename}",
-            Body=data,
-            ContentType=content_type,
-            ContentDisposition=f'attachment; filename="{name}"',
-        )
+        try:
+            await bucket.put_object(
+                Key=f"{settings.s3.prefix}{filename}",
+                Body=data,
+                ContentType=content_type,
+                ContentDisposition=f'attachment; filename="{name}"',
+            )
+        except ClientError:
+            logger.exception(f"Failed to upload {filename} to S3")
+            raise
 
     async def _download_from_s3(self, filename: str) -> StreamingBody:
         """Downloads an object from S3.

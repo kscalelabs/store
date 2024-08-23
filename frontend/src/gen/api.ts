@@ -798,6 +798,8 @@ export interface components {
             child_ids: string[];
             /** Description */
             description: string | null;
+            /** Onshape Url */
+            onshape_url: string | null;
         };
         /** ListingInfoResponse */
         ListingInfoResponse: {

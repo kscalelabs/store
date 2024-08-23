@@ -337,8 +337,8 @@ class Listing(StoreBaseModel):
     user_id: str
     name: str
     child_ids: list[str]
-    description: str | None
-    onshape_url: str | None
+    description: str | None = None
+    onshape_url: str | None = None
 
     @classmethod
     def create(
