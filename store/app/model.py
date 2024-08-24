@@ -417,7 +417,7 @@ def get_artifact_url(
         artifact_type=artifact_type,
         size=size,
     )
-    return f"{settings.site.artifact_base_url}/{artifact_name}"
+    return f"{settings.site.artifact_base_url}{artifact_name}"
 
 
 def get_artifact_urls(

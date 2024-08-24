@@ -23,12 +23,7 @@ from store.app.routers.keys import keys_router
 from store.app.routers.listings import listings_router
 from store.app.routers.urdf import urdf_router
 from store.app.routers.users import users_router
-from store.settings import settings
-
-LOCALHOST_URLS = [
-    "http://127.0.0.1:3000",
-    "http://localhost:3000",
-]
+from store.utils import get_cors_origins
 
 
 @asynccontextmanager
@@ -47,7 +42,7 @@ app = FastAPI(lifespan=lifespan)
 # Adds CORS middleware.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins={settings.site.homepage, *LOCALHOST_URLS},
+    allow_origins=get_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -49,6 +49,53 @@ type UrdfResponseType = components["schemas"]["UrdfResponse"];
 //   );
 // };
 
+interface DownloadInstructionsProps {
+  listingId: string;
+}
+
+const DownloadInstructions = ({ listingId }: DownloadInstructionsProps) => {
+  const [clickedCopyButton, setClickedCopyButton] = useState(false);
+
+  const onClickCopyButton = async () => {
+    setClickedCopyButton(true);
+    navigator.clipboard.writeText(`kscale urdf get ${listingId}`);
+
+    setTimeout(() => {
+      setClickedCopyButton(false);
+    }, 1000);
+  };
+
+  return (
+    <div className="w-full p-4 rounded-lg duration-300 ease-in-out border-2 border-dashed border-gray-300">
+      <div className="flex flex-col gap-2 w-full justify-center h-full">
+        <div className="w-full flex justify-center">
+          Download the URDF using the
+          <a
+            href="https://github.com/kscalelabs/kscale"
+            target="_blank"
+            rel="noreferrer"
+            className="link ml-1"
+          >
+            K-Scale CLI
+          </a>
+        </div>
+        <Button
+          onClick={onClickCopyButton}
+          variant="link"
+          className="rounded-full"
+          disabled={clickedCopyButton}
+        >
+          <div className="flex justify-center">
+            <code>
+              {clickedCopyButton ? "copied!" : `kscale urdf get ${listingId}`}
+            </code>
+          </div>
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 interface Props {
   listingId: string;
   edit: boolean;
@@ -65,7 +112,6 @@ const ListingUrdf = (props: Props) => {
   const [files, setFiles] = useState<File[] | null>(null);
   const [uploading, setUploading] = useState(false);
   const [showUrdf, setShowUrdf] = useState(false);
-  const [clickedCopyButton, setClickedCopyButton] = useState(false);
 
   useEffect(() => {
     if (urdf !== null) {
@@ -143,7 +189,7 @@ const ListingUrdf = (props: Props) => {
       setClickedCopyButton(false);
     }, 1000);
   };
-
+    
   return urdf !== null || edit ? (
     <div className="flex flex-col space-y-2 w-full mt-4">
       {urdf === null ? (
@@ -191,18 +237,7 @@ const ListingUrdf = (props: Props) => {
                     </Center>
                   </Suspense>
                 </Canvas> */}
-                  <Button
-                    onClick={onClickCopyButton}
-                    variant="ghost"
-                    className="rounded-full"
-                    disabled={clickedCopyButton}
-                  >
-                    <code>
-                      {clickedCopyButton
-                        ? "copied!"
-                        : `pip install kscale; kscale urdf get ${urdf.listing_id}`}
-                    </code>
-                  </Button>
+                  <DownloadInstructions listingId={listingId} />
                 </RequireAuthentication>
               </>
             ) : (
