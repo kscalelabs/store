@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 import { LoginSchema, LoginType } from "types";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "components/ui/Button/Button";
 import ErrorMessage from "components/ui/ErrorMessage";
@@ -21,6 +22,7 @@ const LoginForm = () => {
 
   const { addAlert, addErrorAlert } = useAlertQueue();
   const auth = useAuthentication();
+  const navigate = useNavigate();
 
   const onSubmit: SubmitHandler<LoginType> = async (data: LoginType) => {
     try {
@@ -33,6 +35,7 @@ const LoginForm = () => {
       } else {
         addAlert(`Logged in! Welcome back!`, "success");
         auth.login(response.token);
+        navigate("/create");
       }
     } catch {
       addErrorAlert("An unexpected error occurred during login.");
