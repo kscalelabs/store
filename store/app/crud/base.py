@@ -111,8 +111,8 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
                 Item=item_data,
                 ConditionExpression=condition,
             )
-        except ClientError as e:
-            logger.error(f"Failed to insert item into DynamoDB: {e}")
+        except ClientError:
+            logger.exception("Failed to insert item into DynamoDB")
             raise
 
     async def _delete_item(self, item: StoreBaseModel | str) -> None:

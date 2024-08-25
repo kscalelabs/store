@@ -65,6 +65,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         child_ids: list[str] | None = None,
         description: str | None = None,
         tags: list[str] | None = None,
+        onshape_url: str | None = None,
     ) -> None:
         listing = await self.get_listing(listing_id)
         if listing is None:
@@ -79,6 +80,8 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             listing_updates["child_ids"] = child_ids
         if description is not None:
             listing_updates["description"] = description
+        if onshape_url is not None:
+            listing_updates["onshape_url"] = onshape_url
         if listing_updates:
             coroutines.append(self._update_item(listing_id, Listing, listing_updates))
         if coroutines:

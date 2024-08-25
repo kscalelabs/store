@@ -57,7 +57,7 @@ const DownloadInstructions = ({ listingId }: DownloadInstructionsProps) => {
 
   const onClickCopyButton = async () => {
     setClickedCopyButton(true);
-    navigator.clipboard.writeText(`kscale urdf get ${listingId}`);
+    navigator.clipboard.writeText(listingId);
 
     setTimeout(() => {
       setClickedCopyButton(false);
@@ -78,18 +78,21 @@ const DownloadInstructions = ({ listingId }: DownloadInstructionsProps) => {
             K-Scale CLI
           </a>
         </div>
-        <Button
-          onClick={onClickCopyButton}
-          variant="link"
-          className="rounded-full"
-          disabled={clickedCopyButton}
-        >
-          <div className="flex justify-center">
-            <code>
-              {clickedCopyButton ? "copied!" : `kscale urdf get ${listingId}`}
-            </code>
-          </div>
-        </Button>
+        <div className="w-full flex justify-center text-sm">
+          <code className="bg-gray-100 px-2 dark:bg-gray-800 rounded-lg">
+            kscale urdf download
+            <Button
+              onClick={onClickCopyButton}
+              variant="link"
+              className="rounded-full ml-2 p-0"
+              disabled={clickedCopyButton}
+            >
+              <div className="flex justify-center">
+                <code>{clickedCopyButton ? "copied!" : `${listingId}`}</code>
+              </div>
+            </Button>
+          </code>
+        </div>
       </div>
     </div>
   );

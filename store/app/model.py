@@ -337,7 +337,8 @@ class Listing(StoreBaseModel):
     user_id: str
     name: str
     child_ids: list[str]
-    description: str | None
+    description: str | None = None
+    onshape_url: str | None = None
 
     @classmethod
     def create(
@@ -346,6 +347,7 @@ class Listing(StoreBaseModel):
         name: str,
         child_ids: list[str],
         description: str | None = None,
+        onshape_url: str | None = None,
     ) -> Self:
         return cls(
             id=new_uuid(),
@@ -353,6 +355,7 @@ class Listing(StoreBaseModel):
             name=name,
             child_ids=child_ids,
             description=description,
+            onshape_url=onshape_url,
         )
 
 
