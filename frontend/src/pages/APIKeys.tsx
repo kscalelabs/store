@@ -23,6 +23,7 @@ const SingleKey = ({ token, permissions, onDelete }: SingleKeyProps) => {
   const { addErrorAlert } = useAlertQueue();
   const [deleting, setDeleting] = useState(false);
   const [clickedCopyButton, setClickedCopyButton] = useState(false);
+  const [isKeyVisible, setIsKeyVisible] = useState(false); // State for key visibility
 
   const isActiveKey = auth.apiKeyId === token;
 
@@ -55,18 +56,32 @@ const SingleKey = ({ token, permissions, onDelete }: SingleKeyProps) => {
     setDeleting(false);
   };
 
+  const censoredToken = `${token.slice(0, 4)}...${token.slice(-4)}`;
+
   return (
     <>
       {/* Key value */}
       <p>
-        <span className="font-bold">Key:</span>
+        <span className="font-bold">Key:</span>{" "}
         <Button
           onClick={onClickCopyButton}
           variant="ghost"
           className="rounded-full"
           disabled={clickedCopyButton}
         >
-          <code>{clickedCopyButton ? "copied!" : token}</code>
+          <code>
+            {clickedCopyButton
+              ? "copied!"
+              : isKeyVisible
+                ? token
+                : censoredToken}
+          </code>
+        </Button>
+        <Button
+          onClick={() => setIsKeyVisible(!isKeyVisible)}
+          variant="primary"
+        >
+          {isKeyVisible ? "Hide" : "Show"}
         </Button>
       </p>
 
