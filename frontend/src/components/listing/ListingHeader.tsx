@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaCheck, FaFile, FaPen, FaTimes } from "react-icons/fa";
+import { FaCheck, FaPen, FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 import { useAlertQueue } from "hooks/useAlertQueue";
