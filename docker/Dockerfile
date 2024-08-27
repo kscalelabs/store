@@ -8,6 +8,11 @@ WORKDIR /app
 # Copy the requirements file first to leverage Docker's cache.
 COPY /store/requirements.txt /app
 
+# Installs Open3D dependencies.
+RUN apt-get update && apt-get install -y \
+    libglfw3 \
+    libglfw3-dev
+
 # Install Python dependencies.
 RUN pip install --no-cache-dir -r requirements.txt
 
