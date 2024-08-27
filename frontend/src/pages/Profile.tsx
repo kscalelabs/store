@@ -16,10 +16,11 @@ type UserResponse =
 interface RenderProfileProps {
   user: UserResponse;
   onUpdateProfile: (updatedUser: Partial<UserResponse>) => Promise<void>;
+  canEdit: boolean;
 }
 
 const RenderProfile = (props: RenderProfileProps) => {
-  const { user, onUpdateProfile } = props;
+  const { user, onUpdateProfile, canEdit } = props;
   const [isEditing, setIsEditing] = useState(false);
   const [firstName, setFirstName] = useState(user.first_name || "");
   const [lastName, setLastName] = useState(user.last_name || "");
@@ -122,13 +123,15 @@ const RenderProfile = (props: RenderProfileProps) => {
                 ? formatJoinDate(user.created_at)
                 : "Unknown date"}
             </p>
-            <Button
-              className="mt-4"
-              onClick={() => setIsEditing(true)}
-              variant="primary"
-            >
-              Edit Profile
-            </Button>
+            {!isEditing && canEdit && (
+              <Button
+                className="mt-4"
+                onClick={() => setIsEditing(true)}
+                variant="primary"
+              >
+                Edit Profile
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -141,16 +144,26 @@ const Profile = () => {
   const auth = useAuthentication();
   const { id } = useParams();
   const [user, setUser] = useState<UserResponse | null>(null);
+  const [canEdit, setCanEdit] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchUser = async () => {
+      setIsLoading(true);
       if (id === undefined) {
-        const { data, error } = await auth.client.GET("/users/public/me");
-
-        if (error) {
-          addErrorAlert(error);
-        } else {
-          setUser(data);
+        if (auth.currentUser) {
+          setUser(auth.currentUser);
+          setCanEdit(true);
+          setIsLoading(false);
+        } else if (!auth.isLoading) {
+          const { data, error } = await auth.client.GET("/users/public/me");
+          if (error) {
+            addErrorAlert(error);
+          } else {
+            setUser(data);
+            setCanEdit(true);
+          }
+          setIsLoading(false);
         }
       } else {
         try {
@@ -164,14 +177,20 @@ const Profile = () => {
             addErrorAlert(error);
           } else {
             setUser(data);
+            setCanEdit(auth.currentUser?.id === data.id);
           }
+          setIsLoading(false);
         } catch (err) {
           addErrorAlert(err);
+          setIsLoading(false);
         }
       }
     };
-    fetchUser();
-  }, [id]);
+
+    if (!auth.isLoading) {
+      fetchUser();
+    }
+  }, [id, auth.currentUser, auth.isLoading, auth.client, addErrorAlert]);
 
   const handleUpdateProfile = async (updatedUser: Partial<UserResponse>) => {
     try {
@@ -189,11 +208,23 @@ const Profile = () => {
     }
   };
 
+  if (auth.isLoading || isLoading) {
+    return (
+      <div className="flex justify-center items-center pt-8">
+        <Spinner />
+      </div>
+    );
+  }
+
   return user ? (
-    <RenderProfile user={user} onUpdateProfile={handleUpdateProfile} />
+    <RenderProfile
+      user={user}
+      onUpdateProfile={handleUpdateProfile}
+      canEdit={canEdit}
+    />
   ) : (
     <div className="flex justify-center items-center pt-8">
-      <Spinner />
+      <p>User not found</p>
     </div>
   );
 };
