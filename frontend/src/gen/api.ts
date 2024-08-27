@@ -842,6 +842,14 @@ export interface components {
             google_id: string | null;
             /** Permissions */
             permissions: "is_admin"[] | null;
+            /** First Name */
+            first_name: string | null;
+            /** Last Name */
+            last_name: string | null;
+            /** Name */
+            name: string | null;
+            /** Bio */
+            bio: string | null;
         };
         /** NewKeyRequest */
         NewKeyRequest: {

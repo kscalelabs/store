@@ -130,6 +130,24 @@ class MyUserInfoResponse(BaseModel):
     github_id: str | None
     google_id: str | None
     permissions: set[UserPermission] | None
+    first_name: str | None
+    last_name: str | None
+    name: str | None
+    bio: str | None
+
+    @classmethod
+    def from_user(cls, user: User) -> Self:
+        return cls(
+            user_id=user.id,
+            email=user.email,
+            google_id=user.google_id,
+            github_id=user.github_id,
+            permissions=user.permissions,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            name=user.name,
+            bio=user.bio,
+        )
 
 
 @users_router.get("/me", response_model=MyUserInfoResponse)
@@ -143,6 +161,10 @@ async def get_user_info_endpoint(
             google_id=user.google_id,
             github_id=user.github_id,
             permissions=user.permissions,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            name=user.name,
+            bio=user.bio,
         )
     except ValueError:
         return None
