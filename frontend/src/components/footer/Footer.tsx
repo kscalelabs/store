@@ -8,7 +8,7 @@ import {
   LinkedinPrimaryColor,
 } from "types/colors";
 
-import SocialLink from "./SocialLink";
+import SocialLink from "components/footer/SocialLink";
 
 const Footer = () => {
   const navigate = useNavigate();

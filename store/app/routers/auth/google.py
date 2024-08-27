@@ -3,8 +3,8 @@
 import logging
 from typing import Annotated
 
-import aiohttp
 from fastapi import APIRouter, Depends, HTTPException, status
+from httpx import AsyncClient
 from pydantic.main import BaseModel
 
 from store.app.db import Crud
@@ -20,14 +20,15 @@ class GoogleLogin(BaseModel):
 
 
 async def get_google_user_email(token: str) -> str:
-    async with aiohttp.ClientSession() as session:
+    async with AsyncClient() as session:
         response = await session.get(
             "https://www.googleapis.com/oauth2/v3/userinfo",
             params={"access_token": token},
         )
-        if response.status != 200:
+        if response.status_code != 200:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Google token")
-        return (await response.json())["email"]
+        data = response.json()
+        return data["email"]
 
 
 class ClientIdResponse(BaseModel):

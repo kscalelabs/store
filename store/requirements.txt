@@ -15,7 +15,6 @@ pyjwt[asyncio]
 bcrypt
 
 # FastAPI dependencies.
-aiohttp
 aiosmtplib
 fastapi[standard]
 pillow
@@ -36,3 +35,4 @@ types-aioboto3[dynamodb, s3]
 # Converting files
 pybullet
 mujoco
+kscale-onshape-library

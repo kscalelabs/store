@@ -1,4 +1,4 @@
-import { Button } from "./Button";
+import { Button } from "components/ui/Button/Button";
 
 interface BackButtonProps {
   label: string;

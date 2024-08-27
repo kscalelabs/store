@@ -21,14 +21,10 @@ from store.app.routers.artifacts import artifacts_router
 from store.app.routers.email import email_router
 from store.app.routers.keys import keys_router
 from store.app.routers.listings import listings_router
+from store.app.routers.onshape import onshape_router
 from store.app.routers.urdf import urdf_router
 from store.app.routers.users import users_router
-from store.settings import settings
-
-LOCALHOST_URLS = [
-    "http://127.0.0.1:3000",
-    "http://localhost:3000",
-]
+from store.utils import get_cors_origins
 
 
 @asynccontextmanager
@@ -47,7 +43,7 @@ app = FastAPI(lifespan=lifespan)
 # Adds CORS middleware.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins={settings.site.homepage, *LOCALHOST_URLS},
+    allow_origins=get_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -113,6 +109,7 @@ app.include_router(email_router, prefix="/email", tags=["email"])
 app.include_router(keys_router, prefix="/keys", tags=["keys"])
 app.include_router(listings_router, prefix="/listings", tags=["listings"])
 app.include_router(urdf_router, prefix="/urdf", tags=["urdf"])
+app.include_router(onshape_router, prefix="/onshape", tags=["onshape"])
 app.include_router(users_router, prefix="/users", tags=["users"])
 
 # For running with debugger

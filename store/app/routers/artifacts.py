@@ -150,6 +150,7 @@ async def upload(
 
     # Checks that the listing is valid.
     listing = await crud.get_listing(listing_id)
+
     if listing is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -165,8 +166,8 @@ async def upload(
     artifacts = await asyncio.gather(
         *(
             crud.upload_artifact(
-                file=file,
                 name=filename,
+                file=file,
                 listing=listing,
                 artifact_type=artifact_type,
             )

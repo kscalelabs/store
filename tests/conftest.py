@@ -1,5 +1,6 @@
 """Pytest configuration file."""
 
+import logging
 import os
 from typing import AsyncGenerator, Generator, cast
 
@@ -21,6 +22,9 @@ def pytest_collection_modifyitems(items: list[Function]) -> None:
 @pytest.fixture(autouse=True)
 def mock_aws() -> Generator[None, None, None]:
     server: ThreadedMotoServer | None = None
+
+    # logging.getLogger("botocore").setLevel(logging.DEBUG)
+    logging.getLogger("botocore").setLevel(logging.WARN)
 
     try:
         env_vars: dict[str, str] = {}

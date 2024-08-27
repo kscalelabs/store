@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaFile, FaPen, FaTimes } from "react-icons/fa";
+import { FaCheck, FaPen, FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 import { useAlertQueue } from "hooks/useAlertQueue";
@@ -63,6 +63,11 @@ const ListingTitle = (props: Props) => {
             <Input
               type="text"
               value={newTitle}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSave();
+                }
+              }}
               onChange={(e) => {
                 setNewTitle(e.target.value);
                 setHasChanged(true);
@@ -83,7 +88,7 @@ const ListingTitle = (props: Props) => {
               }}
               variant="ghost"
             >
-              {isEditing ? <FaFile /> : <FaPen />}
+              {isEditing ? <FaCheck /> : <FaPen />}
             </Button>
           )}
         </>

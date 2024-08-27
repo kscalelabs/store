@@ -9,7 +9,6 @@ ruff
 # Testing
 moto[dynamodb]
 pytest
-pytest-aiohttp
 pytest-aiomoto
 pytest-asyncio
 pytest-mock

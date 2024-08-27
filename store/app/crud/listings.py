@@ -64,6 +64,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         child_ids: list[str] | None = None,
         description: str | None = None,
         tags: list[str] | None = None,
+        onshape_url: str | None = None,
     ) -> None:
         listing = await self.get_listing(listing_id)
         if listing is None:
@@ -76,16 +77,18 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             updates["child_ids"] = child_ids
         if description is not None:
             updates["description"] = description
-
         coroutines = []
         if tags is not None:
             coroutines.append(self.set_listing_tags(listing, tags))
-
+        if onshape_url is not None:
+            updates["onshape_url"] = onshape_url
         if updates:
             coroutines.append(self._update_item(listing_id, Listing, updates))
-
         if coroutines:
             await asyncio.gather(*coroutines)
+
+    async def remove_onshape_url(self, listing_id: str) -> None:
+        await self._update_item(listing_id, Listing, {"onshape_url": None})
 
     async def _add_tag_to_listing(self, listing_id: str, tag: str) -> None:
         await self._add_item(ListingTag.create(listing_id=listing_id, tag=tag), unique_fields=["listing_id", "name"])
