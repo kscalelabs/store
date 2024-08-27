@@ -77,6 +77,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             updates["child_ids"] = child_ids
         if description is not None:
             updates["description"] = description
+
         coroutines = []
         if tags is not None:
             coroutines.append(self.set_listing_tags(listing, tags))
@@ -84,6 +85,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             updates["onshape_url"] = onshape_url
         if updates:
             coroutines.append(self._update_item(listing_id, Listing, updates))
+
         if coroutines:
             await asyncio.gather(*coroutines)
 
