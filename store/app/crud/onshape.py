@@ -6,6 +6,7 @@ import io
 import logging
 import tempfile
 
+from fastapi import WebSocket
 from kol.onshape.api import OnshapeApi
 from kol.onshape.client import OnshapeClient
 from kol.onshape.config import ConverterConfig
@@ -17,6 +18,19 @@ from store.app.crud.listings import ListingsCrud
 from store.app.model import Artifact, Listing
 
 logger = logging.getLogger(__name__)
+
+
+class RedirectToWebsocketHandler(logging.Handler):
+    def __init__(self, websocket: WebSocket) -> None:
+        super().__init__()
+
+        self.websocket = websocket
+
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            asyncio.create_task(self.websocket.send_text(self.format(record)))
+        except Exception:
+            pass
 
 
 class OnshapeCrud(ListingsCrud, BaseCrud):
@@ -42,15 +56,22 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
                 onshape_url=onshape_url,
             )
 
-    async def _download_onshape_document(
+    async def download_onshape_document(
         self,
         listing: Listing,
         onshape_url: str,
         *,
         config: ConverterConfig | None = None,
+        websocket: WebSocket | None = None,
     ) -> Artifact:
         if config is None:
             config = ConverterConfig()
+
+        # Custom logger to redirect "kol.*" logs to the websocket, if provided.
+        if websocket is not None:
+            kol_logger = logging.getLogger("kol")
+            kol_logger.addHandler(RedirectToWebsocketHandler(websocket))
+
         with tempfile.TemporaryDirectory() as temp_dir:
             document_info = await download(onshape_url, temp_dir, config=config)
             postprocess_info = await postprocess(document_info.urdf_info.urdf_path, config=config)

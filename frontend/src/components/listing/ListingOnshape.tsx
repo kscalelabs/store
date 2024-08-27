@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaCheck, FaPen, FaTimes } from "react-icons/fa";
+import { FaCheck, FaPen, FaSync, FaTimes } from "react-icons/fa";
 
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
@@ -30,6 +30,7 @@ const UrlInput = (props: UrlInputProps) => {
         }
       }}
       className="border-b border-gray-300 dark:border-gray-700"
+      autoFocus
     />
   );
 };
@@ -59,51 +60,43 @@ const UrlRenderer = (props: UrlRendererProps) => {
 };
 
 interface UpdateButtonProps {
-  edit: boolean;
   isEditing: boolean;
   setIsEditing: (isEditing: boolean) => void;
   handleSave: () => Promise<void>;
-  handleRemove: () => Promise<void>;
-  showRemove?: boolean;
+  handleRemove?: () => Promise<void>;
+  handleReload?: () => Promise<void>;
 }
 
 const UpdateButtons = (props: UpdateButtonProps) => {
-  const {
-    edit,
-    isEditing,
-    setIsEditing,
-    handleSave,
-    handleRemove,
-    showRemove,
-  } = props;
+  const { isEditing, setIsEditing, handleSave, handleRemove, handleReload } =
+    props;
 
   return (
-    <>
-      {edit && (
-        <Button
-          onClick={async () => {
-            if (isEditing) {
-              await handleSave();
-            } else {
-              setIsEditing(true);
-            }
-          }}
-          variant="primary"
-          className="px-3 ml-2"
-        >
-          {isEditing ? <FaCheck /> : <FaPen />}
-        </Button>
-      )}
-      {showRemove && (
-        <Button
-          onClick={handleRemove}
-          variant="destructive"
-          className="px-3 ml-2"
-        >
+    <div className="flex flex-row gap-2 mt-2">
+      <Button
+        onClick={async () => {
+          if (isEditing) {
+            await handleSave();
+          } else {
+            setIsEditing(true);
+          }
+        }}
+        variant="primary"
+        className="px-3"
+      >
+        {isEditing ? <FaCheck /> : <FaPen />}
+      </Button>
+      {handleRemove && (
+        <Button onClick={handleRemove} variant="destructive" className="px-3">
           <FaTimes />
         </Button>
       )}
-    </>
+      {handleReload && (
+        <Button onClick={handleReload} variant="primary" className="px-3">
+          <FaSync />
+        </Button>
+      )}
+    </div>
   );
 };
 
@@ -123,9 +116,40 @@ const ListingOnshape = (props: Props) => {
   const [url, setUrl] = useState<string | null>(onshapeUrl);
   const [permUrl, setPermUrl] = useState<string | null>(onshapeUrl);
 
+  const handleRemove = async () => {
+    setSubmitting(true);
+    const { error } = await auth.client.POST("/onshape/set/{listing_id}", {
+      params: {
+        path: { listing_id: listingId },
+      },
+      body: {
+        onshape_url: null,
+      },
+    });
+
+    if (error) {
+      addErrorAlert(error);
+    } else {
+      addAlert("Onshape URL successfully removed", "success");
+      setUrl(null);
+      setPermUrl(null);
+      setIsEditing(false);
+    }
+    setSubmitting(false);
+  };
+
+  const handleReload = async () => {
+    return;
+  };
+
   const handleSave = async () => {
     if (url === permUrl) {
       setIsEditing(false);
+      return;
+    }
+
+    if (url === null || url.length === 0) {
+      await handleRemove();
       return;
     }
 
@@ -142,30 +166,8 @@ const ListingOnshape = (props: Props) => {
     if (error) {
       addErrorAlert(error);
     } else {
-      addAlert("Listing updated successfully", "success");
+      addAlert("Onshape URL successfully updated", "success");
       setPermUrl(url);
-      setIsEditing(false);
-    }
-    setSubmitting(false);
-  };
-
-  const handleRemove = async () => {
-    setSubmitting(true);
-    const { error } = await auth.client.POST("/onshape/set/{listing_id}", {
-      params: {
-        path: { listing_id: listingId },
-      },
-      body: {
-        onshape_url: null,
-      },
-    });
-
-    if (error) {
-      addErrorAlert(error);
-    } else {
-      addAlert("Listing updated successfully", "success");
-      setUrl(null);
-      setPermUrl(null);
       setIsEditing(false);
     }
     setSubmitting(false);
@@ -177,20 +179,21 @@ const ListingOnshape = (props: Props) => {
     </div>
   ) : url !== null || edit ? (
     <div className="flex flex-col my-2 py-2">
-      <div className="flex items-center">
-        {isEditing ? (
-          <>
+      {isEditing ? (
+        <div className="flex flex-col items-start">
+          <div className="flex items-center w-full">
             <UrlInput url={url} setUrl={setUrl} handleSave={handleSave} />
+          </div>
+          {edit && (
             <UpdateButtons
-              edit={edit}
               isEditing={isEditing}
               setIsEditing={setIsEditing}
               handleSave={handleSave}
-              handleRemove={handleRemove}
-              showRemove={false}
             />
-          </>
-        ) : permUrl === null ? (
+          )}
+        </div>
+      ) : permUrl === null ? (
+        <div className="flex items-center">
           <Button
             onClick={() => setIsEditing(true)}
             variant="primary"
@@ -198,25 +201,28 @@ const ListingOnshape = (props: Props) => {
           >
             Add Onshape URL
           </Button>
-        ) : (
-          <>
+        </div>
+      ) : (
+        <div className="flex flex-col items-start">
+          <div className="flex items-center w-full">
             <UrlRenderer
               isEditing={isEditing}
               handleSave={handleSave}
               url={url}
               setUrl={setUrl}
             />
+          </div>
+          {edit && (
             <UpdateButtons
-              edit={edit}
               isEditing={isEditing}
               setIsEditing={setIsEditing}
               handleSave={handleSave}
-              handleRemove={handleRemove}
-              showRemove={edit && permUrl !== null}
+              handleRemove={permUrl !== null ? handleRemove : undefined}
+              handleReload={permUrl !== null ? handleReload : undefined}
             />
-          </>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   ) : null;
 };

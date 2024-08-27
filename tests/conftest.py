@@ -6,6 +6,7 @@ from typing import AsyncGenerator, Generator, cast
 
 import pytest
 from _pytest.python import Function
+from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient, Response
 from httpx._transports.asgi import _ASGIApp
 from moto.dynamodb import mock_dynamodb
@@ -75,6 +76,14 @@ async def app_client() -> AsyncGenerator[AsyncClient, None]:
 
     async with AsyncClient(transport=transport, base_url="http://test") as app_client:
         yield app_client
+
+
+@pytest.fixture()
+def test_client() -> Generator[TestClient, None, None]:
+    from store.app.main import app
+
+    with TestClient(app) as client:
+        yield client
 
 
 @pytest.fixture(autouse=True)

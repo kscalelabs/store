@@ -73,6 +73,7 @@ const ListingTitle = (props: Props) => {
                 setHasChanged(true);
               }}
               className="border-b border-gray-300 dark:border-gray-700"
+              autoFocus
             />
           ) : (
             <h1 className="text-2xl font-semibold">{newTitle}</h1>
