@@ -87,6 +87,9 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         if coroutines:
             await asyncio.gather(*coroutines)
 
+    async def remove_onshape_url(self, listing_id: str) -> None:
+        await self._update_item(listing_id, Listing, {"onshape_url": None})
+
     async def _add_tag_to_listing(self, listing_id: str, tag: str) -> None:
         await self._add_item(ListingTag.create(listing_id=listing_id, tag=tag), unique_fields=["listing_id", "name"])
 

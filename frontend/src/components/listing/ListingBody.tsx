@@ -5,6 +5,8 @@ import ListingChildren from "components/listing/ListingChildren";
 import ListingDescription from "components/listing/ListingDescription";
 import ListingUrdf from "components/listing/ListingUrdf";
 
+import ListingOnshape from "./ListingOnshape";
+
 type ListingResponse =
   paths["/listings/{id}"]["get"]["responses"][200]["content"]["application/json"];
 
@@ -22,6 +24,11 @@ const ListingBody = (props: ListingBodyProps) => {
         edit={listing.can_edit}
       />
       <ListingChildren child_ids={listing.child_ids} edit={listing.can_edit} />
+      <ListingOnshape
+        listingId={listing.id}
+        onshapeUrl={listing.onshape_url}
+        edit={listing.can_edit}
+      />
       <ListingUrdf listingId={listing.id} edit={listing.can_edit} />
       <ListingArtifacts listingId={listing.id} edit={listing.can_edit} />
     </div>

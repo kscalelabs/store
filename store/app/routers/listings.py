@@ -42,6 +42,7 @@ class ListingInfoResponse(BaseModel):
     description: str | None
     child_ids: list[str]
     image_url: str | None
+    onshape_url: str | None
 
 
 class GetBatchListingsResponse(BaseModel):
@@ -72,6 +73,7 @@ async def get_batch_listing_info(
                     ),
                     None,
                 ),
+                onshape_url=listing.onshape_url,
             )
             for listing, artifacts in zip(listings, artifacts)
         ]
@@ -194,6 +196,7 @@ class GetListingResponse(BaseModel):
     description: str | None
     child_ids: list[str]
     tags: list[str]
+    onshape_url: str | None
     can_edit: bool
 
 
@@ -215,5 +218,6 @@ async def get_listing(
         description=listing.description,
         child_ids=listing.child_ids,
         tags=listing_tags,
+        onshape_url=listing.onshape_url,
         can_edit=user is not None and await can_write_listing(user, listing),
     )
