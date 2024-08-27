@@ -20,13 +20,13 @@ const ToastIcon = (props: ToastIconProps) => {
 
   switch (kind) {
     case "success":
-      return <FaCheckCircle className="w-4 h-4" />;
+      return <FaCheckCircle className="w-4 h-4 text-green-500" />;
     case "error":
-      return <FaTimesCircle className="w-4 h-4" />;
+      return <FaTimesCircle className="w-4 h-4 text-red-500" />;
     case "warning":
-      return <FaExclamationCircle className="w-4 h-4" />;
+      return <FaExclamationCircle className="w-4 h-4 text-yellow-500" />;
     case "info":
-      return <FaInfoCircle className="w-4 h-4" />;
+      return <FaInfoCircle className="w-4 h-4 text-blue-500" />;
   }
 };
 
@@ -60,7 +60,7 @@ const Toast = (props: Props) => {
       className="flex items-center w-full p-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-300 dark:bg-gray-800"
       role="alert"
     >
-      <div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-blue-500 bg-blue-100 rounded-lg dark:bg-blue-800 dark:text-blue-200">
+      <div className="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-lg">
         <ToastIcon kind={kind} />
       </div>
       <div className="ms-3 text-sm font-normal max-w-xs">{message}</div>

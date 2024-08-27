@@ -25,19 +25,22 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
         api = OnshapeApi(client)
         document_info = client.parse_url(onshape_url)
         try:
-            await api.get_document(document_info.document_id)
+            await api.get_assembly(document_info)
             return True
         except Exception as e:
             logger.error("Error: %s", e)
             return False
 
-    async def add_onshape_url_to_listing(self, listing_id: str, onshape_url: str) -> None:
-        if not await self.onshape_document_exists(onshape_url):
-            raise ValueError("Onshape URL is not accessible")
-        await self.edit_listing(
-            listing_id=listing_id,
-            onshape_url=onshape_url,
-        )
+    async def add_onshape_url_to_listing(self, listing_id: str, onshape_url: str | None) -> None:
+        if onshape_url is None:
+            await self.remove_onshape_url(listing_id)
+        else:
+            if not await self.onshape_document_exists(onshape_url):
+                raise ValueError("Onshape URL is not accessible")
+            await self.edit_listing(
+                listing_id=listing_id,
+                onshape_url=onshape_url,
+            )
 
     async def _download_onshape_document(
         self,

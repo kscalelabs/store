@@ -3,6 +3,7 @@ import { paths } from "gen/api";
 import ListingArtifacts from "components/listing/ListingArtifacts";
 import ListingChildren from "components/listing/ListingChildren";
 import ListingDescription from "components/listing/ListingDescription";
+import ListingOnshape from "components/listing/ListingOnshape";
 import ListingUrdf from "components/listing/ListingUrdf";
 
 type ListingResponse =
@@ -22,6 +23,11 @@ const ListingBody = (props: ListingBodyProps) => {
         edit={listing.can_edit}
       />
       <ListingChildren child_ids={listing.child_ids} edit={listing.can_edit} />
+      <ListingOnshape
+        listingId={listing.id}
+        onshapeUrl={listing.onshape_url}
+        edit={listing.can_edit}
+      />
       <ListingUrdf listingId={listing.id} edit={listing.can_edit} />
       <ListingArtifacts listingId={listing.id} edit={listing.can_edit} />
     </div>

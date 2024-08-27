@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useAuthentication } from "hooks/useAuth";
 
-import AuthBlock from "./AuthBlock";
+import AuthBlock from "components/auth/AuthBlock";
 
 interface Props {
   children: React.ReactNode;

@@ -398,6 +398,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/onshape/set/{listing_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Onshape Document */
+        post: operations["set_onshape_document_onshape_set__listing_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/me": {
         parameters: {
             query?: never;
@@ -705,6 +722,8 @@ export interface components {
             child_ids: string[];
             /** Tags */
             tags: string[];
+            /** Onshape Url */
+            onshape_url: string | null;
             /** Can Edit */
             can_edit: boolean;
         };
@@ -797,9 +816,9 @@ export interface components {
             /** Child Ids */
             child_ids: string[];
             /** Description */
-            description: string | null;
+            description?: string | null;
             /** Onshape Url */
-            onshape_url: string | null;
+            onshape_url?: string | null;
         };
         /** ListingInfoResponse */
         ListingInfoResponse: {
@@ -813,6 +832,8 @@ export interface components {
             child_ids: string[];
             /** Image Url */
             image_url: string | null;
+            /** Onshape Url */
+            onshape_url: string | null;
         };
         /** LoginRequest */
         LoginRequest: {
@@ -897,6 +918,11 @@ export interface components {
         PublicUsersInfoResponse: {
             /** Users */
             users: components["schemas"]["PublicUserInfoResponseItem"][];
+        };
+        /** SetRequest */
+        SetRequest: {
+            /** Onshape Url */
+            onshape_url: string | null;
         };
         /** UpdateArtifactRequest */
         UpdateArtifactRequest: {
@@ -1695,6 +1721,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UrdfResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_onshape_document_onshape_set__listing_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                listing_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

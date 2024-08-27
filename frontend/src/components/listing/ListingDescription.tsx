@@ -165,6 +165,11 @@ const ListingDescription = (props: Props) => {
               placeholder="Description"
               rows={4}
               value={newDescription}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && e.ctrlKey) {
+                  handleSave();
+                }
+              }}
               onChange={(e) => {
                 setNewDescription(e.target.value);
                 setHasChanged(true);
