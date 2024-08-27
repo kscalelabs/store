@@ -355,12 +355,14 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         self,
         id: str,
         model_type: type[T],
-        update_expression: str,
-        expression_attribute_values: dict[str, Any],
-        expression_attribute_names: dict[str, str],
+        updates: dict[str, Any],
     ) -> None:
         table_name = self._get_table_name(model_type)
         key = {"id": id}
+
+        update_expression = "SET " + ", ".join(f"#{k} = :{k}" for k in updates.keys())
+        expression_attribute_values = {f":{k}": v for k, v in updates.items()}
+        expression_attribute_names = {f"#{k}": k for k in updates.keys()}
 
         try:
             await self.db.meta.client.update_item(

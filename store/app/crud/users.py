@@ -164,31 +164,18 @@ class UserCrud(BaseCrud):
 
         user = await self.get_user(user_id, throw_if_missing=True)
 
-        update_expression = []
-        expression_attribute_values = {}
-        expression_attribute_names = {}
-
+        update_dict = {}
         for key, value in updates.items():
             if hasattr(user, key):
-                update_expression.append(f"#{key} = :{key}")
-                expression_attribute_values[f":{key}"] = value
-                expression_attribute_names[f"#{key}"] = key
+                update_dict[key] = value
             else:
                 raise ValueError(f"Invalid field: {key}")
 
         user.update_timestamp()
-        update_expression.append("#updated_at = :updated_at")
-        expression_attribute_values[":updated_at"] = user.updated_at
-        expression_attribute_names["#updated_at"] = "updated_at"
+        update_dict["updated_at"] = user.updated_at
 
         try:
-            await self._update_item(
-                user_id,
-                User,
-                update_expression="SET " + ", ".join(update_expression),
-                expression_attribute_values=expression_attribute_values,
-                expression_attribute_names=expression_attribute_names,
-            )
+            await self._update_item(user_id, User, update_dict)
         except ClientError as e:
             if e.response["Error"]["Code"] == "ValidationException":
                 raise ValueError(f"Invalid update: {str(e)}")

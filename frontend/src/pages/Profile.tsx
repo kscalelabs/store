@@ -87,15 +87,15 @@ const RenderProfile = (props: RenderProfileProps) => {
               />
             </div>
             <div className="mt-4 flex space-x-2">
-              <Button type="submit" variant="primary">
-                Save Changes
-              </Button>
               <Button
                 type="button"
                 variant="secondary"
                 onClick={() => setIsEditing(false)}
               >
                 Cancel
+              </Button>
+              <Button type="submit" variant="primary">
+                Save Changes
               </Button>
             </div>
           </form>

@@ -2,7 +2,6 @@
 
 import asyncio
 import logging
-from typing import Any, Coroutine
 
 from store.app.crud.artifacts import ArtifactsCrud
 from store.app.crud.base import BaseCrud, ItemNotFoundError
@@ -69,25 +68,22 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         listing = await self.get_listing(listing_id)
         if listing is None:
             raise ItemNotFoundError("Listing not found")
-        coroutines: list[Coroutine] = []
+
+        updates = {}
+        if name is not None:
+            updates["name"] = name
+        if child_ids is not None:
+            updates["child_ids"] = child_ids
+        if description is not None:
+            updates["description"] = description
+
+        coroutines = []
         if tags is not None:
             coroutines.append(self.set_listing_tags(listing, tags))
-        listing_updates: dict[str, Any] = {}  # noqa: ANN401
-        if name is not None:
-            listing_updates["name"] = name
-        if child_ids is not None:
-            listing_updates["child_ids"] = child_ids
-        if description is not None:
-            listing_updates["description"] = description
-        if listing_updates:
-            update_expression = "SET " + ", ".join(f"#{k} = :{k}" for k in listing_updates.keys())
-            expression_attribute_values = {f":{k}": v for k, v in listing_updates.items()}
-            expression_attribute_names = {f"#{k}": k for k in listing_updates.keys()}
-            coroutines.append(
-                self._update_item(
-                    listing_id, Listing, update_expression, expression_attribute_values, expression_attribute_names
-                )
-            )
+
+        if updates:
+            coroutines.append(self._update_item(listing_id, Listing, updates))
+
         if coroutines:
             await asyncio.gather(*coroutines)
 
