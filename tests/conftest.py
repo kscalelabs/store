@@ -23,7 +23,8 @@ def pytest_collection_modifyitems(items: list[Function]) -> None:
 def mock_aws() -> Generator[None, None, None]:
     server: ThreadedMotoServer | None = None
 
-    logging.getLogger("botocore").setLevel(logging.DEBUG)
+    # logging.getLogger("botocore").setLevel(logging.DEBUG)
+    logging.getLogger("botocore").setLevel(logging.WARN)
 
     try:
         env_vars: dict[str, str] = {}

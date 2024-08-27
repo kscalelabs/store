@@ -166,8 +166,8 @@ async def upload(
     artifacts = await asyncio.gather(
         *(
             crud.upload_artifact(
-                file=file,
                 name=filename,
+                file=file,
                 listing=listing,
                 artifact_type=artifact_type,
             )

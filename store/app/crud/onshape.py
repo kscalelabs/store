@@ -2,20 +2,21 @@
 
 import argparse
 import asyncio
+import io
 import logging
+import tempfile
 
 from kol.onshape.api import OnshapeApi
 from kol.onshape.client import OnshapeClient
-from kol.onshape.converter import Converter, ConverterConfig
+from kol.onshape.config import ConverterConfig
+from kol.onshape.download import download
+from kol.onshape.postprocess import postprocess
 
 from store.app.crud.base import BaseCrud
 from store.app.crud.listings import ListingsCrud
+from store.app.model import Artifact, Listing
 
 logger = logging.getLogger(__name__)
-
-
-def get_converter() -> Converter:
-    return Converter(ConverterConfig())
 
 
 class OnshapeCrud(ListingsCrud, BaseCrud):
@@ -37,6 +38,34 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
             listing_id=listing_id,
             onshape_url=onshape_url,
         )
+
+    async def _download_onshape_document(
+        self,
+        listing: Listing,
+        onshape_url: str,
+        *,
+        config: ConverterConfig | None = None,
+    ) -> Artifact:
+        if config is None:
+            config = ConverterConfig()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            document_info = await download(onshape_url, temp_dir, config=config)
+            postprocess_info = await postprocess(document_info.urdf_info.urdf_path, config=config)
+            tar_path = postprocess_info.tar_path
+
+            # Reads the file into a buffer.
+            buffer = io.BytesIO()
+            with open(tar_path, "rb") as f:
+                buffer.write(f.read())
+            buffer.seek(0)
+
+            return await self._upload_and_store(
+                name=tar_path.name,
+                file=buffer,
+                listing=listing,
+                artifact_type="tgz",
+                description=f"Generated from {onshape_url}",
+            )
 
 
 async def test_adhoc() -> None:
