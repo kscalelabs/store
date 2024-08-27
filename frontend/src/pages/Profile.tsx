@@ -104,7 +104,7 @@ const ProfileDetails = () => {
       if (error) {
         addErrorAlert(error);
       } else {
-        setUser({ ...user, ...updatedUser });
+        setUser({ ...user, ...updatedUser } as UserResponse);
         addAlert("Profile updated successfully!", "success");
       }
     } catch {
