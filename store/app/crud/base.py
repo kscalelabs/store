@@ -351,18 +351,30 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             raise InternalError(f"Multiple items found with {secondary_index_name} {secondary_index_value}")
         return items[0]
 
-    async def _update_item(self, item_id: str, item_class: type[T], new_values: dict[str, Any]) -> None:  # noqa: ANN401
-        # Validates the new values.
-        for field_name in new_values.keys():
-            if item_class.model_fields.get(field_name) is None:
-                raise InternalError(f"Field {field_name} not in model {item_class.__name__}")
+    async def _update_item(
+        self,
+        id: str,
+        model_type: type[T],
+        update_expression: str,
+        expression_attribute_values: dict[str, Any],
+        expression_attribute_names: dict[str, str],
+    ) -> None:
+        table_name = self._get_table_name(model_type)
+        key = {"id": id}
 
-        # Updates the table.
-        table = await self.db.Table(TABLE_NAME)
-        await table.update_item(
-            Key={"id": item_id},
-            AttributeUpdates={k: {"Value": v, "Action": "PUT"} for k, v in new_values.items() if k != "id"},
-        )
+        try:
+            await self.db.meta.client.update_item(
+                TableName=table_name,
+                Key=key,
+                UpdateExpression=update_expression,
+                ExpressionAttributeValues=expression_attribute_values,
+                ExpressionAttributeNames=expression_attribute_names,
+                ReturnValues="NONE",
+            )
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "ValidationException":
+                raise ValueError(f"Invalid update: {str(e)}")
+            raise
 
     async def _upload_to_s3(self, data: IO[bytes], name: str, filename: str, content_type: str) -> None:
         """Uploads some data to S3.
@@ -494,3 +506,6 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             logger.info("Deleted table %s", name)
         except ClientError:
             logger.info("Table %s does not exist", name)
+
+    def _get_table_name(self, model_type: type[T]) -> str:
+        return f"{settings.dynamo.table_name}"

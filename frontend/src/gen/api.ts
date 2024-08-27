@@ -974,7 +974,7 @@ export interface components {
             /** Permissions */
             permissions?: "is_admin"[] | null;
             /** Created At */
-            created_at?: number | null;
+            created_at: number;
             /** Updated At */
             updated_at?: number | null;
             /** First Name */

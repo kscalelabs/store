@@ -4,6 +4,8 @@ import asyncio
 import warnings
 from typing import Any, Literal, overload
 
+from botocore.exceptions import ClientError
+
 from store.app.crud.base import BaseCrud
 from store.app.model import (
     APIKey,
@@ -162,20 +164,37 @@ class UserCrud(BaseCrud):
 
         user = await self.get_user(user_id, throw_if_missing=True)
 
-        # Ensure all fields are present
-        for key in User.__annotations__.keys():
-            if not hasattr(user, key):
-                setattr(user, key, None)
+        update_expression = []
+        expression_attribute_values = {}
+        expression_attribute_names = {}
 
         for key, value in updates.items():
             if hasattr(user, key):
-                setattr(user, key, value)
+                update_expression.append(f"#{key} = :{key}")
+                expression_attribute_values[f":{key}"] = value
+                expression_attribute_names[f"#{key}"] = key
             else:
                 raise ValueError(f"Invalid field: {key}")
 
         user.update_timestamp()
-        await self._update_item(user_id, User, user.model_dump())
-        return user
+        update_expression.append("#updated_at = :updated_at")
+        expression_attribute_values[":updated_at"] = user.updated_at
+        expression_attribute_names["#updated_at"] = "updated_at"
+
+        try:
+            await self._update_item(
+                user_id,
+                User,
+                update_expression="SET " + ", ".join(update_expression),
+                expression_attribute_values=expression_attribute_values,
+                expression_attribute_names=expression_attribute_names,
+            )
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "ValidationException":
+                raise ValueError(f"Invalid update: {str(e)}")
+            raise
+
+        return await self.get_user(user_id, throw_if_missing=True)
 
 
 async def test_adhoc() -> None:

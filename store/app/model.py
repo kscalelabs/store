@@ -96,7 +96,7 @@ class UserPublic(BaseModel):
     id: str
     email: str
     permissions: set[UserPermission] | None = None
-    created_at: int | None = None
+    created_at: int
     updated_at: int | None = None
     first_name: str | None = None
     last_name: str | None = None

@@ -80,7 +80,14 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         if description is not None:
             listing_updates["description"] = description
         if listing_updates:
-            coroutines.append(self._update_item(listing_id, Listing, listing_updates))
+            update_expression = "SET " + ", ".join(f"#{k} = :{k}" for k in listing_updates.keys())
+            expression_attribute_values = {f":{k}": v for k, v in listing_updates.items()}
+            expression_attribute_names = {f"#{k}": k for k in listing_updates.keys()}
+            coroutines.append(
+                self._update_item(
+                    listing_id, Listing, update_expression, expression_attribute_values, expression_attribute_names
+                )
+            )
         if coroutines:
             await asyncio.gather(*coroutines)
 

@@ -325,16 +325,17 @@ class UpdateUserRequest(BaseModel):
 @users_router.put("/me", response_model=UserPublic)
 async def update_profile(
     updates: UpdateUserRequest,
-    user: Annotated[User, Depends(get_session_user_with_admin_permission)],
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UserPublic:
     try:
-        update_dict = updates.dict(exclude_unset=True)
+        update_dict = updates.dict(exclude_unset=True, exclude_none=True)
         updated_user = await crud.update_user(user.id, update_dict)
-        return UserPublic(**updated_user.model_dump())  # Convert to UserPublic
+        return UserPublic(**updated_user.model_dump())
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    except Exception:
+    except Exception as e:
+        logger.error(f"Error updating profile: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while updating the profile.",
