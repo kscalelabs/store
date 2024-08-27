@@ -3,9 +3,8 @@ import { paths } from "gen/api";
 import ListingArtifacts from "components/listing/ListingArtifacts";
 import ListingChildren from "components/listing/ListingChildren";
 import ListingDescription from "components/listing/ListingDescription";
+import ListingOnshape from "components/listing/ListingOnshape";
 import ListingUrdf from "components/listing/ListingUrdf";
-
-import ListingOnshape from "./ListingOnshape";
 
 type ListingResponse =
   paths["/listings/{id}"]["get"]["responses"][200]["content"]["application/json"];

@@ -1,4 +1,4 @@
-import ListingDeleteButton from "./ListingDeleteButton";
+import ListingDeleteButton from "components/listing/ListingDeleteButton";
 
 interface Props {
   listingId: string;
