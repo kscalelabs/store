@@ -5,7 +5,8 @@ import asyncio
 import io
 import logging
 import tempfile
-import traceback
+from contextlib import contextmanager
+from typing import Generator
 
 from fastapi import WebSocket
 from kol.onshape.api import OnshapeApi
@@ -18,11 +19,12 @@ from PIL import Image
 from store.app.crud.base import BaseCrud
 from store.app.crud.listings import ListingsCrud
 from store.app.model import Artifact, Listing
+from store.app.utils.websockets import maybe_send_message
 
 logger = logging.getLogger(__name__)
 
 
-class RedirectToWebsocketHandler(logging.Handler):
+class QueueHandler(logging.Handler):
     def __init__(self, queue: asyncio.Queue[str]) -> None:
         super().__init__()
 
@@ -30,6 +32,32 @@ class RedirectToWebsocketHandler(logging.Handler):
 
     def emit(self, record: logging.LogRecord) -> None:
         self.queue.put_nowait(self.format(record))
+
+
+@contextmanager
+def capture_logs(
+    queue: asyncio.Queue[str],
+    logger_name: str,
+    level: int = logging.INFO,
+) -> Generator[None, None, None]:
+    logger = logging.getLogger(logger_name)
+    original_handlers = logger.handlers[:]
+    original_levels = [handler.level for handler in original_handlers]
+
+    handler = QueueHandler(queue)
+    handler.setLevel(level)
+    logger.addHandler(handler)
+
+    for h in original_handlers:
+        h.setLevel(logging.CRITICAL + 1)
+
+    try:
+        yield
+    finally:
+        # Restore original handlers and their levels
+        logger.removeHandler(handler)
+        for h, lvl in zip(original_handlers, original_levels):
+            h.setLevel(lvl)
 
 
 class OnshapeCrud(ListingsCrud, BaseCrud):
@@ -72,36 +100,18 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
         async def send_logs() -> None:
             while True:
                 message = await queue.get()
-                if websocket is not None:
-                    await websocket.send_text(message)
+                if message is None:
+                    break
+                await maybe_send_message(websocket, message, "info")
                 queue.task_done()
 
-        asyncio.create_task(send_logs())
+        send_task = asyncio.create_task(send_logs())
 
-        # Custom logger to redirect "kol.*" logs to the websocket, if provided.
-        if websocket is not None:
-            kol_logger = logging.getLogger("kol")
-            kol_logger.addHandler(RedirectToWebsocketHandler(queue))
-            kol_logger.setLevel(logging.INFO)
-
-        async def maybe_send_message(message: str) -> None:
-            if websocket is not None:
-                try:
-                    await websocket.send_text(message)
-                except Exception:
-                    pass
-
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory() as temp_dir, capture_logs(queue, "kol"), capture_logs(queue, "httpx"):
             # Downloads the document and postprocesses it.
-            try:
-                document_info = await download(onshape_url, temp_dir, config=config)
-                postprocess_info = await postprocess(document_info.urdf_info.urdf_path, config=config)
-                tar_path = postprocess_info.tar_path
-
-            except Exception as e:
-                full_msg = "".join(traceback.format_exception(type(e), e, e.__traceback__))
-                await maybe_send_message(full_msg)
-                raise e
+            document_info = await download(onshape_url, temp_dir, config=config)
+            postprocess_info = await postprocess(document_info.urdf_info.urdf_path, config=config)
+            tar_path = postprocess_info.tar_path
 
             # Reads the file into a buffer.
             buffer = io.BytesIO()
@@ -116,7 +126,7 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
                 artifact_type="tgz",
                 description=f"Generated from {onshape_url}",
             )
-            await maybe_send_message(f"Artifact uploaded: {new_artifact.id}")
+            await maybe_send_message(websocket, f"Artifact uploaded: {new_artifact.id}", "success")
 
             # Downloads the thumbnail and adds it to the listing.
             api = OnshapeApi(OnshapeClient())
@@ -126,7 +136,14 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
             out_file.seek(0)
             image = Image.open(out_file)
             image_artifact = await self._upload_image("thumbnail.png", image, listing)
-            await maybe_send_message(f"Thumbnail uploaded: {image_artifact.id}")
+            await maybe_send_message(websocket, f"Thumbnail uploaded: {image_artifact.id}", "success")
+
+            # Wait until the logs are sent.
+            send_task.cancel()
+            while not queue.empty():
+                message = await queue.get()
+                if message is not None:
+                    await maybe_send_message(websocket, message, "info")
 
             return new_artifact
 

@@ -8,6 +8,8 @@ import { Button } from "components/ui/Button/Button";
 import { Input } from "components/ui/Input/Input";
 import Spinner from "components/ui/Spinner";
 
+import ListingOnshapeUpdate from "./ListingOnshapeUpdate";
+
 interface UrlInputProps {
   url: string | null;
   setUrl: (url: string | null) => void;
@@ -65,14 +67,21 @@ interface UpdateButtonProps {
   handleSave: () => Promise<void>;
   handleRemove?: () => Promise<void>;
   handleReload?: () => Promise<void>;
+  disabled?: boolean;
 }
 
 const UpdateButtons = (props: UpdateButtonProps) => {
-  const { isEditing, setIsEditing, handleSave, handleRemove, handleReload } =
-    props;
+  const {
+    isEditing,
+    setIsEditing,
+    handleSave,
+    handleRemove,
+    handleReload,
+    disabled,
+  } = props;
 
   return (
-    <div className="flex flex-row gap-2 mt-2">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-2">
       <Button
         onClick={async () => {
           if (isEditing) {
@@ -81,19 +90,42 @@ const UpdateButtons = (props: UpdateButtonProps) => {
             setIsEditing(true);
           }
         }}
-        variant="primary"
+        variant="secondary"
         className="px-3"
+        disabled={disabled}
       >
-        {isEditing ? <FaCheck /> : <FaPen />}
+        {isEditing ? (
+          <>
+            Save
+            <FaCheck className="ml-2" />
+          </>
+        ) : (
+          <>
+            Edit
+            <FaPen className="ml-2" />
+          </>
+        )}
       </Button>
       {handleRemove && (
-        <Button onClick={handleRemove} variant="destructive" className="px-3">
-          <FaTimes />
+        <Button
+          onClick={handleRemove}
+          variant="destructive"
+          className="px-3"
+          disabled={disabled}
+        >
+          Remove
+          <FaTimes className="ml-2" />
         </Button>
       )}
       {handleReload && (
-        <Button onClick={handleReload} variant="primary" className="px-3">
-          <FaSync />
+        <Button
+          onClick={handleReload}
+          variant="primary"
+          className="px-3"
+          disabled={disabled}
+        >
+          Update URDF
+          <FaSync className="ml-2" />
         </Button>
       )}
     </div>
@@ -115,6 +147,7 @@ const ListingOnshape = (props: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const [url, setUrl] = useState<string | null>(onshapeUrl);
   const [permUrl, setPermUrl] = useState<string | null>(onshapeUrl);
+  const [updateOnshape, setUpdateOnshape] = useState(false);
 
   const handleRemove = async () => {
     setSubmitting(true);
@@ -139,7 +172,7 @@ const ListingOnshape = (props: Props) => {
   };
 
   const handleReload = async () => {
-    return;
+    setUpdateOnshape(true);
   };
 
   const handleSave = async () => {
@@ -219,6 +252,13 @@ const ListingOnshape = (props: Props) => {
               handleSave={handleSave}
               handleRemove={permUrl !== null ? handleRemove : undefined}
               handleReload={permUrl !== null ? handleReload : undefined}
+              disabled={updateOnshape}
+            />
+          )}
+          {updateOnshape && (
+            <ListingOnshapeUpdate
+              listingId={listingId}
+              onClose={() => setUpdateOnshape(false)}
             />
           )}
         </div>

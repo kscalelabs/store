@@ -18,7 +18,7 @@ BAD_URL = (
 )
 
 
-@pytest.mark.skip(reason="Onshape API is not mocked")
+# @pytest.mark.skip(reason="Onshape API is not mocked")
 def test_onshape(test_client: TestClient, tmpdir: Path) -> None:
     # Logs the user in.
     response = test_client.post("/users/github/code", json={"code": "test_code"})
@@ -48,15 +48,24 @@ def test_onshape(test_client: TestClient, tmpdir: Path) -> None:
     assert response.status_code == status.HTTP_200_OK
 
     # Tests the pull websocket.
-    with test_client.websocket_connect(
-        f"/onshape/pull/{listing_id}",
-        headers=auth_headers,
-    ) as websocket:
+    with test_client.websocket_connect(f"/onshape/pull/{listing_id}") as websocket:
+        # Send the API key ID.
+        websocket.send_text(token)
+        assert websocket.receive_text() == "Received API key"
+
         # Receive text until the websocket is closed.
         while True:
             try:
-                data = websocket.receive_text()
-                print(data)
-
+                websocket.receive_text()
             except WebSocketDisconnect:
                 break
+
+    # Tests websocket authentication.
+    with test_client.websocket_connect(f"/onshape/pull/{listing_id}") as websocket:
+        websocket.send_text("bad_token")
+
+        # Receives the error message.
+        websocket.receive_text()
+
+        with pytest.raises(WebSocketDisconnect):
+            websocket.receive_text()
