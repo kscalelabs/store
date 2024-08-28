@@ -51,7 +51,7 @@ def test_onshape(test_client: TestClient, tmpdir: Path) -> None:
     with test_client.websocket_connect(f"/onshape/pull/{listing_id}") as websocket:
         # Send the API key ID.
         websocket.send_text(token)
-        assert websocket.receive_text() == "Received API key"
+        assert websocket.receive_text() == "info: Received API key"
 
         # Receive text until the websocket is closed.
         while True:
@@ -63,9 +63,6 @@ def test_onshape(test_client: TestClient, tmpdir: Path) -> None:
     # Tests websocket authentication.
     with test_client.websocket_connect(f"/onshape/pull/{listing_id}") as websocket:
         websocket.send_text("bad_token")
-
-        # Receives the error message.
-        websocket.receive_text()
 
         with pytest.raises(WebSocketDisconnect):
             websocket.receive_text()

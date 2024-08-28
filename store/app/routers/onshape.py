@@ -48,7 +48,6 @@ async def pull_onshape_document(
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> None:
     await websocket.accept()
-    await maybe_send_message(websocket, "Connected to websocket")
 
     try:
         # First message should be the API key ID.
