@@ -3,19 +3,19 @@ import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
-interface VoteButtonsProps {
+interface ListingVoteButtonsProps {
   listingId: string;
   initialScore: number;
   initialUserVote: boolean | null;
   onVoteChange: (newScore: number, newUserVote: boolean | null) => void;
 }
 
-const VoteButtons = ({
+const ListingVoteButtons = ({
   listingId,
   initialScore,
   initialUserVote,
   onVoteChange,
-}: VoteButtonsProps) => {
+}: ListingVoteButtonsProps) => {
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
 
@@ -77,4 +77,4 @@ const VoteButtons = ({
   );
 };
 
-export default VoteButtons;
+export default ListingVoteButtons;

@@ -8,7 +8,7 @@ import { useAuthentication } from "hooks/useAuth";
 import ListingBody from "components/listing/ListingBody";
 import ListingFooter from "components/listing/ListingFooter";
 import ListingHeader from "components/listing/ListingHeader";
-import VoteButtons from "components/listing/VoteButtons";
+import ListingVoteButtons from "components/listing/ListingVoteButtons";
 import Spinner from "components/ui/Spinner";
 
 type ListingResponse =
@@ -28,7 +28,7 @@ const RenderListing = ({ listing, onVoteChange }: RenderListingProps) => {
         edit={listing.can_edit}
       />
       <div className="flex items-start">
-        <VoteButtons
+        <ListingVoteButtons
           listingId={listing.id}
           initialScore={listing.score}
           initialUserVote={listing.user_vote}
@@ -105,7 +105,7 @@ const ListingDetails = () => {
     incrementViewCount();
   }, [id, auth.client]);
 
-  // Modify this effect to refetch the listing when auth state changes or on initial load
+  // Refetch the listing when auth state changes or on initial load
   useEffect(() => {
     if (auth.isAuthenticated || !isFetched) {
       fetchListing();
