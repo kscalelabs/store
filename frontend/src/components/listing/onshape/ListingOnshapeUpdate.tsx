@@ -75,12 +75,10 @@ const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
               key={index}
               className={cx(
                 "text-sm",
-                level === "success" &&
-                  "text-green-600 font-bold my-1",
+                level === "success" && "text-green-600 font-bold my-1",
                 level === "info" &&
                   "text-grey-200 font-thin dark:text-gray-700",
-                level === "error" &&
-                  "text-red-600 font-bold my-1",
+                level === "error" && "text-red-600 font-bold my-1",
               )}
             >
               {message}
