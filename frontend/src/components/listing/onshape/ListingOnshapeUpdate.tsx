@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { FaTimes } from "react-icons/fa";
-import useWebSocket, { ReadyState, useEventSource } from "react-use-websocket";
 
 import { cx } from "class-variance-authority";
 import { BACKEND_URL } from "constants/env";
