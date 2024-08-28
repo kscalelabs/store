@@ -7,11 +7,11 @@ mypy
 ruff
 
 # Testing
-moto[dynamodb]
+moto[dynamodb,s3]
 pytest
-pytest-aiomoto
 pytest-asyncio
 pytest-mock
 pytest-timeout
 pytest-trio
 s3fs
+flask-cors

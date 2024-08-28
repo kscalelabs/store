@@ -6,9 +6,9 @@ from typing import AsyncGenerator, Generator, cast
 
 import pytest
 from _pytest.python import Function
+from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient, Response
 from httpx._transports.asgi import _ASGIApp
-from moto.dynamodb import mock_dynamodb
 from moto.server import ThreadedMotoServer
 from pytest_mock.plugin import MockerFixture, MockType
 
@@ -49,12 +49,12 @@ def mock_aws() -> Generator[None, None, None]:
         # Starts a local AWS server.
         server = ThreadedMotoServer(port=0)
         server.start()
-        port = server._server.socket.getsockname()[1]
-        os.environ["AWS_ENDPOINT_URL_DYNAMODB"] = f"http://127.0.0.1:{port}"
-        os.environ["AWS_ENDPOINT_URL_S3"] = f"http://127.0.0.1:{port}"
+        host, port = server.get_host_and_port()
+        os.environ["AWS_ENDPOINT_URL"] = f"http://{host}:{port}"
+        os.environ["AWS_ENDPOINT_URL_DYNAMODB"] = f"http://{host}:{port}"
+        os.environ["AWS_ENDPOINT_URL_S3"] = f"http://{host}:{port}"
 
-        with mock_dynamodb():
-            yield
+        yield
 
     finally:
         if server is not None:
@@ -75,6 +75,14 @@ async def app_client() -> AsyncGenerator[AsyncClient, None]:
 
     async with AsyncClient(transport=transport, base_url="http://test") as app_client:
         yield app_client
+
+
+@pytest.fixture()
+def test_client() -> Generator[TestClient, None, None]:
+    from store.app.main import app
+
+    with TestClient(app) as client:
+        yield client
 
 
 @pytest.fixture(autouse=True)

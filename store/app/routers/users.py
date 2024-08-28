@@ -2,17 +2,16 @@
 
 import logging
 from email.utils import parseaddr as parse_email_address
-from typing import Annotated, Literal, Self, overload
+from typing import Annotated, Literal, Mapping, Self, overload
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel
 from pydantic.networks import EmailStr
 
-from store.app.crud.base import ItemNotFoundError
 from store.app.crud.users import UserCrud
 from store.app.db import Crud
-from store.app.errors import NotAuthenticatedError
+from store.app.errors import ItemNotFoundError, NotAuthenticatedError
 from store.app.model import User, UserPermission, UserPublic
 from store.app.routers.auth.github import github_auth_router
 from store.app.routers.auth.google import google_auth_router
@@ -27,42 +26,33 @@ TOKEN_TYPE = "Bearer"
 
 
 @overload
-async def _get_request_api_key_id_base(request: Request, require_header: Literal[True]) -> str: ...
+async def get_api_key_from_header(headers: Mapping[str, str], require_header: Literal[True]) -> str: ...
 
 
 @overload
-async def _get_request_api_key_id_base(request: Request, require_header: Literal[False]) -> str | None: ...
+async def get_api_key_from_header(headers: Mapping[str, str], require_header: Literal[False]) -> str | None: ...
 
 
-async def _get_request_api_key_id_base(request: Request, require_header: bool) -> str | None:
-    authorization = request.headers.get("Authorization") or request.headers.get("authorization")
+async def get_api_key_from_header(headers: Mapping[str, str], require_header: bool) -> str | None:
+    authorization = headers.get("Authorization") or headers.get("authorization")
     if not authorization:
         if require_header:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Not authenticated",
-            )
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
         return None
     scheme, credentials = get_authorization_scheme_param(authorization)
     if not (scheme and credentials):
-        raise HTTPException(
-            status_code=status.HTTP_406_NOT_ACCEPTABLE,
-            detail="Authorization header is invalid",
-        )
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Authorization header is invalid")
     if scheme.lower() != TOKEN_TYPE.lower():
-        raise HTTPException(
-            status_code=status.HTTP_406_NOT_ACCEPTABLE,
-            detail="Authorization scheme is invalid",
-        )
+        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Authorization scheme is invalid")
     return credentials
 
 
 async def get_request_api_key_id(request: Request) -> str:
-    return await _get_request_api_key_id_base(request, True)
+    return await get_api_key_from_header(request.headers, True)
 
 
 async def maybe_get_request_api_key_id(request: Request) -> str | None:
-    return await _get_request_api_key_id_base(request, False)
+    return await get_api_key_from_header(request.headers, False)
 
 
 async def get_session_user_with_read_permission(
