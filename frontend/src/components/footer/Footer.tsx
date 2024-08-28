@@ -20,6 +20,7 @@ const Footer = () => {
   const showFooter =
     pathname?.startsWith("/browse") === false &&
     pathname?.startsWith("/login") === false &&
+    pathname?.startsWith("/item") === false &&
     pathname?.startsWith("/signup") === false;
 
   if (!showFooter) {
