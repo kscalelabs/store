@@ -347,6 +347,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/listings/{id}/view": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Increment View Count */
+        post: operations["increment_view_count_listings__id__view_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/listings/{id}/vote": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Vote Listing */
+        post: operations["vote_listing_listings__id__vote_post"];
+        /** Remove Vote */
+        delete: operations["remove_vote_listings__id__vote_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/urdf/info/{listing_id}": {
         parameters: {
             query?: never;
@@ -744,6 +779,12 @@ export interface components {
             onshape_url: string | null;
             /** Can Edit */
             can_edit: boolean;
+            /** Views */
+            views: number;
+            /** Score */
+            score: number;
+            /** User Vote */
+            user_vote: boolean | null;
         };
         /** GetTokenResponse */
         GetTokenResponse: {
@@ -837,6 +878,26 @@ export interface components {
             description?: string | null;
             /** Onshape Url */
             onshape_url?: string | null;
+            /**
+             * Views
+             * @default 0
+             */
+            views: number;
+            /**
+             * Upvotes
+             * @default 0
+             */
+            upvotes: number;
+            /**
+             * Downvotes
+             * @default 0
+             */
+            downvotes: number;
+            /**
+             * Score
+             * @default 0
+             */
+            score: number;
         };
         /** ListingInfoResponse */
         ListingInfoResponse: {
@@ -1682,6 +1743,102 @@ export interface operations {
             };
         };
     };
+    increment_view_count_listings__id__view_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    vote_listing_listings__id__vote_post: {
+        parameters: {
+            query: {
+                /** @description True for upvote, False for downvote */
+                upvote: boolean;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_vote_listings__id__vote_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_urdf_urdf_info__listing_id__get: {
         parameters: {
             query?: never;
@@ -1816,7 +1973,9 @@ export interface operations {
     };
     pull_onshape_document_onshape_pull__listing_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                token?: string | null;
+            };
             header?: never;
             path: {
                 listing_id: string;

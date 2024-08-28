@@ -198,6 +198,9 @@ class GetListingResponse(BaseModel):
     tags: list[str]
     onshape_url: str | None
     can_edit: bool
+    views: int
+    score: int
+    user_vote: bool | None
 
 
 @listings_router.get("/{id}", response_model=GetListingResponse)
@@ -212,6 +215,13 @@ async def get_listing(
     )
     if listing is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
+
+    user_vote = None
+    if user:
+        vote = await crud.get_user_vote(user.id, id)
+        if vote:
+            user_vote = vote.is_upvote
+
     return GetListingResponse(
         id=listing.id,
         name=listing.name,
@@ -220,4 +230,65 @@ async def get_listing(
         tags=listing_tags,
         onshape_url=listing.onshape_url,
         can_edit=user is not None and await can_write_listing(user, listing),
+        views=listing.views,
+        score=listing.score,
+        user_vote=user_vote,
     )
+
+
+@listings_router.post("/{id}/view")
+async def increment_view_count(
+    id: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> None:
+    listing = await crud.get_listing(id)
+    if listing is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
+    await crud.increment_view_count(id)
+
+
+@listings_router.post("/{id}/vote")
+async def vote_listing(
+    id: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    upvote: bool = Query(..., description="True for upvote, False for downvote"),
+) -> None:
+    listing = await crud.get_listing(id)
+    if listing is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
+
+    # Check if the user has already voted
+    existing_vote = await crud.get_user_vote(user.id, id)
+    if existing_vote:
+        if existing_vote.is_upvote == upvote:
+            # User is trying to vote the same way again, so we'll remove their vote
+            await crud.remove_vote(id, upvote)
+            await crud.delete_user_vote(existing_vote.id)
+        else:
+            # User is changing their vote
+            await crud.remove_vote(id, existing_vote.is_upvote)
+            await crud.update_vote(id, upvote)
+            await crud.update_user_vote(existing_vote.id, upvote)
+    else:
+        # New vote
+        await crud.update_vote(id, upvote)
+        await crud.add_user_vote(user.id, id, upvote)
+
+
+@listings_router.delete("/{id}/vote")
+async def remove_vote(
+    id: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+) -> None:
+    listing = await crud.get_listing(id)
+    if listing is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
+
+    existing_vote = await crud.get_user_vote(user.id, id)
+    if existing_vote:
+        await crud.remove_vote(id, existing_vote.is_upvote)
+        await crud.delete_user_vote(existing_vote.id)
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No existing vote to remove")
