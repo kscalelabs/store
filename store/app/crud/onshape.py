@@ -113,38 +113,44 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
 
         async def worker() -> None:
             with tempfile.TemporaryDirectory() as temp_dir, capture_logs(queue, "kol"), capture_logs(queue, "httpx"):
-                # Downloads the thumbnail and adds it to the listing.
-                api = OnshapeApi(OnshapeClient())
-                document = api.parse_url(onshape_url)
-                out_file = io.BytesIO()
-                await api.download_thumbnail(out_file, document)
-                out_file.seek(0)
-                image = Image.open(out_file)
-                image_artifact = await self._upload_image("thumbnail.png", image, listing)
-                await queue.put((f"Thumbnail uploaded: {image_artifact.id}", "success"))
+                try:
+                    # Downloads the thumbnail and adds it to the listing.
+                    api = OnshapeApi(OnshapeClient())
+                    document = api.parse_url(onshape_url)
+                    out_file = io.BytesIO()
+                    await api.download_thumbnail(out_file, document)
+                    out_file.seek(0)
+                    image = Image.open(out_file)
+                    image_artifact = await self._upload_image("thumbnail.png", image, listing)
+                    await queue.put((f"Thumbnail uploaded: {image_artifact.id}", "success"))
 
-                # Downloads the document and postprocesses it.
-                document_info = await download(onshape_url, temp_dir, config=config)
-                await queue.put(("Downloading complete", "success"))
-                postprocess_info = await postprocess(document_info.urdf_info.urdf_path, config=config)
-                tar_path = postprocess_info.tar_path
-                await queue.put(("Postprocessing complete", "success"))
+                    # Downloads the document and postprocesses it.
+                    document_info = await download(onshape_url, temp_dir, config=config)
+                    await queue.put(("Downloading complete", "success"))
+                    postprocess_info = await postprocess(document_info.urdf_info.urdf_path, config=config)
+                    tar_path = postprocess_info.tar_path
+                    await queue.put(("Postprocessing complete", "success"))
 
-                # Reads the file into a buffer.
-                buffer = io.BytesIO()
-                with open(tar_path, "rb") as f:
-                    buffer.write(f.read())
-                buffer.seek(0)
+                    # Reads the file into a buffer.
+                    buffer = io.BytesIO()
+                    with open(tar_path, "rb") as f:
+                        buffer.write(f.read())
+                    buffer.seek(0)
 
-                new_artifact = await self._upload_and_store(
-                    name=tar_path.name,
-                    file=buffer,
-                    listing=listing,
-                    artifact_type="tgz",
-                    description=f"Generated from {onshape_url}",
-                )
-                await queue.put((f"File uploaded: {new_artifact.id}", "success"))
-                await queue.put(None)
+                    new_artifact = await self._upload_and_store(
+                        name=tar_path.name,
+                        file=buffer,
+                        listing=listing,
+                        artifact_type="tgz",
+                        description=f"Generated from {onshape_url}",
+                    )
+                    await queue.put((f"File uploaded: {new_artifact.id}", "success"))
+
+                except Exception as e:
+                    await queue.put((str(e), "error"))
+
+                finally:
+                    await queue.put(None)
 
         async def worker_with_timeout() -> None:
             await asyncio.wait_for(worker(), timeout=120)
@@ -156,7 +162,9 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
         worker_task = asyncio.create_task(worker_with_timeout())
         while (sample := await queue.get()) is not None:
             message, level = sample
-            yield f"event: message\ndata: {json.dumps({'message': message, 'level': level})}\n\n"
+            message_lines = [m for m in message.split("\n") if m.strip()]
+            for message_line in message_lines[::-1]:
+                yield f"event: message\ndata: {json.dumps({'message': message_line, 'level': level})}\n\n"
 
         await worker_task
 
