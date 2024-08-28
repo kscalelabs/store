@@ -129,7 +129,8 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         table = await self.db.Table(self._get_table_name(Listing))
         await table.update_item(
             Key={"id": listing_id},
-            UpdateExpression="ADD views :inc",
+            UpdateExpression="ADD #views :inc",
+            ExpressionAttributeNames={"#views": "views"},
             ExpressionAttributeValues={":inc": 1},
         )
 

@@ -174,7 +174,7 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
     assert data["score"] == 1
-    assert data["user_vote"] == True
+    assert data["user_vote"]
 
     # Test changing vote to downvote
     response = test_client.post(f"/listings/{listing_id}/vote?upvote=false", headers=auth_headers)
@@ -185,7 +185,7 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
     assert data["score"] == -1
-    assert data["user_vote"] == False
+    assert not data["user_vote"]
 
     # Test removing vote
     response = test_client.delete(f"/listings/{listing_id}/vote", headers=auth_headers)
@@ -207,7 +207,7 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
     assert data["score"] == 1
-    assert data["user_vote"] == True
+    assert data["user_vote"]
 
     # Test removing vote by voting the same way again
     response = test_client.post(f"/listings/{listing_id}/vote?upvote=true", headers=auth_headers)
@@ -238,19 +238,19 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
 
 
 # Add a new test function for the ListingVote model
-def test_listing_vote_model():
+def test_listing_vote_model() -> None:
     # Test creating a ListingVote
     vote = ListingVote.create(user_id="user123", listing_id="listing456", is_upvote=True)
     assert vote.user_id == "user123"
     assert vote.listing_id == "listing456"
-    assert vote.is_upvote == True
+    assert vote.is_upvote
 
     # Test ListingVote serialization
     vote_dict = vote.model_dump()
     assert "id" in vote_dict
     assert vote_dict["user_id"] == "user123"
     assert vote_dict["listing_id"] == "listing456"
-    assert vote_dict["is_upvote"] == True
+    assert vote_dict["is_upvote"]
 
     # Test ListingVote deserialization
     new_vote = ListingVote(**vote_dict)
