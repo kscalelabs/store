@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 
@@ -16,7 +17,7 @@ BAD_URL = (
 )
 
 
-# @pytest.mark.skip(reason="Onshape API is not mocked")
+@pytest.mark.skip(reason="Onshape API is not mocked")
 def test_onshape(test_client: TestClient, tmpdir: Path) -> None:
     # Logs the user in.
     response = test_client.post("/users/github/code", json={"code": "test_code"})
@@ -49,10 +50,8 @@ def test_onshape(test_client: TestClient, tmpdir: Path) -> None:
     with test_client.stream(
         "GET",
         f"/onshape/pull/{listing_id}",
-        json={"api_key_id": token},
+        params={"token": token},
         headers=auth_headers,
     ) as response:
         assert response.status_code == status.HTTP_200_OK
         assert "text/event-stream" in response.headers["content-type"]
-        for line in response.iter_lines():
-            print(line)

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { FaTimes } from "react-icons/fa";
-import useWebSocket, { ReadyState } from "react-use-websocket";
+import useWebSocket, { ReadyState, useEventSource } from "react-use-websocket";
 
 import { cx } from "class-variance-authority";
 import { BACKEND_URL } from "constants/env";
@@ -23,7 +23,7 @@ interface ListingOnshapeUpdateProps {
 
 const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
   const { listingId, onClose } = props;
-  const auth = useAuthentication();
+  const { apiKeyId } = useAuthentication();
   const [messages, setMessages] = useState<Message[]>([]);
   const messageContainerRef = useRef<HTMLDivElement>(null);
 
@@ -32,26 +32,35 @@ const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
   };
 
   useEffect(() => {
-    (async () => {
-      const { data, error } = await auth.client.GET(
-        "/onshape/pull/{listing_id}",
-        {
-          params: {
-            path: {
-              listing_id: listingId,
-            },
-          },
-        },
-      );
+    const url = `${BACKEND_URL}/onshape/pull/${listingId}?token=${apiKeyId}`;
+    const eventSource = new EventSource(url);
 
-      if (error) {
-        addMessage(humanReadableError(error), "error");
+    eventSource.onopen = () => {
+      addMessage("Connected to Onshape update stream", "info");
+    };
+
+    eventSource.onerror = (event) => {
+      if (eventSource?.readyState === EventSource.CLOSED) {
+        addMessage("Disconnected from Onshape update stream", "info");
       } else {
-        console.log(data);
-        addMessage(data, "info");
+        addMessage(humanReadableError(event), "error");
       }
-    })();
-  }, [listingId]);
+      eventSource.close();
+    };
+
+    eventSource.addEventListener("message", (event) => {
+      const data = JSON.parse(event.data);
+      addMessage(data.message, data.level);
+    });
+
+    eventSource.addEventListener("finish", () => {
+      eventSource.close();
+    });
+
+    return () => {
+      eventSource.close();
+    };
+  }, [listingId, apiKeyId]);
 
   return (
     <div className="pt-4 w-full flex flex-col">

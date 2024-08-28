@@ -125,9 +125,10 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
 
                 # Downloads the document and postprocesses it.
                 document_info = await download(onshape_url, temp_dir, config=config)
+                await queue.put(("Downloading complete", "success"))
                 postprocess_info = await postprocess(document_info.urdf_info.urdf_path, config=config)
                 tar_path = postprocess_info.tar_path
-                await queue.put((f"Postprocessing complete: {tar_path}", "success"))
+                await queue.put(("Postprocessing complete", "success"))
 
                 # Reads the file into a buffer.
                 buffer = io.BytesIO()
@@ -145,11 +146,17 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
                 await queue.put((f"File uploaded: {new_artifact.id}", "success"))
                 await queue.put(None)
 
+        async def worker_with_timeout() -> None:
+            await asyncio.wait_for(worker(), timeout=120)
+            while not queue.empty():
+                await queue.get()
+            await queue.put(None)
+
         # Yield messages from the queue until the worker task is done.
-        worker_task = asyncio.create_task(worker())
+        worker_task = asyncio.create_task(worker_with_timeout())
         while (sample := await queue.get()) is not None:
             message, level = sample
-            yield json.dumps({level: message}) + "\n\n"
+            yield f"event: message\ndata: {json.dumps({'message': message, 'level': level})}\n\n"
 
         await worker_task
 

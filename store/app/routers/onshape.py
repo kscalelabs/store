@@ -1,9 +1,10 @@
 """Defines the router endpoints for handling the Onshape flow."""
 
+import json
 import logging
 from typing import Annotated, AsyncIterable
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
 from pydantic.main import BaseModel
 
@@ -51,17 +52,31 @@ async def pull_onshape_document_generator(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No Onshape URL set for this listing")
     if not await can_write_listing(user, listing):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User cannot write to this listing")
-    yield '{"event": "Starting download"}\n\n'
+    yield f"event: message\ndata: {json.dumps({'message': 'Starting download', 'level': 'success'})}\n\n"
     async for event in crud.download_onshape_document(listing, onshape_url):
         yield event
+    yield "event: finish\ndata: finish\n\n"
 
 
 @onshape_router.get("/pull/{listing_id}", response_class=StreamingResponse)
 async def pull_onshape_document(
     listing_id: str,
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    request: Request,
     crud: Annotated[Crud, Depends(Crud.get)],
+    token: str | None = None,
 ) -> StreamingResponse:
+    # Because the default EventStream implementation doesn't provide an easy
+    # way to pass the token in the header, we have to pass it as a query
+    # parameter instead.
+    if token is None:
+        token = request.headers.get("Authorization") or request.headers.get("authorization")
+        if token is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authorization header not found")
+    api_key = await crud.get_api_key(token)
+    if api_key.permissions is None or "write" not in api_key.permissions:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+    user = await crud.get_user(api_key.user_id, throw_if_missing=True)
+
     return StreamingResponse(
         content=pull_onshape_document_generator(listing_id, user, crud),
         media_type="text/event-stream",
