@@ -66,7 +66,7 @@ def iter_components(file: IO[bytes], compression_type: CompressedArtifactType) -
 class UrdfCrud(ArtifactsCrud):
     async def set_urdf(
         self,
-        file: UploadFile,
+        file: UploadFile | io.BytesIO,
         listing: Listing,
         compression_type: CompressedArtifactType,
         description: str | None = None,
@@ -76,8 +76,8 @@ class UrdfCrud(ArtifactsCrud):
         mjcf: tuple[str, ET.ElementTree] | None = None
         meshes: list[tuple[str, trimesh.Trimesh]] = []
 
-        compressed_data = await file.read()
-        for name, data in iter_components(io.BytesIO(compressed_data), compression_type):
+        compressed_data = file if isinstance(file, io.BytesIO) else io.BytesIO(await file.read())
+        for name, data in iter_components(compressed_data, compression_type):
             suffix = name.lower().split(".")[-1]
 
             if suffix == "urdf":
