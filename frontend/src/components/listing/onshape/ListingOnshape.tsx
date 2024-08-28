@@ -81,7 +81,7 @@ const UpdateButtons = (props: UpdateButtonProps) => {
   } = props;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 pt-2">
+    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 pt-2 w-full">
       <Button
         onClick={async () => {
           if (isEditing) {
@@ -124,7 +124,7 @@ const UpdateButtons = (props: UpdateButtonProps) => {
           className="px-3"
           disabled={disabled}
         >
-          Update URDF
+          Sync URDF
           <FaSync className="ml-2" />
         </Button>
       )}

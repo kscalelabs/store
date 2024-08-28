@@ -37,6 +37,13 @@ const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
     shouldReconnect: () => false,
   });
 
+  const wrappedOnClose = async () => {
+    if (readyState === ReadyState.OPEN) {
+      sendMessage("cancel");
+    }
+    onClose();
+  };
+
   useEffect(() => {
     switch (readyState) {
       case ReadyState.CLOSED:
@@ -70,6 +77,15 @@ const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
     }
   }, [lastMessage]);
 
+  // When navigating away from the page, send cancellation message.
+  useEffect(() => {
+    return () => {
+      if (readyState === ReadyState.OPEN) {
+        sendMessage("cancel");
+      }
+    };
+  }, []);
+
   return (
     <div className="pt-4 w-full flex flex-col">
       <div
@@ -94,7 +110,7 @@ const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
           ))}
       </div>
       <div className="mt-4 flex flex-row">
-        <Button onClick={onClose} variant="destructive">
+        <Button onClick={wrappedOnClose} variant="destructive">
           Close
           <FaTimes className="ml-2" />
         </Button>

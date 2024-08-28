@@ -15,6 +15,7 @@ from kol.onshape.config import ConverterConfig
 from kol.onshape.download import download
 from kol.onshape.postprocess import postprocess
 from PIL import Image
+from starlette.websockets import WebSocketState
 
 from store.app.crud.base import BaseCrud
 from store.app.crud.listings import ListingsCrud
@@ -25,12 +26,15 @@ logger = logging.getLogger(__name__)
 
 
 class QueueHandler(logging.Handler):
-    def __init__(self, queue: asyncio.Queue[str]) -> None:
+    def __init__(self, queue: asyncio.Queue[str], ws: WebSocket | None) -> None:
         super().__init__()
 
         self.queue = queue
+        self.ws = ws
 
     def emit(self, record: logging.LogRecord) -> None:
+        if self.ws is not None and self.ws.client_state != WebSocketState.CONNECTED:
+            raise ValueError("Websocket is closed")
         self.queue.put_nowait(self.format(record))
 
 
@@ -38,13 +42,14 @@ class QueueHandler(logging.Handler):
 def capture_logs(
     queue: asyncio.Queue[str],
     logger_name: str,
+    ws: WebSocket | None = None,
     level: int = logging.INFO,
 ) -> Generator[None, None, None]:
     logger = logging.getLogger(logger_name)
     original_handlers = logger.handlers[:]
     original_levels = [handler.level for handler in original_handlers]
 
-    handler = QueueHandler(queue)
+    handler = QueueHandler(queue, ws)
     handler.setLevel(level)
     logger.addHandler(handler)
 
@@ -102,12 +107,28 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
                 message = await queue.get()
                 if message is None:
                     break
+                if websocket is not None and websocket.client_state != WebSocketState.CONNECTED:
+                    raise ValueError("Websocket is closed")
                 await maybe_send_message(websocket, message, "info")
                 queue.task_done()
 
         send_task = asyncio.create_task(send_logs())
 
-        with tempfile.TemporaryDirectory() as temp_dir, capture_logs(queue, "kol"), capture_logs(queue, "httpx"):
+        with (
+            tempfile.TemporaryDirectory() as temp_dir,
+            capture_logs(queue, "kol", ws=websocket),
+            capture_logs(queue, "httpx", ws=websocket),
+        ):
+            # Downloads the thumbnail and adds it to the listing.
+            api = OnshapeApi(OnshapeClient())
+            document = api.parse_url(onshape_url)
+            out_file = io.BytesIO()
+            await api.download_thumbnail(out_file, document)
+            out_file.seek(0)
+            image = Image.open(out_file)
+            image_artifact = await self._upload_image("thumbnail.png", image, listing)
+            await maybe_send_message(websocket, f"Thumbnail uploaded: {image_artifact.id}", "success")
+
             # Downloads the document and postprocesses it.
             document_info = await download(onshape_url, temp_dir, config=config)
             postprocess_info = await postprocess(document_info.urdf_info.urdf_path, config=config)
@@ -127,16 +148,6 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
                 description=f"Generated from {onshape_url}",
             )
             await maybe_send_message(websocket, f"Artifact uploaded: {new_artifact.id}", "success")
-
-            # Downloads the thumbnail and adds it to the listing.
-            api = OnshapeApi(OnshapeClient())
-            document = api.parse_url(onshape_url)
-            out_file = io.BytesIO()
-            await api.download_thumbnail(out_file, document)
-            out_file.seek(0)
-            image = Image.open(out_file)
-            image_artifact = await self._upload_image("thumbnail.png", image, listing)
-            await maybe_send_message(websocket, f"Thumbnail uploaded: {image_artifact.id}", "success")
 
             # Wait until the logs are sent.
             send_task.cancel()

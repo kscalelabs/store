@@ -1,10 +1,12 @@
 """Defines the router endpoints for handling the Onshape flow."""
 
+import asyncio
 import logging
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, status
 from pydantic.main import BaseModel
+from starlette.websockets import WebSocketState
 
 from store.app.db import Crud
 from store.app.errors import ItemNotFoundError, NotAuthenticatedError
@@ -79,15 +81,38 @@ async def pull_onshape_document(
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User cannot write to this listing")
         await maybe_send_message(websocket, "Got listing")
 
-        await crud.download_onshape_document(
-            listing,
-            onshape_url,
-            websocket=websocket,
+        download_task = asyncio.create_task(
+            crud.download_onshape_document(
+                listing,
+                onshape_url,
+                websocket=websocket,
+            )
         )
+
+        # While downloading the document, poll the websocket for a "cancel"
+        # message - if received, cancel the download.
+        async def cancel_task() -> None:
+            while True:
+                message = await websocket.receive_text()
+                if message == "cancel":
+                    download_task.cancel()
+                    break
+
+        wait_to_cancel = asyncio.create_task(cancel_task())
+        try:
+            await download_task
+        except asyncio.CancelledError:
+            await maybe_send_message(websocket, "Download cancelled", "error")
+        finally:
+            wait_to_cancel.cancel()
 
     except Exception as e:
         await maybe_send_message(websocket, str(e), "error")
         raise e
 
     finally:
-        await websocket.close()
+        try:
+            if websocket.application_state == WebSocketState.CONNECTED:
+                await websocket.close()
+        except Exception:
+            pass
