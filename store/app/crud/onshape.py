@@ -6,50 +6,60 @@ import io
 import logging
 import tempfile
 from contextlib import contextmanager
-from typing import Generator
+from typing import AsyncIterable, Generator, Literal
 
-from fastapi import WebSocket
 from kol.onshape.api import OnshapeApi
 from kol.onshape.client import OnshapeClient
 from kol.onshape.config import ConverterConfig
 from kol.onshape.download import download
 from kol.onshape.postprocess import postprocess
 from PIL import Image
-from starlette.websockets import WebSocketState
 
 from store.app.crud.base import BaseCrud
 from store.app.crud.listings import ListingsCrud
-from store.app.model import Artifact, Listing
-from store.app.utils.websockets import maybe_send_message
+from store.app.model import Listing
 
 logger = logging.getLogger(__name__)
 
+MessageLevel = Literal["error", "info", "success"]
+
 
 class QueueHandler(logging.Handler):
-    def __init__(self, queue: asyncio.Queue[str], ws: WebSocket | None) -> None:
+    def __init__(self, queue: asyncio.Queue[tuple[str, MessageLevel] | None]) -> None:
         super().__init__()
 
         self.queue = queue
-        self.ws = ws
 
     def emit(self, record: logging.LogRecord) -> None:
-        if self.ws is not None and self.ws.client_state != WebSocketState.CONNECTED:
-            raise ValueError("Websocket is closed")
-        self.queue.put_nowait(self.format(record))
+        level = logging.getLevelName(record.levelno).lower()
+        queue_level: MessageLevel
+        match level:
+            case "debug":
+                queue_level = "info"
+            case "info":
+                queue_level = "info"
+            case "warning":
+                queue_level = "info"
+            case "error":
+                queue_level = "error"
+            case "critical":
+                queue_level = "error"
+            case _:
+                queue_level = "info"
+        self.queue.put_nowait((self.format(record), queue_level))
 
 
 @contextmanager
 def capture_logs(
-    queue: asyncio.Queue[str],
+    queue: asyncio.Queue[tuple[str, MessageLevel] | None],
     logger_name: str,
-    ws: WebSocket | None = None,
     level: int = logging.INFO,
 ) -> Generator[None, None, None]:
     logger = logging.getLogger(logger_name)
     original_handlers = logger.handlers[:]
     original_levels = [handler.level for handler in original_handlers]
 
-    handler = QueueHandler(queue, ws)
+    handler = QueueHandler(queue)
     handler.setLevel(level)
     logger.addHandler(handler)
 
@@ -94,69 +104,52 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
         onshape_url: str,
         *,
         config: ConverterConfig | None = None,
-        websocket: WebSocket | None = None,
-    ) -> Artifact:
+    ) -> AsyncIterable[str]:
         if config is None:
             config = ConverterConfig()
 
-        # Creates a worker to send logs to the websocket.
-        queue: asyncio.Queue[str] = asyncio.Queue()
+        queue: asyncio.Queue[tuple[str, MessageLevel] | None] = asyncio.Queue()
 
-        async def send_logs() -> None:
-            while True:
-                message = await queue.get()
-                if message is None:
-                    break
-                if websocket is not None and websocket.client_state != WebSocketState.CONNECTED:
-                    raise ValueError("Websocket is closed")
-                await maybe_send_message(websocket, message, "info")
-                queue.task_done()
+        async def worker() -> None:
+            with tempfile.TemporaryDirectory() as temp_dir, capture_logs(queue, "kol"), capture_logs(queue, "httpx"):
+                # Downloads the thumbnail and adds it to the listing.
+                api = OnshapeApi(OnshapeClient())
+                document = api.parse_url(onshape_url)
+                out_file = io.BytesIO()
+                await api.download_thumbnail(out_file, document)
+                out_file.seek(0)
+                image = Image.open(out_file)
+                image_artifact = await self._upload_image("thumbnail.png", image, listing)
+                await queue.put((f"Thumbnail uploaded: {image_artifact.id}", "success"))
 
-        send_task = asyncio.create_task(send_logs())
+                # Downloads the document and postprocesses it.
+                document_info = await download(onshape_url, temp_dir, config=config)
+                postprocess_info = await postprocess(document_info.urdf_info.urdf_path, config=config)
+                tar_path = postprocess_info.tar_path
+                await queue.put((f"Postprocessing complete: {tar_path}", "success"))
 
-        with (
-            tempfile.TemporaryDirectory() as temp_dir,
-            capture_logs(queue, "kol", ws=websocket),
-            capture_logs(queue, "httpx", ws=websocket),
-        ):
-            # Downloads the thumbnail and adds it to the listing.
-            api = OnshapeApi(OnshapeClient())
-            document = api.parse_url(onshape_url)
-            out_file = io.BytesIO()
-            await api.download_thumbnail(out_file, document)
-            out_file.seek(0)
-            image = Image.open(out_file)
-            image_artifact = await self._upload_image("thumbnail.png", image, listing)
-            await maybe_send_message(websocket, f"Thumbnail uploaded: {image_artifact.id}", "success")
+                # Reads the file into a buffer.
+                buffer = io.BytesIO()
+                with open(tar_path, "rb") as f:
+                    buffer.write(f.read())
+                buffer.seek(0)
 
-            # Downloads the document and postprocesses it.
-            document_info = await download(onshape_url, temp_dir, config=config)
-            postprocess_info = await postprocess(document_info.urdf_info.urdf_path, config=config)
-            tar_path = postprocess_info.tar_path
+                new_artifact = await self._upload_and_store(
+                    name=tar_path.name,
+                    file=buffer,
+                    listing=listing,
+                    artifact_type="tgz",
+                    description=f"Generated from {onshape_url}",
+                )
+                await queue.put((f"File uploaded: {new_artifact.id}", "success"))
+                await queue.put(None)
 
-            # Reads the file into a buffer.
-            buffer = io.BytesIO()
-            with open(tar_path, "rb") as f:
-                buffer.write(f.read())
-            buffer.seek(0)
-
-            new_artifact = await self._upload_and_store(
-                name=tar_path.name,
-                file=buffer,
-                listing=listing,
-                artifact_type="tgz",
-                description=f"Generated from {onshape_url}",
-            )
-            await maybe_send_message(websocket, f"Artifact uploaded: {new_artifact.id}", "success")
-
-            # Wait until the logs are sent.
-            send_task.cancel()
-            while not queue.empty():
-                message = await queue.get()
-                if message is not None:
-                    await maybe_send_message(websocket, message, "info")
-
-            return new_artifact
+        # Yield messages from the queue until the worker task is done.
+        worker_task = asyncio.create_task(worker())
+        while (sample := await queue.get()) is not None:
+            message, level = sample
+            yield f"{level}: {message}\n"
+        await worker_task
 
 
 async def test_adhoc() -> None:
