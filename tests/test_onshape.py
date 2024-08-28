@@ -2,8 +2,10 @@
 
 from pathlib import Path
 
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
+from starlette.websockets import WebSocketDisconnect
 
 TEST_URL = (
     "https://cad.onshape.com/documents/4b3eeb430e3d28511ab9cba8/w/"
@@ -16,6 +18,7 @@ BAD_URL = (
 )
 
 
+@pytest.mark.skip(reason="Onshape API is not mocked")
 def test_onshape(test_client: TestClient, tmpdir: Path) -> None:
     # Logs the user in.
     response = test_client.post("/users/github/code", json={"code": "test_code"})
@@ -51,7 +54,9 @@ def test_onshape(test_client: TestClient, tmpdir: Path) -> None:
     ) as websocket:
         # Receive text until the websocket is closed.
         while True:
-            data = websocket.receive_text()
-            if data is None:
+            try:
+                data = websocket.receive_text()
+                print(data)
+
+            except WebSocketDisconnect:
                 break
-            print(data)
