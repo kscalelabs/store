@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+from typing import Any
 
 from store.app.crud.artifacts import ArtifactsCrud
 from store.app.crud.base import BaseCrud, ItemNotFoundError
@@ -70,7 +71,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         if listing is None:
             raise ItemNotFoundError("Listing not found")
 
-        updates = {}
+        updates: dict[str, Any] = {}
         if name is not None:
             updates["name"] = name
         if child_ids is not None:

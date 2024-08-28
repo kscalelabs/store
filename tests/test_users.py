@@ -65,7 +65,7 @@ async def test_user_general_functions(app_client: AsyncClient) -> None:
     auth_headers = {"Authorization": f"Bearer {token}"}
 
     # Update the user's profile (e.g., change first_name).
-    update_data = {"first_name": "UpdatedName"}
+    update_data = {"first_name": "UpdatedFirstName", "last_name": "UpdatedLastName"}
     response = await app_client.put("/users/me", headers=auth_headers, json=update_data)
     assert response.status_code == status.HTTP_200_OK, response.json()
 
@@ -73,4 +73,5 @@ async def test_user_general_functions(app_client: AsyncClient) -> None:
     response = await app_client.get("/users/me", headers=auth_headers)
     assert response.status_code == status.HTTP_200_OK, response.json()
     updated_user_data = response.json()
-    assert updated_user_data["first_name"] == "UpdatedName"
+    assert updated_user_data["first_name"] == "UpdatedFirstName"
+    assert updated_user_data["last_name"] == "UpdatedLastName"
