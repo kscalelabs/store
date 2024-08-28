@@ -3,6 +3,7 @@
 import argparse
 import asyncio
 import io
+import json
 import logging
 import tempfile
 from contextlib import contextmanager
@@ -148,7 +149,8 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
         worker_task = asyncio.create_task(worker())
         while (sample := await queue.get()) is not None:
             message, level = sample
-            yield f"event: {level} {message}\n\n"
+            yield json.dumps({level: message}) + "\n\n"
+
         await worker_task
 
 

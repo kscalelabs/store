@@ -3,7 +3,8 @@ import { FaTimes } from "react-icons/fa";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 
 import { cx } from "class-variance-authority";
-import { BACKEND_WS_URL } from "constants/env";
+import { BACKEND_URL } from "constants/env";
+import { humanReadableError } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
 import { Button } from "components/ui/Button/Button";
@@ -30,18 +31,27 @@ const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
     setMessages((prevMessages) => [...prevMessages, { message, level }]);
   };
 
-  // TODO: Use server-sent events.
-  auth.client
-    .POST("/onshape/pull/{listing_id}", {
-      params: { path: { listing_id: listingId } },
-    })
-    .then((response) => {
-      if (response.response.status === 200) {
-        addMessage("Successfully requested Onshape update", "success");
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await auth.client.GET(
+        "/onshape/pull/{listing_id}",
+        {
+          params: {
+            path: {
+              listing_id: listingId,
+            },
+          },
+        },
+      );
+
+      if (error) {
+        addMessage(humanReadableError(error), "error");
       } else {
-        addMessage("Failed to request Onshape update", "error");
+        console.log(data);
+        addMessage(data, "info");
       }
-    });
+    })();
+  }, [listingId]);
 
   return (
     <div className="pt-4 w-full flex flex-col">

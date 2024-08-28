@@ -422,10 +422,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
-        put?: never;
         /** Pull Onshape Document */
-        post: operations["pull_onshape_document_onshape_pull__listing_id__post"];
+        get: operations["pull_onshape_document_onshape_pull__listing_id__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1786,7 +1786,7 @@ export interface operations {
             };
         };
     };
-    pull_onshape_document_onshape_pull__listing_id__post: {
+    pull_onshape_document_onshape_pull__listing_id__get: {
         parameters: {
             query?: never;
             header?: never;

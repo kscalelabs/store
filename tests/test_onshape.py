@@ -47,7 +47,7 @@ def test_onshape(test_client: TestClient, tmpdir: Path) -> None:
 
     # Tests server-sent events.
     with test_client.stream(
-        "POST",
+        "GET",
         f"/onshape/pull/{listing_id}",
         json={"api_key_id": token},
         headers=auth_headers,

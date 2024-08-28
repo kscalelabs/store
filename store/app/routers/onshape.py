@@ -3,7 +3,7 @@
 import logging
 from typing import Annotated, AsyncIterable
 
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from pydantic.main import BaseModel
 
@@ -51,12 +51,12 @@ async def pull_onshape_document_generator(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No Onshape URL set for this listing")
     if not await can_write_listing(user, listing):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User cannot write to this listing")
-    yield "event: Starting download\n\n"
+    yield '{"event": "Starting download"}\n\n'
     async for event in crud.download_onshape_document(listing, onshape_url):
         yield event
 
 
-@onshape_router.post("/pull/{listing_id}", response_class=StreamingResponse)
+@onshape_router.get("/pull/{listing_id}", response_class=StreamingResponse)
 async def pull_onshape_document(
     listing_id: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
