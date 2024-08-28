@@ -164,18 +164,11 @@ class UserCrud(BaseCrud):
 
         user = await self.get_user(user_id, throw_if_missing=True)
 
-        update_dict = {}
-        for key, value in updates.items():
-            if hasattr(user, key):
-                update_dict[key] = value
-            else:
-                raise ValueError(f"Invalid field: {key}")
-
         user.update_timestamp()
-        update_dict["updated_at"] = user.updated_at
+        updates["updated_at"] = user.updated_at
 
         try:
-            await self._update_item(user_id, User, update_dict)
+            await self._update_item(user_id, User, updates)
         except ClientError as e:
             if e.response["Error"]["Code"] == "ValidationException":
                 raise ValueError(f"Invalid update: {str(e)}")
