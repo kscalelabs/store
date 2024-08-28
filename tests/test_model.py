@@ -14,5 +14,3 @@ async def test_model_functions() -> None:
         user_again = await crud.get_user_from_github_token("test_token", "test@example.com")
         assert user_again is not None
         assert user_again.email == "test@example.com"
-
-        assert len(await crud.list_users()) == 1

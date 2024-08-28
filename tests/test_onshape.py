@@ -18,7 +18,7 @@ BAD_URL = (
 )
 
 
-# @pytest.mark.skip(reason="Onshape API is not mocked")
+@pytest.mark.skip(reason="Onshape API is not mocked")
 def test_onshape(test_client: TestClient, tmpdir: Path) -> None:
     # Logs the user in.
     response = test_client.post("/users/github/code", json={"code": "test_code"})
