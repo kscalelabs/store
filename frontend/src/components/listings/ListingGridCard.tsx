@@ -61,9 +61,9 @@ const ListingGridCard = ({ listingId, listing }: Props) => {
       ) : (
         <ImagePlaceholder />
       )}
-      <div className="px-4 py-4 h-full flex flex-col justify-between">
+      <div className="h-full flex flex-col justify-between">
         <CardHeader>
-          <CardTitle className="text-gray-500 dark:text-gray-300 text-xl min-h-6">
+          <CardTitle className="text-gray-500 dark:text-gray-300 text-md truncate">
             {listing ? (
               listing.name
             ) : (

@@ -6,6 +6,7 @@ import io
 import json
 import logging
 import tempfile
+import traceback
 from contextlib import contextmanager
 from typing import AsyncIterable, Generator, Literal
 
@@ -22,7 +23,7 @@ from store.app.model import Listing
 
 logger = logging.getLogger(__name__)
 
-MessageLevel = Literal["error", "info", "success"]
+MessageLevel = Literal["error", "info", "success", "image", "urdf"]
 
 
 class QueueHandler(logging.Handler):
@@ -146,8 +147,9 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
                     )
                     await queue.put((f"File uploaded: {new_artifact.id}", "success"))
 
-                except Exception as e:
-                    await queue.put((str(e), "error"))
+                except Exception:
+                    full_error = traceback.format_exc()
+                    await queue.put((full_error, "error"))
 
                 finally:
                     await queue.put(None)
@@ -163,8 +165,24 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
         while (sample := await queue.get()) is not None:
             message, level = sample
             message_lines = [m for m in message.split("\n") if m.strip()]
+
+            # Send a different event type for image and URDF IDs.
+            match level:
+                case "error":
+                    event_type = "message"
+                case "info":
+                    event_type = "message"
+                case "success":
+                    event_type = "message"
+                case "image":
+                    event_type = "image"
+                case "urdf":
+                    event_type = "urdf"
+                case _:
+                    event_type = "message"
+
             for message_line in message_lines[::-1]:
-                yield f"event: message\ndata: {json.dumps({'message': message_line, 'level': level})}\n\n"
+                yield f"event: {event_type}\ndata: {json.dumps({'message': message_line, 'level': level})}\n\n"
 
         await worker_task
 
