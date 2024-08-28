@@ -71,7 +71,6 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
     (async () => {
       setLocalStorageAuth(apiKeyId);
       setApiKeyId(apiKeyId);
-      navigate("/");
     })();
   }, []);
 

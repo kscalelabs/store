@@ -5,7 +5,6 @@ import { FcGoogle } from "react-icons/fc";
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
-import { useNavigate } from "react-router-dom";
 
 import { Button } from "components/ui/Button/Button";
 import Spinner from "components/ui/Spinner";
@@ -17,7 +16,6 @@ const GoogleAuthButton = () => {
   const [credential, setCredential] = useState<string | null>(null);
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
-  const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
@@ -44,7 +42,6 @@ const GoogleAuthButton = () => {
         addErrorAlert("Failed to login using Google OAuth.");
       } else {
         setCredential(returnedCredential);
-        navigate("/create");
       }
     },
     onError: () => {
