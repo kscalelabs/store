@@ -5,7 +5,6 @@ from pathlib import Path
 import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
-from starlette.websockets import WebSocketDisconnect
 
 TEST_URL = (
     "https://cad.onshape.com/documents/4b3eeb430e3d28511ab9cba8/w/"
@@ -47,22 +46,12 @@ def test_onshape(test_client: TestClient, tmpdir: Path) -> None:
     )
     assert response.status_code == status.HTTP_200_OK
 
-    # Tests the pull websocket.
-    with test_client.websocket_connect(f"/onshape/pull/{listing_id}") as websocket:
-        # Send the API key ID.
-        websocket.send_text(token)
-        assert websocket.receive_text() == "info: Received API key"
-
-        # Receive text until the websocket is closed.
-        while True:
-            try:
-                websocket.receive_text()
-            except WebSocketDisconnect:
-                break
-
-    # Tests websocket authentication.
-    with test_client.websocket_connect(f"/onshape/pull/{listing_id}") as websocket:
-        websocket.send_text("bad_token")
-
-        with pytest.raises(WebSocketDisconnect):
-            websocket.receive_text()
+    # Tests server-sent events.
+    with test_client.stream(
+        "GET",
+        f"/onshape/pull/{listing_id}",
+        params={"token": token},
+        headers=auth_headers,
+    ) as response:
+        assert response.status_code == status.HTTP_200_OK
+        assert "text/event-stream" in response.headers["content-type"]
