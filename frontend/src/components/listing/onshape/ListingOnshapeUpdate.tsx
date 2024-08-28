@@ -22,7 +22,7 @@ interface ListingOnshapeUpdateProps {
 
 const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
   const { listingId, onClose } = props;
-  const { apiKeyId } = useAuthentication();
+  const auth = useAuthentication();
   const [messages, setMessages] = useState<Message[]>([]);
   const messageContainerRef = useRef<HTMLDivElement>(null);
 
@@ -30,61 +30,18 @@ const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
     setMessages((prevMessages) => [...prevMessages, { message, level }]);
   };
 
-  const WS_URL = `${BACKEND_WS_URL}/onshape/pull/${listingId}`;
-
-  const { lastMessage, readyState, sendMessage } = useWebSocket(WS_URL, {
-    share: false,
-    shouldReconnect: () => false,
-  });
-
-  const wrappedOnClose = async () => {
-    if (readyState === ReadyState.OPEN) {
-      sendMessage("cancel");
-    }
-    onClose();
-  };
-
-  useEffect(() => {
-    switch (readyState) {
-      case ReadyState.CLOSED:
-        addMessage("Connection closed", "info");
-        break;
-      case ReadyState.CLOSING:
-        addMessage("Connection closing", "info");
-        break;
-      case ReadyState.CONNECTING:
-        addMessage("Connection connecting", "info");
-        break;
-      case ReadyState.OPEN:
-        addMessage("Connection open", "success");
-        // Send the API key to authenticate the connection.
-        sendMessage(apiKeyId || "");
-        break;
-    }
-  }, [readyState]);
-
-  useEffect(() => {
-    if (lastMessage) {
-      if (lastMessage.data.startsWith("error: ")) {
-        addMessage(lastMessage.data.slice(7), "error");
-      } else if (lastMessage.data.startsWith("info: ")) {
-        addMessage(lastMessage.data.slice(6), "info");
-      } else if (lastMessage.data.startsWith("success: ")) {
-        addMessage(lastMessage.data.slice(9), "success");
+  // TODO: Use server-sent events.
+  auth.client
+    .POST("/onshape/pull/{listing_id}", {
+      params: { path: { listing_id: listingId } },
+    })
+    .then((response) => {
+      if (response.response.status === 200) {
+        addMessage("Successfully requested Onshape update", "success");
       } else {
-        addMessage(lastMessage.data, "info");
+        addMessage("Failed to request Onshape update", "error");
       }
-    }
-  }, [lastMessage]);
-
-  // When navigating away from the page, send cancellation message.
-  useEffect(() => {
-    return () => {
-      if (readyState === ReadyState.OPEN) {
-        sendMessage("cancel");
-      }
-    };
-  }, []);
+    });
 
   return (
     <div className="pt-4 w-full flex flex-col">
@@ -110,7 +67,7 @@ const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
           ))}
       </div>
       <div className="mt-4 flex flex-row">
-        <Button onClick={wrappedOnClose} variant="destructive">
+        <Button onClick={onClose} variant="destructive">
           Close
           <FaTimes className="ml-2" />
         </Button>

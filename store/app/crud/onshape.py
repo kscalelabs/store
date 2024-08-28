@@ -148,7 +148,7 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
         worker_task = asyncio.create_task(worker())
         while (sample := await queue.get()) is not None:
             message, level = sample
-            yield f"{level}: {message}\n"
+            yield f"event: {level} {message}\n\n"
         await worker_task
 
 
