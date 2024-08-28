@@ -20,6 +20,50 @@ To get started developing:
 > [!NOTE]
 > You should develop the backend using Python 3.11 or later
 
+### Configuration
+
+Settings for the app backend live in the `store/settings/` directory. To configure which set of settings you are using, set `ENVIRONMENT`. It is the stem of one of the config files in the `store/settings/configs/` directory. When developing locally this should usually just be `local`
+
+To locally develop, put the following environment variables in `env.sh` or `.env.local`
+
+To run server/tests locally run: `source env.sh` or `source .env.local` in every new terminal depending on what you name the file.
+
+Example `env.sh`/`.env.local` file:
+
+```
+# Specifies a local environment versus production environment.
+export ENVIRONMENT=local
+
+# For AWS
+export AWS_DEFAULT_REGION='us-east-1'
+export AWS_ACCESS_KEY_ID=test
+export AWS_SECRET_ACCESS_KEY=test
+export AWS_ENDPOINT_URL_S3='http://127.0.0.1:4566'
+export AWS_ENDPOINT_URL_DYNAMODB='http://127.0.0.1:4566'
+
+# For letting the frontend know the backend URL.
+export VITE_APP_BACKEND_URL='http://127.0.0.1:8080'
+
+# For SMTP
+export SMTP_HOST='smtp.gmail.com'
+export SMTP_SENDER_EMAIL=''
+export SMTP_PASSWORD=''
+export SMTP_SENDER_NAME=''
+export SMTP_USERNAME=''
+```
+
+### Google OAuth Configuration
+
+The repository's local configuration comes with Google OAuth credentials for a test application. Alternatively, you can set up your own Google OAuth application to test the application locally, by following the instructions [here](https://blog.logrocket.com/guide-adding-google-login-react-app/).
+
+### Github OAuth Configuration
+
+The repository's local configuration comes with Github OAuth credentials for a test application. Alternatively, you can set up your own Github OAuth application to test the application locally:
+
+1. Create an OAuth App on [Github Developer Settings](https://github.com/settings/developers)
+2. Set both Homepage URL and Authorization callback URL to `http://127.0.0.1:3000/login` before you `Update application` on Github Oauth App configuration
+3. Copy the Client ID and Client Secret from Github OAuth App configuration and set them in `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` respectively
+
 ## Database
 
 ### DynamoDB/S3
@@ -82,6 +126,13 @@ uv pip install -e '.[dev]'  # If using uv
 pip install -e '.[dev]'  # Using vanilla pip
 ```
 
+If the above is not sufficient and packages are missing you can also try running:
+
+```bash
+# Install dependencies from requirements files
+uv pip install -r store/requirements.txt -r store/requirements-dev.txt # If using uv
+```
+
 Serve the FastAPI application in development mode:
 
 ```bash
@@ -95,47 +146,6 @@ After updating the backend API, you need to update the generated API client. To 
 ```bash
 openapi-typescript http://localhost:8080/openapi.json --output src/gen/api.ts  # While running the backend API locally
 ```
-
-### Configuration
-
-Settings for the app backend live in the `store/settings/` directory. To configure which set of settings you are using, set `ENVIRONMENT`. It is the stem of one of the config files in the `store/settings/configs/` directory. When developing locally this should usually just be `local`
-
-To locally develop, put these following environment variables in env.sh file and when you run the server locally,
-run: `source env.sh` in every new terminal :
-
-```
-# Specifies a local environment versus production environment.
-export ENVIRONMENT=local
-
-# For AWS
-export AWS_DEFAULT_REGION='us-east-1'
-export AWS_ACCESS_KEY_ID=test
-export AWS_SECRET_ACCESS_KEY=test
-export AWS_ENDPOINT_URL_S3='http://127.0.0.1:4566'
-export AWS_ENDPOINT_DYNAMODB='http://127.0.0.1:4566'
-
-# For letting the frontend know the backend URL.
-export VITE_APP_BACKEND_URL='http://127.0.0.1:8080'
-
-# For SMTP
-export SMTP_HOST='smtp.gmail.com'
-export SMTP_SENDER_EMAIL=''
-export SMTP_PASSWORD=''
-export SMTP_SENDER_NAME=''
-export SMTP_USERNAME=''
-```
-
-### Google OAuth Configuration
-
-The repository's local configuration comes with Google OAuth credentials for a test application. Alternatively, you can set up your own Google OAuth application to test the application locally, by following the instructions [here](https://blog.logrocket.com/guide-adding-google-login-react-app/).
-
-### Github OAuth Configuration
-
-The repository's local configuration comes with Github OAuth credentials for a test application. Alternatively, you can set up your own Github OAuth application to test the application locally:
-
-1. Create an OAuth App on [Github Developer Settings](https://github.com/settings/developers)
-2. Set both Homepage URL and Authorization callback URL to `http://127.0.0.1:3000/login` before you `Update application` on Github Oauth App configuration
-3. Copy the Client ID and Client Secret from Github OAuth App configuration and set them in `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` respectively
 
 ## React
 

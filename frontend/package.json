@@ -31,6 +31,7 @@
     "@react-three/fiber": "^8.16.8",
     "@uidotdev/usehooks": "^2.4.1",
     "class-variance-authority": "^0.7.0",
+    "date-fns": "^3.6.0",
     "eventsource": "^2.0.2",
     "hamburger-react": "^2.5.1",
     "leva": "^0.9.35",

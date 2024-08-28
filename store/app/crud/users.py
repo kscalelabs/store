@@ -2,7 +2,9 @@
 
 import asyncio
 import warnings
-from typing import Literal, overload
+from typing import Any, Literal, overload
+
+from botocore.exceptions import ClientError
 
 from store.app.crud.base import BaseCrud
 from store.app.model import (
@@ -155,6 +157,24 @@ class UserCrud(BaseCrud):
 
     async def list_api_keys(self, user_id: str) -> list[APIKey]:
         return await self._get_items_from_secondary_index("user_id", user_id, APIKey)
+
+    async def update_user(self, user_id: str, updates: dict[str, Any]) -> User:
+        if not updates:
+            raise ValueError("No updates provided")
+
+        user = await self.get_user(user_id, throw_if_missing=True)
+
+        user.update_timestamp()
+        updates["updated_at"] = user.updated_at
+
+        try:
+            await self._update_item(user_id, User, updates)
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "ValidationException":
+                raise ValueError(f"Invalid update: {str(e)}")
+            raise
+
+        return await self.get_user(user_id, throw_if_missing=True)
 
 
 async def test_adhoc() -> None:

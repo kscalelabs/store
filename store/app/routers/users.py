@@ -12,7 +12,7 @@ from pydantic.networks import EmailStr
 from store.app.crud.users import UserCrud
 from store.app.db import Crud
 from store.app.errors import ItemNotFoundError, NotAuthenticatedError
-from store.app.model import User, UserPermission, UserPublic
+from store.app.model import APIKeySource, User, UserPermission, UserPublic
 from store.app.routers.auth.github import github_auth_router
 from store.app.routers.auth.google import google_auth_router
 from store.app.utils.email import send_delete_email
@@ -55,46 +55,39 @@ async def maybe_get_request_api_key_id(request: Request) -> str | None:
     return await get_api_key_from_header(request.headers, False)
 
 
+async def get_session_user_with_permission(
+    permission: str,
+    crud: Crud,
+    api_key_id: str,
+) -> User:
+    try:
+        api_key = await crud.get_api_key(api_key_id)
+        if api_key.permissions is None or permission not in api_key.permissions:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+        return await crud.get_user(api_key.user_id, throw_if_missing=True)
+    except ItemNotFoundError:
+        raise NotAuthenticatedError("Not authenticated")
+
+
 async def get_session_user_with_read_permission(
     crud: Annotated[Crud, Depends(Crud.get)],
     api_key_id: Annotated[str, Depends(get_request_api_key_id)],
 ) -> User:
-    try:
-        api_key = await crud.get_api_key(api_key_id)
-        if api_key.permissions is None or "read" not in api_key.permissions:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
-        try:
-            return await crud.get_user(api_key.user_id, throw_if_missing=True)
-        except ItemNotFoundError:
-            raise NotAuthenticatedError("Not authenticated")
-    except ItemNotFoundError:
-        raise NotAuthenticatedError("Not authenticated")
+    return await get_session_user_with_permission("read", crud, api_key_id)
 
 
 async def get_session_user_with_write_permission(
     crud: Annotated[Crud, Depends(Crud.get)],
     api_key_id: Annotated[str, Depends(get_request_api_key_id)],
 ) -> User:
-    try:
-        api_key = await crud.get_api_key(api_key_id)
-        if api_key.permissions is None or "write" not in api_key.permissions:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
-        return await crud.get_user(api_key.user_id, throw_if_missing=True)
-    except ItemNotFoundError:
-        raise NotAuthenticatedError("Not authenticated")
+    return await get_session_user_with_permission("write", crud, api_key_id)
 
 
 async def get_session_user_with_admin_permission(
     crud: Annotated[Crud, Depends(Crud.get)],
     api_key_id: Annotated[str, Depends(get_request_api_key_id)],
 ) -> User:
-    try:
-        api_key = await crud.get_api_key(api_key_id)
-        if api_key.permissions is None or "admin" not in api_key.permissions:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
-        return await crud.get_user(api_key.user_id, throw_if_missing=True)
-    except ItemNotFoundError:
-        raise NotAuthenticatedError("Not authenticated")
+    return await get_session_user_with_permission("admin", crud, api_key_id)
 
 
 async def maybe_get_user_from_api_key(
@@ -127,6 +120,24 @@ class MyUserInfoResponse(BaseModel):
     github_id: str | None
     google_id: str | None
     permissions: set[UserPermission] | None
+    first_name: str | None
+    last_name: str | None
+    name: str | None
+    bio: str | None
+
+    @classmethod
+    def from_user(cls, user: User) -> Self:
+        return cls(
+            user_id=user.id,
+            email=user.email,
+            google_id=user.google_id,
+            github_id=user.github_id,
+            permissions=user.permissions,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            name=user.name,
+            bio=user.bio,
+        )
 
 
 @users_router.get("/me", response_model=MyUserInfoResponse)
@@ -140,6 +151,10 @@ async def get_user_info_endpoint(
             google_id=user.google_id,
             github_id=user.github_id,
             permissions=user.permissions,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            name=user.name,
+            bio=user.bio,
         )
     except ValueError:
         return None
@@ -241,14 +256,24 @@ async def login_user(data: LoginRequest, user_crud: UserCrud = Depends()) -> Log
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
 
-        # Ensure `hashed_password` is not None before verifying
-        if user.hashed_password is None or not verify_password(data.password, user.hashed_password):
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+        # Determine if the user logged in via OAuth or hashed password
+        source: APIKeySource
+        if user.hashed_password is None:
+            # OAuth login
+            if user.google_id or user.github_id:
+                source = "oauth"
+            else:
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unknown login source")
+        else:
+            # Password login
+            if not verify_password(data.password, user.hashed_password):
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
+            source = "password"
 
         api_key = await user_crud.add_api_key(
             user.id,
-            source="oauth",
-            permissions="full",
+            source=source,
+            permissions="full",  # Users with verified email accounts have full permissions.
         )
 
         return LoginResponse(user_id=user.id, token=api_key.id)
@@ -282,7 +307,7 @@ async def get_user_info_by_id_endpoint(id: str, crud: Annotated[Crud, Depends(Cr
 
 @users_router.get("/public/me", response_model=UserPublic)
 async def get_my_public_user_info_endpoint(
-    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+    user: User = Depends(get_session_user_with_read_permission),
 ) -> PublicUserInfoResponseItem:
     return PublicUserInfoResponseItem.from_user(user)
 
@@ -290,12 +315,43 @@ async def get_my_public_user_info_endpoint(
 @users_router.get("/public/{id}", response_model=UserPublic)
 async def get_public_user_info_by_id_endpoint(
     id: str,
-    user_crud: Annotated[Crud, Depends(Crud.get)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> PublicUserInfoResponseItem:
-    user = await user_crud.get_user_public(id)
+    user = await crud.get_user_public(id)
     if user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return PublicUserInfoResponseItem.from_user(user)
+
+
+class UpdateUserRequest(BaseModel):
+    email: str | None = None
+    password: str | None = None
+    github_id: str | None = None
+    google_id: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    name: str | None = None
+    bio: str | None = None
+
+
+@users_router.put("/me", response_model=UserPublic)
+async def update_profile(
+    updates: UpdateUserRequest,
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> UserPublic:
+    try:
+        update_dict = updates.dict(exclude_unset=True, exclude_none=True)
+        updated_user = await crud.update_user(user.id, update_dict)
+        return UserPublic(**updated_user.model_dump())
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error updating profile: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while updating the profile.",
+        )
 
 
 users_router.include_router(github_auth_router, prefix="/github")

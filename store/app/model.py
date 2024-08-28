@@ -58,6 +58,10 @@ class User(StoreBaseModel):
         password: str | None = None,
         github_id: str | None = None,
         google_id: str | None = None,
+        first_name: str | None = None,
+        last_name: str | None = None,
+        name: str | None = None,
+        bio: str | None = None,
     ) -> Self:
         now = int(time.time())
         hashed_pw = hash_password(password) if password else None
@@ -69,6 +73,10 @@ class User(StoreBaseModel):
             updated_at=now,
             github_id=github_id,
             google_id=google_id,
+            first_name=first_name,
+            last_name=last_name,
+            name=name,
+            bio=bio,
         )
 
     def update_timestamp(self) -> None:
@@ -88,7 +96,7 @@ class UserPublic(BaseModel):
     id: str
     email: str
     permissions: set[UserPermission] | None = None
-    created_at: int | None = None
+    created_at: int
     updated_at: int | None = None
     first_name: str | None = None
     last_name: str | None = None
@@ -121,7 +129,7 @@ class OAuthKey(StoreBaseModel):
         return cls(id=new_uuid(), user_id=user_id, provider=provider, user_token=user_token)
 
 
-APIKeySource = Literal["user", "oauth"]
+APIKeySource = Literal["user", "oauth", "password"]
 APIKeyPermission = Literal["read", "write", "admin"]
 APIKeyPermissionSet = set[APIKeyPermission] | Literal["full", None]
 

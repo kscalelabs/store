@@ -3,6 +3,8 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
+  useMemo,
   useState,
 } from "react";
 import { useNavigate } from "react-router-dom";
@@ -33,6 +35,11 @@ interface AuthenticationContextProps {
   apiKeyId: string | null;
   client: Client<paths>;
   api: api;
+  currentUser:
+    | paths["/users/public/{id}"]["get"]["responses"][200]["content"]["application/json"]
+    | null;
+  fetchCurrentUser: () => Promise<void>;
+  isLoading: boolean;
 }
 
 const AuthenticationContext = createContext<
@@ -49,38 +56,71 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
   const [apiKeyId, setApiKeyId] = useState<string | null>(
     getLocalStorageAuth(),
   );
+  const [currentUser, setCurrentUser] = useState<
+    | paths["/users/public/{id}"]["get"]["responses"][200]["content"]["application/json"]
+    | null
+  >(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const client = createClient<paths>({
-    baseUrl: BACKEND_URL,
-  });
+  const client = useMemo(
+    () =>
+      createClient<paths>({
+        baseUrl: BACKEND_URL,
+      }),
+    [],
+  );
 
   // Add the API key to the request headers, if the user is authenticated.
-  if (apiKeyId !== null) {
-    client.use({
-      async onRequest({ request }) {
-        request.headers.set("Authorization", `Bearer ${apiKeyId}`);
-        return request;
-      },
-      async onResponse({ response }) {
-        return response;
-      },
-    });
-  }
+  useEffect(() => {
+    if (apiKeyId !== null) {
+      client.use({
+        async onRequest({ request }) {
+          request.headers.set("Authorization", `Bearer ${apiKeyId}`);
+          return request;
+        },
+        async onResponse({ response }) {
+          return response;
+        },
+      });
+    }
+  }, [apiKeyId, client]);
 
-  const login = useCallback((apiKeyId: string) => {
-    (async () => {
-      setLocalStorageAuth(apiKeyId);
-      setApiKeyId(apiKeyId);
+  const fetchCurrentUser = useCallback(async () => {
+    if (apiKeyId && !currentUser) {
+      setIsLoading(true);
+      const { data, error } = await client.GET("/users/public/me");
+      if (error) {
+        console.error("Failed to fetch current user", error);
+      } else {
+        setCurrentUser(data);
+      }
+      setIsLoading(false);
+    } else if (!apiKeyId) {
+      setIsLoading(false);
+    }
+  }, [apiKeyId, client, currentUser]);
+
+  useEffect(() => {
+    fetchCurrentUser();
+  }, [fetchCurrentUser]);
+
+  const login = useCallback(
+    (newApiKeyId: string) => {
+      setLocalStorageAuth(newApiKeyId);
+      setApiKeyId(newApiKeyId);
+      setCurrentUser(null); // Reset current user to trigger a new fetch
+      setIsLoading(true);
       navigate("/");
-    })();
-  }, []);
+    },
+    [navigate],
+  );
 
   const logout = useCallback(() => {
-    (async () => {
-      deleteLocalStorageAuth();
-      setApiKeyId(null);
-      navigate("/");
-    })();
+    deleteLocalStorageAuth();
+    setApiKeyId(null);
+    setCurrentUser(null);
+    setIsLoading(false);
+    navigate("/");
   }, [navigate]);
 
   const apiImpl = new api(client);
@@ -94,6 +134,9 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
         apiKeyId,
         client,
         api: apiImpl,
+        currentUser,
+        fetchCurrentUser,
+        isLoading,
       }}
     >
       {children}
