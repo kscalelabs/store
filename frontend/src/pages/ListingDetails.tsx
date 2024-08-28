@@ -47,6 +47,7 @@ const ListingDetails = () => {
   const auth = useAuthentication();
   const { id } = useParams();
   const [listing, setListing] = useState<ListingResponse | null>(null);
+  const [isFetched, setIsFetched] = useState(false);
 
   const handleVoteChange = useCallback(
     (newScore: number, newUserVote: boolean | null) => {
@@ -61,29 +62,31 @@ const ListingDetails = () => {
     [listing],
   );
 
-  useEffect(() => {
-    const fetchListing = async () => {
-      if (id === undefined) {
-        return;
-      }
+  const fetchListing = useCallback(async () => {
+    if (id === undefined) {
+      return;
+    }
 
-      try {
-        const { data, error } = await auth.client.GET("/listings/{id}", {
-          params: {
-            path: { id },
-          },
-        });
-        if (error) {
-          addErrorAlert(error);
-        } else {
-          setListing(data);
-        }
-      } catch (err) {
-        addErrorAlert(err);
+    try {
+      const { data, error } = await auth.client.GET("/listings/{id}", {
+        params: {
+          path: { id },
+        },
+      });
+      if (error) {
+        addErrorAlert(error);
+      } else {
+        setListing(data);
+        setIsFetched(true);
       }
-    };
+    } catch (err) {
+      addErrorAlert(err);
+    }
+  }, [id, auth.client, addErrorAlert]);
+
+  useEffect(() => {
     fetchListing();
-  }, [id]);
+  }, [fetchListing]);
 
   useEffect(() => {
     const incrementViewCount = async () => {
@@ -102,7 +105,14 @@ const ListingDetails = () => {
     incrementViewCount();
   }, [id, auth.client]);
 
-  return listing && id ? (
+  // Modify this effect to refetch the listing when auth state changes or on initial load
+  useEffect(() => {
+    if (auth.isAuthenticated || !isFetched) {
+      fetchListing();
+    }
+  }, [auth.isAuthenticated, isFetched, fetchListing]);
+
+  return isFetched && listing && id ? (
     <RenderListing listing={listing} onVoteChange={handleVoteChange} />
   ) : (
     <div className="flex justify-center items-center pt-8">

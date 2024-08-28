@@ -9,6 +9,8 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from PIL import Image
 
+from store.app.model import ListingVote
+
 
 def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     # Signup.
@@ -163,7 +165,62 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
 
-    # Deletes the listing.
+    # Test upvoting and downvoting
+    response = test_client.post(f"/listings/{listing_id}/vote?upvote=true", headers=auth_headers)
+    assert response.status_code == status.HTTP_200_OK, response.json()
+
+    # Check that the vote was recorded
+    response = test_client.get(f"/listings/{listing_id}", headers=auth_headers)
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    data = response.json()
+    assert data["score"] == 1
+    assert data["user_vote"] == True
+
+    # Test changing vote to downvote
+    response = test_client.post(f"/listings/{listing_id}/vote?upvote=false", headers=auth_headers)
+    assert response.status_code == status.HTTP_200_OK, response.json()
+
+    # Check that the vote was changed
+    response = test_client.get(f"/listings/{listing_id}", headers=auth_headers)
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    data = response.json()
+    assert data["score"] == -1
+    assert data["user_vote"] == False
+
+    # Test removing vote
+    response = test_client.delete(f"/listings/{listing_id}/vote", headers=auth_headers)
+    assert response.status_code == status.HTTP_200_OK, response.json()
+
+    # Check that the vote was removed
+    response = test_client.get(f"/listings/{listing_id}", headers=auth_headers)
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    data = response.json()
+    assert data["score"] == 0
+    assert data["user_vote"] is None
+
+    # Test upvoting again
+    response = test_client.post(f"/listings/{listing_id}/vote?upvote=true", headers=auth_headers)
+    assert response.status_code == status.HTTP_200_OK, response.json()
+
+    # Check that the vote was recorded
+    response = test_client.get(f"/listings/{listing_id}", headers=auth_headers)
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    data = response.json()
+    assert data["score"] == 1
+    assert data["user_vote"] == True
+
+    # Test removing vote by voting the same way again
+    response = test_client.post(f"/listings/{listing_id}/vote?upvote=true", headers=auth_headers)
+    assert response.status_code == status.HTTP_200_OK, response.json()
+
+    # Check that the vote was removed
+    response = test_client.get(f"/listings/{listing_id}", headers=auth_headers)
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    data = response.json()
+    assert data["score"] == 0
+    assert data["user_vote"] is None
+
+    # Test deleting the listing
     response = test_client.delete(f"/listings/delete/{listing_id}", headers=auth_headers)
     assert response.status_code == status.HTTP_200_OK, response.json()
 
@@ -178,3 +235,26 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     items, has_next = data["listing_ids"], data["has_next"]
     assert len(items) == num_listings - 1
     assert not has_next
+
+
+# Add a new test function for the ListingVote model
+def test_listing_vote_model():
+    # Test creating a ListingVote
+    vote = ListingVote.create(user_id="user123", listing_id="listing456", is_upvote=True)
+    assert vote.user_id == "user123"
+    assert vote.listing_id == "listing456"
+    assert vote.is_upvote == True
+
+    # Test ListingVote serialization
+    vote_dict = vote.model_dump()
+    assert "id" in vote_dict
+    assert vote_dict["user_id"] == "user123"
+    assert vote_dict["listing_id"] == "listing456"
+    assert vote_dict["is_upvote"] == True
+
+    # Test ListingVote deserialization
+    new_vote = ListingVote(**vote_dict)
+    assert new_vote.id == vote.id
+    assert new_vote.user_id == vote.user_id
+    assert new_vote.listing_id == vote.listing_id
+    assert new_vote.is_upvote == vote.is_upvote
