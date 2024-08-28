@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { FaTimes } from "react-icons/fa";
-import useWebSocket, { ReadyState } from "react-use-websocket";
 
 import { cx } from "class-variance-authority";
-import { BACKEND_WS_URL } from "constants/env";
+import { BACKEND_URL } from "constants/env";
+import { humanReadableError } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
 import { Button } from "components/ui/Button/Button";
@@ -30,61 +30,36 @@ const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
     setMessages((prevMessages) => [...prevMessages, { message, level }]);
   };
 
-  const WS_URL = `${BACKEND_WS_URL}/onshape/pull/${listingId}`;
-
-  const { lastMessage, readyState, sendMessage } = useWebSocket(WS_URL, {
-    share: false,
-    shouldReconnect: () => false,
-  });
-
-  const wrappedOnClose = async () => {
-    if (readyState === ReadyState.OPEN) {
-      sendMessage("cancel");
-    }
-    onClose();
-  };
-
   useEffect(() => {
-    switch (readyState) {
-      case ReadyState.CLOSED:
-        addMessage("Connection closed", "info");
-        break;
-      case ReadyState.CLOSING:
-        addMessage("Connection closing", "info");
-        break;
-      case ReadyState.CONNECTING:
-        addMessage("Connection connecting", "info");
-        break;
-      case ReadyState.OPEN:
-        addMessage("Connection open", "success");
-        // Send the API key to authenticate the connection.
-        sendMessage(apiKeyId || "");
-        break;
-    }
-  }, [readyState]);
+    const url = `${BACKEND_URL}/onshape/pull/${listingId}?token=${apiKeyId}`;
+    const eventSource = new EventSource(url);
 
-  useEffect(() => {
-    if (lastMessage) {
-      if (lastMessage.data.startsWith("error: ")) {
-        addMessage(lastMessage.data.slice(7), "error");
-      } else if (lastMessage.data.startsWith("info: ")) {
-        addMessage(lastMessage.data.slice(6), "info");
-      } else if (lastMessage.data.startsWith("success: ")) {
-        addMessage(lastMessage.data.slice(9), "success");
-      } else {
-        addMessage(lastMessage.data, "info");
-      }
-    }
-  }, [lastMessage]);
-
-  // When navigating away from the page, send cancellation message.
-  useEffect(() => {
-    return () => {
-      if (readyState === ReadyState.OPEN) {
-        sendMessage("cancel");
-      }
+    eventSource.onopen = () => {
+      addMessage("Connected to Onshape update stream", "info");
     };
-  }, []);
+
+    eventSource.onerror = (event) => {
+      if (eventSource?.readyState === EventSource.CLOSED) {
+        addMessage("Disconnected from Onshape update stream", "info");
+      } else {
+        addMessage(humanReadableError(event), "error");
+      }
+      eventSource.close();
+    };
+
+    eventSource.addEventListener("message", (event) => {
+      const data = JSON.parse(event.data);
+      addMessage(data.message, data.level);
+    });
+
+    eventSource.addEventListener("finish", () => {
+      eventSource.close();
+    });
+
+    return () => {
+      eventSource.close();
+    };
+  }, [listingId, apiKeyId]);
 
   return (
     <div className="pt-4 w-full flex flex-col">
@@ -110,7 +85,7 @@ const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
           ))}
       </div>
       <div className="mt-4 flex flex-row">
-        <Button onClick={wrappedOnClose} variant="destructive">
+        <Button onClick={onClose} variant="destructive">
           Close
           <FaTimes className="ml-2" />
         </Button>
