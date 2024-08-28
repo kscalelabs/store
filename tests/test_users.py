@@ -2,6 +2,9 @@
 
 from fastapi import status
 from fastapi.testclient import TestClient
+from httpx import AsyncClient
+
+from store.app.db import create_tables
 
 
 def test_user_auth_functions(test_client: TestClient) -> None:
