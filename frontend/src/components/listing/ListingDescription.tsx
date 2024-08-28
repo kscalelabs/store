@@ -175,6 +175,7 @@ const ListingDescription = (props: Props) => {
                 setHasChanged(true);
               }}
               className="border-b border-gray-300 dark:border-gray-700 mb-2"
+              autoFocus
             />
           )}
           <RenderDescription description={debouncedDescription} />

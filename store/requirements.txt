@@ -20,6 +20,7 @@ fastapi[standard]
 pillow
 python-multipart
 httpx
+httpx-ws
 
 # Deployment dependencies.
 uvicorn[standard]
@@ -35,4 +36,4 @@ types-aioboto3[dynamodb, s3]
 # Converting files
 pybullet
 mujoco
-kscale-onshape-library
+kscale-onshape-library[all]

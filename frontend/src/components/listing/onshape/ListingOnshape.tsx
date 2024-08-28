@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaCheck, FaPen, FaTimes } from "react-icons/fa";
+import { FaCheck, FaPen, FaSync, FaTimes } from "react-icons/fa";
 
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
@@ -7,6 +7,8 @@ import { useAuthentication } from "hooks/useAuth";
 import { Button } from "components/ui/Button/Button";
 import { Input } from "components/ui/Input/Input";
 import Spinner from "components/ui/Spinner";
+
+import ListingOnshapeUpdate from "./ListingOnshapeUpdate";
 
 interface UrlInputProps {
   url: string | null;
@@ -30,6 +32,7 @@ const UrlInput = (props: UrlInputProps) => {
         }
       }}
       className="border-b border-gray-300 dark:border-gray-700"
+      autoFocus
     />
   );
 };
@@ -59,51 +62,73 @@ const UrlRenderer = (props: UrlRendererProps) => {
 };
 
 interface UpdateButtonProps {
-  edit: boolean;
   isEditing: boolean;
   setIsEditing: (isEditing: boolean) => void;
   handleSave: () => Promise<void>;
-  handleRemove: () => Promise<void>;
-  showRemove?: boolean;
+  handleRemove?: () => Promise<void>;
+  handleReload?: () => Promise<void>;
+  disabled?: boolean;
 }
 
 const UpdateButtons = (props: UpdateButtonProps) => {
   const {
-    edit,
     isEditing,
     setIsEditing,
     handleSave,
     handleRemove,
-    showRemove,
+    handleReload,
+    disabled,
   } = props;
 
   return (
-    <>
-      {edit && (
-        <Button
-          onClick={async () => {
-            if (isEditing) {
-              await handleSave();
-            } else {
-              setIsEditing(true);
-            }
-          }}
-          variant="primary"
-          className="px-3 ml-2"
-        >
-          {isEditing ? <FaCheck /> : <FaPen />}
-        </Button>
-      )}
-      {showRemove && (
+    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 pt-2 w-full">
+      <Button
+        onClick={async () => {
+          if (isEditing) {
+            await handleSave();
+          } else {
+            setIsEditing(true);
+          }
+        }}
+        variant="secondary"
+        className="px-3"
+        disabled={disabled}
+      >
+        {isEditing ? (
+          <>
+            Save
+            <FaCheck className="ml-2" />
+          </>
+        ) : (
+          <>
+            Edit
+            <FaPen className="ml-2" />
+          </>
+        )}
+      </Button>
+      {handleRemove && (
         <Button
           onClick={handleRemove}
           variant="destructive"
-          className="px-3 ml-2"
+          className="px-3"
+          disabled={disabled}
         >
-          <FaTimes />
+          Remove
+          <FaTimes className="ml-2" />
         </Button>
       )}
-    </>
+      {handleReload && (
+        <Button
+          onClick={handleReload}
+          variant="primary"
+          className="px-3"
+          disabled={disabled}
+        >
+          Sync URDF
+          <FaSync className="ml-2" />
+        </Button>
+      )}
+    </div>
   );
 };
 
@@ -122,10 +147,42 @@ const ListingOnshape = (props: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const [url, setUrl] = useState<string | null>(onshapeUrl);
   const [permUrl, setPermUrl] = useState<string | null>(onshapeUrl);
+  const [updateOnshape, setUpdateOnshape] = useState(false);
+
+  const handleRemove = async () => {
+    setSubmitting(true);
+    const { error } = await auth.client.POST("/onshape/set/{listing_id}", {
+      params: {
+        path: { listing_id: listingId },
+      },
+      body: {
+        onshape_url: null,
+      },
+    });
+
+    if (error) {
+      addErrorAlert(error);
+    } else {
+      addAlert("Onshape URL successfully removed", "success");
+      setUrl(null);
+      setPermUrl(null);
+      setIsEditing(false);
+    }
+    setSubmitting(false);
+  };
+
+  const handleReload = async () => {
+    setUpdateOnshape(true);
+  };
 
   const handleSave = async () => {
     if (url === permUrl) {
       setIsEditing(false);
+      return;
+    }
+
+    if (url === null || url.length === 0) {
+      await handleRemove();
       return;
     }
 
@@ -142,30 +199,8 @@ const ListingOnshape = (props: Props) => {
     if (error) {
       addErrorAlert(error);
     } else {
-      addAlert("Listing updated successfully", "success");
+      addAlert("Onshape URL successfully updated", "success");
       setPermUrl(url);
-      setIsEditing(false);
-    }
-    setSubmitting(false);
-  };
-
-  const handleRemove = async () => {
-    setSubmitting(true);
-    const { error } = await auth.client.POST("/onshape/set/{listing_id}", {
-      params: {
-        path: { listing_id: listingId },
-      },
-      body: {
-        onshape_url: null,
-      },
-    });
-
-    if (error) {
-      addErrorAlert(error);
-    } else {
-      addAlert("Listing updated successfully", "success");
-      setUrl(null);
-      setPermUrl(null);
       setIsEditing(false);
     }
     setSubmitting(false);
@@ -177,20 +212,21 @@ const ListingOnshape = (props: Props) => {
     </div>
   ) : url !== null || edit ? (
     <div className="flex flex-col my-2 py-2">
-      <div className="flex items-center">
-        {isEditing ? (
-          <>
+      {isEditing ? (
+        <div className="flex flex-col items-start">
+          <div className="flex items-center w-full">
             <UrlInput url={url} setUrl={setUrl} handleSave={handleSave} />
+          </div>
+          {edit && (
             <UpdateButtons
-              edit={edit}
               isEditing={isEditing}
               setIsEditing={setIsEditing}
               handleSave={handleSave}
-              handleRemove={handleRemove}
-              showRemove={false}
             />
-          </>
-        ) : permUrl === null ? (
+          )}
+        </div>
+      ) : permUrl === null ? (
+        <div className="flex items-center">
           <Button
             onClick={() => setIsEditing(true)}
             variant="primary"
@@ -198,25 +234,35 @@ const ListingOnshape = (props: Props) => {
           >
             Add Onshape URL
           </Button>
-        ) : (
-          <>
+        </div>
+      ) : (
+        <div className="flex flex-col items-start">
+          <div className="flex items-center w-full">
             <UrlRenderer
               isEditing={isEditing}
               handleSave={handleSave}
               url={url}
               setUrl={setUrl}
             />
+          </div>
+          {edit && (
             <UpdateButtons
-              edit={edit}
               isEditing={isEditing}
               setIsEditing={setIsEditing}
               handleSave={handleSave}
-              handleRemove={handleRemove}
-              showRemove={edit && permUrl !== null}
+              handleRemove={permUrl !== null ? handleRemove : undefined}
+              handleReload={permUrl !== null ? handleReload : undefined}
+              disabled={updateOnshape}
             />
-          </>
-        )}
-      </div>
+          )}
+          {updateOnshape && (
+            <ListingOnshapeUpdate
+              listingId={listingId}
+              onClose={() => setUpdateOnshape(false)}
+            />
+          )}
+        </div>
+      )}
     </div>
   ) : null;
 };

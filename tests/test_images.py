@@ -3,23 +3,19 @@
 from pathlib import Path
 
 from fastapi import status
-from httpx import AsyncClient
+from fastapi.testclient import TestClient
 from PIL import Image
 
-from store.app.db import create_tables
 
-
-async def test_user_auth_functions(app_client: AsyncClient, tmpdir: Path) -> None:
-    await create_tables()
-
+def test_user_auth_functions(test_client: TestClient, tmpdir: Path) -> None:
     # Get an auth token using the mocked Github endpoint.
-    response = await app_client.post("/users/github/code", json={"code": "test_code"})
+    response = test_client.post("/users/github/code", json={"code": "test_code"})
     assert response.status_code == status.HTTP_200_OK, response.json()
     token = response.json()["api_key"]
     auth_headers = {"Authorization": f"Bearer {token}"}
 
     # Create a listing.
-    response = await app_client.post(
+    response = test_client.post(
         "/listings/add",
         json={
             "name": "test listing",
@@ -35,7 +31,7 @@ async def test_user_auth_functions(app_client: AsyncClient, tmpdir: Path) -> Non
     image = Image.new("RGB", (100, 100))
     image_path = Path(tmpdir) / "test.png"
     image.save(image_path)
-    response = await app_client.post(
+    response = test_client.post(
         f"/artifacts/upload/{listing_id}",
         files={"files": ("test.png", open(image_path, "rb"), "image/png")},
         headers=auth_headers,
@@ -47,5 +43,9 @@ async def test_user_auth_functions(app_client: AsyncClient, tmpdir: Path) -> Non
     name = data["artifacts"][0]["name"]
 
     # Gets the URLs for various sizes of images.
-    response = await app_client.get(f"/artifacts/url/image/{listing_id}/{name}", params={"size": "small"})
+    response = test_client.get(
+        f"/artifacts/url/image/{listing_id}/{name}",
+        params={"size": "small"},
+        follow_redirects=False,
+    )
     assert response.status_code == status.HTTP_307_TEMPORARY_REDIRECT, response.json()

@@ -69,7 +69,7 @@ class ArtifactsCrud(BaseCrud):
     async def _upload_image(
         self,
         name: str,
-        file: UploadFile,
+        file: UploadFile | Image.Image,
         listing: Listing,
         description: str | None = None,
     ) -> Artifact:
@@ -82,7 +82,7 @@ class ArtifactsCrud(BaseCrud):
             description=description,
         )
 
-        image = Image.open(io.BytesIO(await file.read()))
+        image = file if isinstance(file, Image.Image) else Image.open(io.BytesIO(await file.read()))
 
         await asyncio.gather(
             *(self._upload_cropped_image(image=image, artifact=artifact, size=size) for size in SizeMapping.keys()),
