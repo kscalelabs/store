@@ -12,6 +12,8 @@ You can contribute to the K-Scale Store project in various ways, such as reporti
 
 ---
 
+# Development
+
 1. [Development Setup](#development-setup)
    - [Configuration](#configuration)
    - [Google OAuth Configuration](#google-oauth-configuration)
@@ -194,5 +196,3 @@ make test
 make test-frontend  # Run only the frontend tests
 make test-backend  # Run only the backend tests
 ```
-
----
