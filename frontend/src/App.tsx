@@ -5,22 +5,22 @@ import "App.css";
 import { AlertQueue, AlertQueueProvider } from "hooks/useAlertQueue";
 import { AuthenticationProvider } from "hooks/useAuth";
 import { DarkModeProvider } from "hooks/useDarkMode";
-import APIKeys from "pages/APIKeys";
-import About from "pages/About";
-import Browse from "pages/Browse";
-import Create from "pages/Create";
-import Home from "pages/Home";
-import ListingDetails from "pages/ListingDetails";
-import Login from "pages/Login";
-import Logout from "pages/Logout";
-import NotFound from "pages/NotFound";
-import Profile from "pages/Profile";
-import Signup from "pages/Signup";
 
 import Container from "components/Container";
 import NotFoundRedirect from "components/NotFoundRedirect";
 import Footer from "components/footer/Footer";
 import Navbar from "components/nav/Navbar";
+import APIKeys from "components/pages/APIKeys";
+import About from "components/pages/About";
+import Browse from "components/pages/Browse";
+import Create from "components/pages/Create";
+import Home from "components/pages/Home";
+import ListingDetails from "components/pages/ListingDetails";
+import Login from "components/pages/Login";
+import Logout from "components/pages/Logout";
+import NotFound from "components/pages/NotFound";
+import Profile from "components/pages/Profile";
+import Signup from "components/pages/Signup";
 
 const App = () => {
   return (

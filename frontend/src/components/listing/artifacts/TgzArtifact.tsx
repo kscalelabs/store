@@ -22,21 +22,21 @@ const TgzArtifact = ({ artifact }: Props) => {
   };
 
   return (
-    <div
-      className="bg-gray-100 p-3 rounded-md flex items-center justify-between cursor-pointer"
+    <button
+      className="bg-gray-100 p-3 rounded-md flex items-center justify-between cursor-pointer w-full text-left hover:bg-gray-200 transition-colors duration-200"
       onClick={copyToClipboard}
     >
       <code className="text-xs font-mono truncate flex-grow mr-2">
         {command}
       </code>
-      <button className="flex-shrink-0 focus:outline-none">
+      <span className="flex-shrink-0">
         {copied ? (
           <FaCheck className="text-green-500" />
         ) : (
           <FaCopy className="text-gray-500" />
         )}
-      </button>
-    </div>
+      </span>
+    </button>
   );
 };
 

@@ -1,4 +1,4 @@
-import NotFound from "pages/NotFound";
+import NotFound from "components/pages/NotFound";
 
 const NotFoundRedirect = () => {
   return <NotFound />;

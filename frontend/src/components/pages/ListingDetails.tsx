@@ -87,7 +87,7 @@ const ListingDetails = () => {
     }
   }, [auth.isAuthenticated, isFetched, fetchListing]);
 
-  return isFetched && listing && id ? (
+  return isFetched && listing ? (
     <RenderListing listing={listing} />
   ) : (
     <div className="flex justify-center items-center pt-8">
