@@ -35,8 +35,8 @@ async def artifact_url(
     artifact_type: ArtifactType,
     listing_id: str,
     name: str,
-    size: Annotated[ArtifactSize, "large"],
     crud: Annotated[Crud, Depends(Crud.get)],
+    size: ArtifactSize = "large",
 ) -> RedirectResponse:
     # First, get the artifact to retrieve its ID
     artifacts = await crud.get_listing_artifacts(listing_id)
