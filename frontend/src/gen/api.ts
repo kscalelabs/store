@@ -1023,6 +1023,11 @@ export interface components {
             /** Onshape Url */
             onshape_url: string | null;
         };
+        /**
+         * SortOption
+         * @enum {string}
+         */
+        SortOption: "newest" | "most_viewed" | "most_upvoted";
         /** UpdateArtifactRequest */
         UpdateArtifactRequest: {
             /** Name */
@@ -1513,7 +1518,7 @@ export interface operations {
                 /** @description Search query string */
                 search_query?: string;
                 /** @description Sort option for listings */
-                sort_by?: string;
+                sort_by?: components["schemas"]["SortOption"];
             };
             header?: never;
             path?: never;

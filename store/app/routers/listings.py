@@ -2,12 +2,12 @@
 
 import asyncio
 import logging
-from enum import Enum
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
+from store.app.crud.listings import SortOption
 from store.app.db import Crud
 from store.app.model import Listing, User, can_write_listing, get_artifact_url
 from store.app.routers.users import (
@@ -26,25 +26,14 @@ class ListListingsResponse(BaseModel):
     has_next: bool = False
 
 
-class SortOption(str, Enum):
-    NEWEST = "newest"
-    MOST_VIEWED = "most_viewed"
-    MOST_UPVOTED = "most_upvoted"
-
-
 @listings_router.get("/search", response_model=ListListingsResponse)
 async def list_listings(
     crud: Annotated[Crud, Depends(Crud.get)],
     page: int = Query(1, description="Page number for pagination"),
     search_query: str = Query("", description="Search query string"),
-    sort_by: str = Query(SortOption.NEWEST.value, description="Sort option for listings"),
+    sort_by: SortOption = Query(SortOption.NEWEST, description="Sort option for listings"),
 ) -> ListListingsResponse:
-    try:
-        sort_option = SortOption(sort_by)
-    except ValueError:
-        raise HTTPException(status_code=400, detail=f"Invalid sort option: {sort_by}")
-
-    listings, has_next = await crud.get_listings(page, search_query=search_query, sort_by=sort_option)
+    listings, has_next = await crud.get_listings(page, search_query=search_query, sort_by=sort_by)
     listing_ids = [listing.id for listing in listings]
     return ListListingsResponse(listing_ids=listing_ids, has_next=has_next)
 

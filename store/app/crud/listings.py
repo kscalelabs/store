@@ -73,7 +73,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         search_query: str | None = None,
     ) -> tuple[list[T], bool]:
         logger.info(f"Getting listings - page: {page}, search_query: {search_query}, sort_key: {sort_key}")
-        table = await self.db.Table(self._get_table_name(item_class))
+        table = await self.db.Table(self._get_table_name(Listing))
 
         scan_params = {}
         if search_query:
