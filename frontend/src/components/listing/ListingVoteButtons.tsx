@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 import { useAlertQueue } from "hooks/useAlertQueue";
@@ -18,6 +19,7 @@ const ListingVoteButtons = ({
 }: ListingVoteButtonsProps) => {
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
+  const [isVoting, setIsVoting] = useState(false);
 
   const handleVote = async (upvote: boolean, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -26,6 +28,12 @@ const ListingVoteButtons = ({
       addErrorAlert("You must be logged in to vote");
       return;
     }
+
+    if (isVoting) {
+      return; // Prevent double-clicking
+    }
+
+    setIsVoting(true);
 
     const newVote = initialUserVote === upvote ? null : upvote;
     let scoreDelta;
@@ -53,6 +61,8 @@ const ListingVoteButtons = ({
       addErrorAlert("Failed to submit vote");
       // Revert the optimistic update
       onVoteChange(initialScore, initialUserVote);
+    } finally {
+      setIsVoting(false);
     }
   };
 

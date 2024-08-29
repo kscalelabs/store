@@ -3,7 +3,7 @@
 import asyncio
 import logging
 from enum import Enum
-from typing import Any
+from typing import Any, Callable, Dict, Type
 
 from boto3.dynamodb.conditions import Attr
 
@@ -43,7 +43,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             logger.error(f"Error in get_listings: {str(e)}")
             raise
 
-    def _get_sort_function(self, sort_by: SortOption):
+    def _get_sort_function(self, sort_by: SortOption) -> Callable[[Dict[str, Any]], Any]:
         if sort_by == SortOption.NEWEST:
             return lambda x: (x.get("created_at") or 0, x.get("id", ""))
         elif sort_by == SortOption.MOST_VIEWED:
@@ -54,7 +54,11 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             return lambda x: x.get("id", "")
 
     async def _list(
-        self, model_class, page: int, sort_function, search_query: str | None = None
+        self,
+        model_class: Type[Any],
+        page: int,
+        sort_function: Callable[[Dict[str, Any]], Any],
+        search_query: str | None = None,
     ) -> tuple[list[Any], bool]:
         table = await self.db.Table(self._get_table_name(model_class))
 
