@@ -870,6 +870,10 @@ export interface components {
             id: string;
             /** User Id */
             user_id: string;
+            /** Created At */
+            created_at: number;
+            /** Updated At */
+            updated_at: number;
             /** Name */
             name: string;
             /** Child Ids */
@@ -1495,11 +1499,13 @@ export interface operations {
     };
     list_listings_listings_search_get: {
         parameters: {
-            query: {
+            query?: {
                 /** @description Page number for pagination */
-                page: number;
+                page?: number;
                 /** @description Search query string */
                 search_query?: string;
+                /** @description Sort option for listings */
+                sort_by?: string;
             };
             header?: never;
             path?: never;

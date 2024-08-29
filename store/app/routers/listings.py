@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+from enum import Enum
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -25,15 +26,35 @@ class ListListingsResponse(BaseModel):
     has_next: bool = False
 
 
+class SortOption(str, Enum):
+    NEWEST = "newest"
+    MOST_VIEWED = "most_viewed"
+    MOST_UPVOTED = "most_upvoted"
+
+
 @listings_router.get("/search", response_model=ListListingsResponse)
 async def list_listings(
     crud: Annotated[Crud, Depends(Crud.get)],
-    page: int = Query(description="Page number for pagination"),
-    search_query: str = Query(None, description="Search query string"),
+    page: int = Query(1, description="Page number for pagination"),
+    search_query: str = Query("", description="Search query string"),
+    sort_by: str = Query(SortOption.NEWEST.value, description="Sort option for listings"),
 ) -> ListListingsResponse:
-    listings, has_next = await crud.get_listings(page, search_query=search_query)
-    listing_ids = [listing.id for listing in listings]
-    return ListListingsResponse(listing_ids=listing_ids, has_next=has_next)
+    logger.info(f"Received search request - page: {page}, search_query: {search_query}, sort_by: {sort_by}")
+
+    try:
+        sort_option = SortOption(sort_by)
+    except ValueError as e:
+        logger.error(f"Invalid sort option: {sort_by}")
+        raise HTTPException(status_code=400, detail=f"Invalid sort option: {sort_by}")
+
+    try:
+        listings, has_next = await crud.get_listings(page, search_query=search_query, sort_by=sort_option)
+        listing_ids = [listing.id for listing in listings]
+        logger.info(f"Search successful - Found {len(listing_ids)} listings")
+        return ListListingsResponse(listing_ids=listing_ids, has_next=has_next)
+    except Exception as e:
+        logger.error(f"Error during listing search: {str(e)}")
+        raise HTTPException(status_code=500, detail="An error occurred while searching listings")
 
 
 class ListingInfoResponse(BaseModel):

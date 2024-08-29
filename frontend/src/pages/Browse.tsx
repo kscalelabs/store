@@ -5,10 +5,12 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDebounce } from "@uidotdev/usehooks";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
+import { SortOption } from "types/listings";
 
 import ListingGrid from "components/listings/ListingGrid";
 import { Button } from "components/ui/Button/Button";
 import { Input } from "components/ui/Input/Input";
+import { Select } from "components/ui/Select/Select";
 
 const Browse = () => {
   const auth = useAuthentication();
@@ -28,10 +30,11 @@ const Browse = () => {
 
   const [searchQuery, setSearchQuery] = useState(query || "");
   const debouncedSearch = useDebounce(searchQuery, 300);
+  const [sortOption, setSortOption] = useState("newest");
 
   useEffect(() => {
     handleSearch();
-  }, [debouncedSearch, pageNumber]);
+  }, [debouncedSearch, pageNumber, sortOption]);
 
   const handleSearch = async () => {
     setListingIds(null);
@@ -41,6 +44,7 @@ const Browse = () => {
         query: {
           page: pageNumber,
           search_query: searchQuery,
+          sort_by: sortOption as SortOption,
         },
       },
     });
@@ -86,6 +90,15 @@ const Browse = () => {
               </div>
             )}
           </div>
+          <Select
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+            options={[
+              { value: "newest", label: "Newest" },
+              { value: "most_viewed", label: "Most Viewed" },
+              { value: "most_upvoted", label: "Most Upvoted" },
+            ]}
+          />
           <Button
             onClick={() => navigate(`/create`)}
             variant="secondary"

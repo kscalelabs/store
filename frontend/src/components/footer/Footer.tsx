@@ -85,6 +85,9 @@ const Footer = () => {
             >
               Homepage
             </a>
+            <Link to={"/about"} className="hover:text-gray-500">
+              About
+            </Link>
             <a
               href="https://blog.kscale.dev"
               className="hover:text-gray-500"
@@ -101,9 +104,6 @@ const Footer = () => {
             </Link>
             <Link to={"/tos"} className="hover:text-gray-500">
               Terms of Service
-            </Link>
-            <Link to={"/about"} className="hover:text-gray-500">
-              About
             </Link>
           </div>
           <div className="flex flex-col items-start gap-2 sm:gap-3">

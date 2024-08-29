@@ -343,6 +343,8 @@ class Listing(StoreBaseModel):
     """
 
     user_id: str
+    created_at: int
+    updated_at: int
     name: str
     child_ids: list[str]
     description: str | None = None
@@ -364,6 +366,8 @@ class Listing(StoreBaseModel):
         return cls(
             id=new_uuid(),
             user_id=user_id,
+            created_at=int(time.time()),
+            updated_at=int(time.time()),
             name=name,
             child_ids=child_ids,
             description=description,

@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+from enum import Enum
 from typing import Any
 
 from boto3.dynamodb.conditions import Attr
@@ -13,7 +14,15 @@ from store.app.model import Listing, ListingTag, ListingVote
 logger = logging.getLogger(__name__)
 
 
+class SortOption(str, Enum):
+    NEWEST = "newest"
+    MOST_VIEWED = "most_viewed"
+    MOST_UPVOTED = "most_upvoted"
+
+
 class ListingsCrud(ArtifactsCrud, BaseCrud):
+    PAGE_SIZE = 20
+
     @classmethod
     def get_gsis(cls) -> set[str]:
         return super().get_gsis().union({"listing_id", "name"})
@@ -21,12 +30,68 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
     async def get_listing(self, listing_id: str) -> Listing | None:
         return await self._get_item(listing_id, Listing, throw_if_missing=False)
 
-    async def get_listings(self, page: int, search_query: str | None = None) -> tuple[list[Listing], bool]:
-        # 0 is a placeholder sorting function.
-        # We might need to add timestamp back to show the most recent 12 entries.
-        # Or we define some other sort of metric later like popularity.
-        # (Or perhaps we even take in a function as an argument that tells us how to sort?!)
-        return await self._list(Listing, page, lambda x: 0, search_query)
+    async def get_listings(
+        self, page: int, search_query: str | None = None, sort_by: SortOption = SortOption.NEWEST
+    ) -> tuple[list[Listing], bool]:
+        logger.info(f"Getting listings - page: {page}, search_query: {search_query}, sort_by: {sort_by}")
+        sort_function = self._get_sort_function(sort_by)
+        try:
+            result = await self._list(Listing, page, sort_function, search_query)
+            logger.info(f"Retrieved {len(result[0])} listings")
+            return result
+        except Exception as e:
+            logger.error(f"Error in get_listings: {str(e)}")
+            raise
+
+    def _get_sort_function(self, sort_by: SortOption):
+        if sort_by == SortOption.NEWEST:
+            return lambda x: (x.get("created_at") or 0, x.get("id", ""))
+        elif sort_by == SortOption.MOST_VIEWED:
+            return lambda x: int(x.get("views", 0))
+        elif sort_by == SortOption.MOST_UPVOTED:
+            return lambda x: int(x.get("score", 0))
+        else:
+            return lambda x: x.get("id", "")
+
+    async def _list(
+        self, model_class, page: int, sort_function, search_query: str | None = None
+    ) -> tuple[list[Any], bool]:
+        table = await self.db.Table(self._get_table_name(model_class))
+
+        scan_params = {}
+        if search_query:
+            filter_expression = Attr("name").contains(search_query) | Attr("description").contains(search_query)
+            scan_params["FilterExpression"] = filter_expression
+
+        response = await table.scan(**scan_params)
+        items = response["Items"]
+        logger.info(f"Retrieved {len(items)} items from the database")
+
+        try:
+            sorted_items = sorted(items, key=sort_function, reverse=True)
+            logger.info(f"Successfully sorted {len(sorted_items)} items")
+        except Exception as e:
+            logger.error(f"Error sorting items: {e}")
+            logger.error(f"First item example: {items[0] if items else 'No items'}")
+            sorted_items = items  # Fallback to unsorted items
+
+        # Filter out items with missing required fields
+        required_fields = {"updated_at", "name", "child_ids"}
+        valid_items = [item for item in sorted_items if all(field in item for field in required_fields)]
+        logger.info(f"Filtered {len(sorted_items) - len(valid_items)} items with missing required fields")
+
+        # Paginate results
+        start = (page - 1) * self.PAGE_SIZE
+        end = start + self.PAGE_SIZE
+        paginated_items = valid_items[start:end]
+        logger.info(f"Returning {len(paginated_items)} items for page {page}")
+
+        try:
+            return [model_class(**item) for item in paginated_items], len(valid_items) > end
+        except Exception as e:
+            logger.error(f"Error creating {model_class.__name__} objects: {e}")
+            logger.error(f"Problematic item: {paginated_items[0] if paginated_items else 'No items'}")
+            raise
 
     async def get_user_listings(self, user_id: str, page: int, search_query: str) -> tuple[list[Listing], bool]:
         return await self._list_me(Listing, user_id, page, lambda x: 0, search_query)
