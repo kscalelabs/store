@@ -358,7 +358,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         model_type: type[T],
         updates: dict[str, Any],
     ) -> None:
-        table_name = self._get_table_name(model_type)
+        table_name = TABLE_NAME
         key = {"id": id}
 
         update_expression = "SET " + ", ".join(f"#{k} = :{k}" for k in updates.keys())
@@ -524,6 +524,3 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             logger.info("Deleted table %s", name)
         except ClientError:
             logger.info("Table %s does not exist", name)
-
-    def _get_table_name(self, model_type: type[T]) -> str:
-        return f"{settings.dynamo.table_name}"

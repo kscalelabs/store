@@ -1,14 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaCheck, FaPen, FaSync, FaTimes } from "react-icons/fa";
 
+import { components } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
+import ListingOnshapeUpdate from "components/listing/onshape/ListingOnshapeUpdate";
 import { Button } from "components/ui/Button/Button";
 import { Input } from "components/ui/Input/Input";
 import Spinner from "components/ui/Spinner";
-
-import ListingOnshapeUpdate from "./ListingOnshapeUpdate";
 
 interface UrlInputProps {
   url: string | null;
@@ -136,10 +136,11 @@ interface Props {
   listingId: string;
   onshapeUrl: string | null;
   edit: boolean;
+  addArtifactId: (artifactId: string) => Promise<void>;
 }
 
 const ListingOnshape = (props: Props) => {
-  const { listingId, edit, onshapeUrl } = props;
+  const { listingId, edit, onshapeUrl, addArtifactId } = props;
   const auth = useAuthentication();
   const { addAlert, addErrorAlert } = useAlertQueue();
 
@@ -211,10 +212,10 @@ const ListingOnshape = (props: Props) => {
       <Spinner />
     </div>
   ) : url !== null || edit ? (
-    <div className="flex flex-col my-2 py-2">
+    <div className="flex flex-col my-2 py-2 w-full">
       {isEditing ? (
         <div className="flex flex-col items-start">
-          <div className="flex items-center w-full">
+          <div className="flex items-center">
             <UrlInput url={url} setUrl={setUrl} handleSave={handleSave} />
           </div>
           {edit && (
@@ -237,14 +238,12 @@ const ListingOnshape = (props: Props) => {
         </div>
       ) : (
         <div className="flex flex-col items-start">
-          <div className="flex items-center w-full">
-            <UrlRenderer
-              isEditing={isEditing}
-              handleSave={handleSave}
-              url={url}
-              setUrl={setUrl}
-            />
-          </div>
+          <UrlRenderer
+            isEditing={isEditing}
+            handleSave={handleSave}
+            url={url}
+            setUrl={setUrl}
+          />
           {edit && (
             <UpdateButtons
               isEditing={isEditing}
@@ -259,6 +258,7 @@ const ListingOnshape = (props: Props) => {
             <ListingOnshapeUpdate
               listingId={listingId}
               onClose={() => setUpdateOnshape(false)}
+              addArtifactId={addArtifactId}
             />
           )}
         </div>

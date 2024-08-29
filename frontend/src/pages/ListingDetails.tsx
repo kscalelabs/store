@@ -16,24 +16,13 @@ type ListingResponse =
 
 interface RenderListingProps {
   listing: ListingResponse;
-  onVoteChange: (newScore: number, newUserVote: boolean | null) => void;
 }
 
-const RenderListing = ({ listing, onVoteChange }: RenderListingProps) => {
+const RenderListing = ({ listing }: RenderListingProps) => {
   return (
-    <div className="container mx-auto max-w-6xl">
-      <ListingHeader
-        listingId={listing.id}
-        title={listing.name}
-        edit={listing.can_edit}
-      />
-      <div className="flex items-start">
-        <ListingVoteButtons
-          listingId={listing.id}
-          initialScore={listing.score}
-          initialUserVote={listing.user_vote}
-          onVoteChange={onVoteChange}
-        />
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <ListingHeader listing={listing} />
+      <div className="flex-grow">
         <ListingBody listing={listing} />
       </div>
       <div className="mt-4 text-sm text-gray-500">Views: {listing.views}</div>
@@ -48,19 +37,6 @@ const ListingDetails = () => {
   const { id } = useParams();
   const [listing, setListing] = useState<ListingResponse | null>(null);
   const [isFetched, setIsFetched] = useState(false);
-
-  const handleVoteChange = useCallback(
-    (newScore: number, newUserVote: boolean | null) => {
-      if (listing) {
-        setListing({
-          ...listing,
-          score: newScore,
-          user_vote: newUserVote,
-        });
-      }
-    },
-    [listing],
-  );
 
   const fetchListing = useCallback(async () => {
     if (id === undefined) {
@@ -113,7 +89,7 @@ const ListingDetails = () => {
   }, [auth.isAuthenticated, isFetched, fetchListing]);
 
   return isFetched && listing && id ? (
-    <RenderListing listing={listing} onVoteChange={handleVoteChange} />
+    <RenderListing listing={listing} />
   ) : (
     <div className="flex justify-center items-center pt-8">
       <Spinner />

@@ -332,6 +332,7 @@ class Artifact(StoreBaseModel):
             sizes=sizes,
             description=description,
             timestamp=int(time.time()),
+            children=children,
         )
 
 

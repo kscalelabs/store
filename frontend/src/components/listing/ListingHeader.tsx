@@ -1,28 +1,31 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { FaCheck, FaPen, FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
+import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
+import ListingVoteButtons from "components/listing/ListingVoteButtons";
 import { Button } from "components/ui/Button/Button";
 import { Input } from "components/ui/Input/Input";
 import Spinner from "components/ui/Spinner";
 
+type ListingResponse =
+  paths["/listings/{id}"]["get"]["responses"][200]["content"]["application/json"];
+
 interface Props {
-  listingId: string;
-  title: string;
-  edit: boolean;
+  listing: ListingResponse;
 }
 
 const ListingTitle = (props: Props) => {
-  const { listingId, title: initialTitle, edit } = props;
+  const { listing } = props;
 
   const auth = useAuthentication();
   const { addAlert, addErrorAlert } = useAlertQueue();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [newTitle, setNewTitle] = useState(initialTitle);
+  const [newTitle, setNewTitle] = useState(listing.name);
   const [hasChanged, setHasChanged] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -38,7 +41,7 @@ const ListingTitle = (props: Props) => {
     setSubmitting(true);
     const { error } = await auth.client.PUT("/listings/edit/{id}", {
       params: {
-        path: { id: listingId },
+        path: { id: listing.id },
       },
       body: {
         name: newTitle,
@@ -78,7 +81,7 @@ const ListingTitle = (props: Props) => {
           ) : (
             <h1 className="text-2xl font-semibold">{newTitle}</h1>
           )}
-          {edit && (
+          {listing.can_edit && (
             <Button
               onClick={() => {
                 if (isEditing) {
@@ -114,9 +117,16 @@ const CloseButton = () => {
 };
 
 const ListingHeader = (props: Props) => {
+  const { listing } = props;
+
   return (
     <div className="relative p-4 mb-4">
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-4 items-center">
+        <ListingVoteButtons
+          listingId={listing.id}
+          initialScore={listing.score}
+          initialUserVote={listing.user_vote}
+        />
         <ListingTitle {...props} />
         <CloseButton />
       </div>

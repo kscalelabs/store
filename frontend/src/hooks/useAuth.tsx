@@ -67,7 +67,7 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
       createClient<paths>({
         baseUrl: BACKEND_URL,
       }),
-    [],
+    [apiKeyId],
   );
 
   // Add the API key to the request headers, if the user is authenticated.
@@ -123,7 +123,8 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
     navigate("/");
   }, [navigate]);
 
-  const apiImpl = new api(client);
+  // const apiImpl = new api(client);
+  const apiImpl = useMemo(() => new api(client), [client]);
 
   return (
     <AuthenticationContext.Provider
