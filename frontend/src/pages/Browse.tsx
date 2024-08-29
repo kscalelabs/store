@@ -65,6 +65,18 @@ const Browse = () => {
     <>
       <div className="pb-8">
         <div className="flex justify-center mt-4 gap-x-2">
+          <div>
+            <Select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value)}
+              options={[
+                { value: "newest", label: "Newest" },
+                { value: "most_viewed", label: "Most Viewed" },
+                { value: "most_upvoted", label: "Most Upvoted" },
+              ]}
+              variant="default"
+            />
+          </div>
           <div className="relative">
             <Input
               onChange={(e) => {
@@ -91,18 +103,9 @@ const Browse = () => {
               </div>
             )}
           </div>
-          <Select
-            value={sortOption}
-            onChange={(e) => setSortOption(e.target.value)}
-            options={[
-              { value: "newest", label: "Newest" },
-              { value: "most_viewed", label: "Most Viewed" },
-              { value: "most_upvoted", label: "Most Upvoted" },
-            ]}
-          />
           <Button
             onClick={() => navigate(`/create`)}
-            variant="secondary"
+            variant="primary"
             size="lg"
           >
             Create
