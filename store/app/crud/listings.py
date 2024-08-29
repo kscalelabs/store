@@ -3,13 +3,15 @@
 import asyncio
 import logging
 from enum import Enum
-from typing import Any, Callable, Dict, Type
+from typing import Any, Callable, Dict, Type, TypeVar
 
 from boto3.dynamodb.conditions import Attr
 
 from store.app.crud.artifacts import ArtifactsCrud
 from store.app.crud.base import BaseCrud, ItemNotFoundError
 from store.app.model import Listing, ListingTag, ListingVote
+
+T = TypeVar("T")
 
 logger = logging.getLogger(__name__)
 
@@ -34,14 +36,24 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         self, page: int, search_query: str | None = None, sort_by: SortOption = SortOption.NEWEST
     ) -> tuple[list[Listing], bool]:
         logger.info(f"Getting listings - page: {page}, search_query: {search_query}, sort_by: {sort_by}")
-        sort_function = self._get_sort_function(sort_by)
+        sort_key = self._get_sort_key(sort_by)
         try:
-            result = await self._list(Listing, page, sort_function, search_query)
+            result = await self._list(Listing, page, sort_key, search_query)
             logger.info(f"Retrieved {len(result[0])} listings")
             return result
         except Exception as e:
             logger.error(f"Error in get_listings: {str(e)}")
             raise
+
+    def _get_sort_key(self, sort_by: SortOption) -> Callable[[Listing], int]:
+        if sort_by == SortOption.NEWEST:
+            return lambda x: x.created_at or 0
+        elif sort_by == SortOption.MOST_VIEWED:
+            return lambda x: x.views or 0
+        elif sort_by == SortOption.MOST_UPVOTED:
+            return lambda x: x.score or 0
+        else:
+            return lambda x: 0
 
     def _get_sort_function(self, sort_by: SortOption) -> Callable[[Dict[str, Any]], Any]:
         if sort_by == SortOption.NEWEST:
@@ -55,12 +67,13 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
 
     async def _list(
         self,
-        model_class: Type[Any],
+        item_class: Type[T],
         page: int,
-        sort_function: Callable[[Dict[str, Any]], Any],
+        sort_key: Callable[[T], int] | None = None,
         search_query: str | None = None,
-    ) -> tuple[list[Any], bool]:
-        table = await self.db.Table(self._get_table_name(model_class))
+    ) -> tuple[list[T], bool]:
+        logger.info(f"Getting listings - page: {page}, search_query: {search_query}, sort_key: {sort_key}")
+        table = await self.db.Table(self._get_table_name(item_class))
 
         scan_params = {}
         if search_query:
@@ -70,18 +83,24 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         response = await table.scan(**scan_params)
         items = response["Items"]
 
-        sorted_items = sorted(items, key=sort_function, reverse=True)
+        # Convert items to the correct model type
+        typed_items = [item_class(**item) for item in items]
+
+        if sort_key:
+            sorted_items = sorted(typed_items, key=sort_key, reverse=True)
+        else:
+            sorted_items = typed_items
 
         # Filter out items with missing required fields
         required_fields = {"updated_at", "name", "child_ids"}
-        valid_items = [item for item in sorted_items if all(field in item for field in required_fields)]
+        valid_items = [item for item in sorted_items if all(hasattr(item, field) for field in required_fields)]
 
         # Paginate results
         start = (page - 1) * self.PAGE_SIZE
         end = start + self.PAGE_SIZE
         paginated_items = valid_items[start:end]
 
-        return [model_class(**item) for item in paginated_items], len(valid_items) > end
+        return paginated_items, len(valid_items) > end
 
     async def get_user_listings(self, user_id: str, page: int, search_query: str) -> tuple[list[Listing], bool]:
         return await self._list_me(Listing, user_id, page, lambda x: 0, search_query)
