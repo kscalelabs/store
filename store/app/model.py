@@ -347,6 +347,10 @@ class Listing(StoreBaseModel):
     child_ids: list[str]
     description: str | None = None
     onshape_url: str | None = None
+    views: int = 0
+    upvotes: int = 0
+    downvotes: int = 0
+    score: int = 0
 
     @classmethod
     def create(
@@ -364,6 +368,10 @@ class Listing(StoreBaseModel):
             child_ids=child_ids,
             description=description,
             onshape_url=onshape_url,
+            views=0,
+            upvotes=0,
+            downvotes=0,
+            score=0,
         )
 
 
@@ -474,3 +482,22 @@ async def can_read_listing(user: User, listing: Listing) -> bool:
     # For now, all users can read all listings. In the future we might change
     # this so that users can hide their listings.
     return True
+
+
+class ListingVote(StoreBaseModel):
+    """Tracks user votes on listings."""
+
+    user_id: str
+    listing_id: str
+    is_upvote: bool
+    created_at: int
+
+    @classmethod
+    def create(cls, user_id: str, listing_id: str, is_upvote: bool) -> Self:
+        return cls(
+            id=new_uuid(),
+            user_id=user_id,
+            listing_id=listing_id,
+            is_upvote=is_upvote,
+            created_at=int(time.time()),
+        )

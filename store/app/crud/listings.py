@@ -4,9 +4,11 @@ import asyncio
 import logging
 from typing import Any
 
+from boto3.dynamodb.conditions import Attr
+
 from store.app.crud.artifacts import ArtifactsCrud
 from store.app.crud.base import BaseCrud, ItemNotFoundError
-from store.app.model import Listing, ListingTag
+from store.app.model import Listing, ListingTag, ListingVote
 
 logger = logging.getLogger(__name__)
 
@@ -122,3 +124,45 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
     async def get_listing_ids_for_tag(self, tag: str) -> list[str]:
         listing_tags = await self._get_items_from_secondary_index("name", tag, ListingTag)
         return [t.listing_id for t in listing_tags]
+
+    async def increment_view_count(self, listing_id: str) -> None:
+        table = await self.db.Table(self._get_table_name(Listing))
+        await table.update_item(
+            Key={"id": listing_id},
+            UpdateExpression="ADD #views :inc",
+            ExpressionAttributeNames={"#views": "views"},
+            ExpressionAttributeValues={":inc": 1},
+        )
+
+    async def update_vote(self, listing_id: str, upvote: bool) -> None:
+        table = await self.db.Table(self._get_table_name(Listing))
+        await table.update_item(
+            Key={"id": listing_id},
+            UpdateExpression="ADD #vote_type :inc, score :score_inc",
+            ExpressionAttributeNames={"#vote_type": "upvotes" if upvote else "downvotes"},
+            ExpressionAttributeValues={":inc": 1, ":score_inc": 1 if upvote else -1},
+        )
+
+    async def remove_vote(self, listing_id: str, was_upvote: bool) -> None:
+        table = await self.db.Table(self._get_table_name(Listing))
+        await table.update_item(
+            Key={"id": listing_id},
+            UpdateExpression="ADD #vote_type :dec, score :score_dec",
+            ExpressionAttributeNames={"#vote_type": "upvotes" if was_upvote else "downvotes"},
+            ExpressionAttributeValues={":dec": -1, ":score_dec": -1 if was_upvote else 1},
+            ConditionExpression=Attr(f"{'upvotes' if was_upvote else 'downvotes'}").gt(0),
+        )
+
+    async def get_user_vote(self, user_id: str, listing_id: str) -> ListingVote | None:
+        votes = await self._get_items_from_secondary_index("user_id", user_id, ListingVote)
+        return next((vote for vote in votes if vote.listing_id == listing_id), None)
+
+    async def add_user_vote(self, user_id: str, listing_id: str, is_upvote: bool) -> None:
+        vote = ListingVote.create(user_id=user_id, listing_id=listing_id, is_upvote=is_upvote)
+        await self._add_item(vote)
+
+    async def update_user_vote(self, vote_id: str, is_upvote: bool) -> None:
+        await self._update_item(vote_id, ListingVote, {"is_upvote": is_upvote})
+
+    async def delete_user_vote(self, vote_id: str) -> None:
+        await self._delete_item(vote_id)
