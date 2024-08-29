@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 
 import { components } from "gen/api";
-import { useAlertQueue } from "hooks/useAlertQueue";
+import { humanReadableError, useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
 import ArtifactCard from "components/listing/artifacts/ArtifactCard";
-import LoadingArtifactCard from "components/listing/artifacts/LoadingArtifactCard";
 import ImageArtifact from "components/listing/artifacts/ImageArtifact";
+import LoadingArtifactCard from "components/listing/artifacts/LoadingArtifactCard";
 import TgzArtifact from "components/listing/artifacts/TgzArtifact";
 
 type SingleArtifactResponse = components["schemas"]["SingleArtifactResponse"];
@@ -17,7 +17,11 @@ interface ListingArtifactProps {
   canEdit: boolean;
 }
 
-const ListingArtifact: React.FC<ListingArtifactProps> = ({ artifactId, onDelete, canEdit }) => {
+const ListingArtifact: React.FC<ListingArtifactProps> = ({
+  artifactId,
+  onDelete,
+  canEdit,
+}) => {
   const [artifact, setArtifact] = useState<SingleArtifactResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
@@ -40,7 +44,7 @@ const ListingArtifact: React.FC<ListingArtifactProps> = ({ artifactId, onDelete,
           setArtifact(data);
         }
       } catch (err) {
-        addErrorAlert("Failed to fetch artifact");
+        addErrorAlert(humanReadableError(err));
       } finally {
         setLoading(false);
       }
@@ -58,9 +62,12 @@ const ListingArtifact: React.FC<ListingArtifactProps> = ({ artifactId, onDelete,
     setDeleting(true);
 
     try {
-      const { error } = await auth.client.DELETE("/artifacts/delete/{artifact_id}", {
-        params: { path: { artifact_id: artifactId } },
-      });
+      const { error } = await auth.client.DELETE(
+        "/artifacts/delete/{artifact_id}",
+        {
+          params: { path: { artifact_id: artifactId } },
+        },
+      );
 
       if (error) {
         addErrorAlert(error);
@@ -70,7 +77,7 @@ const ListingArtifact: React.FC<ListingArtifactProps> = ({ artifactId, onDelete,
         onDelete(artifactId);
       }
     } catch (err) {
-      addErrorAlert("Failed to delete artifact");
+      addErrorAlert(humanReadableError(err));
       setDeleting(false);
     }
   };

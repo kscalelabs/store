@@ -8,7 +8,6 @@ import { useAuthentication } from "hooks/useAuth";
 import ListingBody from "components/listing/ListingBody";
 import ListingFooter from "components/listing/ListingFooter";
 import ListingHeader from "components/listing/ListingHeader";
-import ListingVoteButtons from "components/listing/ListingVoteButtons";
 import Spinner from "components/ui/Spinner";
 
 type ListingResponse =

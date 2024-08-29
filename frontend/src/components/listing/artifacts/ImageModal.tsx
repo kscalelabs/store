@@ -8,7 +8,12 @@ interface ImageModalProps {
   altText: string;
 }
 
-const ImageModal: React.FC<ImageModalProps> = ({ isOpen, onClose, imageUrl, altText }) => {
+const ImageModal: React.FC<ImageModalProps> = ({
+  isOpen,
+  onClose,
+  imageUrl,
+  altText,
+}) => {
   if (!isOpen) return null;
 
   return (

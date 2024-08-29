@@ -1,7 +1,5 @@
 import { FaTimes } from "react-icons/fa";
 
-import { cn } from "utils";
-
 interface HeaderProps {
   title?: string;
   label?: string;

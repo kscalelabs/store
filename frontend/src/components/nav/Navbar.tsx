@@ -2,7 +2,6 @@ import { useState } from "react";
 import { FaMoon, FaSun, FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-import smallLogo from "assets/small-logo.png";
 import { useDarkMode } from "hooks/useDarkMode";
 
 import Sidebar from "components/nav/Sidebar";

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-import { useAlertQueue } from "hooks/useAlertQueue";
+import { humanReadableError, useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
 interface ListingVoteButtonsProps {
@@ -68,7 +68,7 @@ const ListingVoteButtons = ({
         setUserVote(upvote);
       }
     } catch (error) {
-      addErrorAlert("Failed to submit vote");
+      addErrorAlert(humanReadableError(error));
     } finally {
       setDisabled(false);
       setIsVoting(false);
