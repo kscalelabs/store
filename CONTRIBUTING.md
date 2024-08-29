@@ -1,8 +1,8 @@
 # Getting Started
 
-You can contribute to the K-Scale Store project in various ways, such as reporting bugs, submitting pull requests, raising issues, or creating suggestions.
+To get started, clone the repository and check out the [Project Tracker](https://github.com/orgs/kscalelabs/projects/8/views/1).
 
-After cloning the repository, be sure to visit the [Project Tracker](<(https://github.com/orgs/kscalelabs/projects/8/views/1)>).
+You can contribute to the K-Scale Store project in various ways, such as reporting bugs, submitting pull requests, raising issues, or creating suggestions.
 
 > [!IMPORTANT]
 > You **MUST** access the locally run website through `127.0.0.1:3000` and **NOT** `localhost:3000`. This is because the CORS policy is configured to only allow requests from the exact domain `127.0.0.1:3000`.
