@@ -1,18 +1,8 @@
 # Getting Started
 
-To get started, check out the [Project tracker](https://github.com/orgs/kscalelabs/projects/8/views/1).
+You can contribute to the K-Scale Store project in various ways, such as reporting bugs, submitting pull requests, raising issues, or creating suggestions.
 
-# Developing
-
-To get started developing:
-
-1. Clone the repository
-2. Install the React dependencies and create a `.env.local` file
-3. Install the FastAPI dependencies
-4. Start the DynamoDB databases
-5. Initialize the test databases
-6. Serve the FastAPI application
-7. Serve the React frontend
+After cloning the repository, be sure to visit the [Project Tracker](<(https://github.com/orgs/kscalelabs/projects/8/views/1)>).
 
 > [!IMPORTANT]
 > You **MUST** access the locally run website through `127.0.0.1:3000` and **NOT** `localhost:3000`. This is because the CORS policy is configured to only allow requests from the exact domain `127.0.0.1:3000`.
@@ -20,17 +10,39 @@ To get started developing:
 > [!NOTE]
 > You should develop the backend using Python 3.11 or later
 
+---
+
+1. [Development Setup](#development-setup)
+   - [Configuration](#configuration)
+   - [Google OAuth Configuration](#google-oauth-configuration)
+   - [GitHub OAuth Configuration](#github-oauth-configuration)
+2. [Database Setup](#database-setup)
+   - [DynamoDB/S3](#dynamodb-s3)
+   - [Admin Panel](#admin-panel)
+3. [FastAPI Setup](#fastapi-setup)
+4. [Syncing Frontend and Backend](#syncing-frontend-and-backend)
+5. [React Setup](#react-setup)
+6. [Testing](#testing)
+
+---
+
+## Development Setup
+
 ### Configuration
 
-Settings for the app backend live in the `store/settings/` directory. To configure which set of settings you are using, set `ENVIRONMENT`. It is the stem of one of the config files in the `store/settings/configs/` directory. When developing locally this should usually just be `local`
+Backend settings are located in the `store/settings/` directory. You can specify which settings to use by setting the `ENVIRONMENT` variable to the corresponding config file stem in `store/settings/configs/`. For local development, this should typically be set to `local`.
 
-To locally develop, put the following environment variables in `env.sh` or `.env.local`
+Place the required environment variables in `env.sh` or `.env.local`.
 
-To run server/tests locally run: `source env.sh` or `source .env.local` in every new terminal depending on what you name the file.
+To run the server or tests locally, source the environment variables in each new terminal session:
 
-Example `env.sh`/`.env.local` file:
-
+```bash
+source env.sh  # or source .env.local
 ```
+
+**Example `env.sh`/`.env.local` file:**
+
+```bash
 # Specifies a local environment versus production environment.
 export ENVIRONMENT=local
 
@@ -64,14 +76,14 @@ The repository's local configuration comes with Github OAuth credentials for a t
 2. Set both Homepage URL and Authorization callback URL to `http://127.0.0.1:3000/login` before you `Update application` on Github Oauth App configuration
 3. Copy the Client ID and Client Secret from Github OAuth App configuration and set them in `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` respectively
 
-## Database
+## Database Setup
 
 ### DynamoDB/S3
 
-When developing locally, install the `aws` CLI and use the `localstack/localstack` Docker image to run a local instance of AWS:
+For local development, install the `AWS CLI` and use the `localstack/localstack` Docker image to run a local AWS instance:
 
 ```bash
-docker pull localstack/localstack # If you haven't already
+docker pull localstack/localstack  # If you haven't already
 docker run -d --name localstack -p 4566:4566 -p 4571:4571 localstack/localstack
 ```
 
@@ -82,55 +94,53 @@ docker kill localstack || true
 docker rm localstack || true
 ```
 
-Initialize the test databases by running the creation script:
+Initialize the artifact bucket with:
 
 ```bash
-python -m store.app.db create
-```
-
-And initialize the artifact bucket:
-
-```
 aws s3api create-bucket --bucket artifacts
-aws s3api put-bucket-cors --bucket artifacts --cors-configuration file://local-cors-config.json
 ```
 
 #### Admin Panel
 
-DynamoDB Admin is a GUI that allows you to visually see your tables and their entries. To install, run
+DynamoDB Admin provides a GUI for viewing your tables and their entries. To install, run:
 
 ```bash
 npm i -g dynamodb-admin
 ```
 
-To run, **source the same environment variables that you use for FastAPI** and then run
+To launch DynamoDB Admin, **source the environment variables used for FastAPI**, then run:
 
 ```bash
 DYNAMO_ENDPOINT=http://127.0.0.1:4566 dynamodb-admin
 ```
 
-## FastAPI
+## FastAPI Setup
 
-Create a Python virtual environment using either [uv](https://astral.sh/blog/uv) or [virtualenv](https://virtualenv.pypa.io/en/latest/) with at least Python 3.11. This should look something like this:
+Create a Python virtual environment using [uv](https://astral.sh/blog/uv) or [virtualenv](https://virtualenv.pypa.io/en/latest/) with Python 3.11 or later:
 
 ```bash
-uv venv .venv --python 3.11  # If using uv
+uv venv .venv --python 3.11  # Using uv
 python -m venv .venv  # Using vanilla virtualenv
 source .venv/bin/activate
 ```
 
-Install the project:
+Install the project dependencies:
 
 ```bash
-uv pip install -e '.[dev]'  # If using uv
+uv pip install -e '.[dev]'  # Using uv
 pip install -e '.[dev]'  # Using vanilla pip
 ```
 
-If the above is not sufficient and packages are missing you can also try running:
+If additional packages are missing, try:
 
 ```bash
-# Install dependencies from requirements files
-uv pip install -r store/requirements.txt -r store/requirements-dev.txt # If using uv
+uv pip install -r store/requirements.txt -r store/requirements-dev.txt  # Using uv
+```
+
+Initialize the test databases with:
+
+```bash
+python -m store.app.db create
 ```
 
 Serve the FastAPI application in development mode:
@@ -139,17 +149,17 @@ Serve the FastAPI application in development mode:
 make start-backend
 ```
 
-### Keeping Frontend and Backend In Sync
+## Syncing Frontend and Backend
 
-After updating the backend API, you need to update the generated API client. To do this, from this `frontend` directory, run:
+After updating the backend API, regenerate the API client by running the following from the `frontend` directory:
 
 ```bash
 openapi-typescript http://localhost:8080/openapi.json --output src/gen/api.ts  # While running the backend API locally
 ```
 
-## React
+## React Setup
 
-To install the React dependencies, use [nvm](https://github.com/nvm-sh/nvm) and [npm](https://www.npmjs.com/):
+Install React dependencies using [nvm](https://github.com/nvm-sh/nvm) and [npm](https://www.npmjs.com/):
 
 ```bash
 cd frontend
@@ -157,19 +167,19 @@ nvm use 20.10.0
 npm install
 ```
 
-To serve the React frontend in development mode:
+Serve the React frontend in development mode:
 
 ```bash
 npm run dev
 ```
 
-To build the React frontend for production:
+Build the React frontend for production:
 
 ```bash
 npm run build
 ```
 
-To run code formatting:
+Run code formatting:
 
 ```bash
 npm run format
@@ -177,10 +187,12 @@ npm run format
 
 ## Testing
 
-To run the tests, you can use the following commands:
+To run tests, use the following commands:
 
 ```bash
 make test
 make test-frontend  # Run only the frontend tests
 make test-backend  # Run only the backend tests
 ```
+
+---
