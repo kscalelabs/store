@@ -19,9 +19,13 @@ You can contribute to the K-Scale Store project in various ways, such as reporti
    - [Google OAuth Configuration](#google-oauth-configuration)
    - [GitHub OAuth Configuration](#github-oauth-configuration)
 2. [Database Setup](#database-setup)
-   - [DynamoDB/S3](#dynamodb-s3)
+   - [DynamoDB/S3](#dynamodbs3)
    - [Admin Panel](#admin-panel)
 3. [FastAPI Setup](#fastapi-setup)
+   - [Creating a Python Virtual Environment](#creating-a-python-virtual-environment)
+   - [Installing Project Dependencies](#installing-project-dependencies)
+   - [Initializing the Test Databases](#initializing-the-test-databases)
+   - [Running the FastAPI Application](#running-the-fastapi-application)
 4. [Syncing Frontend and Backend](#syncing-frontend-and-backend)
 5. [React Setup](#react-setup)
 6. [Testing](#testing)
@@ -118,6 +122,8 @@ DYNAMO_ENDPOINT=http://127.0.0.1:4566 dynamodb-admin
 
 ## FastAPI Setup
 
+### Creating a Python Virtual Environment
+
 Create a Python virtual environment using [uv](https://astral.sh/blog/uv) or [virtualenv](https://virtualenv.pypa.io/en/latest/) with Python 3.11 or later:
 
 ```bash
@@ -125,6 +131,8 @@ uv venv .venv --python 3.11  # Using uv
 python -m venv .venv  # Using vanilla virtualenv
 source .venv/bin/activate
 ```
+
+### Installing Project Dependencies
 
 Install the project dependencies:
 
@@ -139,11 +147,15 @@ If additional packages are missing, try:
 uv pip install -r store/requirements.txt -r store/requirements-dev.txt  # Using uv
 ```
 
+### Initializing the Test Databases
+
 Initialize the test databases with:
 
 ```bash
 python -m store.app.db create
 ```
+
+### Running the FastAPI Application
 
 Serve the FastAPI application in development mode:
 
