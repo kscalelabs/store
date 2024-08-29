@@ -917,6 +917,14 @@ export interface components {
             image_url: string | null;
             /** Onshape Url */
             onshape_url: string | null;
+            /** Created At */
+            created_at: number;
+            /** Views */
+            views: number;
+            /** Score */
+            score: number;
+            /** User Vote */
+            user_vote: boolean | null;
         };
         /** LoginRequest */
         LoginRequest: {

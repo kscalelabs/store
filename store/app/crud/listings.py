@@ -65,33 +65,19 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
 
         response = await table.scan(**scan_params)
         items = response["Items"]
-        logger.info(f"Retrieved {len(items)} items from the database")
 
-        try:
-            sorted_items = sorted(items, key=sort_function, reverse=True)
-            logger.info(f"Successfully sorted {len(sorted_items)} items")
-        except Exception as e:
-            logger.error(f"Error sorting items: {e}")
-            logger.error(f"First item example: {items[0] if items else 'No items'}")
-            sorted_items = items  # Fallback to unsorted items
+        sorted_items = sorted(items, key=sort_function, reverse=True)
 
         # Filter out items with missing required fields
         required_fields = {"updated_at", "name", "child_ids"}
         valid_items = [item for item in sorted_items if all(field in item for field in required_fields)]
-        logger.info(f"Filtered {len(sorted_items) - len(valid_items)} items with missing required fields")
 
         # Paginate results
         start = (page - 1) * self.PAGE_SIZE
         end = start + self.PAGE_SIZE
         paginated_items = valid_items[start:end]
-        logger.info(f"Returning {len(paginated_items)} items for page {page}")
 
-        try:
-            return [model_class(**item) for item in paginated_items], len(valid_items) > end
-        except Exception as e:
-            logger.error(f"Error creating {model_class.__name__} objects: {e}")
-            logger.error(f"Problematic item: {paginated_items[0] if paginated_items else 'No items'}")
-            raise
+        return [model_class(**item) for item in paginated_items], len(valid_items) > end
 
     async def get_user_listings(self, user_id: str, page: int, search_query: str) -> tuple[list[Listing], bool]:
         return await self._list_me(Listing, user_id, page, lambda x: 0, search_query)
@@ -231,3 +217,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
 
     async def delete_user_vote(self, vote_id: str) -> None:
         await self._delete_item(vote_id)
+
+    async def get_user_votes(self, user_id: str, listing_ids: list[str]) -> list[ListingVote]:
+        votes = await self._get_items_from_secondary_index("user_id", user_id, ListingVote)
+        return [vote for vote in votes if vote.listing_id in listing_ids]

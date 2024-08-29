@@ -19,7 +19,9 @@ const ListingVoteButtons = ({
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
 
-  const handleVote = async (upvote: boolean) => {
+  const handleVote = async (upvote: boolean, event: React.MouseEvent) => {
+    event.stopPropagation();
+
     if (!auth.isAuthenticated) {
       addErrorAlert("You must be logged in to vote");
       return;
@@ -57,7 +59,7 @@ const ListingVoteButtons = ({
   return (
     <div className="flex flex-col items-center mr-4">
       <button
-        onClick={() => handleVote(true)}
+        onClick={(e) => handleVote(true, e)}
         className={`text-2xl ${
           initialUserVote === true ? "text-green-500" : "text-gray-400"
         } hover:text-green-600 transition-colors duration-200`}
@@ -66,7 +68,7 @@ const ListingVoteButtons = ({
       </button>
       <span className="text-lg font-bold my-1">{initialScore}</span>
       <button
-        onClick={() => handleVote(false)}
+        onClick={(e) => handleVote(false, e)}
         className={`text-2xl ${
           initialUserVote === false ? "text-red-500" : "text-gray-400"
         } hover:text-red-600 transition-colors duration-200`}

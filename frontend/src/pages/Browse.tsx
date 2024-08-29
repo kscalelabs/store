@@ -45,6 +45,7 @@ const Browse = () => {
           page: pageNumber,
           search_query: searchQuery,
           sort_by: sortOption as SortOption,
+          include_user_vote: true,
         },
       },
     });
