@@ -10,11 +10,11 @@ import Spinner from "components/ui/Spinner";
 type ListingInfo =
   paths["/listings/batch"]["get"]["responses"][200]["content"]["application/json"]["listings"];
 
-interface Props {
+interface ListingGridProps {
   listingIds: string[] | null;
 }
 
-const ListingGrid = (props: Props) => {
+const ListingGrid = (props: ListingGridProps) => {
   const { listingIds } = props;
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();

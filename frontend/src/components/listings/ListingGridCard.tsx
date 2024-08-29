@@ -45,8 +45,8 @@ const ListingGridCard = ({ listingId, listing }: Props) => {
       <div
         className={clsx(
           "absolute inset-0 transition-opacity duration-100 ease-in-out",
-          "bg-white dark:bg-black",
-          hovering ? "opacity-20" : "opacity-0",
+          "bg-black dark:bg-white",
+          hovering ? "opacity-10" : "opacity-0",
         )}
       />
 

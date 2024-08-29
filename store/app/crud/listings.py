@@ -83,24 +83,28 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         response = await table.scan(**scan_params)
         items = response["Items"]
 
+        # Filter out items with missing required fields
+        required_fields = {"updated_at", "name", "child_ids"}
+        valid_items = [item for item in items if all(field in item for field in required_fields)]
+
         # Convert items to the correct model type
-        typed_items = [item_class(**item) for item in items]
+        try:
+            typed_items = [item_class(**item) for item in valid_items]
+        except Exception as e:
+            logger.error(f"Error creating {item_class.__name__} objects: {str(e)}")
+            raise
 
         if sort_key:
             sorted_items = sorted(typed_items, key=sort_key, reverse=True)
         else:
             sorted_items = typed_items
 
-        # Filter out items with missing required fields
-        required_fields = {"updated_at", "name", "child_ids"}
-        valid_items = [item for item in sorted_items if all(hasattr(item, field) for field in required_fields)]
-
         # Paginate results
         start = (page - 1) * self.PAGE_SIZE
         end = start + self.PAGE_SIZE
-        paginated_items = valid_items[start:end]
+        paginated_items = sorted_items[start:end]
 
-        return paginated_items, len(valid_items) > end
+        return paginated_items, len(sorted_items) > end
 
     async def get_user_listings(self, user_id: str, page: int, search_query: str) -> tuple[list[Listing], bool]:
         return await self._list_me(Listing, user_id, page, lambda x: 0, search_query)
