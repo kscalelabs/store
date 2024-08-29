@@ -22,6 +22,7 @@ interface RenderProfileProps {
 const RenderProfile = (props: RenderProfileProps) => {
   const { user, onUpdateProfile, canEdit } = props;
   const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [firstName, setFirstName] = useState(user.first_name || "");
   const [lastName, setLastName] = useState(user.last_name || "");
   const [bio, setBio] = useState(user.bio || "");
@@ -33,6 +34,7 @@ const RenderProfile = (props: RenderProfileProps) => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setIsSubmitting(true);
     try {
       await onUpdateProfile({
         first_name: firstName,
@@ -42,13 +44,15 @@ const RenderProfile = (props: RenderProfileProps) => {
       setIsEditing(false);
     } catch (error) {
       console.error("Failed to update profile", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="container mx-auto max-w-4xl shadow-md rounded-lg bg-white dark:bg-gray-800 dark:text-white border bg-card text-card-foreground relative">
+    <div className="container mx-auto max-w-md shadow-md rounded-lg bg-white dark:bg-gray-800 dark:text-white border bg-card text-card-foreground relative">
       <div className="p-6">
-        <h1 className="text-3xl font-extrabold mb-4">Profile</h1>
+        <h1 className="text-3xl font-extrabold mb-6 text-center">Profile</h1>
         {isEditing ? (
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
@@ -87,22 +91,28 @@ const RenderProfile = (props: RenderProfileProps) => {
                 rows={4}
               />
             </div>
-            <div className="mt-4 flex space-x-2">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => setIsEditing(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" variant="primary">
-                Save Changes
-              </Button>
-            </div>
+            {isSubmitting ? (
+              <div className="mt-4 flex justify-center items-center">
+                <Spinner />
+              </div>
+            ) : (
+              <div className="mt-4 flex justify-center space-x-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setIsEditing(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" variant="primary">
+                  Save Changes
+                </Button>
+              </div>
+            )}
           </form>
         ) : (
           <div>
-            <h2 className="text-2xl font-bold mb-2">
+            <h2 className="text-2xl font-bold mb-2 text-center">
               {user.first_name || user.last_name
                 ? `${user.first_name || ""} ${user.last_name || ""}`
                 : "No name set"}
@@ -124,13 +134,15 @@ const RenderProfile = (props: RenderProfileProps) => {
                 : "Unknown date"}
             </p>
             {!isEditing && canEdit && (
-              <Button
-                className="mt-4"
-                onClick={() => setIsEditing(true)}
-                variant="primary"
-              >
-                Edit Profile
-              </Button>
+              <div className="flex justify-center">
+                <Button
+                  className="mt-4"
+                  onClick={() => setIsEditing(true)}
+                  variant="primary"
+                >
+                  Edit Profile
+                </Button>
+              </div>
             )}
           </div>
         )}
