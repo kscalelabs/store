@@ -1,51 +1,67 @@
 import { useState } from "react";
+import { FaEye } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 import clsx from "clsx";
+import { format } from "date-fns";
 import { paths } from "gen/api";
 
 import ImagePlaceholder from "components/ImagePlaceholder";
-import { Card, CardHeader, CardTitle } from "components/ui/Card";
+import ListingVoteButtons from "components/listing/ListingVoteButtons";
+import { Card, CardFooter, CardHeader, CardTitle } from "components/ui/Card";
 
 type ListingInfo =
-  paths["/listings/batch"]["get"]["responses"][200]["content"]["application/json"]["listings"];
+  paths["/listings/batch"]["get"]["responses"][200]["content"]["application/json"]["listings"][0];
 
 interface Props {
   listingId: string;
-  listingInfo: ListingInfo | null;
+  listing: ListingInfo | undefined;
 }
 
-const ListingGridCard = (props: Props) => {
-  const { listingId, listingInfo } = props;
+const ListingGridCard = ({ listingId, listing }: Props) => {
   const navigate = useNavigate();
   const [hovering, setHovering] = useState(false);
 
-  const listing = listingInfo?.find((listing) => listing.id === listingId);
+  const handleVoteChange = (newScore: number, newUserVote: boolean | null) => {
+    if (listing) {
+      listing.score = newScore;
+      listing.user_vote = newUserVote;
+    }
+  };
 
   return (
     <Card
       className={clsx(
-        "transition-transform duration-100 ease-in-out transform cursor-pointer",
+        "transition-all duration-100 ease-in-out cursor-pointer",
         "flex flex-col max-w-sm rounded material-card bg-white justify-between",
         "dark:bg-gray-900",
-        hovering ? "scale-105" : "scale-100",
+        "relative overflow-hidden",
       )}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
       onClick={() => navigate(`/item/${listingId}`)}
     >
+      {/* Hover overlay */}
+      <div
+        className={clsx(
+          "absolute inset-0 transition-opacity duration-100 ease-in-out",
+          "bg-black dark:bg-white",
+          hovering ? "opacity-10" : "opacity-0",
+        )}
+      />
+
       {listing?.image_url ? (
         <div className="w-full aspect-square bg-white">
           <img
             src={listing.image_url}
             alt={listing.name}
-            className="w-full h-full"
+            className="w-full h-full object-cover"
           />
         </div>
       ) : (
         <ImagePlaceholder />
       )}
-      <div className="px-4 py-4 h-full">
+      <div className="px-4 py-4 h-full flex flex-col justify-between">
         <CardHeader>
           <CardTitle className="text-gray-500 dark:text-gray-300 text-xl min-h-6">
             {listing ? (
@@ -55,6 +71,24 @@ const ListingGridCard = (props: Props) => {
             )}
           </CardTitle>
         </CardHeader>
+        <CardFooter className="flex justify-between items-center">
+          <div className="flex items-center">
+            <FaEye className="mr-1" />
+            <span>{listing?.views || 0}</span>
+          </div>
+          <div className="text-sm text-gray-500">
+            {listing?.created_at &&
+              format(new Date(listing.created_at), "MMM d, yyyy")}
+          </div>
+        </CardFooter>
+      </div>
+      <div className="absolute top-2 left-2 z-10">
+        <ListingVoteButtons
+          listingId={listingId}
+          initialScore={listing?.score ?? 0}
+          initialUserVote={listing?.user_vote ?? null}
+          onVoteChange={handleVoteChange}
+        />
       </div>
     </Card>
   );

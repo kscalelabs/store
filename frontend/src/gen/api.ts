@@ -870,6 +870,10 @@ export interface components {
             id: string;
             /** User Id */
             user_id: string;
+            /** Created At */
+            created_at: number;
+            /** Updated At */
+            updated_at: number;
             /** Name */
             name: string;
             /** Child Ids */
@@ -913,6 +917,14 @@ export interface components {
             image_url: string | null;
             /** Onshape Url */
             onshape_url: string | null;
+            /** Created At */
+            created_at: number;
+            /** Views */
+            views: number;
+            /** Score */
+            score: number;
+            /** User Vote */
+            user_vote: boolean | null;
         };
         /** LoginRequest */
         LoginRequest: {
@@ -1011,6 +1023,11 @@ export interface components {
             /** Onshape Url */
             onshape_url: string | null;
         };
+        /**
+         * SortOption
+         * @enum {string}
+         */
+        SortOption: "newest" | "most_viewed" | "most_upvoted";
         /** UpdateArtifactRequest */
         UpdateArtifactRequest: {
             /** Name */
@@ -1495,11 +1512,13 @@ export interface operations {
     };
     list_listings_listings_search_get: {
         parameters: {
-            query: {
+            query?: {
                 /** @description Page number for pagination */
-                page: number;
+                page?: number;
                 /** @description Search query string */
                 search_query?: string;
+                /** @description Sort option for listings */
+                sort_by?: components["schemas"]["SortOption"];
             };
             header?: never;
             path?: never;

@@ -7,6 +7,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 
+from store.app.crud.listings import SortOption
 from store.app.db import Crud
 from store.app.model import Listing, User, can_write_listing, get_artifact_url
 from store.app.routers.users import (
@@ -28,10 +29,11 @@ class ListListingsResponse(BaseModel):
 @listings_router.get("/search", response_model=ListListingsResponse)
 async def list_listings(
     crud: Annotated[Crud, Depends(Crud.get)],
-    page: int = Query(description="Page number for pagination"),
-    search_query: str = Query(None, description="Search query string"),
+    page: int = Query(1, description="Page number for pagination"),
+    search_query: str = Query("", description="Search query string"),
+    sort_by: SortOption = Query(SortOption.NEWEST, description="Sort option for listings"),
 ) -> ListListingsResponse:
-    listings, has_next = await crud.get_listings(page, search_query=search_query)
+    listings, has_next = await crud.get_listings(page, search_query=search_query, sort_by=sort_by)
     listing_ids = [listing.id for listing in listings]
     return ListListingsResponse(listing_ids=listing_ids, has_next=has_next)
 
@@ -43,6 +45,10 @@ class ListingInfoResponse(BaseModel):
     child_ids: list[str]
     image_url: str | None
     onshape_url: str | None
+    created_at: int
+    views: int
+    score: int
+    user_vote: bool | None
 
 
 class GetBatchListingsResponse(BaseModel):
@@ -52,12 +58,17 @@ class GetBatchListingsResponse(BaseModel):
 @listings_router.get("/batch", response_model=GetBatchListingsResponse)
 async def get_batch_listing_info(
     crud: Annotated[Crud, Depends(Crud.get)],
+    user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
     ids: list[str] = Query(description="List of part ids"),
 ) -> GetBatchListingsResponse:
     listings, artifacts = await asyncio.gather(
         crud._get_item_batch(ids, Listing),
         crud.get_listings_artifacts(ids),
     )
+    user_votes = {}
+    if user:
+        user_votes = {vote.listing_id: vote.is_upvote for vote in await crud.get_user_votes(user.id, ids)}
+
     return GetBatchListingsResponse(
         listings=[
             ListingInfoResponse(
@@ -74,8 +85,13 @@ async def get_batch_listing_info(
                     None,
                 ),
                 onshape_url=listing.onshape_url,
+                created_at=listing.created_at,
+                views=listing.views,
+                score=listing.score,
+                user_vote=user_votes.get(listing.id),
             )
             for listing, artifacts in zip(listings, artifacts)
+            if listing is not None
         ]
     )
 

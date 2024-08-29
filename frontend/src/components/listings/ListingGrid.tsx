@@ -10,11 +10,11 @@ import Spinner from "components/ui/Spinner";
 type ListingInfo =
   paths["/listings/batch"]["get"]["responses"][200]["content"]["application/json"]["listings"];
 
-interface Props {
+interface ListingGridProps {
   listingIds: string[] | null;
 }
 
-const ListingGrid = (props: Props) => {
+const ListingGrid = (props: ListingGridProps) => {
   const { listingIds } = props;
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
@@ -50,13 +50,16 @@ const ListingGrid = (props: Props) => {
     </div>
   ) : (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mx-auto">
-      {listingIds.map((listingId) => (
-        <ListingGridCard
-          key={listingId}
-          listingId={listingId}
-          listingInfo={listingInfo}
-        />
-      ))}
+      {listingIds.map((listingId) => {
+        const listing = listingInfo?.find((l) => l.id === listingId);
+        return (
+          <ListingGridCard
+            key={listingId}
+            listingId={listingId}
+            listing={listing}
+          />
+        );
+      })}
     </div>
   );
 };

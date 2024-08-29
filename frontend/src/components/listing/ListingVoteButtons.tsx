@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 import { useAlertQueue } from "hooks/useAlertQueue";
@@ -18,12 +19,21 @@ const ListingVoteButtons = ({
 }: ListingVoteButtonsProps) => {
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
+  const [isVoting, setIsVoting] = useState(false);
 
-  const handleVote = async (upvote: boolean) => {
+  const handleVote = async (upvote: boolean, event: React.MouseEvent) => {
+    event.stopPropagation();
+
     if (!auth.isAuthenticated) {
       addErrorAlert("You must be logged in to vote");
       return;
     }
+
+    if (isVoting) {
+      return; // Prevent double-clicking
+    }
+
+    setIsVoting(true);
 
     const newVote = initialUserVote === upvote ? null : upvote;
     let scoreDelta;
@@ -51,13 +61,15 @@ const ListingVoteButtons = ({
       addErrorAlert("Failed to submit vote");
       // Revert the optimistic update
       onVoteChange(initialScore, initialUserVote);
+    } finally {
+      setIsVoting(false);
     }
   };
 
   return (
     <div className="flex flex-col items-center mr-4">
       <button
-        onClick={() => handleVote(true)}
+        onClick={(e) => handleVote(true, e)}
         className={`text-2xl ${
           initialUserVote === true ? "text-green-500" : "text-gray-400"
         } hover:text-green-600 transition-colors duration-200`}
@@ -66,7 +78,7 @@ const ListingVoteButtons = ({
       </button>
       <span className="text-lg font-bold my-1">{initialScore}</span>
       <button
-        onClick={() => handleVote(false)}
+        onClick={(e) => handleVote(false, e)}
         className={`text-2xl ${
           initialUserVote === false ? "text-red-500" : "text-gray-400"
         } hover:text-red-600 transition-colors duration-200`}
