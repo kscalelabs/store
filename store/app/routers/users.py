@@ -354,5 +354,17 @@ async def update_profile(
         )
 
 
+@users_router.get("/validate-api-key")
+async def validate_api_key_endpoint(
+    crud: Annotated[Crud, Depends(Crud.get)],
+    api_key_id: Annotated[str, Depends(get_request_api_key_id)],
+) -> bool:
+    try:
+        await crud.get_api_key(api_key_id)
+        return True
+    except ItemNotFoundError:
+        return False
+
+
 users_router.include_router(github_auth_router, prefix="/github")
 users_router.include_router(google_auth_router, prefix="/google")
