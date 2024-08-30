@@ -3,8 +3,9 @@ import { FaGear, FaLaptop, FaMessage, FaRobot } from "react-icons/fa6";
 const Features = () => {
   const features = [
     {
-      name: "Buy and sell robots",
-      description: "Buy and sell completed robots, parts, and designs.",
+      name: "Buy, sell, and share robots",
+      description:
+        "Show off your latest builds. Buy and sell completed robots, parts, and designs.",
       icon: <FaRobot />,
     },
     {

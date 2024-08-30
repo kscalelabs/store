@@ -83,7 +83,7 @@ const Footer = () => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Homepage
+              K-Scale Labs
             </a>
             <Link to={"/about"} className="hover:text-gray-500">
               About
