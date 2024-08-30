@@ -399,57 +399,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/urdf/info/{listing_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Urdf */
-        get: operations["get_urdf_urdf_info__listing_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/urdf/upload/{listing_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Set Urdf */
-        post: operations["set_urdf_urdf_upload__listing_id__post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/urdf/delete/{listing_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Delete Urdf */
-        delete: operations["delete_urdf_urdf_delete__listing_id__delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/onshape/set/{listing_id}": {
         parameters: {
             query?: never;
@@ -733,14 +682,6 @@ export interface components {
         AuthResponse: {
             /** Api Key */
             api_key: string;
-        };
-        /** Body_set_urdf_urdf_upload__listing_id__post */
-        Body_set_urdf_urdf_upload__listing_id__post: {
-            /**
-             * File
-             * Format: binary
-             */
-            file: string;
         };
         /** Body_upload_artifacts_upload__listing_id__post */
         Body_upload_artifacts_upload__listing_id__post: {
@@ -1038,7 +979,7 @@ export interface components {
             description: string | null;
             /** Timestamp */
             timestamp: number;
-            urls: components["schemas"]["ArtifactUrls"];
+            urls: components["schemas"]["ArtifactUrls"] | null;
             /** Is New */
             is_new?: boolean | null;
         };
@@ -1088,19 +1029,6 @@ export interface components {
         UploadArtifactResponse: {
             /** Artifacts */
             artifacts: components["schemas"]["SingleArtifactResponse"][];
-        };
-        /** UrdfInfo */
-        UrdfInfo: {
-            /** Artifact Id */
-            artifact_id: string;
-            /** Url */
-            url: string;
-        };
-        /** UrdfResponse */
-        UrdfResponse: {
-            urdf: components["schemas"]["UrdfInfo"] | null;
-            /** Listing Id */
-            listing_id: string;
         };
         /** UserInfoResponseItem */
         UserInfoResponseItem: {
@@ -1895,103 +1823,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_urdf_urdf_info__listing_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                listing_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UrdfResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    set_urdf_urdf_upload__listing_id__post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                listing_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "multipart/form-data": components["schemas"]["Body_set_urdf_urdf_upload__listing_id__post"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UrdfResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_urdf_urdf_delete__listing_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                listing_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UrdfResponse"];
                 };
             };
             /** @description Validation Error */
