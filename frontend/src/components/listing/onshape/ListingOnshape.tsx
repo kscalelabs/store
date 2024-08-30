@@ -231,17 +231,7 @@ const ListingOnshape = (props: Props) => {
         </div>
       ) : (
         <div className="flex flex-col items-start w-full">
-          <div className="mb-2">
-            <a
-              href={permUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-500 hover:text-blue-700 underline"
-            >
-              View Onshape Model
-            </a>
-          </div>
-          {edit && (
+          {edit ? (
             <UpdateButtons
               isEditing={isEditing}
               setIsEditing={setIsEditing}
@@ -251,6 +241,19 @@ const ListingOnshape = (props: Props) => {
               url={url}
               disabled={updateOnshape}
             />
+          ) : (
+            <div className="flex items-center">
+              <Button
+                onClick={() =>
+                  window.open(permUrl, "_blank", "noopener,noreferrer")
+                }
+                variant="secondary"
+                className="flex items-center justify-center"
+              >
+                Visit Onshape
+                <FaExternalLinkAlt className="ml-2" />
+              </Button>
+            </div>
           )}
           {updateOnshape && (
             <ListingOnshapeUpdate
