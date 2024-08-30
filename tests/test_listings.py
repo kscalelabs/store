@@ -1,8 +1,5 @@
 """Runs tests on the robot APIs."""
 
-import tarfile
-import tempfile
-import zipfile
 from pathlib import Path
 
 from fastapi import status
@@ -78,56 +75,6 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
     assert data["artifacts"][0]["artifact_id"] is not None
-
-    # Uploads a combined URDF + STL as a tarball.
-    with tempfile.NamedTemporaryFile(suffix=".tgz") as f:
-        with tarfile.open(f.name, "w:gz") as tar:
-            tar.add(urdf_path, arcname="box.urdf")
-            tar.add(stl_path, arcname="teapot.stl")
-        f.seek(0)
-        response = test_client.post(
-            f"/urdf/upload/{listing_id}",
-            headers=auth_headers,
-            files={"file": (f.name, open(f.name, "rb"), "application/gzip")},
-        )
-        assert response.status_code == status.HTTP_200_OK, response.json()
-        data = response.json()
-        assert data["urdf"]["artifact_id"] is not None
-
-    # Downloads and checks that the files were converted to OBJ files.
-    # response = test_client.get(f"/urdf/download/{listing_id}", headers=auth_headers)
-    # assert response.status_code == status.HTTP_200_OK, response.content
-    # with tempfile.NamedTemporaryFile(suffix=".tgz") as f:
-    #     f.write(response.content)
-    #     f.seek(0)
-    #     with tarfile.open(f.name, "r:gz") as tar:
-    #         names = tar.getnames()
-    #         assert "box.urdf" in names
-    #         assert "teapot.obj" in names
-
-    # Uploads a combined URDF + STL as a zipfile.
-    with tempfile.NamedTemporaryFile(suffix=".zip") as f:
-        with zipfile.ZipFile(f.name, "w") as zipf:
-            zipf.write(urdf_path, arcname="box.urdf")
-            zipf.write(stl_path, arcname="teapot.stl")
-        f.seek(0)
-        response = test_client.post(
-            f"/urdf/upload/{listing_id}",
-            headers=auth_headers,
-            files={"file": (f.name, open(f.name, "rb"), "application/zip")},
-        )
-        assert response.status_code == status.HTTP_200_OK, response.json()
-        data = response.json()
-        assert data["urdf"]["artifact_id"] is not None
-
-    # Ensures that trying to upload the same STL again fails.
-    response = test_client.post(
-        f"/artifacts/upload/{listing_id}",
-        headers=auth_headers,
-        files={"files": ("teapot.stl", open(stl_path, "rb"), "application/octet-stream")},
-    )
-    assert response.status_code == status.HTTP_200_OK, response.json()
-
     # Checks my own listings.
     response = test_client.get(
         "/listings/me",

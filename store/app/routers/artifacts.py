@@ -15,6 +15,7 @@ from store.app.model import (
     ArtifactSize,
     ArtifactType,
     User,
+    can_read_artifact,
     can_write_artifact,
     can_write_listing,
     check_content_type,
@@ -22,7 +23,10 @@ from store.app.model import (
     get_artifact_url,
     get_artifact_urls,
 )
-from store.app.routers.users import get_session_user_with_write_permission
+from store.app.routers.users import (
+    get_session_user_with_write_permission,
+    maybe_get_user_from_api_key,
+)
 from store.settings import settings
 
 artifacts_router = APIRouter()
@@ -83,7 +87,7 @@ class SingleArtifactResponse(BaseModel):
     artifact_type: ArtifactType
     description: str | None
     timestamp: int
-    urls: ArtifactUrls
+    urls: ArtifactUrls | None
     is_new: bool | None = None
 
 
@@ -95,6 +99,7 @@ class ListArtifactsResponse(BaseModel):
 async def get_artifact_info(
     artifact_id: str,
     crud: Annotated[Crud, Depends(Crud.get)],
+    user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
 ) -> SingleArtifactResponse:
     artifact = await crud.get_raw_artifact(artifact_id)
     if artifact is None:
@@ -102,6 +107,13 @@ async def get_artifact_info(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Could not find artifact associated with the given id",
         )
+
+    # If the artifact is an image, then we always return the URLs. Otherwise,
+    # we only return the URLs if the user has read access.
+    urls: ArtifactUrls | None = None
+    if artifact.artifact_type == "image" or (user is not None and await can_read_artifact(user, artifact)):
+        urls = get_artifact_url_response(artifact=artifact)
+
     return SingleArtifactResponse(
         artifact_id=artifact.id,
         listing_id=artifact.listing_id,
@@ -109,7 +121,7 @@ async def get_artifact_info(
         artifact_type=artifact.artifact_type,
         description=artifact.description,
         timestamp=artifact.timestamp,
-        urls=get_artifact_url_response(artifact=artifact),
+        urls=urls,
     )
 
 

@@ -13,6 +13,11 @@ interface Props {
 const ImageArtifact = ({ artifact }: Props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const url = artifact.urls?.large;
+  if (!url) {
+    return null;
+  }
+
   return (
     <>
       <div
@@ -20,7 +25,7 @@ const ImageArtifact = ({ artifact }: Props) => {
         onClick={() => setIsModalOpen(true)}
       >
         <img
-          src={artifact.urls.large}
+          src={url}
           alt={artifact.name}
           className="absolute top-0 left-0 w-full h-full object-cover"
         />
@@ -28,7 +33,7 @@ const ImageArtifact = ({ artifact }: Props) => {
       <ImageModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        imageUrl={artifact.urls.large}
+        imageUrl={url}
         altText={artifact.name}
       />
     </>
