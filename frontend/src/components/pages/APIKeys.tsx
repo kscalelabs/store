@@ -114,6 +114,7 @@ const APIKeys = () => {
   const auth = useAuthentication();
   const [apiKeys, setApiKeys] = useState<KeysResponse | null>(null);
   const [readonly, setReadonly] = useState(true);
+  const [creatingKey, setCreatingKey] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -133,6 +134,7 @@ const APIKeys = () => {
   }, [auth]);
 
   const createKey = async () => {
+    setCreatingKey(true);
     const { data, error } = await auth.client.POST("/keys/new", {
       body: {
         readonly,
@@ -144,6 +146,7 @@ const APIKeys = () => {
     } else {
       setApiKeys(apiKeys ? [...apiKeys, data.key] : null);
     }
+    setCreatingKey(false);
   };
 
   return (
@@ -187,7 +190,11 @@ const APIKeys = () => {
                     )}
                   ></div>
                 </label>
-                <Button onClick={createKey} variant="primary">
+                <Button
+                  onClick={createKey}
+                  variant="primary"
+                  disabled={creatingKey}
+                >
                   Create {readonly ? "Read-only " : "Read-write "}Key
                 </Button>
               </div>
