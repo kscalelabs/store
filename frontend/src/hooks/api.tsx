@@ -25,22 +25,4 @@ export default class api {
       },
     });
   }
-
-  public async uploadUrdf(file: File, listing_id: string) {
-    return await this.client.POST("/urdf/upload/{listing_id}", {
-      body: {
-        file: "",
-      },
-      params: {
-        path: {
-          listing_id,
-        },
-      },
-      bodySerializer() {
-        const fd = new FormData();
-        fd.append("file", file);
-        return fd;
-      },
-    });
-  }
 }
