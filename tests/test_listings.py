@@ -210,7 +210,7 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     assert data["user_vote"]
 
     # Test removing vote by voting the same way again
-    response = test_client.post(f"/listings/{listing_id}/vote?upvote=true", headers=auth_headers)
+    response = test_client.delete(f"/listings/{listing_id}/vote", headers=auth_headers)
     assert response.status_code == status.HTTP_200_OK, response.json()
 
     # Check that the vote was removed

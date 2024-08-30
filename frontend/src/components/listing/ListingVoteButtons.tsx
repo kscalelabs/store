@@ -1,31 +1,33 @@
 import { useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
-import { useAlertQueue } from "hooks/useAlertQueue";
+import { humanReadableError, useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
 interface ListingVoteButtonsProps {
   listingId: string;
   initialScore: number;
   initialUserVote: boolean | null;
-  onVoteChange: (newScore: number, newUserVote: boolean | null) => void;
 }
 
 const ListingVoteButtons = ({
   listingId,
   initialScore,
   initialUserVote,
-  onVoteChange,
 }: ListingVoteButtonsProps) => {
   const auth = useAuthentication();
+  const navigate = useNavigate();
   const { addErrorAlert } = useAlertQueue();
   const [isVoting, setIsVoting] = useState(false);
+  const [score, setScore] = useState(initialScore);
+  const [userVote, setUserVote] = useState(initialUserVote);
 
   const handleVote = async (upvote: boolean, event: React.MouseEvent) => {
     event.stopPropagation();
 
     if (!auth.isAuthenticated) {
-      addErrorAlert("You must be logged in to vote");
+      navigate("/login");
       return;
     }
 
@@ -35,32 +37,35 @@ const ListingVoteButtons = ({
 
     setIsVoting(true);
 
-    const newVote = initialUserVote === upvote ? null : upvote;
-    let scoreDelta;
-
-    if (newVote === null) {
-      scoreDelta = initialUserVote ? -1 : 1;
-    } else if (initialUserVote === null) {
-      scoreDelta = upvote ? 1 : -1;
-    } else {
-      scoreDelta = upvote ? 2 : -2;
+    if (isVoting) {
+      return; // Prevent double-clicking
     }
 
-    const newScore = initialScore + scoreDelta;
-
-    onVoteChange(newScore, newVote);
+    setIsVoting(true);
 
     try {
-      await auth.client.POST(`/listings/{id}/vote`, {
-        params: {
-          path: { id: listingId },
-          query: { upvote },
-        },
-      });
-    } catch {
-      addErrorAlert("Failed to submit vote");
-      // Revert the optimistic update
-      onVoteChange(initialScore, initialUserVote);
+      if (userVote === upvote) {
+        // Remove vote
+        await auth.client.DELETE(`/listings/{id}/vote`, {
+          params: { path: { id: listingId } },
+        });
+        setScore(score + (upvote ? -1 : 1));
+        setUserVote(null);
+      } else {
+        // Add or change vote
+        await auth.client.POST(`/listings/{id}/vote`, {
+          params: {
+            path: { id: listingId },
+            query: { upvote },
+          },
+        });
+        setScore(
+          score + (upvote ? 1 : -1) + (userVote === null ? 0 : upvote ? 1 : -1),
+        );
+        setUserVote(upvote);
+      }
+    } catch (error) {
+      addErrorAlert(humanReadableError(error));
     } finally {
       setIsVoting(false);
     }
@@ -71,17 +76,19 @@ const ListingVoteButtons = ({
       <button
         onClick={(e) => handleVote(true, e)}
         className={`text-2xl ${
-          initialUserVote === true ? "text-green-500" : "text-gray-400"
+          userVote === true ? "text-green-500" : "text-gray-400"
         } hover:text-green-600 transition-colors duration-200`}
+        disabled={isVoting}
       >
         <FaChevronUp />
       </button>
-      <span className="text-lg font-bold my-1">{initialScore}</span>
+      <span className="text-lg font-bold my-1">{score}</span>
       <button
         onClick={(e) => handleVote(false, e)}
         className={`text-2xl ${
-          initialUserVote === false ? "text-red-500" : "text-gray-400"
+          userVote === false ? "text-red-500" : "text-gray-400"
         } hover:text-red-600 transition-colors duration-200`}
+        disabled={isVoting}
       >
         <FaChevronDown />
       </button>

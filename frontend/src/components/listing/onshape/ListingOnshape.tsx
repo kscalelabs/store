@@ -1,14 +1,19 @@
-import { useState } from "react";
-import { FaCheck, FaPen, FaSync, FaTimes } from "react-icons/fa";
+import React, { useState } from "react";
+import {
+  FaCheck,
+  FaExternalLinkAlt,
+  FaPen,
+  FaSync,
+  FaTimes,
+} from "react-icons/fa";
 
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
+import ListingOnshapeUpdate from "components/listing/onshape/ListingOnshapeUpdate";
 import { Button } from "components/ui/Button/Button";
 import { Input } from "components/ui/Input/Input";
 import Spinner from "components/ui/Spinner";
-
-import ListingOnshapeUpdate from "./ListingOnshapeUpdate";
 
 interface UrlInputProps {
   url: string | null;
@@ -37,36 +42,13 @@ const UrlInput = (props: UrlInputProps) => {
   );
 };
 
-interface UrlRendererProps {
-  isEditing: boolean;
-  handleSave: () => Promise<void>;
-  url: string | null;
-  setUrl: (url: string | null) => void;
-}
-
-const UrlRenderer = (props: UrlRendererProps) => {
-  const { isEditing, handleSave, url, setUrl } = props;
-
-  return isEditing ? (
-    <UrlInput url={url} setUrl={setUrl} handleSave={handleSave} />
-  ) : (
-    <a
-      href={url || "#"}
-      target="_blank"
-      rel="noreferrer"
-      className="link overflow-ellipsis overflow-hidden whitespace-nowrap"
-    >
-      {url}
-    </a>
-  );
-};
-
 interface UpdateButtonProps {
   isEditing: boolean;
   setIsEditing: (isEditing: boolean) => void;
   handleSave: () => Promise<void>;
   handleRemove?: () => Promise<void>;
   handleReload?: () => Promise<void>;
+  url: string | null;
   disabled?: boolean;
 }
 
@@ -77,11 +59,23 @@ const UpdateButtons = (props: UpdateButtonProps) => {
     handleSave,
     handleRemove,
     handleReload,
+    url,
     disabled,
   } = props;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-2 pt-2 w-full">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 pt-2 w-full">
+      {!isEditing && url && (
+        <Button
+          onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
+          variant="secondary"
+          className="flex items-center justify-center"
+          disabled={disabled}
+        >
+          Visit Onshape
+          <FaExternalLinkAlt className="ml-2" />
+        </Button>
+      )}
       <Button
         onClick={async () => {
           if (isEditing) {
@@ -91,7 +85,7 @@ const UpdateButtons = (props: UpdateButtonProps) => {
           }
         }}
         variant="secondary"
-        className="px-3"
+        className="flex items-center justify-center"
         disabled={disabled}
       >
         {isEditing ? (
@@ -110,7 +104,7 @@ const UpdateButtons = (props: UpdateButtonProps) => {
         <Button
           onClick={handleRemove}
           variant="destructive"
-          className="px-3"
+          className="flex items-center justify-center"
           disabled={disabled}
         >
           Remove
@@ -121,7 +115,7 @@ const UpdateButtons = (props: UpdateButtonProps) => {
         <Button
           onClick={handleReload}
           variant="primary"
-          className="px-3"
+          className="flex items-center justify-center"
           disabled={disabled}
         >
           Sync URDF
@@ -136,10 +130,11 @@ interface Props {
   listingId: string;
   onshapeUrl: string | null;
   edit: boolean;
+  addArtifactId: (artifactId: string) => Promise<void>;
 }
 
 const ListingOnshape = (props: Props) => {
-  const { listingId, edit, onshapeUrl } = props;
+  const { listingId, edit, onshapeUrl, addArtifactId } = props;
   const auth = useAuthentication();
   const { addAlert, addErrorAlert } = useAlertQueue();
 
@@ -211,17 +206,16 @@ const ListingOnshape = (props: Props) => {
       <Spinner />
     </div>
   ) : url !== null || edit ? (
-    <div className="flex flex-col my-2 py-2">
+    <div className="flex flex-col my-2 py-2 w-full">
       {isEditing ? (
-        <div className="flex flex-col items-start">
-          <div className="flex items-center w-full">
-            <UrlInput url={url} setUrl={setUrl} handleSave={handleSave} />
-          </div>
+        <div className="flex flex-col items-start w-full">
+          <UrlInput url={url} setUrl={setUrl} handleSave={handleSave} />
           {edit && (
             <UpdateButtons
               isEditing={isEditing}
               setIsEditing={setIsEditing}
               handleSave={handleSave}
+              url={url}
             />
           )}
         </div>
@@ -236,15 +230,7 @@ const ListingOnshape = (props: Props) => {
           </Button>
         </div>
       ) : (
-        <div className="flex flex-col items-start">
-          <div className="flex items-center w-full">
-            <UrlRenderer
-              isEditing={isEditing}
-              handleSave={handleSave}
-              url={url}
-              setUrl={setUrl}
-            />
-          </div>
+        <div className="flex flex-col items-start w-full">
           {edit && (
             <UpdateButtons
               isEditing={isEditing}
@@ -252,6 +238,7 @@ const ListingOnshape = (props: Props) => {
               handleSave={handleSave}
               handleRemove={permUrl !== null ? handleRemove : undefined}
               handleReload={permUrl !== null ? handleReload : undefined}
+              url={url}
               disabled={updateOnshape}
             />
           )}
@@ -259,6 +246,7 @@ const ListingOnshape = (props: Props) => {
             <ListingOnshapeUpdate
               listingId={listingId}
               onClose={() => setUpdateOnshape(false)}
+              addArtifactId={addArtifactId}
             />
           )}
         </div>

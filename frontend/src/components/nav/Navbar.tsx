@@ -2,7 +2,6 @@ import { useState } from "react";
 import { FaMoon, FaSun, FaUserCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-import smallLogo from "assets/small-logo.png";
 import { useDarkMode } from "hooks/useDarkMode";
 
 import Sidebar from "components/nav/Sidebar";
@@ -22,13 +21,8 @@ const Navbar = () => {
             className="flex items-center active cursor-pointer"
             onClick={() => navigate("/")}
           >
-            <img
-              src={smallLogo}
-              alt="kscale logo"
-              className="h-8 dark:invert"
-            />
-            <span className="ml-2 text-xl font-bold text-gray-800 dark:text-gray-200">
-              store
+            <span className="text-lg text-gray-800 dark:text-gray-200 font-bold font-sans">
+              K-Scale Store
             </span>
           </a>
           <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">

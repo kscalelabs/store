@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import os
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
@@ -34,14 +35,29 @@ async def artifact_url(
     artifact_type: ArtifactType,
     listing_id: str,
     name: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
     size: ArtifactSize = "large",
 ) -> RedirectResponse:
+    # First, get the artifact to retrieve its ID
+    artifacts = await crud.get_listing_artifacts(listing_id)
+    artifact = next((a for a in artifacts if a.name == name and a.artifact_type == artifact_type), None)
+
+    if artifact is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Could not find artifact associated with the given name and type",
+        )
+
+    # Construct the S3 filename using the artifact ID
+    _, file_extension = os.path.splitext(name)
+    s3_filename = f"{artifact.id}{file_extension}"
+
     # TODO: Use CloudFront API to return a signed CloudFront URL.
     return RedirectResponse(
         url=get_artifact_url(
             artifact_type=artifact_type,
             listing_id=listing_id,
-            name=name,
+            name=s3_filename,
             size=size,
         )
     )
@@ -60,7 +76,7 @@ def get_artifact_url_response(artifact: Artifact) -> ArtifactUrls:
     )
 
 
-class ListArtifactsItem(BaseModel):
+class SingleArtifactResponse(BaseModel):
     artifact_id: str
     listing_id: str
     name: str
@@ -72,14 +88,36 @@ class ListArtifactsItem(BaseModel):
 
 
 class ListArtifactsResponse(BaseModel):
-    artifacts: list[ListArtifactsItem]
+    artifacts: list[SingleArtifactResponse]
+
+
+@artifacts_router.get("/info/{artifact_id}")
+async def get_artifact_info(
+    artifact_id: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> SingleArtifactResponse:
+    artifact = await crud.get_raw_artifact(artifact_id)
+    if artifact is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Could not find artifact associated with the given id",
+        )
+    return SingleArtifactResponse(
+        artifact_id=artifact.id,
+        listing_id=artifact.listing_id,
+        name=artifact.name,
+        artifact_type=artifact.artifact_type,
+        description=artifact.description,
+        timestamp=artifact.timestamp,
+        urls=get_artifact_url_response(artifact=artifact),
+    )
 
 
 @artifacts_router.get("/list/{listing_id}", response_model=ListArtifactsResponse)
 async def list_artifacts(listing_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> ListArtifactsResponse:
     return ListArtifactsResponse(
         artifacts=[
-            ListArtifactsItem(
+            SingleArtifactResponse(
                 artifact_id=artifact.id,
                 listing_id=artifact.listing_id,
                 name=artifact.name,
@@ -123,7 +161,7 @@ def validate_file(file: UploadFile) -> tuple[str, ArtifactType]:
 
 
 class UploadArtifactResponse(BaseModel):
-    artifacts: list[ListArtifactsItem]
+    artifacts: list[SingleArtifactResponse]
 
 
 @artifacts_router.post("/upload/{listing_id}", response_model=UploadArtifactResponse)
@@ -177,7 +215,7 @@ async def upload(
 
     return UploadArtifactResponse(
         artifacts=[
-            ListArtifactsItem(
+            SingleArtifactResponse(
                 artifact_id=artifact.id,
                 listing_id=artifact.listing_id,
                 name=artifact.name,
@@ -218,9 +256,9 @@ async def edit_artifact(
 
 @artifacts_router.delete("/delete/{artifact_id}", response_model=bool)
 async def delete_artifact(
+    artifact_id: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
-    artifact_id: str,
 ) -> bool:
     artifact = await crud.get_raw_artifact(artifact_id)
     if artifact is None:

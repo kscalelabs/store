@@ -3,6 +3,7 @@
 import asyncio
 import io
 import logging
+import os
 from typing import IO, Any, Literal
 from xml.etree import ElementTree as ET
 
@@ -14,13 +15,13 @@ from PIL import Image
 from store.app.crud.base import BaseCrud, ItemNotFoundError
 from store.app.errors import BadArtifactError
 from store.app.model import (
+    DOWNLOAD_CONTENT_TYPE,
     Artifact,
     ArtifactSize,
     ArtifactType,
     Listing,
     SizeMapping,
     get_artifact_name,
-    get_content_type,
 )
 from store.settings import settings
 from store.utils import save_xml
@@ -155,18 +156,26 @@ class ArtifactsCrud(BaseCrud):
         artifact_type: ArtifactType,
         description: str | None = None,
     ) -> Artifact:
-        content_type = get_content_type(artifact_type)
         artifact = Artifact.create(
-            user_id=listing.user_id,
+            user_id=listing.user_id,  # Add this line to include the user_id
             listing_id=listing.id,
             name=name,
             artifact_type=artifact_type,
             description=description,
         )
-        await asyncio.gather(
-            self._upload_to_s3(file, name, get_artifact_name(artifact=artifact), content_type),
-            self._add_item(artifact),
+
+        # Prepend the artifact ID to the filename
+        _, file_extension = os.path.splitext(name)
+        s3_filename = f"{artifact.id}{file_extension}"
+
+        await self._upload_to_s3(
+            data=file,
+            name=name,  # This is the original filename that will be used when downloading
+            filename=s3_filename,  # This is the unique filename used in S3
+            content_type=DOWNLOAD_CONTENT_TYPE[artifact_type],
         )
+
+        await self._add_item(artifact)
         return artifact
 
     async def upload_artifact(
@@ -206,11 +215,10 @@ class ArtifactsCrud(BaseCrud):
         )
 
     async def remove_artifact(self, artifact: Artifact) -> None:
-        match artifact.artifact_type:
-            case "image":
-                await self._remove_image(artifact)
-            case _:
-                await self._remove_raw_artifact(artifact)
+        _, file_extension = os.path.splitext(artifact.name)
+        s3_filename = f"{artifact.id}{file_extension}"
+        await self._delete_from_s3(s3_filename)
+        await self._delete_item(artifact)
 
     async def get_listing_artifacts(
         self,

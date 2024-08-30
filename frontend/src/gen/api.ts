@@ -38,6 +38,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/artifacts/info/{artifact_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Artifact Info */
+        get: operations["get_artifact_info_artifacts_info__artifact_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/artifacts/list/{listing_id}": {
         parameters: {
             query?: never;
@@ -820,28 +837,10 @@ export interface components {
             /** Permissions */
             permissions: ("read" | "write" | "admin")[] | null;
         };
-        /** ListArtifactsItem */
-        ListArtifactsItem: {
-            /** Artifact Id */
-            artifact_id: string;
-            /** Listing Id */
-            listing_id: string;
-            /** Name */
-            name: string;
-            /** Artifact Type */
-            artifact_type: "image" | ("urdf" | "mjcf") | ("stl" | "obj" | "dae" | "ply") | ("tgz" | "zip");
-            /** Description */
-            description: string | null;
-            /** Timestamp */
-            timestamp: number;
-            urls: components["schemas"]["ArtifactUrls"];
-            /** Is New */
-            is_new?: boolean | null;
-        };
         /** ListArtifactsResponse */
         ListArtifactsResponse: {
             /** Artifacts */
-            artifacts: components["schemas"]["ListArtifactsItem"][];
+            artifacts: components["schemas"]["SingleArtifactResponse"][];
         };
         /** ListKeysResponse */
         ListKeysResponse: {
@@ -1023,6 +1022,24 @@ export interface components {
             /** Onshape Url */
             onshape_url: string | null;
         };
+        /** SingleArtifactResponse */
+        SingleArtifactResponse: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Listing Id */
+            listing_id: string;
+            /** Name */
+            name: string;
+            /** Artifact Type */
+            artifact_type: "image" | ("urdf" | "mjcf") | ("stl" | "obj" | "dae" | "ply") | ("tgz" | "zip");
+            /** Description */
+            description: string | null;
+            /** Timestamp */
+            timestamp: number;
+            urls: components["schemas"]["ArtifactUrls"];
+            /** Is New */
+            is_new?: boolean | null;
+        };
         /**
          * SortOption
          * @enum {string}
@@ -1068,7 +1085,7 @@ export interface components {
         /** UploadArtifactResponse */
         UploadArtifactResponse: {
             /** Artifacts */
-            artifacts: components["schemas"]["ListArtifactsItem"][];
+            artifacts: components["schemas"]["SingleArtifactResponse"][];
         };
         /** UrdfInfo */
         UrdfInfo: {
@@ -1166,8 +1183,8 @@ export interface operations {
     };
     artifact_url_artifacts_url__artifact_type___listing_id___name__get: {
         parameters: {
-            query?: {
-                size?: "small" | "large";
+            query: {
+                size: "small" | "large";
             };
             header?: never;
             path: {
@@ -1186,6 +1203,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_artifact_info_artifacts_info__artifact_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SingleArtifactResponse"];
                 };
             };
             /** @description Validation Error */

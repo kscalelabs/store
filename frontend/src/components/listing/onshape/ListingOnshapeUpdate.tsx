@@ -18,10 +18,11 @@ interface Message {
 interface ListingOnshapeUpdateProps {
   listingId: string;
   onClose: () => void;
+  addArtifactId: (artifactId: string) => Promise<void>;
 }
 
 const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
-  const { listingId, onClose } = props;
+  const { listingId, onClose, addArtifactId } = props;
   const { apiKeyId } = useAuthentication();
   const [messages, setMessages] = useState<Message[]>([]);
   const messageContainerRef = useRef<HTMLDivElement>(null);
@@ -52,6 +53,18 @@ const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
       addMessage(data.message, data.level);
     });
 
+    eventSource.addEventListener("image", (event) => {
+      const data = JSON.parse(event.data);
+      addMessage(`New image received: ${data.message}`, "success");
+      addArtifactId(data.message);
+    });
+
+    eventSource.addEventListener("urdf", (event) => {
+      const data = JSON.parse(event.data);
+      addMessage(`New URDF: ${data.message}`, "success");
+      addArtifactId(data.message);
+    });
+
     eventSource.addEventListener("finish", () => {
       eventSource.close();
     });
@@ -62,27 +75,30 @@ const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
   }, [listingId, apiKeyId]);
 
   return (
-    <div className="pt-4 w-full flex flex-col">
+    <div className="pt-4 flex flex-col max-w-full">
       <div
         ref={messageContainerRef}
-        className="p-4 rounded-lg border border-dashed max-h-96 overflow-y-auto bg-gray-100"
+        className="p-4 rounded-lg border border-dashed max-h-96 overflow-auto bg-gray-100 w-full"
       >
-        {messages
-          .slice(0)
-          .reverse()
-          .map(({ message, level }, index) => (
-            <p
-              key={index}
-              className={cx(
-                "text-sm",
-                level === "success" && "text-green-600 font-bold my-1",
-                level === "info" && "text-grey-200 font-thin",
-                level === "error" && "text-red-600 font-bold my-1",
-              )}
-            >
-              {message}
-            </p>
-          ))}
+        <div className="whitespace-nowrap">
+          {messages
+            .slice(0)
+            .reverse()
+            .map(({ message, level }, index) => (
+              <p
+                key={index}
+                className={cx(
+                  "text-sm w-full",
+                  level === "success" && "text-green-600 font-bold my-1",
+                  level === "info" &&
+                    "text-grey-200 font-thin dark:text-gray-700",
+                  level === "error" && "text-red-600 font-bold my-1",
+                )}
+              >
+                {message}
+              </p>
+            ))}
+        </div>
       </div>
       <div className="mt-4 flex flex-row">
         <Button onClick={onClose} variant="destructive">

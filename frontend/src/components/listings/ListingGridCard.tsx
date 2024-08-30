@@ -22,18 +22,11 @@ const ListingGridCard = ({ listingId, listing }: Props) => {
   const navigate = useNavigate();
   const [hovering, setHovering] = useState(false);
 
-  const handleVoteChange = (newScore: number, newUserVote: boolean | null) => {
-    if (listing) {
-      listing.score = newScore;
-      listing.user_vote = newUserVote;
-    }
-  };
-
   return (
     <Card
       className={clsx(
         "transition-all duration-100 ease-in-out cursor-pointer",
-        "flex flex-col max-w-sm rounded material-card bg-white justify-between",
+        "flex flex-col rounded material-card bg-white justify-between",
         "dark:bg-gray-900",
         "relative overflow-hidden",
       )}
@@ -61,9 +54,9 @@ const ListingGridCard = ({ listingId, listing }: Props) => {
       ) : (
         <ImagePlaceholder />
       )}
-      <div className="px-4 py-4 h-full flex flex-col justify-between">
+      <div className="h-full flex flex-col justify-between">
         <CardHeader>
-          <CardTitle className="text-gray-500 dark:text-gray-300 text-xl min-h-6">
+          <CardTitle className="text-gray-500 dark:text-gray-300 text-md truncate">
             {listing ? (
               listing.name
             ) : (
@@ -72,24 +65,28 @@ const ListingGridCard = ({ listingId, listing }: Props) => {
           </CardTitle>
         </CardHeader>
         <CardFooter className="flex justify-between items-center">
-          <div className="flex items-center">
-            <FaEye className="mr-1" />
-            <span>{listing?.views || 0}</span>
-          </div>
-          <div className="text-sm text-gray-500">
-            {listing?.created_at &&
-              format(new Date(listing.created_at), "MMM d, yyyy")}
-          </div>
+          {listing && (
+            <>
+              <div className="flex items-center">
+                <FaEye className="mr-1" />
+                <span>{listing?.views || 0}</span>
+              </div>
+              <div className="text-sm text-gray-500">
+                {format(new Date(listing.created_at), "MMM d, yyyy")}
+              </div>
+            </>
+          )}
         </CardFooter>
       </div>
-      <div className="absolute top-2 left-2 z-10">
-        <ListingVoteButtons
-          listingId={listingId}
-          initialScore={listing?.score ?? 0}
-          initialUserVote={listing?.user_vote ?? null}
-          onVoteChange={handleVoteChange}
-        />
-      </div>
+      {listing && (
+        <div className="absolute top-2 left-2 z-10">
+          <ListingVoteButtons
+            listingId={listingId}
+            initialScore={listing.score ?? 0}
+            initialUserVote={listing.user_vote ?? null}
+          />
+        </div>
+      )}
     </Card>
   );
 };

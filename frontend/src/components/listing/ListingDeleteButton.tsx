@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { FaExclamation } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -6,13 +6,14 @@ import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
 import { Button } from "components/ui/Button/Button";
+import Modal from "components/ui/Modal";
 
 interface Props {
   listingId: string;
 }
 
 const ListingDeleteButton = (props: Props) => {
-  const { listingId: listing_id } = props;
+  const { listingId } = props;
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -27,7 +28,7 @@ const ListingDeleteButton = (props: Props) => {
       "/listings/delete/{listing_id}",
       {
         params: {
-          path: { listing_id },
+          path: { listing_id: listingId },
         },
       },
     );
@@ -51,32 +52,28 @@ const ListingDeleteButton = (props: Props) => {
         <span className="mr-2">{deleting ? "Deleting..." : "Delete"}</span>
         <FaExclamation />
       </Button>
-      {confirmDelete && (
-        <div className="absolute inset-0 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-4">
-            <p className="text-lg mb-2">
-              Are you sure you want to delete this listing?
-            </p>
-            <div className="flex justify-center space-x-4">
-              <Button
-                onClick={() => {
-                  handleDelete();
-                  setConfirmDelete(false);
-                }}
-                variant="secondary"
-              >
-                <code>yes</code>
-              </Button>
-              <Button
-                onClick={() => setConfirmDelete(false)}
-                variant="secondary"
-              >
-                <code>no</code>
-              </Button>
-            </div>
+      <Modal isOpen={confirmDelete} onClose={() => setConfirmDelete(false)}>
+        <div className="p-6">
+          <h2 className="text-xl font-bold mb-4">Confirm Deletion</h2>
+          <p className="text-lg mb-6">
+            Are you sure you want to delete this listing?
+          </p>
+          <div className="flex justify-end space-x-4">
+            <Button
+              onClick={() => {
+                handleDelete();
+                setConfirmDelete(false);
+              }}
+              variant="destructive"
+            >
+              Yes, delete
+            </Button>
+            <Button onClick={() => setConfirmDelete(false)} variant="secondary">
+              Cancel
+            </Button>
           </div>
         </div>
-      )}
+      </Modal>
     </>
   );
 };

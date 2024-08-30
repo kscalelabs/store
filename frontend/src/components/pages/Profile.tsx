@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
+import { BACKEND_URL } from "constants/env";
 import { format } from "date-fns";
 import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
@@ -17,11 +18,14 @@ interface RenderProfileProps {
   user: UserResponse;
   onUpdateProfile: (updatedUser: Partial<UserResponse>) => Promise<void>;
   canEdit: boolean;
+  onNewImage: (imageId: string) => void;
+  onNewUrdf: (urdfId: string) => void;
 }
 
 const RenderProfile = (props: RenderProfileProps) => {
-  const { user, onUpdateProfile, canEdit } = props;
+  const { user, onUpdateProfile, canEdit, onNewImage, onNewUrdf } = props;
   const [isEditing, setIsEditing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [firstName, setFirstName] = useState(user.first_name || "");
   const [lastName, setLastName] = useState(user.last_name || "");
   const [bio, setBio] = useState(user.bio || "");
@@ -33,6 +37,7 @@ const RenderProfile = (props: RenderProfileProps) => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    setIsSubmitting(true);
     try {
       await onUpdateProfile({
         first_name: firstName,
@@ -42,13 +47,48 @@ const RenderProfile = (props: RenderProfileProps) => {
       setIsEditing(false);
     } catch (error) {
       console.error("Failed to update profile", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  useEffect(() => {
+    const eventSource = new EventSource(
+      `${BACKEND_URL}/events/user/${user.id}`,
+    );
+
+    const handleEvent = (event: MessageEvent) => {
+      const data = JSON.parse(event.data);
+      switch (event.type) {
+        case "image":
+          if (onNewImage) {
+            onNewImage(data.id);
+          }
+          break;
+        case "urdf":
+          if (onNewUrdf) {
+            onNewUrdf(data.id);
+          }
+          break;
+        default:
+          console.log("Unhandled event type:", event.type);
+      }
+    };
+
+    eventSource.addEventListener("image", handleEvent);
+    eventSource.addEventListener("urdf", handleEvent);
+
+    return () => {
+      eventSource.removeEventListener("image", handleEvent);
+      eventSource.removeEventListener("urdf", handleEvent);
+      eventSource.close();
+    };
+  }, [user.id, onNewImage, onNewUrdf]);
+
   return (
-    <div className="container mx-auto max-w-4xl shadow-md rounded-lg bg-white dark:bg-gray-800 dark:text-white border bg-card text-card-foreground relative">
+    <div className="container mx-auto max-w-md shadow-md rounded-lg bg-white dark:bg-gray-800 dark:text-white border bg-card text-card-foreground relative">
       <div className="p-6">
-        <h1 className="text-3xl font-extrabold mb-4">Profile</h1>
+        <h1 className="text-3xl font-extrabold mb-6 text-center">Profile</h1>
         {isEditing ? (
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
@@ -87,22 +127,28 @@ const RenderProfile = (props: RenderProfileProps) => {
                 rows={4}
               />
             </div>
-            <div className="mt-4 flex space-x-2">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => setIsEditing(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" variant="primary">
-                Save Changes
-              </Button>
-            </div>
+            {isSubmitting ? (
+              <div className="mt-4 flex justify-center items-center">
+                <Spinner />
+              </div>
+            ) : (
+              <div className="mt-4 flex justify-center space-x-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setIsEditing(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" variant="primary">
+                  Save Changes
+                </Button>
+              </div>
+            )}
           </form>
         ) : (
           <div>
-            <h2 className="text-2xl font-bold mb-2">
+            <h2 className="text-2xl font-bold mb-2 text-center">
               {user.first_name || user.last_name
                 ? `${user.first_name || ""} ${user.last_name || ""}`
                 : "No name set"}
@@ -124,13 +170,15 @@ const RenderProfile = (props: RenderProfileProps) => {
                 : "Unknown date"}
             </p>
             {!isEditing && canEdit && (
-              <Button
-                className="mt-4"
-                onClick={() => setIsEditing(true)}
-                variant="primary"
-              >
-                Edit Profile
-              </Button>
+              <div className="flex justify-center">
+                <Button
+                  className="mt-4"
+                  onClick={() => setIsEditing(true)}
+                  variant="primary"
+                >
+                  Edit Profile
+                </Button>
+              </div>
             )}
           </div>
         )}
@@ -208,6 +256,18 @@ const Profile = () => {
     }
   };
 
+  const handleNewImage = (imageId: string) => {
+    // Handle new image, e.g., update user state or trigger a refresh
+    console.log("New image received:", imageId);
+    // You might want to update the user state or trigger a profile refresh here
+  };
+
+  const handleNewUrdf = (urdfId: string) => {
+    // Handle new URDF, e.g., update user state or trigger a refresh
+    console.log("New URDF received:", urdfId);
+    // You might want to update the user state or trigger a profile refresh here
+  };
+
   if (auth.isLoading || isLoading) {
     return (
       <div className="flex justify-center items-center pt-8">
@@ -221,6 +281,8 @@ const Profile = () => {
       user={user}
       onUpdateProfile={handleUpdateProfile}
       canEdit={canEdit}
+      onNewImage={handleNewImage}
+      onNewUrdf={handleNewUrdf}
     />
   ) : (
     <div className="flex justify-center items-center pt-8">
