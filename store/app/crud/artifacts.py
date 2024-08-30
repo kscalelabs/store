@@ -3,7 +3,6 @@
 import asyncio
 import io
 import logging
-import os
 from typing import IO, Any, Literal
 from xml.etree import ElementTree as ET
 
@@ -215,10 +214,10 @@ class ArtifactsCrud(BaseCrud):
         )
 
     async def remove_artifact(self, artifact: Artifact) -> None:
-        _, file_extension = os.path.splitext(artifact.name)
-        s3_filename = f"{artifact.id}{file_extension}"
-        await self._delete_from_s3(s3_filename)
-        await self._delete_item(artifact)
+        if artifact.artifact_type == "image":
+            await self._remove_image(artifact)
+        else:
+            await self._remove_raw_artifact(artifact)
 
     async def get_listing_artifacts(
         self,
