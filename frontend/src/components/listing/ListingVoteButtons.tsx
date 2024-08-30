@@ -74,25 +74,31 @@ const ListingVoteButtons = ({
   };
 
   return (
-    <div className="flex flex-col items-center">
+    <div
+      className={`flex flex-col items-center rounded-full p-1 ${"dark:bg-gray-800 bg-gray-200"}`}
+    >
       <button
         onClick={(e) => handleVote(true, e)}
         className={`${small ? "text-xl" : "text-2xl"} ${
-          userVote === true ? "text-green-500" : "text-gray-400"
+          userVote === true
+            ? "text-green-500"
+            : "text-gray-600 dark:text-gray-300"
         } hover:text-green-600 transition-colors duration-200`}
         disabled={isVoting}
       >
         <FaChevronUp />
       </button>
       <span
-        className={`${small ? "text-base" : "text-lg"} font-bold ${small ? "mx-1" : "my-1"}`}
+        className={`${small ? "text-base" : "text-lg"} font-bold ${small ? "mx-1" : "my-1"} ${"text-black dark:text-white"}`}
       >
         {score}
       </span>
       <button
         onClick={(e) => handleVote(false, e)}
         className={`${small ? "text-xl" : "text-2xl"} ${
-          userVote === false ? "text-red-500" : "text-gray-400"
+          userVote === false
+            ? "text-red-500"
+            : "dark:text-gray-300 text-gray-600"
         } hover:text-red-600 transition-colors duration-200`}
         disabled={isVoting}
       >
