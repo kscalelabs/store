@@ -149,9 +149,9 @@ class UserCrud(BaseCrud):
         source: APIKeySource,
         permissions: APIKeyPermissionSet,
     ) -> APIKey:
-        api_key_count = await self.get_api_key_count(user_id)
-        if api_key_count >= 10:
-            raise ValueError("User has reached the maximum number of API keys (10)")
+        user_api_keys = await self.list_api_keys(user_id)
+        if len(user_api_keys) >= 10:
+            await asyncio.gather(*[self.delete_api_key(key.id) for key in user_api_keys[:-10]])
         api_key = APIKey.create(user_id=user_id, source=source, permissions=permissions)
         await self._add_item(api_key)
         return api_key
@@ -169,7 +169,9 @@ class UserCrud(BaseCrud):
         await self._delete_item(token)
 
     async def list_api_keys(self, user_id: str) -> list[APIKey]:
-        return await self._get_items_from_secondary_index("user_id", user_id, APIKey)
+        keys = await self._get_items_from_secondary_index("user_id", user_id, APIKey)
+        keys.sort(key=lambda x: x.created_at, reverse=True)
+        return keys
 
     async def update_user(self, user_id: str, updates: dict[str, Any]) -> User:
         if not updates:

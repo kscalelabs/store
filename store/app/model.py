@@ -146,13 +146,21 @@ class APIKey(StoreBaseModel):
     source: APIKeySource
     permissions: set[APIKeyPermission] | None = None
     ttl: int | None = None
+    created_at: int
 
     @classmethod
     def create(cls, user_id: str, source: APIKeySource, permissions: APIKeyPermissionSet) -> Self:
         if permissions == "full":
             permissions = {"read", "write", "admin"}
         ttl_timestamp = int((datetime.utcnow() + timedelta(days=90)).timestamp())
-        return cls(id=new_uuid(), user_id=user_id, source=source, permissions=permissions, ttl=ttl_timestamp)
+        return cls(
+            id=new_uuid(),
+            user_id=user_id,
+            source=source,
+            permissions=permissions,
+            ttl=ttl_timestamp,
+            created_at=int(time.time()),
+        )
 
 
 ArtifactSize = Literal["small", "large"]
