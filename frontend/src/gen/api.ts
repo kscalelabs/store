@@ -796,6 +796,8 @@ export interface components {
             onshape_url: string | null;
             /** Can Edit */
             can_edit: boolean;
+            /** Created At */
+            created_at: number;
             /** Views */
             views: number;
             /** Score */
@@ -1183,8 +1185,8 @@ export interface operations {
     };
     artifact_url_artifacts_url__artifact_type___listing_id___name__get: {
         parameters: {
-            query: {
-                size: "small" | "large";
+            query?: {
+                size?: "small" | "large";
             };
             header?: never;
             path: {

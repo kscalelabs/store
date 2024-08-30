@@ -28,7 +28,6 @@ const ListingBody = (props: ListingBodyProps) => {
   >(null);
 
   const addArtifactId = async (newArtifactId: string) => {
-    console.log("Got new artifact ID:", newArtifactId);
     const { data, error } = await auth.client.GET(
       "/artifacts/info/{artifact_id}",
       {

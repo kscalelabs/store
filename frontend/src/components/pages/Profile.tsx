@@ -18,12 +18,10 @@ interface RenderProfileProps {
   user: UserResponse;
   onUpdateProfile: (updatedUser: Partial<UserResponse>) => Promise<void>;
   canEdit: boolean;
-  onNewImage: (imageId: string) => void;
-  onNewUrdf: (urdfId: string) => void;
 }
 
 const RenderProfile = (props: RenderProfileProps) => {
-  const { user, onUpdateProfile, canEdit, onNewImage, onNewUrdf } = props;
+  const { user, onUpdateProfile, canEdit } = props;
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [firstName, setFirstName] = useState(user.first_name || "");
@@ -51,39 +49,6 @@ const RenderProfile = (props: RenderProfileProps) => {
       setIsSubmitting(false);
     }
   };
-
-  useEffect(() => {
-    const eventSource = new EventSource(
-      `${BACKEND_URL}/events/user/${user.id}`,
-    );
-
-    const handleEvent = (event: MessageEvent) => {
-      const data = JSON.parse(event.data);
-      switch (event.type) {
-        case "image":
-          if (onNewImage) {
-            onNewImage(data.id);
-          }
-          break;
-        case "urdf":
-          if (onNewUrdf) {
-            onNewUrdf(data.id);
-          }
-          break;
-        default:
-          console.log("Unhandled event type:", event.type);
-      }
-    };
-
-    eventSource.addEventListener("image", handleEvent);
-    eventSource.addEventListener("urdf", handleEvent);
-
-    return () => {
-      eventSource.removeEventListener("image", handleEvent);
-      eventSource.removeEventListener("urdf", handleEvent);
-      eventSource.close();
-    };
-  }, [user.id, onNewImage, onNewUrdf]);
 
   return (
     <div className="container mx-auto max-w-md shadow-md rounded-lg bg-white dark:bg-gray-800 dark:text-white border bg-card text-card-foreground relative">
@@ -256,18 +221,6 @@ const Profile = () => {
     }
   };
 
-  const handleNewImage = (imageId: string) => {
-    // Handle new image, e.g., update user state or trigger a refresh
-    console.log("New image received:", imageId);
-    // You might want to update the user state or trigger a profile refresh here
-  };
-
-  const handleNewUrdf = (urdfId: string) => {
-    // Handle new URDF, e.g., update user state or trigger a refresh
-    console.log("New URDF received:", urdfId);
-    // You might want to update the user state or trigger a profile refresh here
-  };
-
   if (auth.isLoading || isLoading) {
     return (
       <div className="flex justify-center items-center pt-8">
@@ -281,8 +234,6 @@ const Profile = () => {
       user={user}
       onUpdateProfile={handleUpdateProfile}
       canEdit={canEdit}
-      onNewImage={handleNewImage}
-      onNewUrdf={handleNewUrdf}
     />
   ) : (
     <div className="flex justify-center items-center pt-8">

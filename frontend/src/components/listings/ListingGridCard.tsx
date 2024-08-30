@@ -72,7 +72,7 @@ const ListingGridCard = ({ listingId, listing }: Props) => {
                 <span>{listing?.views || 0}</span>
               </div>
               <div className="text-sm text-gray-500">
-                {format(new Date(listing.created_at), "MMM d, yyyy")}
+                {format(new Date(listing.created_at * 1000), "MMM d, yyyy")}
               </div>
             </>
           )}

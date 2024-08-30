@@ -6,7 +6,6 @@ import io
 import json
 import logging
 import tempfile
-import traceback
 from contextlib import contextmanager
 from typing import AsyncIterable, Generator, Literal
 
@@ -122,12 +121,14 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
                 image_artifact = await self._upload_image("thumbnail.png", image, listing)
                 await queue.put((image_artifact.id, "image"))
             except Exception as e:
-                full_error = traceback.format_exc()
                 await queue.put((f"Failed to get thumbnail: {str(e)}", "error"))
-                await queue.put((full_error, "error"))
 
         async def get_urdf(
-            onshape_url: str, temp_dir: str, listing: Listing, config: ConverterConfig, queue: asyncio.Queue
+            onshape_url: str,
+            temp_dir: str,
+            listing: Listing,
+            config: ConverterConfig,
+            queue: asyncio.Queue,
         ) -> None:
             try:
                 document_info = await download(onshape_url, temp_dir, config=config)
@@ -150,9 +151,21 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
                 )
                 await queue.put((new_artifact.id, "urdf"))
             except Exception as e:
-                full_error = traceback.format_exc()
                 await queue.put((f"Failed to get URDF: {str(e)}", "error"))
-                await queue.put((full_error, "error"))
+                await queue.put(
+                    (
+                        "\n".join(
+                            [
+                                "If you think this was an error, please file an issue:",
+                                "  https://github.com/kscalelabs/onshape",
+                                "To reproduce locally, run:",
+                                "  pip install kscale-onshape-library",
+                                f"  kol run '{onshape_url}'`",
+                            ]
+                        ),
+                        "error",
+                    )
+                )
 
         async def worker(onshape_url: str, listing: Listing, config: ConverterConfig, queue: asyncio.Queue) -> None:
             with tempfile.TemporaryDirectory() as temp_dir, capture_logs(queue, "kol"), capture_logs(queue, "httpx"):

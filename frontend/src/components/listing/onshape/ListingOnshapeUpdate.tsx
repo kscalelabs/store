@@ -80,23 +80,22 @@ const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
         ref={messageContainerRef}
         className="p-4 rounded-lg border border-dashed max-h-96 overflow-auto bg-gray-100 w-full"
       >
-        <div className="whitespace-nowrap">
+        <div className="whitespace-pre">
           {messages
             .slice(0)
             .reverse()
             .map(({ message, level }, index) => (
-              <p
+              <pre
                 key={index}
                 className={cx(
-                  "text-sm w-full",
+                  "text-sm font-mono break-words",
                   level === "success" && "text-green-600 font-bold my-1",
-                  level === "info" &&
-                    "text-grey-200 font-thin dark:text-gray-700",
+                  level === "info" && "text-gray-600 dark:text-gray-400",
                   level === "error" && "text-red-600 font-bold my-1",
                 )}
               >
-                {message}
-              </p>
+                <code>{message}</code>
+              </pre>
             ))}
         </div>
       </div>

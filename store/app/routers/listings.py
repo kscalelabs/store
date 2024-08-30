@@ -214,6 +214,7 @@ class GetListingResponse(BaseModel):
     tags: list[str]
     onshape_url: str | None
     can_edit: bool
+    created_at: int
     views: int
     score: int
     user_vote: bool | None
@@ -244,6 +245,7 @@ async def get_listing(
         tags=listing_tags,
         onshape_url=listing.onshape_url,
         can_edit=user is not None and await can_write_listing(user, listing),
+        created_at=listing.created_at,
         views=listing.views,
         score=listing.score,
         user_vote=user_vote,
