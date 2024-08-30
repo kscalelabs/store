@@ -82,7 +82,7 @@ const ListingVoteButtons = ({
       >
         <FaChevronUp />
       </button>
-      <span className="text-lg font-bold my-1">{score}</span>
+      <span className="text-lg text-gray-800 font-bold my-1">{score}</span>
       <button
         onClick={(e) => handleVote(false, e)}
         className={`text-2xl ${

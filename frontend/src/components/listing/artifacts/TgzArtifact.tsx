@@ -26,7 +26,7 @@ const TgzArtifact = ({ artifact }: Props) => {
       className="bg-gray-100 p-3 rounded-md flex items-center justify-between cursor-pointer w-full text-left hover:bg-gray-200 transition-colors duration-200"
       onClick={copyToClipboard}
     >
-      <code className="text-xs font-mono truncate flex-grow mr-2">
+      <code className="text-xs text-gray-500 font-mono truncate flex-grow mr-2">
         {command}
       </code>
       <span className="flex-shrink-0">
