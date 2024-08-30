@@ -403,6 +403,7 @@ class ListingTag(StoreBaseModel):
 def get_artifact_name(
     *,
     artifact: Artifact | None = None,
+    artifact_id: str | None = None,
     listing_id: str | None = None,
     name: str | None = None,
     artifact_type: ArtifactType | None = None,
@@ -412,15 +413,16 @@ def get_artifact_name(
         listing_id = artifact.listing_id
         name = artifact.name
         artifact_type = artifact.artifact_type
-    elif not listing_id or not name or not artifact_type:
+        artifact_id = artifact.id
+    elif not listing_id or not name or not artifact_type or not artifact_id:
         raise InternalError("Must provide artifact or listing_id, name, and artifact_type")
 
     match artifact_type:
         case "image":
             height, width = SizeMapping[size]
-            return f"{listing_id}/{size}_{height}x{width}_{name}"
+            return f"{listing_id}/{artifact_id}/{size}_{height}x{width}_{name}"
         case "urdf" | "mjcf" | "stl" | "obj" | "ply" | "dae" | "zip" | "tgz":
-            return f"{listing_id}/{name}"
+            return f"{listing_id}/{artifact_id}/{name}"
         case _:
             raise ValueError(f"Unknown artifact type: {artifact_type}")
 
