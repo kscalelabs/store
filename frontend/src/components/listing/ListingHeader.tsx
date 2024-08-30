@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { FaCheck, FaPen, FaTimes } from "react-icons/fa";
+import { FaCheck, FaEye, FaPen, FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
+import { formatNumber } from "utils/formatNumber";
+import { formatTimeSince } from "utils/formatTimeSince";
 
 import ListingVoteButtons from "components/listing/ListingVoteButtons";
 import { Button } from "components/ui/Button/Button";
@@ -127,7 +129,18 @@ const ListingHeader = (props: Props) => {
           initialScore={listing.score}
           initialUserVote={listing.user_vote}
         />
-        <ListingTitle {...props} />
+        <div>
+          <ListingTitle {...props} />
+          <div className="mt-2 text-sm text-gray-500 flex items-center gap-4">
+            <div className="flex items-center">
+              <FaEye className="mr-1" />
+              <span>{formatNumber(listing.views)} views</span>
+            </div>
+            <div>
+              Posted {formatTimeSince(new Date(listing.created_at * 1000))}
+            </div>
+          </div>
+        </div>
         <CloseButton />
       </div>
     </div>

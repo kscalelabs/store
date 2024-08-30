@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import { BACKEND_URL } from "constants/env";
 import { format } from "date-fns";
 import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";

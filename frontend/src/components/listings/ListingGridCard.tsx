@@ -3,8 +3,9 @@ import { FaEye } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 import clsx from "clsx";
-import { format } from "date-fns";
 import { paths } from "gen/api";
+import { formatNumber } from "utils/formatNumber";
+import { formatTimeSince } from "utils/formatTimeSince";
 
 import ImagePlaceholder from "components/ImagePlaceholder";
 import ListingVoteButtons from "components/listing/ListingVoteButtons";
@@ -54,9 +55,9 @@ const ListingGridCard = ({ listingId, listing }: Props) => {
       ) : (
         <ImagePlaceholder />
       )}
-      <div className="h-full flex flex-col justify-between">
-        <CardHeader>
-          <CardTitle className="text-gray-500 dark:text-gray-300 text-md truncate">
+      <div className="flex flex-col flex-grow p-4">
+        <CardHeader className="p-0 mb-2">
+          <CardTitle className="text-gray-200 text-lg font-semibold truncate">
             {listing ? (
               listing.name
             ) : (
@@ -64,15 +65,15 @@ const ListingGridCard = ({ listingId, listing }: Props) => {
             )}
           </CardTitle>
         </CardHeader>
-        <CardFooter className="flex justify-between items-center">
+        <CardFooter className="flex flex-col items-start p-0 mt-auto">
           {listing && (
             <>
-              <div className="flex items-center">
+              <div className="flex items-center text-sm text-gray-400 mb-1">
                 <FaEye className="mr-1" />
-                <span>{listing?.views || 0}</span>
+                <span>{formatNumber(listing.views || 0)}</span>
               </div>
-              <div className="text-sm text-gray-500">
-                {format(new Date(listing.created_at * 1000), "MMM d, yyyy")}
+              <div className="text-xs text-gray-500">
+                {formatTimeSince(new Date(listing.created_at * 1000))}
               </div>
             </>
           )}

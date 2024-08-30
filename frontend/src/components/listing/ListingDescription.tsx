@@ -188,7 +188,7 @@ const ListingDescription = (props: Props) => {
                   setIsEditing(true);
                 }
               }}
-              variant="warning"
+              variant="outline"
               className="mt-2"
               disabled={submitting}
             >

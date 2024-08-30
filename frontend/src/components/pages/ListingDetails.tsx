@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import { format } from "date-fns";
 import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
@@ -24,12 +23,6 @@ const RenderListing = ({ listing }: RenderListingProps) => {
       <ListingHeader listing={listing} />
       <div className="flex-grow">
         <ListingBody listing={listing} />
-      </div>
-      <div className="mt-4 text-sm text-gray-500">
-        <p>Viewed {listing.views} times</p>
-        <p>
-          Created {format(new Date(listing.created_at * 1000), "MMMM d, yyyy")}
-        </p>
       </div>
       <ListingFooter listingId={listing.id} edit={listing.can_edit} />
     </div>
