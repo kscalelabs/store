@@ -20,12 +20,11 @@ const ListingVoteButtons = ({
   const navigate = useNavigate();
   const { addErrorAlert } = useAlertQueue();
   const [isVoting, setIsVoting] = useState(false);
+  const [score, setScore] = useState(initialScore);
+  const [userVote, setUserVote] = useState(initialUserVote);
 
   const handleVote = async (upvote: boolean, event: React.MouseEvent) => {
     event.stopPropagation();
-    const [score, setScore] = useState(initialScore);
-    const [userVote, setUserVote] = useState(initialUserVote);
-    const [disabled, setDisabled] = useState(false);
 
     if (!auth.isAuthenticated) {
       navigate("/login");
@@ -43,8 +42,6 @@ const ListingVoteButtons = ({
     }
 
     setIsVoting(true);
-
-    setDisabled(true);
 
     try {
       if (userVote === upvote) {
@@ -70,7 +67,6 @@ const ListingVoteButtons = ({
     } catch (error) {
       addErrorAlert(humanReadableError(error));
     } finally {
-      setDisabled(false);
       setIsVoting(false);
     }
   };
@@ -82,7 +78,7 @@ const ListingVoteButtons = ({
         className={`text-2xl ${
           userVote === true ? "text-green-500" : "text-gray-400"
         } hover:text-green-600 transition-colors duration-200`}
-        disabled={disabled}
+        disabled={isVoting}
       >
         <FaChevronUp />
       </button>
@@ -92,7 +88,7 @@ const ListingVoteButtons = ({
         className={`text-2xl ${
           userVote === false ? "text-red-500" : "text-gray-400"
         } hover:text-red-600 transition-colors duration-200`}
-        disabled={disabled}
+        disabled={isVoting}
       >
         <FaChevronDown />
       </button>

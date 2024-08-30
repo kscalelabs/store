@@ -42,30 +42,6 @@ const UrlInput = (props: UrlInputProps) => {
   );
 };
 
-interface UrlRendererProps {
-  isEditing: boolean;
-  handleSave: () => Promise<void>;
-  url: string | null;
-  setUrl: (url: string | null) => void;
-}
-
-const UrlRenderer = (props: UrlRendererProps) => {
-  const { isEditing, handleSave, url, setUrl } = props;
-
-  return isEditing ? (
-    <UrlInput url={url} setUrl={setUrl} handleSave={handleSave} />
-  ) : (
-    <Button
-      onClick={() => window.open(url || "#", "_blank", "noopener,noreferrer")}
-      variant="secondary"
-      className="flex items-center"
-    >
-      Visit Onshape
-      <FaExternalLinkAlt className="ml-2" />
-    </Button>
-  );
-};
-
 interface UpdateButtonProps {
   isEditing: boolean;
   setIsEditing: (isEditing: boolean) => void;
