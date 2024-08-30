@@ -10,13 +10,11 @@ from store.app.crud.base import TABLE_NAME, BaseCrud
 from store.app.crud.email import EmailCrud
 from store.app.crud.listings import ListingsCrud
 from store.app.crud.onshape import OnshapeCrud
-from store.app.crud.urdf import UrdfCrud
 from store.app.crud.users import UserCrud
 
 
 class Crud(
     OnshapeCrud,
-    UrdfCrud,
     EmailCrud,
     UserCrud,
     ListingsCrud,
