@@ -430,6 +430,7 @@ def get_artifact_name(
 def get_artifact_url(
     *,
     artifact: Artifact | None = None,
+    artifact_id: str | None = None,
     artifact_type: ArtifactType | None = None,
     listing_id: str | None = None,
     name: str | None = None,
@@ -437,6 +438,7 @@ def get_artifact_url(
 ) -> str:
     artifact_name = get_artifact_name(
         artifact=artifact,
+        artifact_id=artifact_id,
         listing_id=listing_id,
         name=name,
         artifact_type=artifact_type,

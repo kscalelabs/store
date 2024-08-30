@@ -148,6 +148,9 @@ class UserCrud(BaseCrud):
         source: APIKeySource,
         permissions: APIKeyPermissionSet,
     ) -> APIKey:
+        api_key_count = await self._count_items(APIKey, expression_attribute_values={":user_id": user_id})
+        if api_key_count >= 10:
+            raise ValueError("User has reached the maximum number of API keys (10)")
         api_key = APIKey.create(user_id=user_id, source=source, permissions=permissions)
         await self._add_item(api_key)
         return api_key

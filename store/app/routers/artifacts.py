@@ -59,7 +59,8 @@ async def artifact_url(
     # TODO: Use CloudFront API to return a signed CloudFront URL.
     return RedirectResponse(
         url=get_artifact_url(
-            artifact_type=artifact_type,
+            artifact_type=artifact.artifact_type,
+            artifact_id=artifact.id,
             listing_id=listing_id,
             name=s3_filename,
             size=size,
