@@ -30,7 +30,7 @@ const ArtifactCard: React.FC<ArtifactCardProps> = ({
     >
       <div className="p-4 flex-grow">
         <div className="flex justify-between items-center mb-2">
-          <h3 className="text-lg font-semibold">{name}</h3>
+          <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
           {canEdit && (
             <Button
               onClick={onDelete}
