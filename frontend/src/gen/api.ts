@@ -700,6 +700,17 @@ export interface components {
             /** Api Key */
             api_key: string;
         };
+        /** Body_pull_onshape_document_onshape_pull__listing_id__get */
+        Body_pull_onshape_document_onshape_pull__listing_id__get: {
+            /** Suffix To Joint Effort */
+            suffix_to_joint_effort?: {
+                [key: string]: number;
+            } | null;
+            /** Suffix To Joint Velocity */
+            suffix_to_joint_velocity?: {
+                [key: string]: number;
+            } | null;
+        };
         /** Body_upload_artifacts_upload__listing_id__post */
         Body_upload_artifacts_upload__listing_id__post: {
             /** Files */
@@ -1892,6 +1903,13 @@ export interface operations {
         parameters: {
             query?: {
                 token?: string | null;
+                default_prismatic_joint_effort?: number;
+                default_prismatic_joint_velocity?: number;
+                default_revolute_joint_effort?: number;
+                default_revolute_joint_velocity?: number;
+                voxel_size?: number;
+                convex_collision_meshes?: boolean;
+                add_mjcf?: boolean;
             };
             header?: never;
             path: {
@@ -1899,7 +1917,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["Body_pull_onshape_document_onshape_pull__listing_id__get"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
