@@ -12,7 +12,8 @@ COPY /store/requirements.txt /app
 RUN apt-get update && apt-get install -y \
     libglfw3 \
     libglfw3-dev \
-    libgomp1
+    libgomp1 \
+    git
 
 # Install Python dependencies.
 RUN pip install --no-cache-dir -r requirements.txt

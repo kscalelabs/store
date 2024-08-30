@@ -36,4 +36,4 @@ types-aioboto3[dynamodb, s3]
 # Converting files
 pybullet
 mujoco
-kscale-onshape-library[all]
+kscale-onshape-library[all] @ git+https://github.com/kscalelabs/onshape.git@master
