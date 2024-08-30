@@ -231,6 +231,16 @@ const ListingOnshape = (props: Props) => {
         </div>
       ) : (
         <div className="flex flex-col items-start w-full">
+          <div className="mb-2">
+            <a
+              href={permUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 hover:text-blue-700 underline"
+            >
+              View Onshape Model
+            </a>
+          </div>
           {edit && (
             <UpdateButtons
               isEditing={isEditing}
