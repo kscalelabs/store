@@ -157,7 +157,7 @@ class ArtifactsCrud(BaseCrud):
         description: str | None = None,
     ) -> Artifact:
         artifact = Artifact.create(
-            user_id=listing.user_id,  # Add this line to include the user_id
+            user_id=listing.user_id,
             listing_id=listing.id,
             name=name,
             artifact_type=artifact_type,
@@ -165,17 +165,17 @@ class ArtifactsCrud(BaseCrud):
         )
 
         # Prepend the artifact ID to the filename
-        _, file_extension = os.path.splitext(name)
-        s3_filename = f"{artifact.id}{file_extension}"
+        s3_filename = get_artifact_name(artifact=artifact, name=name, artifact_type=artifact_type)
 
-        await self._upload_to_s3(
-            data=file,
-            name=name,  # This is the original filename that will be used when downloading
-            filename=s3_filename,  # This is the unique filename used in S3
-            content_type=DOWNLOAD_CONTENT_TYPE[artifact_type],
+        await asyncio.gather(
+            self._upload_to_s3(
+                data=file,
+                name=name,
+                filename=s3_filename,
+                content_type=DOWNLOAD_CONTENT_TYPE[artifact_type],
+            ),
+            self._add_item(artifact),
         )
-
-        await self._add_item(artifact)
         return artifact
 
     async def upload_artifact(
