@@ -205,25 +205,13 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         sorted_items = sorted(response, key=sort_key, reverse=True)
         return sorted_items[(page - 1) * ITEMS_PER_PAGE : page * ITEMS_PER_PAGE], page * ITEMS_PER_PAGE < len(response)
 
-    async def _count_items(
-        self,
-        item_class: type[T],
-        expression_attribute_values: dict[str, Any] | None = None,
-    ) -> int:
+    async def _count_items(self, item_class: type[T]) -> int:
         table = await self.db.Table(TABLE_NAME)
-        if expression_attribute_values is None:
-            item_dict = await table.scan(
-                IndexName="type_index",
-                Select="COUNT",
-                FilterExpression=Key("type").eq(item_class.__name__),
-            )
-        else:
-            item_dict = await table.scan(
-                IndexName="type_index",
-                Select="COUNT",
-                FilterExpression=Key("type").eq(item_class.__name__),
-                ExpressionAttributeValues=expression_attribute_values,
-            )
+        item_dict = await table.scan(
+            IndexName="type_index",
+            Select="COUNT",
+            FilterExpression=Key("type").eq(item_class.__name__),
+        )
         return item_dict["Count"]
 
     def _validate_item(self, data: dict[str, Any], item_class: type[T]) -> T:

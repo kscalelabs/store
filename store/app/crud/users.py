@@ -4,9 +4,10 @@ import asyncio
 import warnings
 from typing import Any, Literal, overload
 
+from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
-from store.app.crud.base import BaseCrud
+from store.app.crud.base import TABLE_NAME, BaseCrud
 from store.app.model import (
     APIKey,
     APIKeyPermissionSet,
@@ -148,12 +149,21 @@ class UserCrud(BaseCrud):
         source: APIKeySource,
         permissions: APIKeyPermissionSet,
     ) -> APIKey:
-        api_key_count = await self._count_items(APIKey, expression_attribute_values={":user_id": user_id})
+        api_key_count = await self.get_api_key_count(user_id)
         if api_key_count >= 10:
             raise ValueError("User has reached the maximum number of API keys (10)")
         api_key = APIKey.create(user_id=user_id, source=source, permissions=permissions)
         await self._add_item(api_key)
         return api_key
+
+    async def get_api_key_count(self, user_id: str) -> int:
+        table = await self.db.Table(TABLE_NAME)
+        item_dict = await table.scan(
+            IndexName="type_index",
+            Select="COUNT",
+            FilterExpression=Key("type").eq(APIKey.__name__) & Key("user_id").eq(user_id),
+        )
+        return item_dict["Count"]
 
     async def delete_api_key(self, token: APIKey | str) -> None:
         await self._delete_item(token)
