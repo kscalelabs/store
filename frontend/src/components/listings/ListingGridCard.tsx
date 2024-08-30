@@ -57,7 +57,7 @@ const ListingGridCard = ({ listingId, listing }: Props) => {
       )}
       <div className="flex flex-col flex-grow p-4">
         <CardHeader className="p-0 mb-2">
-          <CardTitle className="text-gray-200 text-lg font-semibold truncate">
+          <CardTitle className="text-gray-800 dark:text-gray-200 text-lg font-semibold truncate">
             {listing ? (
               listing.name
             ) : (

@@ -9,6 +9,7 @@ import LandingLight from "images/LandingLight.png";
 
 import Features from "components/home/Features";
 import { Button } from "components/ui/Button/Button";
+import TypingAnimation from "components/ui/TypingAnimation";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -52,8 +53,8 @@ const Home = () => {
               Create
             </Button>
           </div>
-          <p className="mt-8 text-white text-sm italic">
-            Built with ❤️ by{" "}
+          <p className="flex flex-row gap-1 mt-8 text-white text-sm italic">
+            <TypingAnimation className="" text="Built with ❤️ by " />
             <a
               href="https://kscalelabs.com"
               target="_blank"
@@ -93,8 +94,8 @@ const Home = () => {
               Create
             </Button>
           </div>
-          <p className="mt-4 text-white text-sm italic">
-            Built with ❤️ by{" "}
+          <p className="flex flex-row gap-1 mt-8 text-white text-sm italic">
+            <TypingAnimation className="" text="Built with ❤️ by " />
             <a
               href="https://kscalelabs.com"
               target="_blank"
