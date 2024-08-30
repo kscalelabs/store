@@ -160,7 +160,7 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
                                 "  https://github.com/kscalelabs/onshape",
                                 "To reproduce locally, run:",
                                 "  pip install kscale-onshape-library",
-                                f"  kol run '{onshape_url}'`",
+                                f"  kol run '{onshape_url}'",
                             ]
                         ),
                         "error",
