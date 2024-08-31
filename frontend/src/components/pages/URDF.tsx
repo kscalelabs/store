@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { FaDownload, FaFileDownload, FaHome, FaList } from "react-icons/fa";
+import {
+  FaDownload,
+  FaFile,
+  FaFileDownload,
+  FaFolder,
+  FaFolderOpen,
+  FaHome,
+  FaList,
+} from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { components } from "gen/api";
@@ -17,17 +25,98 @@ interface UntarredFile {
   content: Uint8Array;
 }
 
+const buildFileTree = (files: UntarredFile[]): FileTreeNode => {
+  const root: FileTreeNode = { name: "root", isDirectory: true, children: [] };
+
+  files.forEach((file) => {
+    const parts = file.name.split("/");
+    let currentNode = root;
+
+    parts.forEach((part, index) => {
+      if (index === parts.length - 1) {
+        currentNode.children.push({
+          name: part,
+          isDirectory: false,
+          children: [],
+          content: file.content,
+        });
+      } else {
+        let childNode = currentNode.children.find(
+          (child) => child.name === part && child.isDirectory,
+        );
+        if (!childNode) {
+          childNode = { name: part, isDirectory: true, children: [] };
+          currentNode.children.push(childNode);
+        }
+        currentNode = childNode;
+      }
+    });
+  });
+
+  return root;
+};
+
+interface FileTreeNode {
+  name: string;
+  isDirectory: boolean;
+  children: FileTreeNode[];
+  content?: Uint8Array;
+}
+
+const FileTreeView: React.FC<{ node: FileTreeNode; depth?: number }> = ({
+  node,
+  depth = 0,
+}) => {
+  const [isOpen, setIsOpen] = useState(depth === 0);
+
+  const toggleOpen = () => setIsOpen(!isOpen);
+
+  const indent = depth * 20;
+
+  if (node.isDirectory) {
+    return (
+      <div>
+        <div
+          className="flex items-center cursor-pointer"
+          style={{ paddingLeft: `${indent}px` }}
+          onClick={toggleOpen}
+        >
+          {isOpen ? (
+            <FaFolderOpen className="mr-2 text-yellow-500" />
+          ) : (
+            <FaFolder className="mr-2 text-yellow-500" />
+          )}
+          <span>{node.name}</span>
+        </div>
+        {isOpen && (
+          <div>
+            {node.children.map((child, index) => (
+              <FileTreeView key={index} node={child} depth={depth + 1} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  } else {
+    return (
+      <div className="flex items-center" style={{ paddingLeft: `${indent}px` }}>
+        <FaFile className="mr-2 text-gray-500" />
+        <span>{node.name}</span>
+        <span className="ml-2 text-xs text-gray-500">
+          ({node.content?.length} bytes)
+        </span>
+      </div>
+    );
+  }
+};
+
 const URDFViewer = ({ files }: { files: UntarredFile[] }) => {
+  const fileTree = buildFileTree(files);
+
   return (
     <div className="h-[600px] w-full border border-gray-300 rounded-md p-4 overflow-auto">
-      <h2 className="text-xl font-semibold mb-4">Untarred Files:</h2>
-      <ul>
-        {files.map((file, index) => (
-          <li key={index} className="mb-2">
-            {file.name} ({file.content.length} bytes)
-          </li>
-        ))}
-      </ul>
+      <h2 className="text-xl font-semibold mb-4">URDF Files:</h2>
+      <FileTreeView node={fileTree} />
     </div>
   );
 };
@@ -54,7 +143,14 @@ const parseTar = (buffer: Uint8Array): UntarredFile[] => {
     const content = buffer.slice(offset, offset + fileSize);
     offset += Math.ceil(fileSize / 512) * 512;
 
-    files.push({ name: filename, content });
+    // Skip PaxHeader entries, empty filenames, and files starting with "./"
+    if (
+      !filename.includes("PaxHeader") &&
+      filename !== "" &&
+      !filename.startsWith("./")
+    ) {
+      files.push({ name: filename, content });
+    }
   }
 
   return files;
@@ -194,7 +290,7 @@ const URDF = () => {
         <URDFViewer files={untarredFiles} />
       ) : (
         <div className="h-[600px] w-full border border-gray-300 rounded-md p-4 flex items-center justify-center text-gray-500">
-          Load the URDF file to view its contents
+          Click "Load and Untar" to view the URDF files
         </div>
       )}
     </div>
