@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { components } from "gen/api";
 import { humanReadableError, useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
+import pako from "pako";
 
 import { Button } from "components/ui/Button/Button";
 import Spinner from "components/ui/Spinner";
@@ -13,22 +14,50 @@ type SingleArtifactResponse = components["schemas"]["SingleArtifactResponse"];
 
 interface UntarredFile {
   name: string;
-  content: string;
+  content: Uint8Array;
 }
 
-const URDFViewer: React.FC<{ files: UntarredFile[] }> = ({ files }) => {
+const URDFViewer = ({ files }: { files: UntarredFile[] }) => {
   return (
     <div className="h-[600px] w-full border border-gray-300 rounded-md p-4 overflow-auto">
       <h2 className="text-xl font-semibold mb-4">Untarred Files:</h2>
       <ul>
         {files.map((file, index) => (
           <li key={index} className="mb-2">
-            {file.name}
+            {file.name} ({file.content.length} bytes)
           </li>
         ))}
       </ul>
     </div>
   );
+};
+
+const parseTar = (buffer: Uint8Array): UntarredFile[] => {
+  const files: UntarredFile[] = [];
+  let offset = 0;
+
+  while (offset < buffer.length - 512) {
+    const header = buffer.slice(offset, offset + 512);
+    const filenameBuffer = header.slice(0, 100);
+    const filename = new TextDecoder()
+      .decode(filenameBuffer)
+      .replace(/\0/g, "")
+      .trim();
+
+    if (filename === "") break;
+
+    const fileSizeBuffer = header.slice(124, 136);
+    const fileSizeStr = new TextDecoder().decode(fileSizeBuffer).trim();
+    const fileSize = parseInt(fileSizeStr, 8);
+
+    offset += 512;
+    const content = buffer.slice(offset, offset + fileSize);
+    offset += Math.ceil(fileSize / 512) * 512;
+
+    files.push({ name: filename, content });
+  }
+
+  return files;
 };
 
 const URDF = () => {
@@ -90,33 +119,14 @@ const URDF = () => {
     setUntarring(true);
     try {
       const response = await fetch(artifact.urls.large);
-      const file = await response.blob();
-      const decompressedReadableStream = file
-        .stream()
-        .pipeThrough(new DecompressionStream("gzip"));
-      const decompressedBlob = await new Response(
-        decompressedReadableStream,
-      ).blob();
-      const decompressedText = await decompressedBlob.text();
+      const arrayBuffer = await response.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
 
-      // Simple parsing of tar file structure (this is a basic implementation and might need refinement)
-      const files: UntarredFile[] = [];
-      const blocks = decompressedText.match(/.{1,512}/g) || [];
+      // Decompress gzip
+      const decompressed = pako.ungzip(uint8Array);
 
-      for (let i = 0; i < blocks.length; i++) {
-        const header = blocks[i];
-        const fileName = header.substr(0, 100).trim();
-        if (fileName) {
-          const fileSize = parseInt(header.substr(124, 12), 8);
-          const contentBlocks = Math.ceil(fileSize / 512);
-          const content = blocks
-            .slice(i + 1, i + 1 + contentBlocks)
-            .join("")
-            .substr(0, fileSize);
-          files.push({ name: fileName, content });
-          i += contentBlocks;
-        }
-      }
+      // Parse tar
+      const files = parseTar(decompressed);
 
       setUntarredFiles(files);
     } catch (err) {
@@ -184,7 +194,7 @@ const URDF = () => {
         <URDFViewer files={untarredFiles} />
       ) : (
         <div className="h-[600px] w-full border border-gray-300 rounded-md p-4 flex items-center justify-center text-gray-500">
-          Load the URDF file to view it's contents
+          Load the URDF file to view its contents
         </div>
       )}
     </div>
