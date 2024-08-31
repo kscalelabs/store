@@ -221,12 +221,6 @@ const URDFRenderer: React.FC<{
 
     scene.add(robot);
 
-    // Log the entire robot structure
-    const logObject = (obj: THREE.Object3D, depth = 0) => {
-      const indent = " ".repeat(depth * 2);
-      obj.children.forEach((child) => logObject(child, depth + 1));
-    };
-    logObject(robot);
     // Center and scale the robot
     const box = new THREE.Box3().setFromObject(robot);
     const center = box.getCenter(new THREE.Vector3());
