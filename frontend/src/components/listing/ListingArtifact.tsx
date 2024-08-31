@@ -29,7 +29,7 @@ const ListingArtifact: React.FC<ListingArtifactProps> = ({
   const { addErrorAlert, addAlert } = useAlertQueue();
 
   useEffect(() => {
-    const fetchArtifact = async () => {
+    (async () => {
       try {
         const { data, error } = await auth.client.GET(
           "/artifacts/info/{artifact_id}",
@@ -48,9 +48,7 @@ const ListingArtifact: React.FC<ListingArtifactProps> = ({
       } finally {
         setLoading(false);
       }
-    };
-
-    fetchArtifact();
+    })();
   }, [artifactId, auth.client, addErrorAlert]);
 
   const handleDelete = async () => {

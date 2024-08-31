@@ -14,6 +14,7 @@ import APIKeys from "components/pages/APIKeys";
 import About from "components/pages/About";
 import Browse from "components/pages/Browse";
 import Create from "components/pages/Create";
+import FileBrowser from "components/pages/FileBrowser";
 import Home from "components/pages/Home";
 import ListingDetails from "components/pages/ListingDetails";
 import Login from "components/pages/Login";
@@ -46,6 +47,10 @@ const App = () => {
                       <Route path="/item/:id" element={<ListingDetails />} />
                       <Route path="/404" element={<NotFound />} />
                       <Route path="*" element={<NotFoundRedirect />} />
+                      <Route
+                        path="/file/:artifactId"
+                        element={<FileBrowser />}
+                      />
                     </Routes>
                   </Container>
                 </div>
