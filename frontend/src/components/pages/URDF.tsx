@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaDownload, FaFileDownload, FaHome, FaList } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -31,7 +31,7 @@ const URDFViewer: React.FC<{ files: UntarredFile[] }> = ({ files }) => {
   );
 };
 
-const URDF: React.FC = () => {
+const URDF = () => {
   const { artifactId } = useParams<{ artifactId: string }>();
   const [artifact, setArtifact] = useState<SingleArtifactResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,7 +41,7 @@ const URDF: React.FC = () => {
   const { addErrorAlert } = useAlertQueue();
   const navigate = useNavigate();
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchArtifact = async () => {
       if (!artifactId) return;
 
@@ -67,6 +67,19 @@ const URDF: React.FC = () => {
 
     fetchArtifact();
   }, [artifactId, auth.client, addErrorAlert]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center pt-8">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (!artifact?.urls?.large) {
+    navigate("/");
+    return null;
+  }
 
   const handleLoadAndUntar = async () => {
     if (!artifact?.urls?.large) {
@@ -127,19 +140,6 @@ const URDF: React.FC = () => {
     document.body.removeChild(link);
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center pt-8">
-        <Spinner />
-      </div>
-    );
-  }
-
-  if (!artifact?.urls?.large) {
-    navigate("/");
-    return null;
-  }
-
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-4">{artifact.name}</h1>
@@ -184,7 +184,7 @@ const URDF: React.FC = () => {
         <URDFViewer files={untarredFiles} />
       ) : (
         <div className="h-[600px] w-full border border-gray-300 rounded-md p-4 flex items-center justify-center text-gray-500">
-          Click "Load and Untar" to view the URDF files
+          Load the URDF file to view it's contents
         </div>
       )}
     </div>

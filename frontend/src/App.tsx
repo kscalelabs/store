@@ -21,7 +21,8 @@ import Logout from "components/pages/Logout";
 import NotFound from "components/pages/NotFound";
 import Profile from "components/pages/Profile";
 import Signup from "components/pages/Signup";
-import URDF from './components/pages/URDF';
+
+import URDF from "./components/pages/URDF";
 
 const App = () => {
   return (
