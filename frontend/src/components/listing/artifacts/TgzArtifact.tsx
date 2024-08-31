@@ -53,12 +53,12 @@ const UrdfViewerButton = ({ artifact }: Props) => {
     <Button
       className="p-3 w-full mt-2"
       onClick={() => {
-        navigate(`/urdf/${artifact.artifact_id}`);
+        navigate(`/file/${artifact.artifact_id}`);
       }}
       variant="secondary"
     >
       <code className="text-xs text-gray-500 font-mono truncate flex-grow mr-2">
-        View URDF
+        View Files
       </code>
       <span className="flex-shrink-0">
         <FaEye className="text-gray-500" />
