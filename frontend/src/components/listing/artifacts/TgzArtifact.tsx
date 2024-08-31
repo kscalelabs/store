@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { FaCheck, FaCopy } from "react-icons/fa";
+import { FaCheck, FaCopy, FaEye } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 import { cx } from "class-variance-authority";
 import { components } from "gen/api";
+
+import { Button } from "components/ui/Button/Button";
 
 type SingleArtifactResponse = components["schemas"]["SingleArtifactResponse"];
 
@@ -22,14 +25,12 @@ const DownloadButton = ({ command, isFirst, prefix }: ButtonProps) => {
   };
 
   return (
-    <button
-      className={cx(
-        "bg-gray-100 p-3 rounded-md flex items-center justify-between cursor-pointer w-full text-left hover:bg-gray-200 transition-colors duration-200",
-        isFirst ? "mt-0" : "mt-2",
-      )}
+    <Button
+      className={cx("p-3 w-full", isFirst ? "mt-0" : "mt-2")}
       onClick={() => copyToClipboard(command)}
       title={command}
       disabled={copied}
+      variant="secondary"
     >
       <code className="text-xs text-gray-500 font-mono truncate flex-grow mr-2">
         {prefix ? `${prefix}: ${command}` : command}
@@ -41,7 +42,28 @@ const DownloadButton = ({ command, isFirst, prefix }: ButtonProps) => {
           <FaCopy className="text-gray-500" />
         )}
       </span>
-    </button>
+    </Button>
+  );
+};
+
+const UrdfViewerButton = ({ artifact }: Props) => {
+  const navigate = useNavigate();
+
+  return (
+    <Button
+      className="p-3 w-full mt-2"
+      onClick={() => {
+        navigate(`/urdf/${artifact.artifact_id}`);
+      }}
+      variant="secondary"
+    >
+      <code className="text-xs text-gray-500 font-mono truncate flex-grow mr-2">
+        View URDF
+      </code>
+      <span className="flex-shrink-0">
+        <FaEye className="text-gray-500" />
+      </span>
+    </Button>
   );
 };
 
@@ -59,7 +81,10 @@ const TgzArtifact = ({ artifact }: Props) => {
         isFirst={true}
       />
       {url && (
-        <DownloadButton command={`${url}`} isFirst={false} prefix="URL" />
+        <>
+          <DownloadButton command={`${url}`} isFirst={false} prefix="URL" />
+          <UrdfViewerButton artifact={artifact} />
+        </>
       )}
     </>
   );

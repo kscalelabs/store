@@ -21,6 +21,7 @@ import Logout from "components/pages/Logout";
 import NotFound from "components/pages/NotFound";
 import Profile from "components/pages/Profile";
 import Signup from "components/pages/Signup";
+import URDF from './components/pages/URDF';
 
 const App = () => {
   return (
@@ -46,6 +47,7 @@ const App = () => {
                       <Route path="/item/:id" element={<ListingDetails />} />
                       <Route path="/404" element={<NotFound />} />
                       <Route path="*" element={<NotFoundRedirect />} />
+                      <Route path="/urdf/:artifactId" element={<URDF />} />
                     </Routes>
                   </Container>
                 </div>
