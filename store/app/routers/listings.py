@@ -220,6 +220,7 @@ class GetListingResponse(BaseModel):
     user_vote: bool | None
     creator_id: str  # Add this line
 
+
 @listings_router.get("/{id}", response_model=GetListingResponse)
 async def get_listing(
     id: str,

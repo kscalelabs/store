@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaCheck, FaEye, FaHome, FaList, FaPen, FaUser } from "react-icons/fa";
+import { FaCheck, FaEye, FaHome, FaList, FaPen } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 import { paths } from "gen/api";
@@ -130,7 +130,6 @@ const NavigationButtons = () => {
 
 const ListingHeader = (props: Props) => {
   const { listing } = props;
-  const navigate = useNavigate();
 
   return (
     <div className="relative p-4 mb-4">

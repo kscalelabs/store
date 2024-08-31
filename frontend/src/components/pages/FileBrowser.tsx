@@ -117,7 +117,10 @@ const FileTreeView: React.FC<FileTreeViewProps> = ({
           ) : (
             <FaFolder className="mr-2 text-yellow-500 flex-shrink-0" />
           )}
-          <span className="text-sm truncate text-gray-800 dark:text-gray-200" title={node.name}>
+          <span
+            className="text-sm truncate text-gray-800 dark:text-gray-200"
+            title={node.name}
+          >
             {node.name}
           </span>
         </div>
