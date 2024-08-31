@@ -32,7 +32,7 @@ const DownloadButton = ({ command, isFirst, prefix }: ButtonProps) => {
       disabled={copied}
       variant="secondary"
     >
-      <code className="text-xs text-gray-500 font-mono truncate flex-grow mr-2">
+      <code className="text-xs font-mono truncate flex-grow mr-2">
         {prefix ? `${prefix}: ${command}` : command}
       </code>
       <span className="flex-shrink-0">
@@ -57,7 +57,7 @@ const UrdfViewerButton = ({ artifact }: Props) => {
       }}
       variant="secondary"
     >
-      <code className="text-xs text-gray-500 font-mono truncate flex-grow mr-2">
+      <code className="text-xs font-mono truncate flex-grow mr-2">
         View Files
       </code>
       <span className="flex-shrink-0">
