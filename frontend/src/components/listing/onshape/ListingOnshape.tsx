@@ -64,12 +64,12 @@ const UpdateButtons = (props: UpdateButtonProps) => {
   } = props;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 pt-2 w-full">
+    <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 pt-2 w-full">
       {!isEditing && url && (
         <Button
           onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
           variant="secondary"
-          className="flex items-center justify-center"
+          className="w-full sm:w-auto flex items-center justify-center"
           disabled={disabled}
         >
           Visit Onshape
@@ -85,7 +85,7 @@ const UpdateButtons = (props: UpdateButtonProps) => {
           }
         }}
         variant="secondary"
-        className="flex items-center justify-center"
+        className="w-full sm:w-auto flex items-center justify-center"
         disabled={disabled}
       >
         {isEditing ? (
@@ -104,7 +104,7 @@ const UpdateButtons = (props: UpdateButtonProps) => {
         <Button
           onClick={handleRemove}
           variant="destructive"
-          className="flex items-center justify-center"
+          className="w-full sm:w-auto flex items-center justify-center"
           disabled={disabled}
         >
           Remove
@@ -115,7 +115,7 @@ const UpdateButtons = (props: UpdateButtonProps) => {
         <Button
           onClick={handleReload}
           variant="primary"
-          className="flex items-center justify-center"
+          className="w-full sm:w-auto flex items-center justify-center"
           disabled={disabled}
         >
           Sync URDF
