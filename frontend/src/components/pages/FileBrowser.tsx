@@ -642,7 +642,7 @@ const FileBrowser = () => {
       </div>
       <div className="flex flex-col lg:flex-row lg:space-x-4">
         <div className="w-full lg:w-1/3 mb-4 lg:mb-0">
-          <div className="border border-gray-300 rounded-md p-4 relative lg:h-[600px] overflow-auto">
+          <div className="border border-gray-300 rounded-md p-6 relative lg:h-[600px] overflow-auto">
             {untarredFiles.length === 0 ? (
               <div className="absolute inset-0 flex items-center justify-center">
                 <Button
