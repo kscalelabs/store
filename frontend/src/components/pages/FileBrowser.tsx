@@ -17,7 +17,7 @@ import pako from "pako";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
-import URDFLoader from "urdf-loader";
+import URDFLoader, { URDFJoint } from "urdf-loader";
 
 import { Button } from "components/ui/Button/Button";
 import Spinner from "components/ui/Spinner";
@@ -88,16 +88,20 @@ const FileTreeView: React.FC<FileTreeViewProps> = ({
 
   const truncateFilename = (filename: string, maxLength: number) => {
     if (filename.length <= maxLength) return filename;
-    const extension = filename.split(".").pop();
-    const nameWithoutExtension = filename.substring(
-      0,
-      filename.length - extension!.length - 1,
-    );
-    const truncatedName = nameWithoutExtension.substring(
-      0,
-      maxLength - 3 - extension!.length,
-    );
-    return `${truncatedName}...${extension}`;
+
+    const extension = filename.split(".").pop() || "";
+    const nameWithoutExtension = filename.slice(0, -extension.length - 1);
+
+    const charsToShow = maxLength - 3 - extension.length;
+    const frontChars = Math.ceil(charsToShow / 2);
+    const backChars = Math.floor(charsToShow / 2);
+
+    const truncatedName =
+      nameWithoutExtension.slice(0, frontChars) +
+      "..." +
+      nameWithoutExtension.slice(-backChars);
+
+    return `${truncatedName}.${extension}`;
   };
 
   if (node.isDirectory) {
@@ -134,7 +138,7 @@ const FileTreeView: React.FC<FileTreeViewProps> = ({
     );
   } else {
     const isSelected = selectedFile && selectedFile.name === node.name;
-    const truncatedName = truncateFilename(node.name, 30); // Adjust 30 to your preferred max length
+    const truncatedName = truncateFilename(node.name, 30);
     return (
       <div
         className={`flex items-center cursor-pointer hover:bg-gray-100 py-1 ${
@@ -169,13 +173,15 @@ const URDFRenderer: React.FC<{
     if (!containerRef.current) return;
 
     const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf0f0f0);
+
     const camera = new THREE.PerspectiveCamera(
-      75,
+      50,
       containerRef.current.clientWidth / containerRef.current.clientHeight,
       0.1,
       1000,
     );
-    const renderer = new THREE.WebGLRenderer();
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(
       containerRef.current.clientWidth,
       containerRef.current.clientHeight,
@@ -183,14 +189,19 @@ const URDFRenderer: React.FC<{
     containerRef.current.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);
-    camera.position.set(0, 5, 10);
-    controls.update();
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.25;
 
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(1, 1, 1);
-    scene.add(light);
+    // Lighting setup
+    const frontLight = new THREE.DirectionalLight(0xffffff, 0.7);
+    frontLight.position.set(1, 1, 1);
+    scene.add(frontLight);
 
-    const ambientLight = new THREE.AmbientLight(0x404040);
+    const backLight = new THREE.DirectionalLight(0xffffff, 0.3);
+    backLight.position.set(-1, -1, -1);
+    scene.add(backLight);
+
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
     scene.add(ambientLight);
 
     const loader = new URDFLoader();
@@ -202,17 +213,58 @@ const URDFRenderer: React.FC<{
         const mesh = new THREE.Mesh(geometry, material);
         onComplete(mesh);
       } else {
-        console.error(`File not found: ${path}`);
-        onComplete(new THREE.Object3D()); // Pass an empty Object3D instead of null
+        onComplete(new THREE.Object3D());
       }
     };
 
     const robot = loader.parse(urdfContent);
+
     scene.add(robot);
 
+    // Log the entire robot structure
+    const logObject = (obj: THREE.Object3D, depth = 0) => {
+      const indent = " ".repeat(depth * 2);
+      obj.children.forEach((child) => logObject(child, depth + 1));
+    };
+    logObject(robot);
+    // Center and scale the robot
+    const box = new THREE.Box3().setFromObject(robot);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const scale = 5 / maxDim;
+    robot.scale.multiplyScalar(scale);
+    robot.position.sub(center.multiplyScalar(scale));
+
+    // Position camera
+    const distance = 10;
+    camera.position.set(distance, distance, distance);
+    camera.lookAt(scene.position);
+    controls.update();
+
+    // Add a grid for reference
+    const gridHelper = new THREE.GridHelper(10, 10);
+    scene.add(gridHelper);
+
+    let time = 0;
     const animate = () => {
       requestAnimationFrame(animate);
-      controls.update();
+      time += 0.01;
+
+      // Animate the robot
+      robot.traverse((child) => {
+        if ("isURDFJoint" in child && child.isURDFJoint) {
+          const joint = child as URDFJoint;
+          const jointMin = joint.limit.lower;
+          const jointMax = joint.limit.upper;
+          const jointTargetAngle =
+            jointMin.valueOf() +
+            ((jointMax.valueOf() - jointMin.valueOf()) * (1 + Math.sin(time))) /
+              2;
+          joint.setJointValue(jointTargetAngle);
+        }
+      });
+
       renderer.render(scene, camera);
     };
     animate();
@@ -248,7 +300,7 @@ const STLRenderer: React.FC<{ stlContent: ArrayBuffer }> = ({ stlContent }) => {
     if (!containerRef.current) return;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf0f0f0); // Light gray background
+    scene.background = new THREE.Color(0xf0f0f0);
 
     const camera = new THREE.PerspectiveCamera(
       50,
@@ -271,7 +323,7 @@ const STLRenderer: React.FC<{ stlContent: ArrayBuffer }> = ({ stlContent }) => {
     controls.maxDistance = 100;
     controls.maxPolarAngle = Math.PI / 2;
 
-    // Key lighting improvement: Use multiple lights
+    // Lighting setup
     const frontLight = new THREE.DirectionalLight(0xffffff, 0.7);
     frontLight.position.set(1, 1, 1);
     scene.add(frontLight);
@@ -393,8 +445,6 @@ const FileTreeViewer = ({
     <div className="h-full overflow-auto">
       <h2 className="text-xl font-semibold mb-4">Files:</h2>
       <div className="pr-4">
-        {" "}
-        {/* Added padding-right for scrollbar */}
         <FileTreeView
           node={fileTree}
           onFileSelect={onFileSelect}
@@ -615,7 +665,6 @@ const FileBrowser = () => {
           <div className="border border-gray-300 rounded-md overflow-hidden relative h-[600px]">
             {selectedFile && (
               <div className="absolute top-0 left-0 right-0 bg-gray-100 p-2 border-b border-gray-300 break-all z-10">
-                <span className="font-semibold">Selected file:</span>{" "}
                 {selectedFile.name}
               </div>
             )}
