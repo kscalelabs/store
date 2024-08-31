@@ -667,7 +667,7 @@ const FileBrowser = () => {
         <div className="w-full lg:w-2/3">
           <div className="border border-gray-300 rounded-md overflow-hidden relative h-[600px]">
             {selectedFile && (
-              <div className="absolute top-0 left-0 right-0 bg-gray-100 p-2 border-b border-gray-300 break-all z-10">
+              <div className="absolute top-0 left-0 right-0 bg-gray-100 text-gray-800 p-2 border-b border-gray-300 break-all z-10">
                 {selectedFile.name}
               </div>
             )}
