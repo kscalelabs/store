@@ -773,6 +773,8 @@ export interface components {
             score: number;
             /** User Vote */
             user_vote: boolean | null;
+            /** Creator Id */
+            creator_id: string;
         };
         /** GetTokenResponse */
         GetTokenResponse: {

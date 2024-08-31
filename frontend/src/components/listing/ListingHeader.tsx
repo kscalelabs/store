@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaCheck, FaEye, FaPen, FaTimes } from "react-icons/fa";
+import { FaCheck, FaEye, FaHome, FaList, FaPen } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 import { paths } from "gen/api";
@@ -103,18 +103,28 @@ const ListingTitle = (props: Props) => {
   );
 };
 
-const CloseButton = () => {
+const NavigationButtons = () => {
   const navigate = useNavigate();
 
   return (
-    <Button
-      onClick={() => navigate(-1)}
-      variant="outline"
-      className="hover:bg-gray-200 dark:hover:bg-gray-700 bg-opacity-50"
-    >
-      <span className="md:hidden block mr-2">Close</span>
-      <FaTimes />
-    </Button>
+    <div className="flex space-x-2">
+      <Button
+        onClick={() => navigate("/")}
+        variant="outline"
+        className="hover:bg-gray-200 dark:hover:bg-gray-700 bg-opacity-50"
+      >
+        <FaHome className="mr-2" />
+        <span className="hidden md:inline">Home</span>
+      </Button>
+      <Button
+        onClick={() => navigate("/browse")}
+        variant="outline"
+        className="hover:bg-gray-200 dark:hover:bg-gray-700 bg-opacity-50"
+      >
+        <FaList className="mr-2" />
+        <span className="hidden md:inline">Browse</span>
+      </Button>
+    </div>
   );
 };
 
@@ -131,7 +141,7 @@ const ListingHeader = (props: Props) => {
         />
         <div>
           <ListingTitle {...props} />
-          <div className="mt-2 text-sm text-gray-500 flex items-center gap-4">
+          <div className="mt-2 text-sm text-gray-500 flex items-center gap-4 flex-wrap">
             <div className="flex items-center">
               <FaEye className="mr-1" />
               <span>{formatNumber(listing.views)} views</span>
@@ -141,7 +151,7 @@ const ListingHeader = (props: Props) => {
             </div>
           </div>
         </div>
-        <CloseButton />
+        <NavigationButtons />
       </div>
     </div>
   );
