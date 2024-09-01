@@ -3,11 +3,6 @@ import React from "react";
 import { type VariantProps, cva } from "class-variance-authority";
 import { cn } from "utils";
 
-export interface SelectOption {
-  value: string;
-  label: string;
-}
-
 const selectVariants = cva(
   "flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50",
   {
@@ -29,14 +24,15 @@ const selectVariants = cva(
   },
 );
 
-interface SelectProps
+interface SelectProps<T extends React.Key>
   extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "size">,
     VariantProps<typeof selectVariants> {
-  options: SelectOption[];
+  options: { value: T; label: string }[];
   variant?: "default" | "outline";
 }
 
-const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
+// eslint-disable-next-line react/display-name
+const Select = React.forwardRef<HTMLSelectElement, SelectProps<React.Key>>(
   ({ className, options, variant = "default", size, ...props }, ref) => {
     return (
       <select
@@ -45,15 +41,21 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         {...props}
       >
         {options.map((option) => (
-          <option key={option.value} value={option.value}>
+          <option key={option.value} value={String(option.value)}>
             {option.label}
           </option>
         ))}
       </select>
     );
   },
-);
+) as <T extends React.Key>(
+  props: SelectProps<T> & { ref?: React.ForwardedRef<HTMLSelectElement> },
+) => React.ReactElement;
 
-Select.displayName = "Select";
+const SelectComponent = Select as unknown as {
+  displayName: string;
+  (props: SelectProps<React.Key>): React.ReactElement;
+};
+SelectComponent.displayName = "Select";
 
-export { Select, selectVariants };
+export { SelectComponent as Select, selectVariants };

@@ -3,14 +3,16 @@ import { FaTimes } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { useDebounce } from "@uidotdev/usehooks";
+import { components } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
-import { SortOption } from "types/listings";
 
 import ListingGrid from "components/listings/ListingGrid";
 import { Button } from "components/ui/Button/Button";
 import { Input } from "components/ui/Input/Input";
 import { Select } from "components/ui/Select/Select";
+
+type SortOption = components["schemas"]["SortOption"];
 
 const Browse = () => {
   const auth = useAuthentication();
@@ -30,7 +32,7 @@ const Browse = () => {
 
   const [searchQuery, setSearchQuery] = useState(query || "");
   const debouncedSearch = useDebounce(searchQuery, 300);
-  const [sortOption, setSortOption] = useState("newest");
+  const [sortOption, setSortOption] = useState<SortOption>("most_upvoted");
 
   useEffect(() => {
     handleSearch();
@@ -44,7 +46,7 @@ const Browse = () => {
         query: {
           page: pageNumber,
           search_query: searchQuery,
-          sort_by: sortOption as SortOption,
+          sort_by: sortOption,
           include_user_vote: true,
         },
       },
@@ -61,6 +63,12 @@ const Browse = () => {
   const nextButton = moreListings;
   const hasButton = prevButton || nextButton;
 
+  const options: { value: SortOption; label: string }[] = [
+    { value: "most_upvoted", label: "Most Upvoted" },
+    { value: "most_viewed", label: "Most Viewed" },
+    { value: "newest", label: "Newest" },
+  ];
+
   return (
     <>
       <div className="pb-8">
@@ -68,12 +76,8 @@ const Browse = () => {
           <div>
             <Select
               value={sortOption}
-              onChange={(e) => setSortOption(e.target.value)}
-              options={[
-                { value: "newest", label: "Newest" },
-                { value: "most_viewed", label: "Most Viewed" },
-                { value: "most_upvoted", label: "Most Upvoted" },
-              ]}
+              onChange={(e) => setSortOption(e.target.value as SortOption)}
+              options={options}
               variant="default"
             />
           </div>
