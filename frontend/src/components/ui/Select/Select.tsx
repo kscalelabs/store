@@ -31,6 +31,7 @@ interface SelectProps<T extends React.Key>
   variant?: "default" | "outline";
 }
 
+// eslint-disable-next-line react/display-name
 const Select = React.forwardRef<HTMLSelectElement, SelectProps<React.Key>>(
   ({ className, options, variant = "default", size, ...props }, ref) => {
     return (
@@ -49,6 +50,12 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps<React.Key>>(
   },
 ) as <T extends React.Key>(
   props: SelectProps<T> & { ref?: React.ForwardedRef<HTMLSelectElement> },
-) => JSX.Element;
+) => React.ReactElement;
 
-export { Select, selectVariants };
+const SelectComponent = Select as unknown as {
+  displayName: string;
+  (props: SelectProps<React.Key>): React.ReactElement;
+};
+SelectComponent.displayName = "Select";
+
+export { SelectComponent as Select, selectVariants };
