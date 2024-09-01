@@ -74,7 +74,7 @@ const Browse = () => {
       <div className="pb-8">
         <div className="flex justify-center mt-4 gap-x-2">
           <div>
-            <Select<SortOption>
+            <Select
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value as SortOption)}
               options={options}
