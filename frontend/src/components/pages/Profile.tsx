@@ -161,8 +161,7 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [listingIds, setListingIds] = useState<string[] | null>(null);
 
-  const page = "1";
-  const pageNumber = parseInt(page || "1", 10);
+  const pageNumber = parseInt("1", 10);
 
   useEffect(() => {
     const fetchUser = async () => {

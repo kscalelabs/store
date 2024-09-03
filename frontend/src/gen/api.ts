@@ -1633,6 +1633,7 @@ export interface operations {
       };
       header?: never;
       path: {
+        /** @description User unique identifier */
         id: string;
       };
       cookie?: never;
