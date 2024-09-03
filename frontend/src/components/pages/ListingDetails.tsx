@@ -6,7 +6,6 @@ import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
 import ListingBody from "components/listing/ListingBody";
-import ListingFooter from "components/listing/ListingFooter";
 import ListingHeader from "components/listing/ListingHeader";
 import Spinner from "components/ui/Spinner";
 
@@ -24,7 +23,6 @@ const RenderListing = ({ listing }: RenderListingProps) => {
       <div className="flex-grow">
         <ListingBody listing={listing} />
       </div>
-      <ListingFooter listingId={listing.id} edit={listing.can_edit} />
     </div>
   );
 };
