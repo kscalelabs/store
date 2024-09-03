@@ -4,7 +4,7 @@ import { FaChevronLeft, FaChevronRight, FaPlay, FaUndo } from "react-icons/fa";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
-import URDFLoader, { URDFJoint } from "urdf-loader";
+import URDFLoader, { URDFJoint, URDFLink } from "urdf-loader";
 
 import { UntarredFile } from "./Tarfile";
 
@@ -91,10 +91,10 @@ const URDFRenderer: React.FC<{
     robot.scale.multiplyScalar(scale);
     robot.position.sub(center.multiplyScalar(scale));
 
-    // Position camera
+    // Position camera in front of the robot
     const distance = 10;
-    camera.position.set(distance, distance, distance);
-    camera.lookAt(scene.position);
+    camera.position.set(0, distance / 2, -distance);
+    camera.lookAt(new THREE.Vector3(0, 0, 0));
     controls.update();
 
     // Add a grid for reference
@@ -115,11 +115,21 @@ const URDFRenderer: React.FC<{
           max: Number(joint.limit.upper),
           value: initialValue,
         });
+        joint.setJointValue(initialValue);
         initialValues.push(initialValue);
       }
     });
     setJointControls(joints);
     setInitialJointValues(initialValues);
+
+    // Collect link information.
+    const links: URDFLink[] = [];
+    robot.traverse((child) => {
+      if ("isURDFLink" in child && child.isURDFLink) {
+        const link = child as URDFLink;
+        links.push(link);
+      }
+    });
 
     const animate = () => {
       requestAnimationFrame(animate);
