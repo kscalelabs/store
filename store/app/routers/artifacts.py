@@ -15,7 +15,6 @@ from store.app.model import (
     ArtifactSize,
     ArtifactType,
     User,
-    can_read_artifact,
     can_write_artifact,
     can_write_listing,
     check_content_type,
@@ -88,7 +87,7 @@ class SingleArtifactResponse(BaseModel):
     artifact_type: ArtifactType
     description: str | None
     timestamp: int
-    urls: ArtifactUrls | None
+    urls: ArtifactUrls
     is_new: bool | None = None
 
 
@@ -109,12 +108,6 @@ async def get_artifact_info(
             detail="Could not find artifact associated with the given id",
         )
 
-    # If the artifact is an image, then we always return the URLs. Otherwise,
-    # we only return the URLs if the user has read access.
-    urls: ArtifactUrls | None = None
-    if artifact.artifact_type == "image" or (user is not None and await can_read_artifact(user, artifact)):
-        urls = get_artifact_url_response(artifact=artifact)
-
     return SingleArtifactResponse(
         artifact_id=artifact.id,
         listing_id=artifact.listing_id,
@@ -122,7 +115,7 @@ async def get_artifact_info(
         artifact_type=artifact.artifact_type,
         description=artifact.description,
         timestamp=artifact.timestamp,
-        urls=urls,
+        urls=get_artifact_url_response(artifact=artifact),
     )
 
 

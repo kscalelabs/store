@@ -25,7 +25,11 @@ const ImageModal: React.FC<ImageModalProps> = ({
         >
           <FaTimes />
         </button>
-        <img src={imageUrl} alt={altText} className="w-full h-auto" />
+        <img
+          src={imageUrl}
+          alt={altText}
+          className="w-full h-auto rounded-lg bg-white p-8"
+        />
       </div>
     </div>
   );

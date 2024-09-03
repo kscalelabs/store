@@ -72,20 +72,13 @@ interface Props {
 }
 
 const TgzArtifact = ({ artifact }: Props) => {
-  const url = artifact.urls?.large;
-
   return (
     <>
       <DownloadButton
         command={`kscale urdf download ${artifact.artifact_id}`}
         isFirst={true}
       />
-      {url && (
-        <>
-          <DownloadButton command={`${url}`} isFirst={false} prefix="URL" />
-          <UrdfViewerButton artifact={artifact} />
-        </>
-      )}
+      <UrdfViewerButton artifact={artifact} />
     </>
   );
 };
