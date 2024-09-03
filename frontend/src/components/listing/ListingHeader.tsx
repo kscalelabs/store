@@ -13,6 +13,8 @@ import { Button } from "components/ui/Button/Button";
 import { Input } from "components/ui/Input/Input";
 import Spinner from "components/ui/Spinner";
 
+import ListingDeleteButton from "./ListingDeleteButton";
+
 type ListingResponse =
   paths["/listings/{id}"]["get"]["responses"][200]["content"]["application/json"];
 
@@ -103,7 +105,7 @@ const ListingTitle = (props: Props) => {
   );
 };
 
-const NavigationButtons = () => {
+const NavigationButtons = ({ listing }: Props) => {
   const navigate = useNavigate();
 
   return (
@@ -124,6 +126,7 @@ const NavigationButtons = () => {
         <FaList className="mr-2" />
         <span className="hidden md:inline">Browse</span>
       </Button>
+      {listing.can_edit && <ListingDeleteButton listingId={listing.id} />}
     </div>
   );
 };
@@ -151,7 +154,7 @@ const ListingHeader = (props: Props) => {
             </div>
           </div>
         </div>
-        <NavigationButtons />
+        <NavigationButtons {...props} />
       </div>
     </div>
   );

@@ -72,16 +72,17 @@ const Browse = () => {
   return (
     <>
       <div className="pb-8">
-        <div className="flex justify-center mt-4 gap-x-2">
-          <div>
+        <div className="flex flex-col md:flex-row justify-center items-center mt-4 gap-y-2 md:gap-x-2">
+          <div className="w-full md:w-auto">
             <Select
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value as SortOption)}
               options={options}
               variant="default"
+              className="w-full md:w-auto"
             />
           </div>
-          <div className="relative">
+          <div className="relative w-full md:w-auto">
             <Input
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -93,7 +94,7 @@ const Browse = () => {
               }}
               value={searchQuery}
               placeholder="Search listings..."
-              className="w-64 sm:w-96"
+              className="w-full md:w-96"
             />
             {searchQuery.length > 0 && (
               <div className="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -111,6 +112,7 @@ const Browse = () => {
             onClick={() => navigate(`/create`)}
             variant="primary"
             size="lg"
+            className="w-full md:w-auto"
           >
             Create
           </Button>
