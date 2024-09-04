@@ -762,30 +762,6 @@ export interface components {
             /** Permissions */
             permissions: ("read" | "write" | "admin")[] | null;
         };
-        /** ListArtifactsItem */
-        ListArtifactsItem: {
-            /** Artifact Id */
-            artifact_id: string;
-            /** Listing Id */
-            listing_id: string;
-            /** Name */
-            name: string;
-            /** Artifact Type */
-            artifact_type: "image" | ("urdf" | "mjcf") | ("stl" | "obj" | "dae" | "ply") | ("tgz" | "zip");
-            /** Description */
-            description: string | null;
-            /** Timestamp */
-            timestamp: number;
-            urls: components["schemas"]["ArtifactUrls"];
-            /** Is New */
-            is_new?: boolean | null;
-        };
-        /** ListArtifactsResponse */
-        ListArtifactsResponse: {
-            /** Artifacts */
-            artifacts: components["schemas"]["ListArtifactsItem"][];
-        };
-        /** ListKeysResponse */
         ListKeysResponse: {
             /** Keys */
             keys: components["schemas"]["KeysResponseItem"][];

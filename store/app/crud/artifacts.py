@@ -4,6 +4,7 @@ import asyncio
 import io
 import logging
 import tarfile
+import tempfile
 import zipfile
 from pathlib import Path
 from typing import IO, Any, AsyncIterator, Literal
@@ -177,34 +178,33 @@ class ArtifactsCrud(BaseCrud):
         artifact_type: Literal["tgz", "zip"],
         description: str | None = None,
     ) -> Artifact:
-        out_file = io.BytesIO()
-        with tarfile.open(fileobj=out_file, mode="w:gz") as archive:
-            async for data, subname in iter_archive(file, artifact_type):
-                subtype = Path(subname).suffix.lower()
-                match subtype:
-                    case ".stl" | ".obj" | ".ply" | ".dae":
-                        tmesh = trimesh.load(io.BytesIO(data), file_type=subtype)
-                        if not isinstance(tmesh, trimesh.Trimesh):
-                            raise BadArtifactError(f"Invalid mesh file: {subname}")
-                        out_info = tarfile.TarInfo(subname)
-                        out_info.size = len(data)
-                        archive.addfile(out_info, io.BytesIO(data))
-                    case ".urdf" | ".mjcf":
-                        try:
-                            tree = ET.parse(io.BytesIO(data))
-                        except Exception:
-                            raise BadArtifactError("Invalid XML file")
-                        out_file = io.BytesIO()
-                        save_xml(out_file, tree)
-                        out_file.seek(0)
-                        out_data = out_file.read()
-                        out_info = tarfile.TarInfo(subname)
-                        out_info.size = len(out_data)
-                        archive.addfile(out_info, io.BytesIO(out_data))
-                    case _:
-                        raise BadArtifactError(f"Invalid file in archive: {subname}")
+        with tempfile.TemporaryDirectory() as temp_dir:
+            out_file = Path(temp_dir) / name
+            with tarfile.open(out_file, mode="w:gz") as archive:
+                async for data, subname in iter_archive(file, artifact_type):
+                    subtype = Path(subname).suffix.lower()
+                    temp_path = Path(temp_dir) / subname
+                    temp_path.parent.mkdir(parents=True, exist_ok=True)
+                    match subtype:
+                        case ".stl" | ".obj" | ".ply" | ".dae":
+                            tmesh = trimesh.load(io.BytesIO(data), file_type=subtype)
+                            if not isinstance(tmesh, trimesh.Trimesh):
+                                raise BadArtifactError(f"Invalid mesh file: {subname}")
+                            tmesh.export(temp_path, file_type=subtype.lstrip("."))
+                            archive.add(temp_path, arcname=subname)
+                        case ".urdf" | ".mjcf":
+                            try:
+                                tree = ET.parse(io.BytesIO(data))
+                            except Exception:
+                                raise BadArtifactError("Invalid XML file")
+                            save_xml(temp_path, tree)
+                            archive.add(temp_path, arcname=subname)
+                        case _:
+                            raise BadArtifactError(f"Invalid file in archive: {subname}")
 
-        return await self._upload_and_store(name, out_file, listing, "tgz", description)
+            logger.info("Created archive: %s", out_file)
+            with open(out_file, "rb") as f:
+                return await self._upload_and_store(name, f, listing, "tgz", description)
 
     async def _upload_and_store(
         self,
@@ -243,22 +243,16 @@ class ArtifactsCrud(BaseCrud):
         listing: Listing,
         artifact_type: ArtifactType,
         description: str | None = None,
-    ) -> tuple[Artifact, bool]:
-        listing_artifacts = await self.get_listing_artifacts(listing.id)
-        matching_artifact = next((a for a in listing_artifacts if a.name == name), None)
-        if matching_artifact is not None:
-            # raise BadArtifactError(f"An artifact with the name '{name}' already exists for this listing")
-            return matching_artifact, False
-
+    ) -> Artifact:
         match artifact_type:
             case "image":
-                return await self._upload_image(name, file, listing, description), True
+                return await self._upload_image(name, file, listing, description)
             case "stl" | "obj" | "ply" | "dae":
-                return await self._upload_mesh(name, file, listing, artifact_type, description), True
+                return await self._upload_mesh(name, file, listing, artifact_type, description)
             case "urdf" | "mjcf":
-                return await self._upload_xml(name, file, listing, artifact_type, description), True
+                return await self._upload_xml(name, file, listing, artifact_type, description)
             case "tgz" | "zip":
-                return await self._upload_archive(name, file, listing, artifact_type, description), True
+                return await self._upload_archive(name, file, listing, artifact_type, description)
             case _:
                 raise BadArtifactError(f"Invalid artifact type: {artifact_type}")
 

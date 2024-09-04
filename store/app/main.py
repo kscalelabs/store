@@ -91,7 +91,6 @@ async def not_authorized_exception_handler(request: Request, exc: NotAuthorizedE
 
 @app.exception_handler(BadArtifactError)
 async def bad_artifact_exception_handler(request: Request, exc: BadArtifactError) -> JSONResponse:
-    print("error:", exc)
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
         content={"message": f"Bad artifact: {exc}", "detail": str(exc)},

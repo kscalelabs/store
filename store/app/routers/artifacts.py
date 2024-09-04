@@ -88,7 +88,6 @@ class SingleArtifactResponse(BaseModel):
     description: str | None
     timestamp: int
     urls: ArtifactUrls
-    is_new: bool | None = None
 
 
 class ListArtifactsResponse(BaseModel):
@@ -229,9 +228,8 @@ async def upload(
                 description=artifact.description,
                 timestamp=artifact.timestamp,
                 urls=get_artifact_url_response(artifact=artifact),
-                is_new=is_new,
             )
-            for artifact, is_new in artifacts
+            for artifact in artifacts
         ]
     )
 
