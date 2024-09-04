@@ -9,6 +9,7 @@ import { useAuthentication } from "hooks/useAuth";
 import { Button } from "components/ui/Button/Button";
 import { Input, TextArea } from "components/ui/Input/Input";
 import Spinner from "components/ui/Spinner";
+import ListingGrid from "components/listings/ListingGrid";
 
 type UserResponse =
   paths["/users/public/{id}"]["get"]["responses"][200]["content"]["application/json"];
@@ -158,6 +159,9 @@ const Profile = () => {
   const [user, setUser] = useState<UserResponse | null>(null);
   const [canEdit, setCanEdit] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [listingIds, setListingIds] = useState<string[] | null>(null);
+
+  const pageNumber = parseInt("1", 10);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -198,9 +202,46 @@ const Profile = () => {
         }
       }
     };
+    const fetchUserListing = async () => {
+      if (id === undefined) {
+        const { data, error } = await auth.client.GET("/listings/me", {
+          params: {
+            query: {
+              page: pageNumber,
+            },
+          },
+        });
+
+        if (error) {
+          addErrorAlert(error);
+        } else {
+          setListingIds(data.listing_ids);
+        }
+      } else {
+        try {
+          const { data, error } = await auth.client.GET("/listings/user/{id}", {
+            params: {
+              path: { id },
+              query: {
+                page: pageNumber,
+              },
+            },
+          });
+
+          if (error) {
+            addErrorAlert(error);
+          } else {
+            setListingIds(data.listing_ids);
+          }
+        } catch (err) {
+          console.error("Failed to fetch User Listings", err);
+        }
+      }
+    };
 
     if (!auth.isLoading) {
       fetchUser();
+      fetchUserListing();
     }
   }, [id, auth.currentUser, auth.isLoading, auth.client, addErrorAlert]);
 
@@ -229,11 +270,18 @@ const Profile = () => {
   }
 
   return user ? (
-    <RenderProfile
-      user={user}
-      onUpdateProfile={handleUpdateProfile}
-      canEdit={canEdit}
-    />
+    <>
+      <RenderProfile
+        user={user}
+        onUpdateProfile={handleUpdateProfile}
+        canEdit={canEdit}
+      />
+      {listingIds && (
+        <div className="mt-4">
+          <ListingGrid listingIds={listingIds} />
+        </div>
+      )}
+    </>
   ) : (
     <div className="flex justify-center items-center pt-8">
       <p>User not found</p>

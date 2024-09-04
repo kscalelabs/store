@@ -76,6 +76,16 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     data = response.json()
     assert data["artifacts"][0]["artifact_id"] is not None
 
+    # List user listings
+    response = test_client.get("/users/public/me", headers=auth_headers)
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    id = response.json()["id"]
+
+    response = test_client.get(f"/listings/user/{id}", headers=auth_headers, params={"page": 1})
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    items = response.json()["listing_ids"]
+    assert (num_listings := len(items)) >= 1
+    
     # Checks my own listings.
     response = test_client.get(
         "/listings/me",

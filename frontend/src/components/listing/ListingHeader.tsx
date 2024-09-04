@@ -133,6 +133,7 @@ const NavigationButtons = ({ listing }: Props) => {
 
 const ListingHeader = (props: Props) => {
   const { listing } = props;
+  const navigate = useNavigate();
 
   return (
     <div className="relative p-4 mb-4">
@@ -152,6 +153,13 @@ const ListingHeader = (props: Props) => {
             <div>
               Posted {formatTimeSince(new Date(listing.created_at * 1000))}
             </div>
+            {listing.creator_name && (
+              <div className="text-sm mt-1 flex items-center text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">
+                <p onClick={() => navigate(`/profile/${listing.creator_id}`)}>
+                  By {listing.creator_name}
+                </p>{" "}
+              </div>
+            )}
           </div>
         </div>
         <NavigationButtons {...props} />
