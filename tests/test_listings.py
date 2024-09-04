@@ -47,7 +47,7 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     response = test_client.post(
         f"/artifacts/upload/{listing_id}",
         headers=auth_headers,
-        files={"files": ("box.urdf", open(urdf_path, "rb"), "application/xml")},
+        files={"files": ("sample.urdf", open(urdf_path, "rb"), "application/xml")},
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
@@ -75,6 +75,7 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
     assert data["artifacts"][0]["artifact_id"] is not None
+
     # Checks my own listings.
     response = test_client.get(
         "/listings/me",
@@ -85,6 +86,28 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     data = response.json()
     items, has_next = data["listing_ids"], data["has_next"]
     assert (num_listings := len(items)) >= 1
+
+    # Uploads a zipfile.
+    archive_path = Path(__file__).parent / "assets" / "compressed.zip"
+    response = test_client.post(
+        f"/artifacts/upload/{listing_id}",
+        headers=auth_headers,
+        files={"files": ("compressed.zip", open(archive_path, "rb"), "application/zip")},
+    )
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    data = response.json()
+    assert data["artifacts"][0]["artifact_id"] is not None
+
+    # Uploads a tgz file.
+    archive_path = Path(__file__).parent / "assets" / "compressed.tgz"
+    response = test_client.post(
+        f"/artifacts/upload/{listing_id}",
+        headers=auth_headers,
+        files={"files": ("compressed.tgz", open(archive_path, "rb"), "application/gzip")},
+    )
+    assert response.status_code == status.HTTP_200_OK, response.json()
+    data = response.json()
+    assert data["artifacts"][0]["artifact_id"] is not None
 
     # Searches for listings.
     response = test_client.get(
