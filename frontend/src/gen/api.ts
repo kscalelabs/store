@@ -1009,7 +1009,7 @@ export interface components {
             description: string | null;
             /** Timestamp */
             timestamp: number;
-            urls: components["schemas"]["ArtifactUrls"] | null;
+            urls: components["schemas"]["ArtifactUrls"];
             /** Is New */
             is_new?: boolean | null;
         };

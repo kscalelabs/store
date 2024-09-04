@@ -41,7 +41,11 @@ async def set_onshape_document(
 
 
 async def pull_onshape_document_generator(
-    listing_id: str, user: User, crud: Crud, *, config: ConverterConfig | None = None
+    listing_id: str,
+    user: User,
+    crud: Crud,
+    *,
+    config: ConverterConfig | None = None,
 ) -> AsyncIterable[str]:
     # Gets the listing and makes sure the user has permission to write to it.
     listing = await crud.get_listing(listing_id)
