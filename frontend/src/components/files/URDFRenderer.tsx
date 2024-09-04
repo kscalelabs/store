@@ -261,6 +261,13 @@ const URDFRenderer: React.FC<{
               <FaUndo className="inline-block mr-2" />
               Reset Joints
             </button>
+            <button
+              onClick={() => setShowControls(false)}
+              className="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+            >
+              <FaChevronRight className="inline-block mr-2" />
+              Hide Controls
+            </button>
           </div>
           <div className="space-y-6">
             {jointControls.map((joint, index) => (
@@ -290,12 +297,14 @@ const URDFRenderer: React.FC<{
           </div>
         </div>
       </div>
-      <button
-        onClick={() => setShowControls(!showControls)}
-        className="absolute bottom-4 right-4 z-20 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full shadow-md"
-      >
-        {showControls ? <FaChevronRight /> : <FaChevronLeft />}
-      </button>
+      {!showControls && (
+        <button
+          onClick={() => setShowControls(true)}
+          className="absolute bottom-4 right-4 z-20 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full shadow-md"
+        >
+          <FaChevronLeft />
+        </button>
+      )}
     </div>
   );
 };
