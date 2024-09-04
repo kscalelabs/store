@@ -186,9 +186,14 @@ class ArtifactsCrud(BaseCrud):
                         tmesh = trimesh.load(io.BytesIO(data), file_type=subtype)
                         if not isinstance(tmesh, trimesh.Trimesh):
                             raise BadArtifactError(f"Invalid mesh file: {subname}")
+                        # Saves a new mesh to make sure it's valid.
+                        out_file = io.BytesIO()
+                        tmesh.export(out_file, file_type=subtype.lstrip("."))
+                        out_file.seek(0)
+                        out_data = out_file.read()
                         out_info = tarfile.TarInfo(subname)
-                        out_info.size = len(data)
-                        archive.addfile(out_info, io.BytesIO(data))
+                        out_info.size = len(out_data)
+                        archive.addfile(out_info, io.BytesIO(out_data))
                     case ".urdf" | ".mjcf":
                         try:
                             tree = ET.parse(io.BytesIO(data))
