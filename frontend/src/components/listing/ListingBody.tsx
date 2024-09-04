@@ -9,7 +9,7 @@ import ListingChildren from "components/listing/ListingChildren";
 import ListingDescription from "components/listing/ListingDescription";
 import ListingOnshape from "components/listing/onshape/ListingOnshape";
 
-import ListingArtifact from "./ListingArtifact";
+import ArtifactCard from "./artifacts/ArtifactCard";
 import LoadingArtifactCard from "./artifacts/LoadingArtifactCard";
 
 type ListingResponse =
@@ -58,7 +58,7 @@ const ListingBody = (props: ListingBodyProps) => {
   const breakpointColumnsObj = {
     default: 3,
     1024: 2,
-    640: 1
+    640: 1,
   };
 
   useEffect(() => {
@@ -109,9 +109,9 @@ const ListingBody = (props: ListingBodyProps) => {
               .reverse()
               .map((artifact) => (
                 <div key={artifact.artifact_id} className="mb-4">
-                  <ListingArtifact
-                    artifactId={artifact.artifact_id}
-                    onDelete={handleDeleteArtifact}
+                  <ArtifactCard
+                    artifact={artifact}
+                    onDelete={() => handleDeleteArtifact(artifact.artifact_id)}
                     canEdit={listing.can_edit}
                   />
                 </div>

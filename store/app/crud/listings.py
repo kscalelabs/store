@@ -46,14 +46,15 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             raise
 
     def _get_sort_key(self, sort_by: SortOption) -> Callable[[Listing], int]:
-        if sort_by == SortOption.NEWEST:
-            return lambda x: x.created_at or 0
-        elif sort_by == SortOption.MOST_VIEWED:
-            return lambda x: x.views or 0
-        elif sort_by == SortOption.MOST_UPVOTED:
-            return lambda x: x.score or 0
-        else:
-            return lambda x: 0
+        match sort_by:
+            case SortOption.NEWEST:
+                return lambda x: (x.get("created_at") or 0, x.get("id", ""))
+            case SortOption.MOST_VIEWED:
+                return lambda x: int(x.get("views", 0))
+            case SortOption.MOST_UPVOTED:
+                return lambda x: int(x.get("score", 0))
+            case _:
+                return lambda x: x.get("id", "")
 
     def _get_sort_function(self, sort_by: SortOption) -> Callable[[Dict[str, Any]], Any]:
         if sort_by == SortOption.NEWEST:

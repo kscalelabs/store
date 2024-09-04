@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
+import { FaTrash } from "react-icons/fa";
 
 import { format } from "date-fns";
 import { components } from "gen/api";
+import { humanReadableError, useAlertQueue } from "hooks/useAlertQueue";
+import { useAuthentication } from "hooks/useAuth";
 
 import ImageArtifact from "./ImageArtifact";
 import TgzArtifact from "./TgzArtifact";
@@ -10,18 +13,71 @@ type SingleArtifactResponse = components["schemas"]["SingleArtifactResponse"];
 
 interface Props {
   artifact: SingleArtifactResponse;
+  onDelete: () => void;
+  canEdit: boolean;
 }
 
-const ArtifactCard: React.FC<Props> = ({ artifact }) => {
+const ArtifactCard: React.FC<Props> = ({ artifact, onDelete, canEdit }) => {
   const createdAt = new Date(artifact.timestamp);
   const formattedDate = format(createdAt, "MMM d, yyyy 'at' h:mm a");
+  const [deleting, setDeleting] = useState(false);
+  const { addErrorAlert, addAlert } = useAlertQueue();
+  const auth = useAuthentication();
+
+  const handleDelete = async () => {
+    if (!canEdit) {
+      addErrorAlert("You don't have permission to delete this artifact");
+      return;
+    }
+
+    setDeleting(true);
+
+    try {
+      const { error } = await auth.client.DELETE(
+        "/artifacts/delete/{artifact_id}",
+        {
+          params: { path: { artifact_id: artifact.artifact_id } },
+        },
+      );
+
+      if (error) {
+        addErrorAlert(error);
+        setDeleting(false);
+      } else {
+        addAlert("Artifact deleted successfully", "success");
+        onDelete();
+      }
+    } catch (err) {
+      addErrorAlert(humanReadableError(err));
+      setDeleting(false);
+    }
+  };
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden flex flex-col">
+    <div
+      className={`bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden flex flex-col relative ${deleting ? "opacity-50" : ""}`}
+    >
+      {deleting && (
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-10">
+          <p className="text-white font-semibold">Deleting...</p>
+        </div>
+      )}
       <div className="p-4 flex-grow">
-        <h3 className="text-lg text-gray-800 dark:text-gray-200 font-semibold mb-2">
-          {artifact.name}
-        </h3>
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="text-lg text-gray-800 dark:text-gray-200 font-semibold">
+            {artifact.name}
+          </h3>
+          {canEdit && (
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              className="text-gray-500 hover:text-red-500 transition-colors duration-200"
+              aria-label="Delete artifact"
+            >
+              <FaTrash className="h-5 w-5" />
+            </button>
+          )}
+        </div>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
           {artifact.description}
         </p>

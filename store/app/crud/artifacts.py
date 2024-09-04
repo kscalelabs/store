@@ -192,6 +192,25 @@ class ArtifactsCrud(BaseCrud):
                                 raise BadArtifactError(f"Invalid mesh file: {subname}")
                             tmesh.export(temp_path, file_type=subtype.lstrip("."))
                             archive.add(temp_path, arcname=subname)
+
+                        case ".png" | ".jpg" | ".jpeg" | ".gif" | ".bmp" | ".tiff" | ".webp":
+                            image = Image.open(io.BytesIO(data))
+                            match subtype:
+                                case ".png":
+                                    format = "PNG"
+                                case ".jpg" | ".jpeg":
+                                    format = "JPEG"
+                                case ".gif":
+                                    format = "GIF"
+                                case ".bmp":
+                                    format = "BMP"
+                                case ".tiff":
+                                    format = "TIFF"
+                                case ".webp":
+                                    format = "WEBP"
+                            image.save(temp_path, format=format)
+                            archive.add(temp_path, arcname=subname)
+
                         case ".urdf" | ".mjcf":
                             try:
                                 tree = ET.parse(io.BytesIO(data))
@@ -199,6 +218,7 @@ class ArtifactsCrud(BaseCrud):
                                 raise BadArtifactError("Invalid XML file")
                             save_xml(temp_path, tree)
                             archive.add(temp_path, arcname=subname)
+
                         case _:
                             raise BadArtifactError(f"Invalid file in archive: {subname}")
 
