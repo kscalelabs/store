@@ -3,7 +3,7 @@
 import asyncio
 import logging
 from enum import Enum
-from typing import Any, Callable, Dict, Type, TypeVar
+from typing import Any, Callable, Type, TypeVar
 
 from boto3.dynamodb.conditions import Attr
 
@@ -33,9 +33,11 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         return await self._get_item(listing_id, Listing, throw_if_missing=False)
 
     async def get_listings(
-        self, page: int, search_query: str | None = None, sort_by: SortOption = SortOption.NEWEST
+        self,
+        page: int,
+        search_query: str | None = None,
+        sort_by: SortOption = SortOption.NEWEST,
     ) -> tuple[list[Listing], bool]:
-        logger.info(f"Getting listings - page: {page}, search_query: {search_query}, sort_by: {sort_by}")
         sort_key = self._get_sort_key(sort_by)
         try:
             result = await self._list(Listing, page, sort_key, search_query)
@@ -45,25 +47,16 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             logger.error(f"Error in get_listings: {str(e)}")
             raise
 
-    def _get_sort_key(self, sort_by: SortOption) -> Callable[[Listing], int]:
-        if sort_by == SortOption.NEWEST:
-            return lambda x: x.created_at or 0
-        elif sort_by == SortOption.MOST_VIEWED:
-            return lambda x: x.views or 0
-        elif sort_by == SortOption.MOST_UPVOTED:
-            return lambda x: x.score or 0
-        else:
-            return lambda x: 0
-
-    def _get_sort_function(self, sort_by: SortOption) -> Callable[[Dict[str, Any]], Any]:
-        if sort_by == SortOption.NEWEST:
-            return lambda x: (x.get("created_at") or 0, x.get("id", ""))
-        elif sort_by == SortOption.MOST_VIEWED:
-            return lambda x: int(x.get("views", 0))
-        elif sort_by == SortOption.MOST_UPVOTED:
-            return lambda x: int(x.get("score", 0))
-        else:
-            return lambda x: x.get("id", "")
+    def _get_sort_key(self, sort_by: SortOption) -> Callable[[Listing], Any]:
+        match sort_by:
+            case SortOption.NEWEST:
+                return lambda x: (x.created_at or 0, x.name)
+            case SortOption.MOST_VIEWED:
+                return lambda x: (x.views, x.name)
+            case SortOption.MOST_UPVOTED:
+                return lambda x: (x.score, x.name)
+            case _:
+                return lambda x: (x.id, x.name)
 
     async def _list(
         self,
