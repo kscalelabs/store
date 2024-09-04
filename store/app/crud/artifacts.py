@@ -32,20 +32,22 @@ logger = logging.getLogger(__name__)
 
 
 async def iter_archive(file: UploadFile, artifact_type: Literal["tgz", "zip"]) -> AsyncIterator[tuple[bytes, str]]:
-    file_data = io.BytesIO(await file.read())
+    file_input = io.BytesIO(await file.read())
     match artifact_type:
         case "tgz":
-            archive = tarfile.open(fileobj=file_data, mode="r:gz")
-            for member in archive.getmembers():
-                if member.isfile():
-                    file_data = archive.extractfile(member).read()
-                    yield file_data, member.name
+            archive = tarfile.open(fileobj=file_input, mode="r:gz")
+            for tar_member in archive.getmembers():
+                if tar_member.isfile():
+                    if (member_read := archive.extractfile(tar_member)) is None:
+                        continue
+                    file_data = member_read.read()
+                    yield file_data, tar_member.name
         case "zip":
-            archive = zipfile.ZipFile(file_data)
-            for member in archive.namelist():
-                if not member.endswith("/"):
-                    file_data = archive.read(member)
-                    yield file_data, member
+            archive = zipfile.ZipFile(file_input)
+            for zip_member in archive.namelist():
+                if not zip_member.endswith("/"):
+                    file_data = archive.read(zip_member)
+                    yield file_data, zip_member
         case _:
             raise BadArtifactError(f"Invalid archive type: {artifact_type}")
 

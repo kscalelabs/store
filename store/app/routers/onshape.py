@@ -75,7 +75,6 @@ async def pull_onshape_document(
     suffix_to_joint_velocity: dict[str, float] | None = None,
     voxel_size: float = 0.002,
     convex_collision_meshes: bool = False,
-    remove_collision_meshes: bool = False,
     add_mjcf: bool = True,
 ) -> StreamingResponse:
     # Because the default EventStream implementation doesn't provide an easy
@@ -99,7 +98,6 @@ async def pull_onshape_document(
         suffix_to_joint_velocity=suffix_to_joint_velocity or {},
         voxel_size=voxel_size,
         convex_collision_meshes=convex_collision_meshes,
-        remove_collision_meshes=remove_collision_meshes,
         add_mjcf=add_mjcf,
     )
 
