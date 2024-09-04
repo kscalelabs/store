@@ -294,12 +294,17 @@ const URDFRenderer: React.FC<{
               </ul>
             </div>
           )}
-          <div className="space-y-6">
+          <div className="space-y-2">
             {jointControls.map((joint, index) => (
-              <div key={joint.name}>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {joint.name}
-                </label>
+              <div key={joint.name} className="text-sm">
+                <div className="flex justify-between items-center mb-1">
+                  <label className="font-medium text-gray-700">
+                    {joint.name}
+                  </label>
+                  <span className="text-xs text-gray-500">
+                    {joint.value.toFixed(2)}
+                  </span>
+                </div>
                 <input
                   type="range"
                   min={joint.min}
@@ -309,12 +314,11 @@ const URDFRenderer: React.FC<{
                   onChange={(e) =>
                     handleJointChange(index, parseFloat(e.target.value))
                   }
-                  className="w-full mb-1"
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                   disabled={isCycling}
                 />
-                <div className="flex justify-between text-xs text-gray-500">
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
                   <span>{joint.min.toFixed(2)}</span>
-                  <span>{joint.value.toFixed(2)}</span>
                   <span>{joint.max.toFixed(2)}</span>
                 </div>
               </div>
