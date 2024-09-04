@@ -793,7 +793,7 @@ export interface components {
             /** Creator Id */
             creator_id: string;
             /** Creator Name */
-            creator_name: string;
+            creator_name: string | null;
         };
         /** GetTokenResponse */
         GetTokenResponse: {
@@ -1628,6 +1628,8 @@ export interface operations {
             query: {
                 /** @description Page number for pagination */
                 page: number;
+                /** @description Search query string */
+                search_query?: string;
             };
             header?: never;
             path: {
