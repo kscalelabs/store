@@ -35,18 +35,18 @@ async def iter_archive(file: UploadFile, artifact_type: Literal["tgz", "zip"]) -
     file_input = io.BytesIO(await file.read())
     match artifact_type:
         case "tgz":
-            archive = tarfile.open(fileobj=file_input, mode="r:gz")
-            for tar_member in archive.getmembers():
+            tar_archive = tarfile.open(fileobj=file_input, mode="r:gz")
+            for tar_member in tar_archive.getmembers():
                 if tar_member.isfile():
-                    if (member_read := archive.extractfile(tar_member)) is None:
+                    if (member_read := tar_archive.extractfile(tar_member)) is None:
                         continue
                     file_data = member_read.read()
                     yield file_data, tar_member.name
         case "zip":
-            archive = zipfile.ZipFile(file_input)
-            for zip_member in archive.namelist():
+            zip_archive = zipfile.ZipFile(file_input)
+            for zip_member in zip_archive.namelist():
                 if not zip_member.endswith("/"):
-                    file_data = archive.read(zip_member)
+                    file_data = zip_archive.read(zip_member)
                     yield file_data, zip_member
         case _:
             raise BadArtifactError(f"Invalid archive type: {artifact_type}")
