@@ -287,7 +287,9 @@ const ListingOnshape = (props: Props) => {
               className="w-full sm:w-auto flex items-center justify-center"
             >
               <FaInfoCircle className="mr-2" />
-              {showInstructions ? "Hide URDF Instructions" : "Show URDF Instructions"}
+              {showInstructions
+                ? "Hide URDF Instructions"
+                : "Show URDF Instructions"}
             </Button>
           )}
         </div>
