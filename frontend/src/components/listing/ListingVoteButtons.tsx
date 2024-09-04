@@ -83,16 +83,11 @@ const ListingVoteButtons = ({
           userVote === true
             ? "text-green-500"
             : "text-gray-600 dark:text-gray-300"
-        } hover:text-green-600 transition-colors duration-200`}
+        } hover:text-green-600 transition-colors duration-200 mb-2`}
         disabled={isVoting}
       >
         <FaChevronUp />
       </button>
-      <span
-        className={`${small ? "text-base" : "text-lg"} font-bold ${small ? "mx-1" : "my-1"} ${"text-black dark:text-white"}`}
-      >
-        {score}
-      </span>
       <button
         onClick={(e) => handleVote(false, e)}
         className={`${small ? "text-xl" : "text-2xl"} ${

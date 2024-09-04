@@ -3,7 +3,10 @@
 import asyncio
 import io
 import logging
-from typing import IO, Any, Literal
+import tarfile
+import zipfile
+from pathlib import Path
+from typing import IO, Any, AsyncIterator, Literal
 from xml.etree import ElementTree as ET
 
 import trimesh
@@ -26,6 +29,27 @@ from store.settings import settings
 from store.utils import save_xml
 
 logger = logging.getLogger(__name__)
+
+
+async def iter_archive(file: UploadFile, artifact_type: Literal["tgz", "zip"]) -> AsyncIterator[tuple[bytes, str]]:
+    file_input = io.BytesIO(await file.read())
+    match artifact_type:
+        case "tgz":
+            tar_archive = tarfile.open(fileobj=file_input, mode="r:gz")
+            for tar_member in tar_archive.getmembers():
+                if tar_member.isfile():
+                    if (member_read := tar_archive.extractfile(tar_member)) is None:
+                        continue
+                    file_data = member_read.read()
+                    yield file_data, tar_member.name
+        case "zip":
+            zip_archive = zipfile.ZipFile(file_input)
+            for zip_member in zip_archive.namelist():
+                if not zip_member.endswith("/"):
+                    file_data = zip_archive.read(zip_member)
+                    yield file_data, zip_member
+        case _:
+            raise BadArtifactError(f"Invalid archive type: {artifact_type}")
 
 
 class ArtifactsCrud(BaseCrud):
@@ -109,14 +133,14 @@ class ArtifactsCrud(BaseCrud):
             raise BadArtifactError(f"Invalid mesh file: {name} ({type(tmesh)})")
 
         out_file = io.BytesIO()
-        tmesh.export(out_file, file_type="obj")
+        tmesh.export(out_file, file_type="stl")
         out_file.seek(0)
 
         # Replaces name suffix.
-        name = f"{name.rsplit('.', 1)[0]}.obj"
+        name = f"{name.rsplit('.', 1)[0]}.stl"
 
         # Saves the artifact to S3.
-        artifact = await self._upload_and_store(name, out_file, listing, "obj", description)
+        artifact = await self._upload_and_store(name, out_file, listing, "stl", description)
 
         # Closes the file handlers when done.
         out_file.close()
@@ -137,8 +161,6 @@ class ArtifactsCrud(BaseCrud):
         except Exception:
             raise BadArtifactError("Invalid XML file")
 
-        # TODO: Remap the STL or OBJ file paths.
-
         # Converts to byte stream.
         out_file = io.BytesIO()
         save_xml(out_file, tree)
@@ -146,6 +168,43 @@ class ArtifactsCrud(BaseCrud):
 
         # Saves the artifact to S3.
         return await self._upload_and_store(name, out_file, listing, artifact_type, description)
+
+    async def _upload_archive(
+        self,
+        name: str,
+        file: UploadFile,
+        listing: Listing,
+        artifact_type: Literal["tgz", "zip"],
+        description: str | None = None,
+    ) -> Artifact:
+        out_file = io.BytesIO()
+        with tarfile.open(fileobj=out_file, mode="w:gz") as archive:
+            async for data, subname in iter_archive(file, artifact_type):
+                subtype = Path(subname).suffix.lower()
+                match subtype:
+                    case ".stl" | ".obj" | ".ply" | ".dae":
+                        tmesh = trimesh.load(io.BytesIO(data), file_type=subtype)
+                        if not isinstance(tmesh, trimesh.Trimesh):
+                            raise BadArtifactError(f"Invalid mesh file: {subname}")
+                        out_info = tarfile.TarInfo(subname)
+                        out_info.size = len(data)
+                        archive.addfile(out_info, io.BytesIO(data))
+                    case ".urdf" | ".mjcf":
+                        try:
+                            tree = ET.parse(io.BytesIO(data))
+                        except Exception:
+                            raise BadArtifactError("Invalid XML file")
+                        out_file = io.BytesIO()
+                        save_xml(out_file, tree)
+                        out_file.seek(0)
+                        out_data = out_file.read()
+                        out_info = tarfile.TarInfo(subname)
+                        out_info.size = len(out_data)
+                        archive.addfile(out_info, io.BytesIO(out_data))
+                    case _:
+                        raise BadArtifactError(f"Invalid file in archive: {subname}")
+
+        return await self._upload_and_store(name, out_file, listing, "tgz", description)
 
     async def _upload_and_store(
         self,
@@ -198,6 +257,8 @@ class ArtifactsCrud(BaseCrud):
                 return await self._upload_mesh(name, file, listing, artifact_type, description), True
             case "urdf" | "mjcf":
                 return await self._upload_xml(name, file, listing, artifact_type, description), True
+            case "tgz" | "zip":
+                return await self._upload_archive(name, file, listing, artifact_type, description), True
             case _:
                 raise BadArtifactError(f"Invalid artifact type: {artifact_type}")
 
