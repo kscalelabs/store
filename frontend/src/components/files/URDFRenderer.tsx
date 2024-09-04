@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { FaChevronLeft, FaChevronRight, FaPlay, FaUndo } from "react-icons/fa";
+import {
+  FaArrowsAlt,
+  FaChevronLeft,
+  FaChevronRight,
+  FaPlay,
+  FaUndo,
+} from "react-icons/fa";
 
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -20,6 +26,8 @@ interface URDFInfo {
   linkCount: number;
 }
 
+type Orientation = "Z-up" | "Y-up" | "X-up";
+
 const URDFRenderer: React.FC<{
   urdfContent: string;
   files: UntarredFile[];
@@ -33,6 +41,8 @@ const URDFRenderer: React.FC<{
   const animationRef = useRef<number | null>(null);
   const [isInStartPosition, setIsInStartPosition] = useState(true);
   const [urdfInfo, setUrdfInfo] = useState<URDFInfo | null>(null);
+  const [orientation, setOrientation] = useState<Orientation>("Z-up");
+  const gridHelperRef = useRef<THREE.GridHelper | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -121,6 +131,7 @@ const URDFRenderer: React.FC<{
 
     // Add a grid for reference
     const gridHelper = new THREE.GridHelper(10, 10);
+    gridHelperRef.current = gridHelper;
     scene.add(gridHelper);
 
     // Collect joint information
@@ -172,13 +183,35 @@ const URDFRenderer: React.FC<{
 
     window.addEventListener("resize", handleResize);
 
+    const updateOrientation = (newOrientation: Orientation) => {
+      if (robotRef.current) {
+        const robot = robotRef.current;
+
+        // Reset rotations
+        robot.rotation.set(0, 0, 0);
+
+        switch (newOrientation) {
+          case "Y-up":
+            robot.rotateX(-Math.PI / 2);
+            break;
+          case "X-up":
+            robot.rotateZ(Math.PI / 2);
+            break;
+          // 'Z-up' is the default, no rotation needed
+        }
+      }
+    };
+
+    updateOrientation(orientation);
+
     return () => {
       if (containerRef.current) {
         containerRef.current.removeChild(renderer.domElement);
       }
       window.removeEventListener("resize", handleResize);
+      updateOrientation("Z-up"); // Reset orientation on unmount
     };
-  }, [urdfContent, files]);
+  }, [urdfContent, files, orientation]);
 
   const handleJointChange = (index: number, value: number) => {
     setJointControls((prevControls) => {
@@ -251,6 +284,30 @@ const URDFRenderer: React.FC<{
     setIsInStartPosition(true);
   }, [jointControls, handleJointChange]);
 
+  const toggleOrientation = useCallback(() => {
+    setOrientation((prev) => {
+      const newOrientation =
+        prev === "Z-up" ? "Y-up" : prev === "Y-up" ? "X-up" : "Z-up";
+      if (sceneRef.current && robotRef.current) {
+        const robot = robotRef.current;
+
+        // Reset rotations
+        robot.rotation.set(0, 0, 0);
+
+        switch (newOrientation) {
+          case "Y-up":
+            robot.rotateX(-Math.PI / 2);
+            break;
+          case "X-up":
+            robot.rotateZ(Math.PI / 2);
+            break;
+          // 'Z-up' is the default, no rotation needed
+        }
+      }
+      return newOrientation;
+    });
+  }, []);
+
   return (
     <div className="flex flex-col lg:flex-row h-full relative">
       <div ref={containerRef} className="flex-grow h-[60vh] lg:h-auto" />
@@ -277,6 +334,13 @@ const URDFRenderer: React.FC<{
             >
               <FaUndo className="inline-block mr-2" />
               Reset Joints
+            </button>
+            <button
+              onClick={toggleOrientation}
+              className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded"
+            >
+              <FaArrowsAlt className="inline-block mr-2" />
+              {`Orientation: ${orientation}`}
             </button>
             <button
               onClick={() => setShowControls(false)}

@@ -39,20 +39,26 @@ const ListingVoteButtons = ({
 
     setIsVoting(true);
 
-    if (isVoting) {
-      return; // Prevent double-clicking
+    const previousVote = userVote;
+    const previousScore = score;
+
+    // Optimistically update UI
+    if (userVote === upvote) {
+      setScore(score + (upvote ? -1 : 1));
+      setUserVote(null);
+    } else {
+      setScore(
+        score + (upvote ? 1 : -1) + (userVote === null ? 0 : upvote ? 1 : -1),
+      );
+      setUserVote(upvote);
     }
 
-    setIsVoting(true);
-
     try {
-      if (userVote === upvote) {
+      if (previousVote === upvote) {
         // Remove vote
         await auth.client.DELETE(`/listings/{id}/vote`, {
           params: { path: { id: listingId } },
         });
-        setScore(score + (upvote ? -1 : 1));
-        setUserVote(null);
       } else {
         // Add or change vote
         await auth.client.POST(`/listings/{id}/vote`, {
@@ -61,12 +67,11 @@ const ListingVoteButtons = ({
             query: { upvote },
           },
         });
-        setScore(
-          score + (upvote ? 1 : -1) + (userVote === null ? 0 : upvote ? 1 : -1),
-        );
-        setUserVote(upvote);
       }
     } catch (error) {
+      // Revert changes if API call fails
+      setScore(previousScore);
+      setUserVote(previousVote);
       addErrorAlert(humanReadableError(error));
     } finally {
       setIsVoting(false);
