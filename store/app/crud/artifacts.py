@@ -204,6 +204,7 @@ class ArtifactsCrud(BaseCrud):
                     case _:
                         raise BadArtifactError(f"Invalid file in archive: {subname}")
 
+        out_file.seek(0)
         return await self._upload_and_store(name, out_file, listing, "tgz", description)
 
     async def _upload_and_store(

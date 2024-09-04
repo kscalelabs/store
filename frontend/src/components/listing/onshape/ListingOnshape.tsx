@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   FaCheck,
   FaExternalLinkAlt,
+  FaInfoCircle,
   FaPen,
   FaSync,
   FaTimes,
@@ -48,6 +49,8 @@ interface UpdateButtonProps {
   handleSave: () => Promise<void>;
   handleRemove?: () => Promise<void>;
   handleReload?: () => Promise<void>;
+  toggleInstructions: () => void;
+  showInstructions: boolean;
   url: string | null;
   disabled?: boolean;
 }
@@ -59,6 +62,8 @@ const UpdateButtons = (props: UpdateButtonProps) => {
     handleSave,
     handleRemove,
     handleReload,
+    toggleInstructions,
+    showInstructions,
     url,
     disabled,
   } = props;
@@ -122,6 +127,14 @@ const UpdateButtons = (props: UpdateButtonProps) => {
           <FaSync className="ml-2" />
         </Button>
       )}
+      <Button
+        onClick={toggleInstructions}
+        variant="secondary"
+        className="w-full sm:w-auto flex items-center justify-center"
+      >
+        <FaInfoCircle className="mr-2" />
+        {showInstructions ? "Hide URDF Instructions" : "Show URDF Instructions"}
+      </Button>
     </div>
   );
 };
@@ -143,6 +156,7 @@ const ListingOnshape = (props: Props) => {
   const [url, setUrl] = useState<string | null>(onshapeUrl);
   const [permUrl, setPermUrl] = useState<string | null>(onshapeUrl);
   const [updateOnshape, setUpdateOnshape] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
 
   const handleRemove = async () => {
     setSubmitting(true);
@@ -201,11 +215,47 @@ const ListingOnshape = (props: Props) => {
     setSubmitting(false);
   };
 
+  const toggleInstructions = () => {
+    setShowInstructions(!showInstructions);
+  };
+
+  const renderUrdfInstructions = () => (
+    <div className="mt-4 p-4 bg-blue-100 rounded-md w-full">
+      <h4 className="text-lg font-semibold mb-2">URDF Upload Instructions</h4>
+      <ol className="list-decimal list-inside space-y-2 text-sm">
+        <li>
+          Install the K-Scale CLI by running:
+          <pre className="bg-gray-200 p-2 rounded-md mt-1 overflow-x-auto">
+            pip install kscale
+          </pre>
+        </li>
+        <li>
+          To upload a URDF directly, use the following command:
+          <pre className="bg-gray-200 p-2 rounded-md mt-1 overflow-x-auto">
+            kscale urdf upload {listingId}
+          </pre>
+        </li>
+        <li>
+          The source code for the K-Scale CLI is available on GitHub{" "}
+          <a
+            href="https://github.com/kscalelabs/kscale"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            here
+          </a>
+          .
+        </li>
+      </ol>
+    </div>
+  );
+
   return submitting ? (
     <div className="flex justify-center items-center my-2 py-2">
       <Spinner />
     </div>
-  ) : url !== null || edit ? (
+  ) : (
     <div className="flex flex-col my-2 py-2 w-full">
       {isEditing ? (
         <div className="flex flex-col items-start w-full">
@@ -216,18 +266,30 @@ const ListingOnshape = (props: Props) => {
               setIsEditing={setIsEditing}
               handleSave={handleSave}
               url={url}
+              toggleInstructions={toggleInstructions}
+              showInstructions={showInstructions}
             />
           )}
         </div>
-      ) : permUrl === null ? (
-        <div className="flex items-center">
+      ) : url === null ? (
+        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 w-full">
           <Button
             onClick={() => setIsEditing(true)}
             variant="primary"
-            className="px-2"
+            className="w-full sm:w-auto flex items-center justify-center"
           >
             Add Onshape URL
           </Button>
+          {edit && (
+            <Button
+              onClick={toggleInstructions}
+              variant="secondary"
+              className="w-full sm:w-auto flex items-center justify-center"
+            >
+              <FaInfoCircle className="mr-2" />
+              {showInstructions ? "Hide URDF Instructions" : "Show URDF Instructions"}
+            </Button>
+          )}
         </div>
       ) : (
         <div className="flex flex-col items-start w-full">
@@ -236,16 +298,18 @@ const ListingOnshape = (props: Props) => {
               isEditing={isEditing}
               setIsEditing={setIsEditing}
               handleSave={handleSave}
-              handleRemove={permUrl !== null ? handleRemove : undefined}
-              handleReload={permUrl !== null ? handleReload : undefined}
+              handleRemove={handleRemove}
+              handleReload={handleReload}
               url={url}
               disabled={updateOnshape}
+              toggleInstructions={toggleInstructions}
+              showInstructions={showInstructions}
             />
           ) : (
             <div className="flex items-center">
               <Button
                 onClick={() =>
-                  window.open(permUrl, "_blank", "noopener,noreferrer")
+                  window.open(url, "_blank", "noopener,noreferrer")
                 }
                 variant="secondary"
                 className="flex items-center justify-center"
@@ -264,8 +328,9 @@ const ListingOnshape = (props: Props) => {
           )}
         </div>
       )}
+      {showInstructions && renderUrdfInstructions()}
     </div>
-  ) : null;
+  );
 };
 
 export default ListingOnshape;
