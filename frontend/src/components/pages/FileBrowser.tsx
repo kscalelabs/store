@@ -90,7 +90,7 @@ const FileBrowser = () => {
   };
 
   const handleDownload = () => {
-    if (!artifact?.urls?.large) {
+    if (!artifact?.urls.large) {
       addErrorAlert("Artifact URL not available.");
       return;
     }

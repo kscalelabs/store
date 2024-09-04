@@ -351,8 +351,8 @@ const URDFRenderer: React.FC<{
             </button>
           </div>
           {urdfInfo && (
-            <div className="bg-white p-4 rounded-lg shadow-md mb-4">
-              <ul className="text-sm">
+            <div className="p-4 rounded-lg shadow-md mb-4 bg-grey-100 font-mono">
+              <ul className="text-sm text-gray-800">
                 <li>Joint Count: {urdfInfo.jointCount}</li>
                 <li>Link Count: {urdfInfo.linkCount}</li>
               </ul>
