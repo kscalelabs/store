@@ -1,6 +1,13 @@
 import { useState } from "react";
-import { FaCheck, FaCopy, FaEye } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import Highlight from "react-highlight";
+import {
+  FaCheck,
+  FaChevronDown,
+  FaChevronUp,
+  FaCopy,
+  FaEye,
+} from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
 
 import { cx } from "class-variance-authority";
 import { components } from "gen/api";
@@ -67,11 +74,48 @@ const UrdfViewerButton = ({ artifact }: Props) => {
   );
 };
 
+const CodeInstructions = ({ artifactId }: { artifactId: string }) => {
+  return (
+    <div className="mt-4 p-4 rounded-lg">
+      <h4 className="text-sm font-semibold mb-2">Use this in your code:</h4>
+      <ol className="list-decimal list-inside space-y-2 text-sm">
+        <li>
+          Install the library:
+          <DownloadButton command="pip install kscale" />
+        </li>
+        <li>
+          Configure your{" "}
+          <Link to="/keys" className="link">
+            API key
+          </Link>
+        </li>
+        <li>
+          In your Python code:
+          <pre className="text-gray-800 bg-gray-200 p-2 rounded mt-1 text-xs overflow-x-auto">
+            <Highlight
+              className="language-python"
+              innerHTML={true}
+            >{`import asyncio
+from kscale import KScale
+
+api = KScale()
+urdf_path = asyncio.run(
+  api.urdf("${artifactId}")
+)`}</Highlight>
+          </pre>
+        </li>
+      </ol>
+    </div>
+  );
+};
+
 interface Props {
   artifact: SingleArtifactResponse;
 }
 
 const TgzArtifact = ({ artifact }: Props) => {
+  const [showInstructions, setShowInstructions] = useState(false);
+
   return (
     <>
       <DownloadButton
@@ -79,6 +123,23 @@ const TgzArtifact = ({ artifact }: Props) => {
         isFirst={true}
       />
       <UrdfViewerButton artifact={artifact} />
+      <Button
+        className="p-3 w-full mt-2"
+        onClick={() => setShowInstructions(!showInstructions)}
+        variant="secondary"
+      >
+        <span className="text-xs font-mono truncate flex-grow mr-2">
+          {showInstructions
+            ? "Hide Code Instructions"
+            : "Show Code Instructions"}
+        </span>
+        <span className="flex-shrink-0">
+          {showInstructions ? <FaChevronUp /> : <FaChevronDown />}
+        </span>
+      </Button>
+      {showInstructions && (
+        <CodeInstructions artifactId={artifact.artifact_id} />
+      )}
     </>
   );
 };

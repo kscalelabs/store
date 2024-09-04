@@ -1,62 +1,39 @@
 import React from "react";
-import { FaSpinner, FaTrash } from "react-icons/fa";
 
 import { format } from "date-fns";
+import { components } from "gen/api";
 
-import { Button } from "components/ui/Button/Button";
+import ImageArtifact from "./ImageArtifact";
+import TgzArtifact from "./TgzArtifact";
 
-interface ArtifactCardProps {
-  name: string;
-  description: string | null;
-  timestamp: number;
-  children: React.ReactNode;
-  onDelete: () => void;
-  canEdit: boolean;
-  isDeleting: boolean;
+type SingleArtifactResponse = components["schemas"]["SingleArtifactResponse"];
+
+interface Props {
+  artifact: SingleArtifactResponse;
 }
 
-const ArtifactCard: React.FC<ArtifactCardProps> = ({
-  name,
-  description,
-  timestamp,
-  children,
-  onDelete,
-  canEdit,
-  isDeleting,
-}) => {
+const ArtifactCard: React.FC<Props> = ({ artifact }) => {
+  const createdAt = new Date(artifact.timestamp);
+  const formattedDate = format(createdAt, "MMM d, yyyy 'at' h:mm a");
+
   return (
-    <div
-      className={`bg-white shadow-md rounded-lg overflow-hidden h-full flex flex-col ${isDeleting ? "opacity-50" : ""}`}
-    >
+    <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden flex flex-col">
       <div className="p-4 flex-grow">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-lg font-semibold text-gray-800 truncate flex-grow mr-2">
-            {name}
-          </h3>
-          {canEdit && (
-            <Button
-              onClick={onDelete}
-              variant="ghost"
-              className="text-red-500 hover:text-red-700 flex-shrink-0"
-              disabled={isDeleting}
-            >
-              {isDeleting ? (
-                <FaSpinner className="animate-spin" />
-              ) : (
-                <FaTrash />
-              )}
-            </Button>
-          )}
-        </div>
-        <div className="mb-2">{children}</div>
-        {description && (
-          <p className="text-sm text-gray-600 mb-2 break-words">
-            {description}
-          </p>
+        <h3 className="text-lg text-gray-800 dark:text-gray-200 font-semibold mb-2">
+          {artifact.name}
+        </h3>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+          {artifact.description}
+        </p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+          Created on {formattedDate}
+        </p>
+        {artifact.artifact_type === "tgz" && (
+          <TgzArtifact artifact={artifact} />
         )}
-      </div>
-      <div className="bg-gray-50 px-4 py-2 text-xs text-gray-500">
-        {format(new Date(timestamp * 1000), "PPpp")}
+        {artifact.artifact_type === "image" && (
+          <ImageArtifact artifact={artifact} />
+        )}
       </div>
     </div>
   );

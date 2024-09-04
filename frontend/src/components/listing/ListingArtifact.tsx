@@ -5,9 +5,7 @@ import { humanReadableError, useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
 import ArtifactCard from "components/listing/artifacts/ArtifactCard";
-import ImageArtifact from "components/listing/artifacts/ImageArtifact";
 import LoadingArtifactCard from "components/listing/artifacts/LoadingArtifactCard";
-import TgzArtifact from "components/listing/artifacts/TgzArtifact";
 
 type SingleArtifactResponse = components["schemas"]["SingleArtifactResponse"];
 
@@ -88,33 +86,7 @@ const ListingArtifact: React.FC<ListingArtifactProps> = ({
     return <div>Failed to load artifact</div>;
   }
 
-  const renderArtifactContent = () => {
-    switch (artifact.artifact_type) {
-      case "image":
-        return <ImageArtifact artifact={artifact} />;
-      case "tgz":
-        return <TgzArtifact artifact={artifact} />;
-      default:
-        return (
-          <div>
-            <p>Unsupported artifact type: {artifact.artifact_type}</p>
-          </div>
-        );
-    }
-  };
-
-  return (
-    <ArtifactCard
-      name={artifact.name}
-      description={artifact.description}
-      timestamp={artifact.timestamp}
-      onDelete={handleDelete}
-      canEdit={canEdit}
-      isDeleting={deleting}
-    >
-      {renderArtifactContent()}
-    </ArtifactCard>
-  );
+  return <ArtifactCard artifact={artifact} />;
 };
 
 export default ListingArtifact;

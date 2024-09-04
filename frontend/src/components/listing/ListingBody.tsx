@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
+import Masonry from "react-masonry-css";
 
-import { paths } from "gen/api";
-import { components } from "gen/api";
+import { components, paths } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
@@ -55,6 +55,12 @@ const ListingBody = (props: ListingBodyProps) => {
     );
   };
 
+  const breakpointColumnsObj = {
+    default: 3,
+    1024: 2,
+    640: 1
+  };
+
   useEffect(() => {
     if (artifacts !== null) return;
 
@@ -89,21 +95,28 @@ const ListingBody = (props: ListingBodyProps) => {
         addArtifactId={addArtifactId}
         edit={listing.can_edit}
       />
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="mt-4">
         {artifacts === null ? (
           <LoadingArtifactCard />
         ) : (
-          artifacts
-            .slice()
-            .reverse()
-            .map((artifact) => (
-              <ListingArtifact
-                key={artifact.artifact_id}
-                artifactId={artifact.artifact_id}
-                onDelete={handleDeleteArtifact}
-                canEdit={listing.can_edit}
-              />
-            ))
+          <Masonry
+            breakpointCols={breakpointColumnsObj}
+            className="flex w-auto -ml-4"
+            columnClassName="pl-4 bg-clip-padding"
+          >
+            {artifacts
+              .slice()
+              .reverse()
+              .map((artifact) => (
+                <div key={artifact.artifact_id} className="mb-4">
+                  <ListingArtifact
+                    artifactId={artifact.artifact_id}
+                    onDelete={handleDeleteArtifact}
+                    canEdit={listing.can_edit}
+                  />
+                </div>
+              ))}
+          </Masonry>
         )}
       </div>
     </div>
