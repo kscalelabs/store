@@ -15,6 +15,11 @@ interface JointControl {
   value: number;
 }
 
+interface URDFInfo {
+  jointCount: number;
+  linkCount: number;
+}
+
 const URDFRenderer: React.FC<{
   urdfContent: string;
   files: UntarredFile[];
@@ -26,8 +31,8 @@ const URDFRenderer: React.FC<{
   const [showControls, setShowControls] = useState(true);
   const [isCycling, setIsCycling] = useState(false);
   const animationRef = useRef<number | null>(null);
-  const [initialJointValues, setInitialJointValues] = useState<number[]>([]);
   const [isInStartPosition, setIsInStartPosition] = useState(true);
+  const [urdfInfo, setUrdfInfo] = useState<URDFInfo | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -82,6 +87,23 @@ const URDFRenderer: React.FC<{
     robotRef.current = robot;
     scene.add(robot);
 
+    // Calculate URDF information
+    let jointCount = 0;
+    let linkCount = 0;
+
+    robot.traverse((child) => {
+      if ("isURDFLink" in child && child.isURDFLink) {
+        linkCount++;
+      } else if ("isURDFJoint" in child && child.isURDFJoint) {
+        jointCount++;
+      }
+    });
+
+    setUrdfInfo({
+      jointCount,
+      linkCount,
+    });
+
     // Center and scale the robot
     const box = new THREE.Box3().setFromObject(robot);
     const center = box.getCenter(new THREE.Vector3());
@@ -103,7 +125,6 @@ const URDFRenderer: React.FC<{
 
     // Collect joint information
     const joints: JointControl[] = [];
-    const initialValues: number[] = [];
     robot.traverse((child) => {
       if ("isURDFJoint" in child && child.isURDFJoint) {
         const joint = child as URDFJoint;
@@ -116,11 +137,11 @@ const URDFRenderer: React.FC<{
           value: initialValue,
         });
         joint.setJointValue(initialValue);
-        initialValues.push(initialValue);
       }
     });
+    // Sort joints alphabetically by name
+    joints.sort((a, b) => a.name.localeCompare(b.name));
     setJointControls(joints);
-    setInitialJointValues(initialValues);
 
     // Collect link information.
     const links: URDFLink[] = [];
@@ -177,11 +198,7 @@ const URDFRenderer: React.FC<{
       });
     }
 
-    // Check if all joints are in their initial positions
-    const allInInitialPosition = jointControls.every(
-      (joint, i) => Math.abs(joint.value - initialJointValues[i]) < 0.001,
-    );
-    setIsInStartPosition(allInInitialPosition);
+    setIsInStartPosition(false);
   };
 
   const cycleAllJoints = useCallback(() => {
@@ -228,11 +245,11 @@ const URDFRenderer: React.FC<{
   }, []);
 
   const resetJoints = useCallback(() => {
-    jointControls.forEach((_joint, index) => {
-      handleJointChange(index, initialJointValues[index]);
+    jointControls.forEach((joint, index) => {
+      handleJointChange(index, (joint.max + joint.min) / 2);
     });
     setIsInStartPosition(true);
-  }, [jointControls, initialJointValues, handleJointChange]);
+  }, [jointControls, handleJointChange]);
 
   return (
     <div className="flex flex-col lg:flex-row h-full relative">
@@ -269,6 +286,14 @@ const URDFRenderer: React.FC<{
               Hide Controls
             </button>
           </div>
+          {urdfInfo && (
+            <div className="bg-white p-4 rounded-lg shadow-md mb-4">
+              <ul className="text-sm">
+                <li>Joint Count: {urdfInfo.jointCount}</li>
+                <li>Link Count: {urdfInfo.linkCount}</li>
+              </ul>
+            </div>
+          )}
           <div className="space-y-6">
             {jointControls.map((joint, index) => (
               <div key={joint.name}>

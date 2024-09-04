@@ -432,7 +432,6 @@ def _copy_stl_files(source_directory: str | Path, destination_directory: str | P
     for file_path in glob.glob(pattern):
         destination_path = os.path.join(destination_directory, os.path.basename(file_path))
         shutil.copy(file_path, destination_path)
-        print(f"Copied {file_path} to {destination_path}")
 
 
 def _remove_stl_files(source_directory: str | Path) -> None:

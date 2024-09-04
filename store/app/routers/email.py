@@ -32,7 +32,6 @@ async def create_signup_token(
 
         return EmailSignUpResponse(message="Sign up email sent! Follow the link sent to you to continue registration.")
     except Exception as e:
-        print(f"Error creating signup token: {e}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 

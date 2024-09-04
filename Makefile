@@ -33,7 +33,7 @@ start-frontend:
 	@cd frontend && npm run dev
 
 update-api:
-	@cd frontend && openapi-typescript http://localhost:8080/openapi.json --output src/gen/api.ts
+	@cd frontend && rm -rf src/gen/api.ts && openapi-typescript http://localhost:8080/openapi.json --output src/gen/api.ts
 
 start-docker-dynamodb:
 	@docker kill store-db || true

@@ -1010,8 +1010,6 @@ export interface components {
             /** Timestamp */
             timestamp: number;
             urls: components["schemas"]["ArtifactUrls"];
-            /** Is New */
-            is_new?: boolean | null;
         };
         /**
          * SortOption
@@ -1911,7 +1909,6 @@ export interface operations {
                 default_revolute_joint_velocity?: number;
                 voxel_size?: number;
                 convex_collision_meshes?: boolean;
-                remove_collision_meshes?: boolean;
                 add_mjcf?: boolean;
             };
             header?: never;

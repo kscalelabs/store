@@ -30,12 +30,14 @@ const ArtifactCard: React.FC<ArtifactCardProps> = ({
     >
       <div className="p-4 flex-grow">
         <div className="flex justify-between items-center mb-2">
-          <h3 className="text-lg font-semibold text-gray-800">{name}</h3>
+          <h3 className="text-lg font-semibold text-gray-800 truncate flex-grow mr-2">
+            {name}
+          </h3>
           {canEdit && (
             <Button
               onClick={onDelete}
               variant="ghost"
-              className="text-red-500 hover:text-red-700"
+              className="text-red-500 hover:text-red-700 flex-shrink-0"
               disabled={isDeleting}
             >
               {isDeleting ? (
@@ -48,7 +50,9 @@ const ArtifactCard: React.FC<ArtifactCardProps> = ({
         </div>
         <div className="mb-2">{children}</div>
         {description && (
-          <p className="text-sm text-gray-600 mb-2">{description}</p>
+          <p className="text-sm text-gray-600 mb-2 break-words">
+            {description}
+          </p>
         )}
       </div>
       <div className="bg-gray-50 px-4 py-2 text-xs text-gray-500">
