@@ -85,7 +85,7 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     assert response.status_code == status.HTTP_200_OK, response.json()
     items = response.json()["listing_ids"]
     assert (num_listings := len(items)) >= 1
-    
+
     # Checks my own listings.
     response = test_client.get(
         "/listings/me",

@@ -6,10 +6,10 @@ import { paths } from "gen/api";
 import { useAlertQueue } from "hooks/useAlertQueue";
 import { useAuthentication } from "hooks/useAuth";
 
+import ListingGrid from "components/listings/ListingGrid";
 import { Button } from "components/ui/Button/Button";
 import { Input, TextArea } from "components/ui/Input/Input";
 import Spinner from "components/ui/Spinner";
-import ListingGrid from "components/listings/ListingGrid";
 
 type UserResponse =
   paths["/users/public/{id}"]["get"]["responses"][200]["content"]["application/json"];
