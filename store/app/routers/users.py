@@ -341,7 +341,7 @@ async def update_profile(
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UserPublic:
     try:
-        update_dict = updates.dict(exclude_unset=True, exclude_none=True)
+        update_dict = updates.model_dump(exclude_unset=True, exclude_none=True)
         updated_user = await crud.update_user(user.id, update_dict)
         return UserPublic(**updated_user.model_dump())
     except ValueError as e:
