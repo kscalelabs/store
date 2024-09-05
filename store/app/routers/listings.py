@@ -107,6 +107,18 @@ async def dump_listings(
     return DumpListingsResponse(listings=await crud.dump_listings())
 
 
+@listings_router.get("/user/{id}", response_model=ListListingsResponse)
+async def list_user_listings(
+    id: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+    page: int = Query(description="Page number for pagination"),
+    search_query: str = Query(None, description="Search query string"),
+) -> ListListingsResponse:
+    listings, has_next = await crud.get_user_listings(id, page, search_query=search_query)
+    listing_ids = [listing.id for listing in listings]
+    return ListListingsResponse(listing_ids=listing_ids, has_next=has_next)
+
+
 @listings_router.get("/me", response_model=ListListingsResponse)
 async def list_my_listings(
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -219,6 +231,7 @@ class GetListingResponse(BaseModel):
     score: int
     user_vote: bool | None
     creator_id: str  # Add this line
+    creator_name: str | None
 
 
 @listings_router.get("/{id}", response_model=GetListingResponse)
@@ -238,6 +251,10 @@ async def get_listing(
     if user and (vote := await crud.get_user_vote(user.id, id)) is not None:
         user_vote = vote.is_upvote
 
+    creator_name = None
+    if (creator := await crud.get_user_public(listing.user_id)) is not None:
+        creator_name = " ".join(filter(None, [creator.first_name, creator.last_name]))
+
     return GetListingResponse(
         id=listing.id,
         name=listing.name,
@@ -251,6 +268,7 @@ async def get_listing(
         score=listing.score,
         user_vote=user_vote,
         creator_id=listing.user_id,  # Add this line
+        creator_name=creator_name,
     )
 
 
