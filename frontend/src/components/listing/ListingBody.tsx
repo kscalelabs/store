@@ -96,15 +96,15 @@ const ListingBody = (props: ListingBodyProps) => {
         edit={listing.can_edit}
       />
       <div className="mt-4">
-        {artifacts === null ? (
-          <LoadingArtifactCard />
-        ) : (
-          <Masonry
-            breakpointCols={breakpointColumnsObj}
-            className="flex w-auto -ml-4"
-            columnClassName="pl-4 bg-clip-padding"
-          >
-            {artifacts
+        <Masonry
+          breakpointCols={breakpointColumnsObj}
+          className="flex w-auto -ml-4"
+          columnClassName="pl-4 bg-clip-padding"
+        >
+          {artifacts === null ? (
+            <LoadingArtifactCard />
+          ) : (
+            artifacts
               .slice()
               .reverse()
               .map((artifact) => (
@@ -115,9 +115,9 @@ const ListingBody = (props: ListingBodyProps) => {
                     canEdit={listing.can_edit}
                   />
                 </div>
-              ))}
-          </Masonry>
-        )}
+              ))
+          )}
+        </Masonry>
       </div>
     </div>
   );

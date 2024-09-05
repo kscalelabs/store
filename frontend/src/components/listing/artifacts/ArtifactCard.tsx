@@ -18,7 +18,7 @@ interface Props {
 }
 
 const ArtifactCard: React.FC<Props> = ({ artifact, onDelete, canEdit }) => {
-  const createdAt = new Date(artifact.timestamp);
+  const createdAt = new Date(artifact.timestamp * 1000);
   const formattedDate = format(createdAt, "MMM d, yyyy 'at' h:mm a");
   const [deleting, setDeleting] = useState(false);
   const { addErrorAlert, addAlert } = useAlertQueue();
