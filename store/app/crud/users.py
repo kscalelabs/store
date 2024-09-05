@@ -47,22 +47,16 @@ class UserCrud(BaseCrud):
     async def get_user(self, id: str, throw_if_missing: bool = False) -> User | None:
         return await self._get_item(id, User, throw_if_missing=throw_if_missing)
 
-    """For safely retrieving public user data for display on profile pages"""
-
     async def get_user_public(self, id: str, throw_if_missing: bool = False) -> UserPublic | None:
         user = await self.get_user(id, throw_if_missing=throw_if_missing)
         if user is None:
             return None
         return UserPublic(**user.model_dump())
 
-    """Standard sign up with email and password, leaves oauth providers empty"""
-
     async def _create_user_from_email(self, email: str, password: str) -> User:
         user = User.create(email=email, password=password)
         await self._add_item(user, unique_fields=["email"])
         return user
-
-    """OAuth sign up, creates user and links OAuthKey"""
 
     async def _create_user_from_oauth(self, email: str, provider: str, user_token: str) -> User:
         user = await self.get_user_from_email(email)
@@ -195,9 +189,7 @@ class UserCrud(BaseCrud):
 async def test_adhoc() -> None:
     async with UserCrud() as crud:
         await crud._create_user_from_email(email="ben@kscale.dev", password="examplepas$w0rd")
-
         await crud.get_user_from_github_token(token="gh_token_example", email="oauth_github@kscale.dev")
-
         await crud.get_user_from_google_token(email="oauth_google@kscale.dev")
 
 
