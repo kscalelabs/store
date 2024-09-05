@@ -230,7 +230,7 @@ class GetListingResponse(BaseModel):
     views: int
     score: int
     user_vote: bool | None
-    creator_id: str  # Add this line
+    creator_id: str
     creator_name: str | None
 
 
