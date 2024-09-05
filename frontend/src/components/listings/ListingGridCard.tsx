@@ -15,7 +15,7 @@ const ListingGridCard = ({
 }: ListingGridCardProps) => {
   const getFirstLine = (text: string | null) => {
     if (!text) return null;
-    const firstLine = text.split('\n')[0].trim();
+    const firstLine = text.split("\n")[0].trim();
     return firstLine.length > 100 ? `${firstLine.slice(0, 97)}...` : firstLine;
   };
 
