@@ -1,94 +1,56 @@
-import { useState } from "react";
-import { FaEye } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-
-import clsx from "clsx";
 import { paths } from "gen/api";
-import { formatNumber } from "utils/formatNumber";
-import { formatTimeSince } from "utils/formatTimeSince";
-
-import ImagePlaceholder from "components/ImagePlaceholder";
-import ListingVoteButtons from "components/listing/ListingVoteButtons";
-import { Card, CardFooter, CardHeader, CardTitle } from "components/ui/Card";
 
 type ListingInfo =
   paths["/listings/batch"]["get"]["responses"][200]["content"]["application/json"]["listings"][0];
 
-interface Props {
+interface ListingGridCardProps {
   listingId: string;
-  listing: ListingInfo | undefined;
+  listing?: ListingInfo;
+  showDescription?: boolean;
 }
 
-const ListingGridCard = ({ listingId, listing }: Props) => {
-  const navigate = useNavigate();
-  const [hovering, setHovering] = useState(false);
+const ListingGridCard = ({
+  listing,
+  showDescription,
+}: ListingGridCardProps) => {
+  const getFirstLine = (text: string | null) => {
+    if (!text) return null;
+    const firstLine = text.split('\n')[0].trim();
+    return firstLine.length > 100 ? `${firstLine.slice(0, 97)}...` : firstLine;
+  };
 
   return (
-    <Card
-      className={clsx(
-        "transition-all duration-100 ease-in-out cursor-pointer",
-        "flex flex-col rounded material-card bg-white justify-between",
-        "dark:bg-gray-900",
-        "relative overflow-hidden",
-      )}
-      onMouseEnter={() => setHovering(true)}
-      onMouseLeave={() => setHovering(false)}
-      onClick={() => navigate(`/item/${listingId}`)}
-    >
-      {/* Hover overlay */}
-      <div
-        className={clsx(
-          "absolute inset-0 transition-opacity duration-100 ease-in-out",
-          "bg-black dark:bg-white",
-          hovering ? "opacity-10" : "opacity-0",
-        )}
-      />
-
-      {listing?.image_url ? (
-        <div className="w-full aspect-square bg-white">
-          <img
-            src={listing.image_url}
-            alt={listing.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ) : (
-        <ImagePlaceholder />
-      )}
-      <div className="flex flex-col flex-grow p-4">
-        <CardHeader className="p-0 mb-2">
-          <CardTitle className="text-gray-800 dark:text-gray-200 text-lg font-semibold truncate">
-            {listing ? (
-              listing.name
-            ) : (
-              <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-6 w-1/2 mb-2"></div>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardFooter className="flex flex-col items-start p-0 mt-auto">
-          {listing && (
-            <>
-              <div className="flex items-center text-sm text-gray-400 mb-1">
-                <FaEye className="mr-1" />
-                <span>{formatNumber(listing.views || 0)}</span>
-              </div>
-              <div className="text-xs text-gray-500">
-                {formatTimeSince(new Date(listing.created_at * 1000))}
-              </div>
-            </>
+    <div className="mb-4 sm:mb-6 bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1">
+      {listing ? (
+        <>
+          {listing.image_url && (
+            <div className="relative pb-[100%]">
+              <img
+                src={listing.image_url}
+                alt={listing.name}
+                className="absolute top-0 left-0 w-full h-full object-cover"
+              />
+            </div>
           )}
-        </CardFooter>
-      </div>
-      {listing && (
-        <div className="absolute top-2 left-2 z-10">
-          <ListingVoteButtons
-            listingId={listingId}
-            initialScore={listing.score ?? 0}
-            initialUserVote={listing.user_vote ?? null}
-          />
+          <div className="p-4">
+            <h3 className="text-lg font-semibold mb-2 text-gray-800">
+              {listing.name}
+            </h3>
+            {showDescription && listing.description !== null && (
+              <p className="text-sm text-gray-600">
+                {getFirstLine(listing.description)}
+              </p>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="animate-pulse p-4">
+          <div className="h-6 bg-gray-300 rounded w-3/4 mb-3"></div>
+          <div className="h-4 bg-gray-300 rounded w-full mb-2"></div>
+          <div className="h-4 bg-gray-300 rounded w-5/6"></div>
         </div>
       )}
-    </Card>
+    </div>
   );
 };
 
