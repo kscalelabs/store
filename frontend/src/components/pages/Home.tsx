@@ -21,7 +21,7 @@ const Home = () => {
         />
         <LandingCard
           imageSrc={KScale_Garage}
-          title="Developer Portal"
+          title="Developer Studio"
           description="Access open-source tools, resources, and learning materials."
           onClick={() => navigate("/browse")}
         />

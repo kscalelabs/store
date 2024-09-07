@@ -18,7 +18,7 @@ const LandingCard: React.FC<LandingCardProps> = ({
 }) => {
   return (
     <div
-      className="bg-white dark:bg-gray-900 rounded-lg shadow-md overflow-hidden cursor-pointer transition-transform hover:scale-[1.01] hover:shadow-lg"
+      className="relative bg-white dark:bg-gray-900 rounded-lg shadow-md overflow-hidden cursor-pointer transition-transform hover:scale-[1.01] dark:shadow-white/10 hover:shadow-lg"
       onClick={onClick}
     >
       <img

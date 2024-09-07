@@ -24,7 +24,7 @@ const Navbar = () => {
   return (
     <>
       <nav className="fixed w-full z-30 top-0 start-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm">
-        <div className="flex flex-wrap items-center justify-between p-4">
+        <div className="flex flex-wrap items-center justify-between py-4 mx-4 sm:mx-8">
           <a
             className="flex items-center active cursor-pointer"
             onClick={() => navigate("/")}
@@ -46,7 +46,7 @@ const Navbar = () => {
                 <FaUserCircle size={ICON_SIZE} />
               </button>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 sm:gap-4">
                 <button
                   onClick={() => navigate("/signup")}
                   className="flex items-center gap-2 justify-center py-2 px-4 rounded-full bg-[#2C514C]/30 hover:bg-[#2C514C]/50 transition-colors tracking-wider"
