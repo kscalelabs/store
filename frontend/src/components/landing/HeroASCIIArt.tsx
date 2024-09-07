@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { isDesktop } from "react-device-detect";
 
 import { useWindowSize } from "hooks/useWindowSize";
-
-import { Meteors } from "components/ui/Meteors";
 
 const HeroASCIIArt = () => {
   const asciiRef = useRef<HTMLDivElement>(null);
@@ -13,18 +12,18 @@ const HeroASCIIArt = () => {
   useEffect(() => {
     if (!asciiRef.current) return;
 
-    // Adjust these values to fine-tune the sizing
-    const charWidth = 7; // Approximate width of a character in pixels
-    const charHeight = 14; // Approximate height of a character in pixels
-    const initialPadding = -14; // Start with negative padding to make it larger
-    const finalPadding = 7; // End with the original padding
+    // Adjust these values based on device type
+    const charWidth = isDesktop ? 7 : 4;
+    const charHeight = isDesktop ? 14 : 10;
+    const initialPadding = isDesktop ? -14 : 0;
+    const finalPadding = isDesktop ? 7 : 4;
 
     const getSize = (progress: number) => {
       const currentPadding =
         initialPadding + (finalPadding - initialPadding) * progress;
       return {
-        width: Math.floor((windowWidth - currentPadding) / charWidth),
-        height: Math.floor((windowHeight - currentPadding) / charHeight),
+        width: Math.floor((windowWidth - currentPadding * 2) / charWidth),
+        height: Math.floor((windowHeight - currentPadding * 2) / charHeight),
       };
     };
 
@@ -38,11 +37,9 @@ const HeroASCIIArt = () => {
       "Run robot simulations in your browser  Run robot simulations in your browser",
       "K-Scale has the best robot developer ecosystem  K-Scale has the best robot developer ecosystem",
       "Download kernel images, robot models, and more  Download kernel images, robot models, and more",
-      "Download URDFs  Download URDFs  Download URDFs",
-      "Download Mujoco models  Download Mujoco models  Download Mujoco models",
-      "View OnShape models  View OnShape models  View OnShape models",
+      "Download URDFs  Download Mujoco models",
+      "View Onshape models  View Onshape models  View Onshape models",
       "AI-POWERED ROBOTS  AI-POWERED ROBOTS  AI-POWERED ROBOTS",
-      "Future of Automation  Future of Automation",
       "Developing with K-Lang is the easiest way to program robots",
       "K-Scale is the best place to learn about robots",
       "K-Scale's robot development platform is the best in the world",
@@ -53,6 +50,8 @@ const HeroASCIIArt = () => {
       "Stompy can walk and talk Stompy can walk and talk",
       "You can control and train Stompy with K-Lang",
       "Stompy is the first functional and affordable humanoid robot availble to the public",
+      "Open Source Robotics Open Source Robotics",
+      "K-Lang is a neural net programming language for robots",
     ];
 
     const kScaleLabsLogo = [
@@ -66,11 +65,36 @@ const HeroASCIIArt = () => {
       "                                                                                          ",
     ];
 
+    const kScaleLabsLogoMobile = [
+      "                                                        ",
+      " ██╗  ██╗      ███████╗ ██████╗ █████╗ ██╗     ███████╗ ",
+      " ██║ ██╔╝      ██╔════╝██╔════╝██╔══██╗██║     ██╔════╝ ",
+      " █████╔╝ █████╗███████╗██║     ███████║██║     █████╗   ",
+      " ██╔═██╗ ╚════╝╚════██║██║     ██╔══██║██║     ██╔══╝   ",
+      " ██║  ██╗      ███████║╚██████╗██║  ██║███████╗███████╗ ",
+      " ╚═╝  ╚═╝      ╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝ ",
+      "                                                        ",
+      "            ██╗      █████╗ ██████╗ ███████╗            ",
+      "            ██║     ██╔══██╗██╔══██╗██╔════╝            ",
+      "            ██║     ███████║██████╔╝███████╗            ",
+      "            ██║     ██╔══██║██╔══██╗╚════██║            ",
+      "            ███████╗██║  ██║██████╔╝███████║            ",
+      "            ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝            ",
+      "                                                        ",
+    ];
+
+    // Get the size of the Logo ASCII art
     const { width, height } = getSize(1);
-    const logoHeight = kScaleLabsLogo.length;
-    const logoWidth = kScaleLabsLogo[0].length;
-    const logoY = Math.floor((height - logoHeight) / 2);
-    const logoX = Math.floor((width - logoWidth) / 2) - 5;
+    const logo = isDesktop ? kScaleLabsLogo : kScaleLabsLogoMobile;
+    const logoHeight = logo.length;
+    const logoWidth = logo[0].length;
+
+    // Logo position
+    const logoY = Math.max(0, Math.floor((height - logoHeight) / 2) - 2);
+    const logoX = Math.max(0, Math.floor((width - logoWidth) / 2) - 5);
+
+    // Add a vertical offset to move the entire ASCII art up
+    const verticalOffset = isDesktop ? 0 : -5; // Adjust this value as needed
 
     const animate = (timestamp: number) => {
       if (!startTime) setStartTime(timestamp);
@@ -80,19 +104,20 @@ const HeroASCIIArt = () => {
 
       const { width, height } = getSize(progress);
 
-      const a = 0.0005 * elapsed * progress;
+      const a = 0.0007 * elapsed * progress;
       const logoStabilizationTime = 5000;
 
       let result = "";
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
+          const adjustedY = y + verticalOffset;
           if (
-            y >= logoY &&
-            y < logoY + logoHeight &&
+            adjustedY >= logoY &&
+            adjustedY < logoY + logoHeight &&
             x >= logoX &&
             x < logoX + logoWidth
           ) {
-            const logoChar = kScaleLabsLogo[y - logoY][x - logoX];
+            const logoChar = logo[adjustedY - logoY][x - logoX] || " ";
             if (elapsed < logoStabilizationTime) {
               const t = Math.min(1, elapsed / logoStabilizationTime);
               const randomChar = String.fromCharCode(
@@ -124,13 +149,10 @@ const HeroASCIIArt = () => {
         result += "\n";
       }
 
-      // Update the result with responsive sizing
       if (asciiRef.current) {
-        const fontSize = Math.max(
-          8,
-          Math.min(12, Math.floor(windowWidth / 100)),
-        );
-        asciiRef.current.style.fontSize = `${fontSize}px`;
+        // Adjust font size based on device type for better fit
+        const fontSize = isDesktop ? "12px" : "7px"; // Slightly reduced for mobile
+        asciiRef.current.style.fontSize = fontSize;
         asciiRef.current.style.lineHeight = "1";
         asciiRef.current.textContent = result;
       }
@@ -145,13 +167,12 @@ const HeroASCIIArt = () => {
     <div className="relative rounded-lg w-full overflow-hidden">
       <div
         ref={asciiRef}
-        className="font-mono text-xs whitespace-pre overflow-hidden mx-2 sm:mx-8 max-w-full max-h-[80vh] rounded-3xl"
+        className="font-mono text-xs whitespace-pre overflow-hidden m-2 sm:mx-4 md:mx-8 max-w-full max-h-[80vh] rounded-3xl"
         style={{
           transform: `scale(${1 + 0.05 * (1 - animationProgress)})`, // Start larger, end at normal size
           transition: "transform 0.3s ease-out",
         }}
       />
-      <Meteors />
     </div>
   );
 };

@@ -95,7 +95,7 @@ const Sidebar = ({ show, onClose }: Props) => {
               id="drawer-navigation-label"
               className="text-base font-semibold text-gray-500 uppercase dark:text-gray-300"
             >
-              SETTINGS
+              {/* SETTINGS */}
             </h5>
 
             <button
