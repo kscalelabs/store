@@ -24,6 +24,7 @@ import Logout from "components/pages/Logout";
 import NotFound from "components/pages/NotFound";
 import Profile from "components/pages/Profile";
 import Signup from "components/pages/Signup";
+import Studio from "components/pages/Studio";
 
 const App = () => {
   return (
@@ -38,23 +39,29 @@ const App = () => {
                   <Container>
                     <Routes>
                       <Route path="/" element={<Home />} />
+
                       <Route path="/about" element={<About />} />
                       <Route path="/buy-stompy" element={<BuyStompy />} />
-                      <Route path="/keys" element={<APIKeys />} />
-                      <Route path="/profile/:id?" element={<Profile />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/logout" element={<Logout />} />
-                      <Route path="/signup/" element={<Signup />} />
-                      <Route path="/signup/:id" element={<EmailSignup />} />
-                      <Route path="/create" element={<Create />} />
+
+                      <Route path="/studio" element={<Studio />} />
                       <Route path="/browse/:page?" element={<Browse />} />
-                      <Route path="/item/:id" element={<ListingDetails />} />
-                      <Route path="/404" element={<NotFound />} />
-                      <Route path="*" element={<NotFoundRedirect />} />
                       <Route
                         path="/file/:artifactId"
                         element={<FileBrowser />}
                       />
+
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/logout" element={<Logout />} />
+                      <Route path="/signup/" element={<Signup />} />
+                      <Route path="/signup/:id" element={<EmailSignup />} />
+
+                      <Route path="/create" element={<Create />} />
+                      <Route path="/item/:id" element={<ListingDetails />} />
+                      <Route path="/keys" element={<APIKeys />} />
+
+                      <Route path="/profile/:id?" element={<Profile />} />
+                      <Route path="/404" element={<NotFound />} />
+                      <Route path="*" element={<NotFoundRedirect />} />
                     </Routes>
                   </Container>
                 </div>
