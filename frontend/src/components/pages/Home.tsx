@@ -12,7 +12,7 @@ const Home = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-black">
       <HeroASCIIArt />
-      <div className="my-10 flex space-x-4 sm:space-x-10">
+      <div className="mt-10 mb-20 mx-2 flex flex-col sm:flex-row gap-6 sm:gap-10">
         <LandingCard
           imageSrc={StompyTeamPic}
           title="Buy Stompy"
