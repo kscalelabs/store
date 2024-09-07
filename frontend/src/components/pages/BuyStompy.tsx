@@ -1,7 +1,7 @@
 const BuyStompy = () => {
   return (
     <section>
-      <div className="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16">
+      <div className="py-8 px-4 mx-auto min-h-screen max-w-screen-xl text-center lg:py-16">
         <h1 className="mb-8 text-4xl font-extrabold tracking-tight leading-none md:text-5xl lg:text-6xl">
           Buy Stompy (In Progress)
         </h1>

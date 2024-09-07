@@ -18,7 +18,7 @@ const LandingCard: React.FC<LandingCardProps> = ({
 }) => {
   return (
     <div
-      className="bg-white dark:bg-gray-700 rounded-lg shadow-md overflow-hidden cursor-pointer transition-transform hover:scale-105"
+      className="bg-white dark:bg-gray-900 rounded-lg shadow-md overflow-hidden cursor-pointer transition-transform hover:scale-[1.01] hover:shadow-lg"
       onClick={onClick}
     >
       <img
@@ -28,12 +28,12 @@ const LandingCard: React.FC<LandingCardProps> = ({
       />
       <div className="p-4">
         <div className="flex justify-between items-center mb-2">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+          <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white">
             {title}
           </h3>
           <Icon className="text-gray-600 dark:text-gray-300" />
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
+        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">
           {description}
         </p>
       </div>

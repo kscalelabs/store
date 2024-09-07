@@ -32,7 +32,7 @@ const App = () => {
         <AuthenticationProvider>
           <AlertQueueProvider>
             <AlertQueue>
-              <div className="dark:bg-gray-800 dark:text-white min-h-screen flex flex-col">
+              <div className="dark:bg-black dark:text-white min-h-screen flex flex-col">
                 <Navbar />
                 <div className="flex-grow">
                   <Container>

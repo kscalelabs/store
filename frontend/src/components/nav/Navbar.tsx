@@ -13,7 +13,7 @@ import { useAuthentication } from "hooks/useAuth";
 // import { useDarkMode } from "hooks/useDarkMode";
 import Sidebar from "components/nav/Sidebar";
 
-const ICON_SIZE = 18;
+const ICON_SIZE = 20;
 
 const Navbar = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
@@ -23,7 +23,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="fixed w-full z-30 top-0 start-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
+      <nav className="fixed w-full z-30 top-0 start-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm">
         <div className="flex flex-wrap items-center justify-between p-4">
           <a
             className="flex items-center active cursor-pointer"
@@ -46,17 +46,17 @@ const Navbar = () => {
                 <FaUserCircle size={ICON_SIZE} />
               </button>
             ) : (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={() => navigate("/signup")}
-                  className="flex items-center gap-2 justify-center py-2 px-4 ml-4 rounded-full bg-[#2C514C]/30 hover:bg-[#2C514C]/50 transition-colors tracking-wider"
+                  className="flex items-center gap-2 justify-center py-2 px-4 rounded-full bg-[#2C514C]/30 hover:bg-[#2C514C]/50 transition-colors tracking-wider"
                 >
                   <FaUserPlus size={ICON_SIZE} className="text-[#487a73]" />{" "}
                   Sign Up
                 </button>
                 <button
                   onClick={() => navigate("/login")}
-                  className="flex items-center gap-2 justify-center py-2 px-4 ml-4 rounded-full bg-[#894B6D]/30 hover:bg-[#894B6D]/50 transition-colors tracking-wider"
+                  className="flex items-center gap-2 justify-center py-2 px-4 rounded-full bg-[#894B6D]/30 hover:bg-[#894B6D]/50 transition-colors tracking-wider"
                 >
                   <FaSignInAlt size={ICON_SIZE} className="text-[#894B6D]" />{" "}
                   Sign In
