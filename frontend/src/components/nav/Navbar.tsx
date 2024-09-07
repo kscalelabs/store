@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { isMobile } from "react-device-detect";
 import {
   // FaMoon,
   // FaSun,
@@ -13,7 +14,7 @@ import { useAuthentication } from "hooks/useAuth";
 // import { useDarkMode } from "hooks/useDarkMode";
 import Sidebar from "components/nav/Sidebar";
 
-const ICON_SIZE = 20;
+const ICON_SIZE = isMobile ? 16 : 20;
 
 const Navbar = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
@@ -49,14 +50,38 @@ const Navbar = () => {
               <div className="flex items-center gap-2 sm:gap-4">
                 <button
                   onClick={() => navigate("/signup")}
-                  className="flex items-center gap-2 justify-center py-2 px-4 rounded-full bg-[#2C514C]/30 hover:bg-[#2C514C]/50 transition-colors tracking-wider"
+                  className="
+                    flex
+                    items-center
+                    gap-2
+                    justify-center
+                    py-1
+                    sm:py-2
+                    px-2
+                    sm:px-4
+                    rounded-full
+                    text-sm
+                    sm:text-base
+                    bg-[#2C514C]/30 hover:bg-[#2C514C]/50 transition-colors tracking-wider
+                  "
                 >
                   <FaUserPlus size={ICON_SIZE} className="text-[#487a73]" />{" "}
                   Sign Up
                 </button>
                 <button
                   onClick={() => navigate("/login")}
-                  className="flex items-center gap-2 justify-center py-2 px-4 rounded-full bg-[#894B6D]/30 hover:bg-[#894B6D]/50 transition-colors tracking-wider"
+                  className="
+                    flex
+                    items-center
+                    gap-2
+                    justify-center
+                    py-1
+                    sm:py-2
+                    px-2
+                    sm:px-4
+                    text-sm
+                    sm:text-base
+                    rounded-full bg-[#894B6D]/30 hover:bg-[#894B6D]/50 transition-colors tracking-wider"
                 >
                   <FaSignInAlt size={ICON_SIZE} className="text-[#894B6D]" />{" "}
                   Sign In
