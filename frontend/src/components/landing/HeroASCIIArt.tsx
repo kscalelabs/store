@@ -145,7 +145,7 @@ const HeroASCIIArt = () => {
     <div className="relative rounded-lg w-full overflow-hidden">
       <div
         ref={asciiRef}
-        className="font-mono text-xs whitespace-pre overflow-hidden mx-2 sm:mx-8 max-w-full max-h-[80vh] bg-gray-900/50 rounded-3xl"
+        className="font-mono text-xs whitespace-pre overflow-hidden mx-2 sm:mx-8 max-w-full max-h-[80vh] rounded-3xl"
         style={{
           transform: `scale(${1 + 0.05 * (1 - animationProgress)})`, // Start larger, end at normal size
           transition: "transform 0.3s ease-out",
