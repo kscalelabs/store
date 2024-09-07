@@ -4,7 +4,7 @@ const Login = () => {
   return (
     <div className="mx-8">
       <div className="flex justify-center items-center">
-        <AuthBlock />
+        <AuthBlock title="Welcome back" />
       </div>
     </div>
   );

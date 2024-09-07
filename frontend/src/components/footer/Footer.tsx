@@ -21,6 +21,7 @@ const Footer = () => {
     pathname?.startsWith("/browse") === false &&
     pathname?.startsWith("/login") === false &&
     pathname?.startsWith("/item") === false &&
+    pathname?.startsWith("/create") === false &&
     pathname?.startsWith("/signup") === false;
 
   if (!showFooter) {
@@ -42,7 +43,7 @@ const Footer = () => {
               className="h-8 dark:invert"
             />
             <span className="ml-2 text-xl font-bold text-gray-800 dark:text-gray-200">
-              store
+              K-Scale Labs
             </span>
           </a>
           <div className="flex flex-row gap-4 rounded-full">
