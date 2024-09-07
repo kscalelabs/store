@@ -11,11 +11,30 @@ import { Card, CardContent, CardFooter, CardHeader } from "components/ui/Card";
 import Header from "components/ui/Header";
 import Spinner from "components/ui/Spinner";
 
-export const AuthBlockInner = () => {
+interface AuthBlockProps {
+  title?: string;
+  onClosed?: () => void;
+  signup?: boolean;
+}
+
+const AuthBlock: React.FC<AuthBlockProps> = ({ title, onClosed, signup }) => {
+  return (
+    <Card className="w-[400px] shadow-md bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg">
+      <CardHeader>
+        <Header title={title} onClosed={onClosed} />
+      </CardHeader>
+      <AuthBlockInner initialSignup={signup} />
+    </Card>
+  );
+};
+
+export const AuthBlockInner: React.FC<{ initialSignup?: boolean }> = ({
+  initialSignup,
+}) => {
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
 
-  const [isSignup, setIsSignup] = useState(false);
+  const [isSignup, setIsSignup] = useState(initialSignup ?? false);
   const [useSpinner, setUseSpinner] = useState(false);
 
   useEffect(() => {
@@ -69,22 +88,6 @@ export const AuthBlockInner = () => {
         />
       </CardFooter>
     </>
-  );
-};
-
-interface AuthBlockProps {
-  title?: string;
-  onClosed?: () => void;
-}
-
-const AuthBlock: React.FC<AuthBlockProps> = ({ title, onClosed }) => {
-  return (
-    <Card className="w-[400px] shadow-md bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg">
-      <CardHeader>
-        <Header title={title} onClosed={onClosed} />
-      </CardHeader>
-      <AuthBlockInner />
-    </Card>
   );
 };
 

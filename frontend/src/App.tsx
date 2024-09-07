@@ -13,7 +13,9 @@ import Navbar from "components/nav/Navbar";
 import APIKeys from "components/pages/APIKeys";
 import About from "components/pages/About";
 import Browse from "components/pages/Browse";
+import BuyStompy from "components/pages/BuyStompy";
 import Create from "components/pages/Create";
+import EmailSignup from "components/pages/EmailSignup";
 import FileBrowser from "components/pages/FileBrowser";
 import Home from "components/pages/Home";
 import ListingDetails from "components/pages/ListingDetails";
@@ -30,18 +32,20 @@ const App = () => {
         <AuthenticationProvider>
           <AlertQueueProvider>
             <AlertQueue>
-              <div className="dark:bg-gray-900 dark:text-white min-h-screen flex flex-col">
+              <div className="dark:bg-black dark:text-white min-h-screen flex flex-col">
                 <Navbar />
                 <div className="flex-grow">
                   <Container>
                     <Routes>
                       <Route path="/" element={<Home />} />
                       <Route path="/about" element={<About />} />
+                      <Route path="/buy-stompy" element={<BuyStompy />} />
                       <Route path="/keys" element={<APIKeys />} />
                       <Route path="/profile/:id?" element={<Profile />} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/logout" element={<Logout />} />
-                      <Route path="/signup/:id" element={<Signup />} />
+                      <Route path="/signup/" element={<Signup />} />
+                      <Route path="/signup/:id" element={<EmailSignup />} />
                       <Route path="/create" element={<Create />} />
                       <Route path="/browse/:page?" element={<Browse />} />
                       <Route path="/item/:id" element={<ListingDetails />} />
