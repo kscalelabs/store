@@ -3,6 +3,8 @@ import { isDesktop } from "react-device-detect";
 
 import { useWindowSize } from "hooks/useWindowSize";
 
+import Meteors from "components/ui/Meteors";
+
 const HeroASCIIArt = () => {
   const asciiRef = useRef<HTMLDivElement>(null);
   const [startTime, setStartTime] = useState(0);
@@ -24,30 +26,18 @@ const HeroASCIIArt = () => {
     };
 
     const textStrings = [
-      "Meet Stompy  Meet Stompy  Meet Stompy",
-      "Program robots easily with K-Lang  Program robots easily with K-Lang  Program robots easily with K-Lang",
-      "Affordable and functional humanoid robots  Affordable and functional humanoid robots  Affordable and functional humanoid robots",
-      "Meet Stompy Mini  Meet Stompy Mini  Meet Stompy Mini",
-      "How to write a walking policy  How to write a walking policy",
-      "How to build a robot  How to build a robot",
-      "Run robot simulations in your browser  Run robot simulations in your browser",
-      "K-Scale has the best robot developer ecosystem  K-Scale has the best robot developer ecosystem",
-      "Download kernel images, robot models, and more  Download kernel images, robot models, and more",
-      "Download URDFs  Download Mujoco models",
-      "View Onshape models  View Onshape models  View Onshape models",
-      "AI-POWERED ROBOTS  AI-POWERED ROBOTS  AI-POWERED ROBOTS",
-      "Developing with K-Lang is the easiest way to program robots",
-      "K-Scale is the best place to learn about robots",
-      "K-Scale's robot development platform is the best in the world",
-      "How to train your own robot models  How to train your own robot models",
-      "How to train your own robot policies  How to train your own robot policies",
-      "How to build your own robot  How to build your own robot",
-      "Buy a fully functional humanoid robot  Buy a fully functional humanoid robot",
-      "Stompy can walk and talk Stompy can walk and talk",
-      "You can control and train Stompy with K-Lang",
-      "Stompy is the first functional and affordable humanoid robot availble to the public",
-      "Open Source Robotics Open Source Robotics",
-      "K-Lang is a neural net programming language for robots",
+      "KKKKKKKKKKKKKKKKK",
+      "kkkkkkkkkkkkkkkkk",
+      "KkKkKkKkKkKkKkKkK",
+      "KKkKKkKKkKKkKKkKK",
+      "kkkKKkKKkKKkKKkKK",
+      "KkKkKkKkKkKkKkKkK",
+      "KKkKKkKKkKKkKKkKK",
+      "kkkKKkKKkKKkKKkKK",
+      "KkKkKkKkKkKkKkKkK",
+      "KKkKKkKKkKKkKKkKK",
+      "kkkKKkKKkKKkKKkKK",
+      "KkKkKkKkKkKkKkKkK",
     ];
 
     const kScaleLabsLogo = [
@@ -149,6 +139,7 @@ const HeroASCIIArt = () => {
 
   return (
     <div className="relative rounded-lg w-full overflow-hidden">
+      <Meteors />
       <div
         ref={asciiRef}
         className="font-mono text-xs whitespace-pre overflow-hidden m-2 sm:mx-4 md:mx-8 max-w-full max-h-[80vh] rounded-3xl"
