@@ -29,7 +29,7 @@ const Footer = () => {
   }
 
   return (
-    <footer className="bg-gray-50 dark:bg-gray-900 text-sm py-20">
+    <footer className="bg-gray-50 dark:bg-[#191919] text-sm py-20">
       <div className="flex flex-col gap-4 mx-12 sm:mx-36">
         {/* Logo and Social Links */}
         <div className="flex flex-row justify-between items-center mb-8">
