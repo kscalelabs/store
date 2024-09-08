@@ -24,7 +24,7 @@ const LandingCard: React.FC<LandingCardProps> = ({
       <img
         src={imageSrc}
         alt={title}
-        className="w-full h-64 object-cover rounded-t-lg"
+        className="w-full h-48 sm:h-64 object-cover rounded-t-lg"
       />
       <div className="p-4">
         <div className="flex justify-between items-center mb-2">

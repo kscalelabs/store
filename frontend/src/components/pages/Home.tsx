@@ -23,7 +23,7 @@ const Home = () => {
           imageSrc={KScale_Garage}
           title="Developer Studio"
           description="Access open-source tools, resources, and learning materials."
-          onClick={() => navigate("/browse")}
+          onClick={() => navigate("/studio")}
         />
       </div>
     </div>
