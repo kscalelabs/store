@@ -6,7 +6,6 @@ import { useWindowSize } from "hooks/useWindowSize";
 const HeroASCIIArt = () => {
   const asciiRef = useRef<HTMLDivElement>(null);
   const [startTime, setStartTime] = useState(0);
-  const [animationProgress, setAnimationProgress] = useState(0);
   const { width: windowWidth, height: windowHeight } = useWindowSize();
 
   useEffect(() => {
@@ -15,15 +14,12 @@ const HeroASCIIArt = () => {
     // Adjust these values based on device type
     const charWidth = isDesktop ? 7 : 4;
     const charHeight = isDesktop ? 14 : 10;
-    const initialPadding = isDesktop ? -14 : 0;
-    const finalPadding = isDesktop ? 7 : 4;
+    const padding = isDesktop ? 7 : 4;
 
-    const getSize = (progress: number) => {
-      const currentPadding =
-        initialPadding + (finalPadding - initialPadding) * progress;
+    const getSize = () => {
       return {
-        width: Math.floor((windowWidth - currentPadding * 2) / charWidth),
-        height: Math.floor((windowHeight - currentPadding * 2) / charHeight),
+        width: Math.floor((windowWidth - padding * 2) / charWidth),
+        height: Math.floor((windowHeight - padding * 2) / charHeight),
       };
     };
 
@@ -55,14 +51,14 @@ const HeroASCIIArt = () => {
     ];
 
     const kScaleLabsLogo = [
-      "                                                                                          ",
+      "                                                                                           ",
       " ██╗  ██╗      ███████╗ ██████╗ █████╗ ██╗     ███████╗   ██╗      █████╗ ██████╗ ███████╗ ",
       " ██║ ██╔╝      ██╔════╝██╔════╝██╔══██╗██║     ██╔════╝   ██║     ██╔══██╗██╔══██╗██╔════╝ ",
       " █████╔╝ █████╗███████╗██║     ███████║██║     █████╗     ██║     ███████║██████╔╝███████╗ ",
       " ██╔═██╗ ╚════╝╚════██║██║     ██╔══██║██║     ██╔══╝     ██║     ██╔══██║██╔══██╗╚════██║ ",
       " ██║  ██╗      ███████║╚██████╗██║  ██║███████╗███████╗   ███████╗██║  ██║██████╔╝███████║ ",
       " ╚═╝  ╚═╝      ╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝   ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝ ",
-      "                                                                                          ",
+      "                                                                                           ",
     ];
 
     const kScaleLabsLogoMobile = [
@@ -84,7 +80,7 @@ const HeroASCIIArt = () => {
     ];
 
     // Get the size of the Logo ASCII art
-    const { width, height } = getSize(1);
+    const { width, height } = getSize();
     const logo = isDesktop ? kScaleLabsLogo : kScaleLabsLogoMobile;
     const logoHeight = logo.length;
     const logoWidth = logo[0].length;
@@ -100,12 +96,8 @@ const HeroASCIIArt = () => {
       if (!startTime) setStartTime(timestamp);
       const elapsed = timestamp - startTime;
       const progress = Math.min(1, elapsed / 1500); // 1.5-second animation
-      setAnimationProgress(progress);
-
-      const { width, height } = getSize(progress);
 
       const a = 0.0007 * elapsed * progress;
-      const logoStabilizationTime = 5000;
 
       let result = "";
       for (let y = 0; y < height; y++) {
@@ -118,15 +110,7 @@ const HeroASCIIArt = () => {
             x < logoX + logoWidth
           ) {
             const logoChar = logo[adjustedY - logoY][x - logoX] || " ";
-            if (elapsed < logoStabilizationTime) {
-              const t = Math.min(1, elapsed / logoStabilizationTime);
-              const randomChar = String.fromCharCode(
-                33 + Math.floor(Math.random() * 94),
-              );
-              result += Math.random() < t ? logoChar : randomChar;
-            } else {
-              result += logoChar;
-            }
+            result += logoChar;
           } else {
             const s = 1 - (2 * y) / height;
             const o = (2 * x) / width - 1;
@@ -168,10 +152,6 @@ const HeroASCIIArt = () => {
       <div
         ref={asciiRef}
         className="font-mono text-xs whitespace-pre overflow-hidden m-2 sm:mx-4 md:mx-8 max-w-full max-h-[80vh] rounded-3xl"
-        style={{
-          transform: `scale(${1 + 0.05 * (1 - animationProgress)})`, // Start larger, end at normal size
-          transition: "transform 0.3s ease-out",
-        }}
       />
     </div>
   );
