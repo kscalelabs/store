@@ -24,7 +24,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="fixed w-full z-30 top-0 start-0 bg-white/80 dark:bg-black/80 backdrop-blur-sm">
+      <nav className="fixed w-full z-30 top-0 start-0 bg-white/80 dark:bg-[#111111] backdrop-blur-sm">
         <div className="flex flex-wrap items-center justify-between py-4 mx-4 sm:mx-8">
           <a
             className="flex items-center active cursor-pointer"

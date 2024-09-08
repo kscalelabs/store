@@ -11,7 +11,7 @@ const Container = (props: ContainerProps) => {
 
   // Landing page / home path.
   if (pathname === "/") {
-    return <div className="pt-16">{children}</div>;
+    return <div className="pt-14">{children}</div>;
   }
 
   return <div className="container mx-auto pt-24 pb-16 px-8">{children}</div>;

@@ -151,7 +151,7 @@ const HeroASCIIArt = () => {
     <div className="relative rounded-lg w-full overflow-hidden">
       <div
         ref={asciiRef}
-        className="font-mono text-xs whitespace-pre overflow-hidden m-2 sm:mx-4 md:mx-8 max-w-full max-h-[80vh] rounded-3xl"
+        className="font-mono text-xs whitespace-pre overflow-hidden m-2 my-4 sm:mx-4 md:mx-8 max-w-full max-h-[80vh] rounded-3xl"
       />
     </div>
   );
