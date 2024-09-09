@@ -116,6 +116,14 @@ const Browse = () => {
           >
             Create
           </Button>
+          <Button
+            onClick={() => navigate(`/images`)}
+            variant="secondary"
+            size="lg"
+            className="w-full md:w-auto"
+          >
+            Download K-ernel
+          </Button>
         </div>
 
         {hasButton && (

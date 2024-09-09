@@ -169,7 +169,8 @@ ImageArtifactType = Literal["image"]
 XMLArtifactType = Literal["urdf", "mjcf"]
 MeshArtifactType = Literal["stl", "obj", "dae", "ply"]
 CompressedArtifactType = Literal["tgz", "zip"]
-ArtifactType = ImageArtifactType | XMLArtifactType | MeshArtifactType | CompressedArtifactType
+KernelImageArtifactType = Literal["tar"]
+ArtifactType = ImageArtifactType | XMLArtifactType | MeshArtifactType | CompressedArtifactType | KernelImageArtifactType
 
 UPLOAD_CONTENT_TYPE_OPTIONS: dict[ArtifactType, set[str]] = {
     # Image

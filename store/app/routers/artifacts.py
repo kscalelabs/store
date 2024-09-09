@@ -277,3 +277,20 @@ async def delete_artifact(
         )
     await crud.remove_artifact(artifact)
     return True
+
+
+@artifacts_router.get("/latest/image")
+async def get_latest_image(
+    crud: Annotated[Crud, Depends(Crud.get)],
+    user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
+) -> SingleArtifactResponse:
+    # TODO: Get the latest image from the database
+    return SingleArtifactResponse(
+        artifact_id="",
+        listing_id="",
+        name="",
+        artifact_type="tar",
+        description="",
+        timestamp=0,
+        urls=ArtifactUrls(small="", large=""),
+    )

@@ -15,6 +15,7 @@ import About from "components/pages/About";
 import Browse from "components/pages/Browse";
 import BuyStompy from "components/pages/BuyStompy";
 import Create from "components/pages/Create";
+import Images from "components/pages/Images";
 import EmailSignup from "components/pages/EmailSignup";
 import FileBrowser from "components/pages/FileBrowser";
 import Home from "components/pages/Home";
@@ -47,6 +48,7 @@ const App = () => {
                       <Route path="/signup/" element={<Signup />} />
                       <Route path="/signup/:id" element={<EmailSignup />} />
                       <Route path="/create" element={<Create />} />
+                      <Route path="/images" element={<Images />} />
                       <Route path="/browse/:page?" element={<Browse />} />
                       <Route path="/item/:id" element={<ListingDetails />} />
                       <Route path="/404" element={<NotFound />} />
