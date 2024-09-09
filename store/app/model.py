@@ -169,7 +169,8 @@ ImageArtifactType = Literal["image"]
 XMLArtifactType = Literal["urdf", "mjcf"]
 MeshArtifactType = Literal["stl", "obj", "dae", "ply"]
 CompressedArtifactType = Literal["tgz", "zip"]
-ArtifactType = ImageArtifactType | XMLArtifactType | MeshArtifactType | CompressedArtifactType
+ImageArtifactType = Literal["raw", "tar"] 
+ArtifactType = ImageArtifactType | XMLArtifactType | MeshArtifactType | CompressedArtifactType | ImageArtifactType 
 
 UPLOAD_CONTENT_TYPE_OPTIONS: dict[ArtifactType, set[str]] = {
     # Image
@@ -203,9 +204,11 @@ DOWNLOAD_CONTENT_TYPE: dict[ArtifactType, str] = {
     "obj": "application/octet-stream",
     "dae": "application/octet-stream",
     "ply": "application/octet-stream",
+    "raw": "application/octet-stream",
     # Compressed
     "tgz": "application/gzip",
     "zip": "application/zip",
+    "tar": "application/x-tar", 
 }
 
 SizeMapping: dict[ArtifactSize, tuple[int, int]] = {
@@ -248,6 +251,10 @@ def get_artifact_type(content_type: str | None, filename: str | None) -> Artifac
             return "tgz"
         if extension in ("zip",):
             return "zip"
+        if extension in ("raw",):
+            return "raw"
+        if extension in ("tar",):
+            return "tar" 
 
     # Attempts to determine from content type.
     if content_type is not None:
