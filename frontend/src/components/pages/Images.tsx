@@ -51,21 +51,31 @@ const DownloadImage = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-[#111111]">
-      <h1 className="text-3xl font-bold mb-4">Download K-ernel Image</h1>
-      <Button
-        onClick={handleDownload}
-        variant="primary"
-        className="w-full sm:w-auto"
-        disabled={downloading || !latestImage}
-      >
-        {downloading ? (
-          <Spinner className="mr-2" />
-        ) : (
-          <FaDownload className="mr-2" />
-        )}
-        {downloading ? "Downloading..." : "Download"}
-      </Button>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-white dark:bg-black p-8">
+      <div className="w-full max-w-4xl flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 md:space-x-8">
+        <div className="text-center md:text-left">
+          <h1 className="text-4xl font-bold mb-4">Info</h1>
+          <p className="text-l mb-2">blah blah</p>
+          <p className="text-l">v{latestImage?.version || '0.1'}</p>
+        </div>
+        
+        <div className="bg-gray-100 dark:bg-[#111111] p-8 rounded-lg flex flex-col justify-center w-full md:w-[28rem]">
+          <h2 className="text-3xl font-bold mb-6">Download K-ernel Image</h2>
+          <Button
+            onClick={handleDownload}
+            variant="primary"
+            className="w-full"
+            disabled={downloading || !latestImage}
+          >
+            {downloading ? (
+              <Spinner className="mr-2" />
+            ) : (
+              <FaDownload className="mr-2" />
+            )}
+            {downloading ? "Downloading..." : "Download"}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };
