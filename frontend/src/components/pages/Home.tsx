@@ -10,7 +10,7 @@ const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-black">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-[#111111]">
       <HeroASCIIArt />
       <div className="mt-10 mb-20 mx-2 flex flex-col sm:flex-row gap-6 sm:gap-10">
         <LandingCard
