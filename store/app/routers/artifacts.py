@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.responses import RedirectResponse
 from pydantic.main import BaseModel
 
-from store.app.db import Crud
+from store.app.db import ArtifactsCrud, Crud
 from store.app.model import (
     Artifact,
     ArtifactSize,
@@ -281,16 +281,22 @@ async def delete_artifact(
 
 @artifacts_router.get("/latest/image")
 async def get_latest_image(
-    crud: Annotated[Crud, Depends(Crud.get)],
-    user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
-) -> SingleArtifactResponse:
-    # TODO: Get the latest image from the database
-    return SingleArtifactResponse(
-        artifact_id="",
-        listing_id="",
-        name="",
-        artifact_type="tar",
-        description="",
-        timestamp=0,
-        urls=ArtifactUrls(small="", large=""),
+    artifacts_crud: Annotated[ArtifactsCrud, Depends(ArtifactsCrud.get)],
+    limit: int = Query(default=1, ge=1, le=10),
+) -> ListArtifactsResponse:
+    latest_images = await artifacts_crud.get_latest_artifacts("tar", 2)
+
+    return ListArtifactsResponse(
+        artifacts=[
+            SingleArtifactResponse(
+                artifact_id=artifact.id,
+                listing_id=artifact.listing_id,
+                name=artifact.name,
+                artifact_type=artifact.artifact_type,
+                description=artifact.description,
+                timestamp=artifact.timestamp,
+                urls=get_artifact_url_response(artifact=artifact),
+            )
+            for artifact in latest_images
+        ],
     )

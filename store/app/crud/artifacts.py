@@ -327,3 +327,13 @@ class ArtifactsCrud(BaseCrud):
             artifact_updates["description"] = description
         if artifact_updates:
             await self._update_item(artifact_id, Artifact, artifact_updates)
+
+    # UNCLEAR IF THIS WORKS
+    async def get_latest_artifacts(self, artifact_type: ArtifactType, limit: int) -> list[Artifact]:
+        return (
+            await self.db.query(Artifact)
+            .filter(Artifact.artifact_type == artifact_type)
+            .order_by("timestamp DESC")
+            .limit(limit)
+            .all()
+        )
