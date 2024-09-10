@@ -97,6 +97,7 @@ async def pull_onshape_document(
         suffix_to_joint_effort=suffix_to_joint_effort or {},
         suffix_to_joint_velocity=suffix_to_joint_velocity or {},
         max_concurrent_requests=5,
+        disable_mimics=True,
         voxel_size=voxel_size,
         convex_collision_meshes=convex_collision_meshes,
         add_mjcf=add_mjcf,
