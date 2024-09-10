@@ -1,4 +1,10 @@
-import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { useEffect } from "react";
+import {
+  Route,
+  BrowserRouter as Router,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 
 import "App.css";
 
@@ -25,6 +31,29 @@ import NotFound from "components/pages/NotFound";
 import Profile from "components/pages/Profile";
 import Signup from "components/pages/Signup";
 
+const PendoInitializer = () => {
+  const location = useLocation(); // Hook to get current route
+
+  useEffect(() => {
+    if (window.pendo) {
+      window.pendo.initialize({
+        visitor: { id: "" }, // Leave empty for anonymous tracking
+        account: { id: "" },
+      });
+      console.log("Pendo initialized");
+    }
+  }, []);
+
+  useEffect(() => {
+    // Track page views when the route changes
+    if (window.pendo) {
+      window.pendo.pageLoad(); // Notify Pendo of page transitions
+    }
+  }, [location.pathname]);
+
+  return null; // This component only handles Pendo initialization and page tracking
+};
+
 const App = () => {
   return (
     <Router>
@@ -34,6 +63,8 @@ const App = () => {
             <AlertQueue>
               <div className="dark:bg-black dark:text-white min-h-screen flex flex-col">
                 <Navbar />
+                <PendoInitializer />{" "}
+                {/* This component is where Pendo is initialized */}
                 <div className="flex-grow">
                   <Container>
                     <Routes>
