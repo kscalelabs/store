@@ -7,7 +7,10 @@ interface PendoAccount {
 }
 
 interface Pendo {
-  initialize: (options: { visitor: PendoVisitor; account?: PendoAccount }) => void;
+  initialize: (options: {
+    visitor: PendoVisitor;
+    account?: PendoAccount;
+  }) => void;
   pageLoad: () => void;
 }
 
