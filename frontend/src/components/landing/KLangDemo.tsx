@@ -28,7 +28,10 @@ speakPhrase("Hello, I am a robot.");`,
   };
 
   return (
-    <section className="w-full py-12 md:py-20 lg:py-28 xl:py-36 bg-[#F9F9F9] dark:bg-[#191919]">
+    <section
+      className="w-full py-12 md:py-20 lg:py-28 xl:py-36 bg-[#F9F9F9] dark:bg-[#191919]"
+      id="first-section"
+    >
       <div className="px-4 md:px-6">
         <div className="flex flex-col items-center space-y-4 text-center">
           <div className="space-y-2">
