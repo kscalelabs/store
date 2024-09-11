@@ -356,7 +356,7 @@ const getCharForPosition = (
   x: number,
   y: number,
 ): string => {
-  if (!grid[y][x]) return " ";
+  if (!grid || !grid[y] || !grid[y][x]) return " ";
 
   const top = y > 0 && grid[y - 1][x];
   const bottom = y < grid.length - 1 && grid[y + 1][x];
