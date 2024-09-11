@@ -1,25 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { isMobile } from "react-device-detect";
-import {
-  FaMoon,
-  FaSignInAlt,
-  FaSun,
-  FaUserCircle,
-  FaUserPlus,
-} from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { FaMoon, FaSun, FaUserCircle } from "react-icons/fa";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import Sidebar from "@/components/nav/Sidebar";
-import { useAuthentication } from "@/hooks/useAuth";
 import { useDarkMode } from "@/hooks/useDarkMode";
 
 const ICON_SIZE = isMobile ? 16 : 20;
 
 const Navbar = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
+  const [showNavbar, setShowNavbar] = useState<boolean>(true);
   const { darkMode, setDarkMode } = useDarkMode();
-  const { isAuthenticated } = useAuthentication();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (location.pathname === "/") {
+        setShowNavbar(window.scrollY > 100);
+      }
+    };
+
+    if (location.pathname === "/") {
+      setShowNavbar(false);
+      window.addEventListener("scroll", handleScroll);
+    } else {
+      setShowNavbar(true);
+    }
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [location.pathname]);
+
+  if (!showNavbar) return null;
 
   return (
     <>
@@ -41,52 +54,10 @@ const Navbar = () => {
                 <FaSun size={ICON_SIZE} />
               )}
             </button>
-            {isAuthenticated ? (
-              <button onClick={() => setShowSidebar(true)} className="pl-4">
-                <FaUserCircle size={ICON_SIZE} />
-              </button>
-            ) : (
-              <div className="flex items-center gap-2 sm:gap-4">
-                <button
-                  onClick={() => navigate("/signup")}
-                  className="
-                    flex
-                    items-center
-                    gap-2
-                    justify-center
-                    py-1
-                    sm:py-2
-                    px-2
-                    sm:px-4
-                    rounded-full
-                    text-sm
-                    sm:text-base
-                    bg-[#2C514C]/30 hover:bg-[#2C514C]/50 transition-colors tracking-wider
-                  "
-                >
-                  <FaUserPlus size={ICON_SIZE} className="text-[#487a73]" />{" "}
-                  Sign Up
-                </button>
-                <button
-                  onClick={() => navigate("/login")}
-                  className="
-                    flex
-                    items-center
-                    gap-2
-                    justify-center
-                    py-1
-                    sm:py-2
-                    px-2
-                    sm:px-4
-                    text-sm
-                    sm:text-base
-                    rounded-full bg-[#894B6D]/30 hover:bg-[#894B6D]/50 transition-colors tracking-wider"
-                >
-                  <FaSignInAlt size={ICON_SIZE} className="text-[#894B6D]" />{" "}
-                  Sign In
-                </button>
-              </div>
-            )}
+
+            <button onClick={() => setShowSidebar(true)} className="pl-4">
+              <FaUserCircle size={ICON_SIZE} />
+            </button>
           </div>
         </div>
       </nav>
