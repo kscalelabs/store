@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef } from "react";
-import { isDesktop } from "react-device-detect";
 
 import { useWindowSize } from "@/hooks/useWindowSize";
 
@@ -28,7 +27,7 @@ const HeroASCIIArt = () => {
     }
 
     // Add a few random cells to introduce some variability
-    for (let i = 0; i < Math.floor(rows * cols * 0.005); i++) {
+    for (let i = 0; i < Math.floor(rows * cols * 0.02); i++) {
       const y = Math.floor(Math.random() * rows);
       const x = Math.floor(Math.random() * cols);
       grid[y][x] = true;
@@ -75,9 +74,9 @@ const HeroASCIIArt = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const charWidth = isDesktop ? 10 : 5;
-    const charHeight = isDesktop ? 15 : 10;
-    const padding = isDesktop ? 10 : 5;
+    const charWidth = 5;
+    const charHeight = 8;
+    const padding = 5;
 
     const cols = Math.floor((windowWidth - padding * 2) / charWidth);
     const rows = Math.floor((windowHeight - padding * 2) / charHeight);
@@ -87,45 +86,9 @@ const HeroASCIIArt = () => {
 
     gridRef.current = initializeGrid(rows, cols);
 
-    const kScaleLabsLogo = [
-      "                                                         ",
-      "  ██╗  ██╗      ███████╗ ██████╗ █████╗ ██╗     ███████╗ ",
-      "  ██║ ██╔╝      ██╔════╝██╔════╝██╔══██╗██║     ██╔════╝ ",
-      "  █████╔╝ █████╗███████╗██║     ███████║██║     █████╗   ",
-      "  ██╔═██╗ ╚════╝╚════██║██║     ██╔══██║██║     ██╔══╝   ",
-      "  ██║  ██╗      ███████║╚██████╗██║  ██║███████╗███████╗ ",
-      "  ╚═╝  ╚═╝      ╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝ ",
-      "                                                         ",
-      "             ██╗      █████╗ ██████╗ ███████╗            ",
-      "             ██║     ██╔══██╗██╔══██╗██╔════╝            ",
-      "             ██║     ███████║██████╔╝███████╗            ",
-      "             ██║     ██╔══██║██╔══██╗╚════██║            ",
-      "             ███████╗██║  ██║██████╔╝███████║            ",
-      "             ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝            ",
-      "                                                         ",
-      "          MOVING HUMANITY UP THE KARDASHEV SCALE         ",
-      "                                                         ",
-    ];
-
-    const logoHeight = kScaleLabsLogo.length;
-    const logoWidth = kScaleLabsLogo[0].length;
-
-    const logoY = Math.max(0, Math.floor((rows - logoHeight) / 2) - 2);
-    const logoX = Math.max(0, Math.floor((cols - logoWidth) / 2));
-
     const drawGrid = (currentGrid: boolean[][]) => {
-      const backgroundColor =
-        getComputedStyle(document.documentElement).getPropertyValue(
-          "--tw-bg-opacity",
-        ) === "1"
-          ? "#ffffff"
-          : "#000000";
-      const textColor =
-        getComputedStyle(document.documentElement).getPropertyValue(
-          "--tw-bg-opacity",
-        ) === "1"
-          ? "#000000"
-          : "#ffffff";
+      const backgroundColor = "#000000";
+      const textColor = "#ffffff";
 
       ctx.fillStyle = backgroundColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -134,26 +97,8 @@ const HeroASCIIArt = () => {
 
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
-          if (
-            y >= logoY &&
-            y < logoY + logoHeight &&
-            x >= logoX &&
-            x < logoX + logoWidth
-          ) {
-            const logoChar = kScaleLabsLogo[y - logoY][x - logoX];
-            ctx.fillText(
-              logoChar,
-              x * charWidth + padding,
-              y * charHeight + padding,
-            );
-          } else {
-            const char = currentGrid[y][x] ? "█" : " ";
-            ctx.fillText(
-              char,
-              x * charWidth + padding,
-              y * charHeight + padding,
-            );
-          }
+          const char = getCharForPosition(currentGrid, x, y);
+          ctx.fillText(char, x * charWidth + padding, y * charHeight + padding);
         }
       }
     };
@@ -186,8 +131,66 @@ const HeroASCIIArt = () => {
   return (
     <div className="relative rounded-lg w-full overflow-hidden">
       <canvas ref={canvasRef} className="w-full h-full" />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="max-w-2/3 border border-white p-4 bg-black text-xs md:text-base">
+          <pre className="text-white leading-none whitespace-pre font-mono">
+            {kScaleLabsLogo.join("\n")}
+          </pre>
+        </div>
+      </div>
     </div>
   );
 };
+
+const getCharForPosition = (
+  grid: boolean[][],
+  x: number,
+  y: number,
+): string => {
+  if (!grid[y][x]) return " ";
+
+  const top = y > 0 && grid[y - 1][x];
+  const bottom = y < grid.length - 1 && grid[y + 1][x];
+  const left = x > 0 && grid[y][x - 1];
+  const right = x < grid[0].length - 1 && grid[y][x + 1];
+
+  if (top && bottom && left && right) return "╬";
+  if (top && bottom && left) return "╣";
+  if (top && bottom && right) return "╠";
+  if (top && left && right) return "╩";
+  if (bottom && left && right) return "╦";
+  if (top && bottom) return "║";
+  if (left && right) return "═";
+  if (top && right) return "╚";
+  if (top && left) return "╝";
+  if (bottom && right) return "╔";
+  if (bottom && left) return "╗";
+  if (top) return "╨";
+  if (bottom) return "╥";
+  if (left) return "╡";
+  if (right) return "╞";
+
+  return "█";
+};
+
+const kScaleLabsLogo = [
+  "                                            ",
+  " ██╗ ██╗    █████╗█████╗ ████╗ ██╗   ████╗ ",
+  " ██║██╔╝    ██╔══╝██╔══╝██╔═██╗██║   ██╔═╝ ",
+  " █████╔╝███╗█████╗██║   ██████║██║   ███╗  ",
+  " ██╔═██╗╚══╝╚══██║██║   ██╔═██║██║   ██╔╝  ",
+  " ██║ ██╗    █████║█████╗██║ ██║█████╗████╗ ",
+  " ╚═╝ ╚═╝    ╚════╝╚════╝╚═╝ ╚═╝╚════╝╚═══╝ ",
+  "                                           ",
+  "          ██╗    ████╗ █████╗ █████╗       ",
+  "          ██║   ██╔═██╗██╔═██╗██╔══╝       ",
+  "          ██║   ██████║█████╔╝█████╗       ",
+  "          ██║   ██╔═██║██╔═██╗╚══██║       ",
+  "          █████╗██║ ██║█████╔╝█████║       ",
+  "          ╚════╝╚═╝ ╚═╝╚════╝ ╚════╝       ",
+  "                                           ",
+  "   MOVING HUMANITY UP THE KARDASHEV SCALE  ",
+  "                                           ",
+];
 
 export default HeroASCIIArt;

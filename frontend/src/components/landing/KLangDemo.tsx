@@ -88,11 +88,9 @@ speakPhrase("Hello, I am a robot.");`,
             className="rounded-lg border bg-card text-card-foreground shadow-sm"
             data-v0-t="card"
           >
-            <div className="p-6">
-              <pre className="text-sm text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-900 p-4 rounded-md overflow-x-auto">
-                <code>{codeSnippets[activeAction]}</code>
-              </pre>
-            </div>
+            <pre className="text-sm text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-900 p-4 rounded-md overflow-x-auto">
+              <code>{codeSnippets[activeAction]}</code>
+            </pre>
           </div>
         </div>
       </div>
