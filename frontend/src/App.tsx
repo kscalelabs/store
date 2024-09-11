@@ -11,7 +11,6 @@ import "@/App.css";
 import Container from "@/components/Container";
 import NotFoundRedirect from "@/components/NotFoundRedirect";
 import Footer from "@/components/footer/Footer";
-import LandingPage from "@/components/landing/LandingPage";
 import Navbar from "@/components/nav/Navbar";
 import APIKeys from "@/components/pages/APIKeys";
 import About from "@/components/pages/About";
@@ -93,8 +92,6 @@ const App = () => {
                       <Route path="/profile/:id?" element={<Profile />} />
                       <Route path="/404" element={<NotFound />} />
                       <Route path="*" element={<NotFoundRedirect />} />
-
-                      <Route path="/landing" element={<LandingPage />} />
                     </Routes>
                   </Container>
                 </div>

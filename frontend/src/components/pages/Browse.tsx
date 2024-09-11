@@ -109,7 +109,7 @@ const Browse = () => {
           </div>
           <Button
             onClick={() => navigate(`/create`)}
-            variant="primary"
+            variant="default"
             size="lg"
             className="w-full md:w-auto"
           >
