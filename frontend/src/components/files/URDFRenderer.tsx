@@ -240,7 +240,7 @@ const URDFRenderer: React.FC<{
 
     const startPositions = jointControls.map((joint) => joint.value);
     const startTime = Date.now();
-    const duration = 2500; // 2.5 seconds
+    const duration = 10000; // 10 seconds
 
     const animate = () => {
       const elapsedTime = Date.now() - startTime;
