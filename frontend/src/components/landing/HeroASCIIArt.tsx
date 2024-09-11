@@ -1,160 +1,311 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { isDesktop } from "react-device-detect";
 
-import Meteors from "@/components/ui/Meteors";
 import { useWindowSize } from "@/hooks/useWindowSize";
 
 const HeroASCIIArt = () => {
-  const asciiRef = useRef<HTMLDivElement>(null);
-  const [startTime, setStartTime] = useState(0);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const gridRef = useRef<boolean[][]>([]);
+  const intervalRef = useRef<number>();
   const { width: windowWidth, height: windowHeight } = useWindowSize();
 
-  useEffect(() => {
-    if (!asciiRef.current) return;
+  const initializeGrid = useCallback((rows: number, cols: number) => {
+    const grid = Array(rows)
+      .fill(null)
+      .map(() => Array(cols).fill(false));
 
-    // Adjust these values based on device type
-    const charWidth = isDesktop ? 7 : 4;
-    const charHeight = isDesktop ? 14 : 10;
-    const padding = isDesktop ? 7 : 4;
+    // Create multiple patterns across the grid
+    const patterns = [
+      // Gosper glider gun
+      [
+        [0, 0],
+        [0, 1],
+        [1, 0],
+        [1, 1],
+        [10, 0],
+        [10, 1],
+        [10, 2],
+        [11, -1],
+        [11, 3],
+        [12, -2],
+        [12, 4],
+        [13, -2],
+        [13, 4],
+        [14, 1],
+        [15, -1],
+        [15, 3],
+        [16, 0],
+        [16, 1],
+        [16, 2],
+        [17, 1],
+        [20, -2],
+        [20, -1],
+        [20, 0],
+        [21, -2],
+        [21, -1],
+        [21, 0],
+        [22, -3],
+        [22, 1],
+        [24, -4],
+        [24, -3],
+        [24, 1],
+        [24, 2],
+        [34, -2],
+        [34, -1],
+        [35, -2],
+        [35, -1],
+      ],
+      // Pulsar
+      [
+        [2, 4],
+        [2, 5],
+        [2, 6],
+        [2, 10],
+        [2, 11],
+        [2, 12],
+        [4, 2],
+        [4, 7],
+        [4, 9],
+        [4, 14],
+        [5, 2],
+        [5, 7],
+        [5, 9],
+        [5, 14],
+        [6, 2],
+        [6, 7],
+        [6, 9],
+        [6, 14],
+        [7, 4],
+        [7, 5],
+        [7, 6],
+        [7, 10],
+        [7, 11],
+        [7, 12],
+        [9, 4],
+        [9, 5],
+        [9, 6],
+        [9, 10],
+        [9, 11],
+        [9, 12],
+        [10, 2],
+        [10, 7],
+        [10, 9],
+        [10, 14],
+        [11, 2],
+        [11, 7],
+        [11, 9],
+        [11, 14],
+        [12, 2],
+        [12, 7],
+        [12, 9],
+        [12, 14],
+        [14, 4],
+        [14, 5],
+        [14, 6],
+        [14, 10],
+        [14, 11],
+        [14, 12],
+      ],
+    ];
 
-    const getSize = () => {
-      return {
-        width: Math.floor((windowWidth - padding * 2) / charWidth),
-        height: Math.floor((windowHeight - padding * 2) / charHeight),
-      };
+    // Place patterns at different locations
+    const placePattern = (
+      pattern: number[][],
+      baseY: number,
+      baseX: number,
+    ) => {
+      pattern.forEach(([y, x]) => {
+        const newY = (baseY + y + rows) % rows;
+        const newX = (baseX + x + cols) % cols;
+        grid[newY][newX] = true;
+      });
     };
 
-    const textStrings = [
-      "Meet Stompy  Meet Stompy  Meet Stompy",
-      "Program robots easily with K-Lang  Program robots easily with K-Lang  Program robots easily with K-Lang",
-      "Affordable and functional humanoid robots  Affordable and functional humanoid robots  Affordable and functional humanoid robots",
-      "Meet Stompy Mini  Meet Stompy Mini  Meet Stompy Mini",
-      "How to write a walking policy  How to write a walking policy",
-      "How to build a robot  How to build a robot",
-      "Run robot simulations in your browser  Run robot simulations in your browser",
-      "K-Scale has the best robot developer ecosystem  K-Scale has the best robot developer ecosystem",
-      "Download kernel images, robot models, and more  Download kernel images, robot models, and more",
-      "Download URDFs  Download Mujoco models",
-      "View Onshape models  View Onshape models  View Onshape models",
-      "AI-POWERED ROBOTS  AI-POWERED ROBOTS  AI-POWERED ROBOTS",
-      "Developing with K-Lang is the easiest way to program robots",
-      "K-Scale is the best place to learn about robots",
-      "K-Scale's robot development platform is the best in the world",
-      "How to train your own robot models  How to train your own robot models",
-      "How to train your own robot policies  How to train your own robot policies",
-      "How to build your own robot  How to build your own robot",
-      "Buy a fully functional humanoid robot  Buy a fully functional humanoid robot",
-      "Stompy can walk and talk Stompy can walk and talk",
-      "You can control and train Stompy with K-Lang",
-      "Stompy is the first functional and affordable humanoid robot availble to the public",
-      "Open Source Robotics Open Source Robotics",
-      "K-Lang is a neural net programming language for robots",
-    ];
+    // Place multiple instances of patterns
+    placePattern(patterns[0], 10, 10);
+    placePattern(patterns[0], rows - 50, cols - 50);
+    placePattern(patterns[1], Math.floor(rows / 2), Math.floor(cols / 2));
+    placePattern(patterns[1], 20, cols - 30);
+
+    // Add some random cells
+    for (let i = 0; i < (rows * cols) / 20; i++) {
+      const y = Math.floor(Math.random() * rows);
+      const x = Math.floor(Math.random() * cols);
+      grid[y][x] = true;
+    }
+
+    return grid;
+  }, []);
+
+  const updateGrid = useCallback((currentGrid: boolean[][]) => {
+    const rows = currentGrid.length;
+    const cols = currentGrid[0].length;
+    return currentGrid.map((row, y) =>
+      row.map((cell, x) => {
+        const neighbors = [
+          [-1, -1],
+          [-1, 0],
+          [-1, 1],
+          [0, -1],
+          [0, 1],
+          [1, -1],
+          [1, 0],
+          [1, 1],
+        ].reduce((count, [dy, dx]) => {
+          const newY = y + dy;
+          const newX = x + dx;
+          if (
+            newY >= 0 &&
+            newY < rows &&
+            newX >= 0 &&
+            newX < cols &&
+            currentGrid[newY][newX]
+          ) {
+            return count + 1;
+          }
+          return count;
+        }, 0);
+
+        if (cell) {
+          return neighbors === 2 || neighbors === 3;
+        } else {
+          return neighbors === 3;
+        }
+      }),
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Adjust these values based on device type
+    const charWidth = isDesktop ? 10 : 5;
+    const charHeight = isDesktop ? 15 : 10;
+    const padding = isDesktop ? 10 : 5;
+
+    const cols = Math.floor((windowWidth - padding * 2) / charWidth);
+    const rows = Math.floor((windowHeight - padding * 2) / charHeight);
+
+    canvas.width = windowWidth;
+    canvas.height = windowHeight;
+
+    // Initialize grid with the Gosper glider gun pattern
+    gridRef.current = initializeGrid(rows, cols);
+
+    // Pre-render 5 steps
+    for (let i = 0; i < 5; i++) {
+      gridRef.current = updateGrid(gridRef.current);
+    }
 
     const kScaleLabsLogo = [
-      "                                                                                           ",
-      " ██╗  ██╗      ███████╗ ██████╗ █████╗ ██╗     ███████╗   ██╗      █████╗ ██████╗ ███████╗ ",
-      " ██║ ██╔╝      ██╔════╝██╔════╝██╔══██╗██║     ██╔════╝   ██║     ██╔══██╗██╔══██╗██╔════╝ ",
-      " █████╔╝ █████╗███████╗██║     ███████║██║     █████╗     ██║     ███████║██████╔╝███████╗ ",
-      " ██╔═██╗ ╚════╝╚════██║██║     ██╔══██║██║     ██╔══╝     ██║     ██╔══██║██╔══██╗╚════██║ ",
-      " ██║  ██╗      ███████║╚██████╗██║  ██║███████╗███████╗   ███████╗██║  ██║██████╔╝███████║ ",
-      " ╚═╝  ╚═╝      ╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝   ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝ ",
-      "                                                                                           ",
+      "                                                         ",
+      "  ██╗  ██╗      ███████╗ ██████╗ █████╗ ██╗     ███████╗ ",
+      "  ██║ ██╔╝      ██╔════╝██╔════╝██╔══██╗██║     ██╔════╝ ",
+      "  █████╔╝ █████╗███████╗██║     ███████║██║     █████╗   ",
+      "  ██╔═██╗ ╚════╝╚════██║██║     ██╔══██║██║     ██╔══╝   ",
+      "  ██║  ██╗      ███████║╚██████╗██║  ██║███████╗███████╗ ",
+      "  ╚═╝  ╚═╝      ╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝ ",
+      "                                                         ",
+      "             ██╗      █████╗ ██████╗ ███████╗            ",
+      "             ██║     ██╔══██╗██╔══██╗██╔════╝            ",
+      "             ██║     ███████║██████╔╝███████╗            ",
+      "             ██║     ██╔══██║██╔══██╗╚════██║            ",
+      "             ███████╗██║  ██║██████╔╝███████║            ",
+      "             ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝            ",
+      "                                                         ",
+      "          MOVING HUMANITY UP THE KARDASHEV SCALE         ",
+      "                                                         ",
     ];
 
-    const kScaleLabsLogoMobile = [
-      "                                                        ",
-      " ██╗  ██╗      ███████╗ ██████╗ █████╗ ██╗     ███████╗ ",
-      " ██║ ██╔╝      ██╔════╝██╔════╝██╔══██╗██║     ██╔════╝ ",
-      " █████╔╝ █████╗███████╗██║     ███████║██║     █████╗   ",
-      " ██╔═██╗ ╚════╝╚════██║██║     ██╔══██║██║     ██╔══╝   ",
-      " ██║  ██╗      ███████║╚██████╗██║  ██║███████╗███████╗ ",
-      " ╚═╝  ╚═╝      ╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝ ",
-      "                                                        ",
-      "            ██╗      █████╗ ██████╗ ███████╗            ",
-      "            ██║     ██╔══██╗██╔══██╗██╔════╝            ",
-      "            ██║     ███████║██████╔╝███████╗            ",
-      "            ██║     ██╔══██║██╔══██╗╚════██║            ",
-      "            ███████╗██║  ██║██████╔╝███████║            ",
-      "            ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝            ",
-      "                                                        ",
-    ];
-
-    // Get the size of the Logo ASCII art
-    const { width, height } = getSize();
-    const logo = isDesktop ? kScaleLabsLogo : kScaleLabsLogoMobile;
-    const logoHeight = logo.length;
-    const logoWidth = logo[0].length;
+    const logoHeight = kScaleLabsLogo.length;
+    const logoWidth = kScaleLabsLogo[0].length;
 
     // Logo position
-    const logoY = Math.max(0, Math.floor((height - logoHeight) / 2) - 2);
-    const logoX = Math.max(0, Math.floor((width - logoWidth) / 2) - 5);
+    const logoY = Math.max(0, Math.floor((rows - logoHeight) / 2) - 2);
+    const logoX = Math.max(0, Math.floor((cols - logoWidth) / 2));
 
-    // Add a vertical offset to move the entire ASCII art up
-    const verticalOffset = isDesktop ? 0 : -5; // Adjust this value as needed
+    const drawGrid = (currentGrid: boolean[][]) => {
+      // Use Tailwind's color classes
+      const backgroundColor =
+        getComputedStyle(document.documentElement).getPropertyValue(
+          "--tw-bg-opacity",
+        ) === "1"
+          ? "#ffffff"
+          : "#000000";
+      const textColor =
+        getComputedStyle(document.documentElement).getPropertyValue(
+          "--tw-bg-opacity",
+        ) === "1"
+          ? "#000000"
+          : "#ffffff";
 
-    const animate = (timestamp: number) => {
-      if (!startTime) setStartTime(timestamp);
-      const elapsed = timestamp - startTime;
-      const progress = Math.min(1, elapsed / 1500); // 1.5-second animation
+      ctx.fillStyle = backgroundColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = textColor;
+      ctx.font = `${charHeight}px monospace`;
 
-      const a = 0.0007 * elapsed * progress;
-
-      let result = "";
-      for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-          const adjustedY = y + verticalOffset;
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
           if (
-            adjustedY >= logoY &&
-            adjustedY < logoY + logoHeight &&
+            y >= logoY &&
+            y < logoY + logoHeight &&
             x >= logoX &&
             x < logoX + logoWidth
           ) {
-            const logoChar = logo[adjustedY - logoY][x - logoX] || " ";
-            result += logoChar;
+            const logoChar = kScaleLabsLogo[y - logoY][x - logoX];
+            ctx.fillText(
+              logoChar,
+              x * charWidth + padding,
+              y * charHeight + padding,
+            );
           } else {
-            const s = 1 - (2 * y) / height;
-            const o = (2 * x) / width - 1;
-            const d = Math.sqrt(o * o + s * s);
-            const l = (0.15 * a) / Math.max(0.1, d);
-            const f = Math.sin(l);
-            const b = Math.cos(l);
-            const u = o * f - s * b;
-            const m = Math.round(((o * b + s * f + 1) / 2) * width);
-            const h =
-              Math.round(((u + 1) / 2) * textStrings.length) %
-              textStrings.length;
-            const char =
-              m < 0 || m >= width || h < 0 || h >= textStrings.length
-                ? " "
-                : textStrings[h][m] || " ";
-            result += char;
+            const char = currentGrid[y][x] ? "█" : " ";
+            ctx.fillText(
+              char,
+              x * charWidth + padding,
+              y * charHeight + padding,
+            );
           }
         }
-        result += "\n";
       }
-
-      if (asciiRef.current) {
-        // Adjust font size based on device type for better fit
-        const fontSize = isDesktop ? "12px" : "7px"; // Slightly reduced for mobile
-        asciiRef.current.style.fontSize = fontSize;
-        asciiRef.current.style.lineHeight = "1";
-        asciiRef.current.textContent = result;
-      }
-
-      requestAnimationFrame(animate);
     };
 
-    requestAnimationFrame(animate);
-  }, [windowWidth, windowHeight]);
+    const updateAndDraw = () => {
+      gridRef.current = updateGrid(gridRef.current);
+      drawGrid(gridRef.current);
+    };
+
+    // Initial draw
+    drawGrid(gridRef.current);
+
+    // Set up interval for updates
+    intervalRef.current = window.setInterval(updateAndDraw, 100);
+
+    // Set up a MutationObserver to watch for changes in the color scheme
+    const observer = new MutationObserver(() => {
+      drawGrid(gridRef.current);
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      observer.disconnect();
+    };
+  }, [windowWidth, windowHeight, initializeGrid, updateGrid]);
 
   return (
     <div className="relative rounded-lg w-full overflow-hidden">
-      <Meteors />
-      <div
-        ref={asciiRef}
-        className="font-mono text-xs whitespace-pre overflow-hidden m-2 my-4 sm:mx-4 md:mx-8 max-w-full max-h-[100vh] rounded-3xl"
-      />
+      <canvas ref={canvasRef} className="w-full h-full" />
     </div>
   );
 };
