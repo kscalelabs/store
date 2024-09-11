@@ -227,14 +227,14 @@ const HeroASCIIArt = () => {
 
   // Separate useEffect for logo expansion
   useEffect(() => {
-    const timer = setTimeout(() => setLogoExpanded(true), 1500);
+    const timer = setTimeout(() => setLogoExpanded(true), 500);
     return () => clearTimeout(timer);
   }, []);
 
   const logoContainerStyle: React.CSSProperties = {
     opacity: logoExpanded ? 1 : 0,
-    transition: "opacity 3s ease-in-out",
-    boxShadow: "0 0 50px 10px rgba(255, 255, 255, 0.3)", // Add this line
+    transition: "opacity 2s ease-in-out",
+    boxShadow: "0 0 50px 10px rgba(255, 255, 255, 0.3)",
   };
 
   // Separate useEffect for expansion
