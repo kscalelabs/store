@@ -19,39 +19,6 @@ const HeroASCIIArt = () => {
   const [expanded, setExpanded] = useState(false);
   const [noUpdateCount, setNoUpdateCount] = useState(0);
 
-  const initializeGrid = useCallback((rows: number, cols: number) => {
-    const grid = Array(rows)
-      .fill(null)
-      .map(() => Array(cols).fill(false));
-    const activeSet = new Set<string>();
-
-    // Add a hard-coded starting square in the center
-    const centerY = Math.floor(rows / 2);
-    const centerX = Math.floor(cols / 2);
-    const squareSize = 5;
-
-    for (let y = centerY - squareSize; y < centerY + squareSize; y++) {
-      for (let x = centerX - squareSize; x < centerX + squareSize; x++) {
-        if (y >= 0 && y < rows && x >= 0 && x < cols) {
-          grid[y][x] = true;
-          activeSet.add(`${y},${x}`);
-        }
-      }
-    }
-
-    // Add a few random cells to introduce some variability
-    const factor = isDesktop ? 0.025 : 0.05;
-    for (let i = 0; i < Math.floor(rows * cols * factor); i++) {
-      const y = Math.floor(Math.random() * rows);
-      const x = Math.floor(Math.random() * cols);
-      grid[y][x] = true;
-      activeSet.add(`${y},${x}`);
-    }
-
-    activeCellsRef.current = activeSet;
-    return grid;
-  }, []);
-
   const rules = [
     // Mazectric rules
     (neighbors: number, cell: boolean) =>
@@ -156,6 +123,46 @@ const HeroASCIIArt = () => {
       return newGrid;
     },
     [currentRule, rules],
+  );
+
+  const initializeGrid = useCallback(
+    (rows: number, cols: number) => {
+      const grid = Array(rows)
+        .fill(null)
+        .map(() => Array(cols).fill(false));
+      const activeSet = new Set<string>();
+
+      // Add a hard-coded starting square in the center
+      const centerY = Math.floor(rows / 2);
+      const centerX = Math.floor(cols / 2);
+      const squareSize = 5;
+
+      for (let y = centerY - squareSize; y < centerY + squareSize; y++) {
+        for (let x = centerX - squareSize; x < centerX + squareSize; x++) {
+          if (y >= 0 && y < rows && x >= 0 && x < cols) {
+            grid[y][x] = true;
+            activeSet.add(`${y},${x}`);
+          }
+        }
+      }
+
+      // Add a few random cells to introduce some variability
+      const factor = isDesktop ? 0.025 : 0.05;
+      for (let i = 0; i < Math.floor(rows * cols * factor); i++) {
+        const y = Math.floor(Math.random() * rows);
+        const x = Math.floor(Math.random() * cols);
+        grid[y][x] = true;
+        activeSet.add(`${y},${x}`);
+      }
+
+      activeCellsRef.current = activeSet;
+
+      // Step the simulation once
+      const updatedGrid = updateGrid(grid);
+
+      return updatedGrid;
+    },
+    [updateGrid],
   );
 
   const drawHardCodedStartingBlock = useCallback((grid: boolean[][]) => {
@@ -287,13 +294,13 @@ const HeroASCIIArt = () => {
 
   // Separate useEffect for logo expansion
   useEffect(() => {
-    const timer = setTimeout(() => setLogoExpanded(true), 500);
+    const timer = setTimeout(() => setLogoExpanded(true), 1500);
     return () => clearTimeout(timer);
   }, []);
 
   const logoContainerStyle: React.CSSProperties = {
     opacity: logoExpanded ? 1 : 0,
-    transition: "opacity 5s ease-in-out",
+    transition: "opacity 3s ease-in-out",
     boxShadow: "0 0 50px 10px rgba(255, 255, 255, 0.3)", // Add this line
   };
 
@@ -321,12 +328,12 @@ const HeroASCIIArt = () => {
       <div className="absolute inset-0 flex items-center justify-center m-4">
         <div
           style={logoContainerStyle}
-          className="border-2 border-white max-w-96"
+          className="border-2 border-white max-w-96 rounded-lg"
         >
           <img
             src={mainLogo}
             alt="Main Logo"
-            className="w-full h-auto"
+            className="w-full h-auto rounded-lg"
             onClick={() => {
               setGridInitialized(false);
             }}
