@@ -168,17 +168,29 @@ const HeroASCIIArt = () => {
     const rows = grid.length;
     const cols = grid[0].length;
 
-    // Generate random position for the top-left corner of the pattern
-    const startY = Math.floor(Math.random() * (rows - 1));
-    const startX = Math.floor(Math.random() * (cols - 1));
-    grid[startY][startX] = true;
+    // Generate random position for the center of the pattern
+    const centerY = Math.floor(Math.random() * rows);
+    const centerX = Math.floor(Math.random() * cols);
+
+    // Clear a circular area
+    const clearRadius = 20;
+    for (let dy = -clearRadius; dy <= clearRadius; dy++) {
+      for (let dx = -clearRadius; dx <= clearRadius; dx++) {
+        if (dx * dx + dy * dy <= clearRadius * clearRadius) {
+          const gridY = (centerY + dy + rows) % rows;
+          const gridX = (centerX + dx + cols) % cols;
+          grid[gridY][gridX] = false;
+          activeCellsRef.current.delete(`${gridY},${gridX}`);
+        }
+      }
+    }
 
     // Add some random noise around the pattern
     const noiseRadius = 3;
     for (let dy = -noiseRadius; dy <= noiseRadius; dy++) {
       for (let dx = -noiseRadius; dx <= noiseRadius; dx++) {
-        const gridY = (startY + dy + rows) % rows;
-        const gridX = (startX + dx + cols) % cols;
+        const gridY = (centerY + dy + rows) % rows;
+        const gridX = (centerX + dx + cols) % cols;
         if (Math.random() < 0.3) {
           // 30% chance of adding a live cell
           grid[gridY][gridX] = true;
@@ -374,10 +386,10 @@ const getCharForPosition = (
   if (top && left) return "┛";
   if (bottom && right) return "┏";
   if (bottom && left) return "┓";
-  if (top) return "╹";
-  if (bottom) return "╻";
-  if (left) return "╸";
-  if (right) return "╺";
+  if (top) return "┃";
+  if (bottom) return "┃";
+  if (left) return "━";
+  if (right) return "━";
 
   return "·";
 };
