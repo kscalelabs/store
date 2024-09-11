@@ -27,6 +27,8 @@ def github_auth_key(github_id: str) -> str:
 def google_auth_key(google_id: str) -> str:
     return f"google:{google_id}"
 
+def facebook_auth_key(facebook_id: str) -> str:
+    return f"facebook:{facebook_id}"
 
 class UserNotFoundError(Exception):
     def __init__(self, message: str) -> None:
@@ -66,11 +68,15 @@ class UserCrud(BaseCrud):
                 user.github_id = user_token
             elif provider == "google":
                 user.google_id = user_token
+            elif provider == "facebook":
+                user.facebook_id = user_token
             await self._add_item(user, unique_fields=["email"])
         elif provider == "github":
             await self._update_item(user.id, User, {"github_id": user_token})
         elif provider == "google":
             await self._update_item(user.id, User, {"google_id": user_token})
+        elif provider == "facebook":
+            await self._update_item(user.id, User, {"facebook_id": user_token})
         oauth_key = OAuthKey.create(user_id=user.id, provider=provider, user_token=user_token)
         await self._add_item(oauth_key, unique_fields=["user_token"])
         return user
@@ -113,6 +119,16 @@ class UserCrud(BaseCrud):
     async def delete_google_token(self, google_id: str) -> None:
         await self._delete_item(await self._get_oauth_key(google_auth_key(google_id), throw_if_missing=True))
 
+    async def get_user_from_facebook_token(self, email: str) -> User:
+        auth_key = facebook_auth_key(email)
+        user = await self._get_user_from_auth_key(auth_key)
+        if user is not None:
+            return user
+        return await self._create_user_from_oauth(email, "facebook", auth_key)
+
+    async def delete_facebook_token(self, facebook_id: str) -> None:
+        await self._delete_item(await self._get_oauth_key(facebook_auth_key(facebook_id), throw_if_missing=True))
+        
     async def get_user_from_email(self, email: str) -> User | None:
         return await self._get_unique_item_from_secondary_index("email", email, User)
 
@@ -191,6 +207,7 @@ async def test_adhoc() -> None:
         await crud._create_user_from_email(email="ben@kscale.dev", password="examplepas$w0rd")
         await crud.get_user_from_github_token(token="gh_token_example", email="oauth_github@kscale.dev")
         await crud.get_user_from_google_token(email="oauth_google@kscale.dev")
+        await crud.get_user_from_facebook_token(email="oauth_facebook@kscale.dev")
 
 
 if __name__ == "__main__":

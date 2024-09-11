@@ -701,6 +701,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/facebook/client-id": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Facebook Client Id Endpoint */
+        get: operations["facebook_client_id_endpoint_users_facebook_client_id_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/facebook/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Facebook Login Endpoint */
+        post: operations["facebook_login_endpoint_users_facebook_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -814,6 +848,10 @@ export interface components {
         };
         /** GoogleLogin */
         GoogleLogin: {
+            /** Token */
+            token: string;
+        };
+        FacebookLogin: {
             /** Token */
             token: string;
         };
@@ -944,6 +982,8 @@ export interface components {
             github_id: string | null;
             /** Google Id */
             google_id: string | null;
+            /** Facebook Id */
+            facebook_id: string | null;
             /** Permissions */
             permissions: "is_admin"[] | null;
             /** First Name */
@@ -1063,6 +1103,8 @@ export interface components {
             github_id?: string | null;
             /** Google Id */
             google_id?: string | null;
+            /** Facebook Id */
+            facebook_id?: string | null;
             /** First Name */
             first_name?: string | null;
             /** Last Name */
@@ -2402,6 +2444,59 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["GoogleLogin"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    facebook_client_id_endpoint_users_facebook_client_id_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientIdResponse"];
+                };
+            };
+        };
+    };
+    facebook_login_endpoint_users_facebook_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FacebookLogin"];
             };
         };
         responses: {

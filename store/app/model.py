@@ -46,6 +46,7 @@ class User(StoreBaseModel):
     updated_at: int
     github_id: str | None = None
     google_id: str | None = None
+    facebook_id: str | None = None
     first_name: str | None = None
     last_name: str | None = None
     name: str | None = None
@@ -58,6 +59,7 @@ class User(StoreBaseModel):
         password: str | None = None,
         github_id: str | None = None,
         google_id: str | None = None,
+        facebook_id: str | None = None,
         first_name: str | None = None,
         last_name: str | None = None,
         name: str | None = None,
@@ -73,6 +75,7 @@ class User(StoreBaseModel):
             updated_at=now,
             github_id=github_id,
             google_id=google_id,
+            facebook_id=facebook_id,
             first_name=first_name,
             last_name=last_name,
             name=name,
