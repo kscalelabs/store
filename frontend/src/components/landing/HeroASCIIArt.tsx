@@ -1,12 +1,15 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useWindowSize } from "@/hooks/useWindowSize";
+import mainLogo from "assets/mainLogo.png";
 
 const HeroASCIIArt = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gridRef = useRef<boolean[][]>([]);
   const intervalRef = useRef<number>();
   const { width: windowWidth, height: windowHeight } = useWindowSize();
+
+  const [logoExpanded, setLogoExpanded] = useState(false);
 
   const initializeGrid = useCallback((rows: number, cols: number) => {
     const grid = Array(rows)
@@ -27,7 +30,7 @@ const HeroASCIIArt = () => {
     }
 
     // Add a few random cells to introduce some variability
-    for (let i = 0; i < Math.floor(rows * cols * 0.02); i++) {
+    for (let i = 0; i < Math.floor(rows * cols * 0.03); i++) {
       const y = Math.floor(Math.random() * rows);
       const x = Math.floor(Math.random() * cols);
       grid[y][x] = true;
@@ -74,8 +77,8 @@ const HeroASCIIArt = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const charWidth = 5;
-    const charHeight = 8;
+    const charWidth = 12;
+    const charHeight = 16;
     const padding = 5;
 
     const cols = Math.floor((windowWidth - padding * 2) / charWidth);
@@ -88,7 +91,7 @@ const HeroASCIIArt = () => {
 
     const drawGrid = (currentGrid: boolean[][]) => {
       const backgroundColor = "#000000";
-      const textColor = "#ffffff";
+      const textColor = "#cccccc";
 
       ctx.fillStyle = backgroundColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -109,7 +112,7 @@ const HeroASCIIArt = () => {
     };
 
     drawGrid(gridRef.current);
-    intervalRef.current = window.setInterval(updateAndDraw, 100);
+    intervalRef.current = window.setInterval(updateAndDraw, 200);
 
     const observer = new MutationObserver(() => {
       drawGrid(gridRef.current);
@@ -128,14 +131,23 @@ const HeroASCIIArt = () => {
     };
   }, [windowWidth, windowHeight, initializeGrid, updateGrid]);
 
+  // Separate useEffect for logo expansion
+  useEffect(() => {
+    const timer = setTimeout(() => setLogoExpanded(true), 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const logoContainerStyle: React.CSSProperties = {
+    opacity: logoExpanded ? 1 : 0,
+    transition: "opacity 2.5s ease-in-out",
+  };
+
   return (
     <div className="relative rounded-lg w-full overflow-hidden">
       <canvas ref={canvasRef} className="w-full h-full" />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div className="max-w-2/3 border border-white p-4 bg-black text-xs md:text-base">
-          <pre className="text-white leading-none whitespace-pre font-mono">
-            {kScaleLabsLogo.join("\n")}
-          </pre>
+      <div className="absolute inset-0 flex items-center justify-center m-4">
+        <div style={logoContainerStyle} className="border-2 border-white max-w-96">
+          <img src={mainLogo} alt="Main Logo" className="w-full h-auto" />
         </div>
       </div>
     </div>
@@ -165,32 +177,12 @@ const getCharForPosition = (
   if (top && left) return "╝";
   if (bottom && right) return "╔";
   if (bottom && left) return "╗";
-  if (top) return "╨";
-  if (bottom) return "╥";
-  if (left) return "╡";
-  if (right) return "╞";
+  if (top) return "*";
+  if (bottom) return "*";
+  if (left) return "*";
+  if (right) return "*";
 
-  return "█";
+  return "x";
 };
-
-const kScaleLabsLogo = [
-  "                                            ",
-  " ██╗ ██╗    █████╗█████╗ ████╗ ██╗   ████╗ ",
-  " ██║██╔╝    ██╔══╝██╔══╝██╔═██╗██║   ██╔═╝ ",
-  " █████╔╝███╗█████╗██║   ██████║██║   ███╗  ",
-  " ██╔═██╗╚══╝╚══██║██║   ██╔═██║██║   ██╔╝  ",
-  " ██║ ██╗    █████║█████╗██║ ██║█████╗████╗ ",
-  " ╚═╝ ╚═╝    ╚════╝╚════╝╚═╝ ╚═╝╚════╝╚═══╝ ",
-  "                                           ",
-  "          ██╗    ████╗ █████╗ █████╗       ",
-  "          ██║   ██╔═██╗██╔═██╗██╔══╝       ",
-  "          ██║   ██████║█████╔╝█████╗       ",
-  "          ██║   ██╔═██║██╔═██╗╚══██║       ",
-  "          █████╗██║ ██║█████╔╝█████║       ",
-  "          ╚════╝╚═╝ ╚═╝╚════╝ ╚════╝       ",
-  "                                           ",
-  "   MOVING HUMANITY UP THE KARDASHEV SCALE  ",
-  "                                           ",
-];
 
 export default HeroASCIIArt;
