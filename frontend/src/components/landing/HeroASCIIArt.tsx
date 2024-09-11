@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { isDesktop } from "react-device-detect";
 import { FaChevronDown } from "react-icons/fa";
 
 import { useWindowSize } from "@/hooks/useWindowSize";
@@ -100,7 +99,7 @@ const HeroASCIIArt = () => {
 
       // Unset cells in a circular radius around the mouse position
       if (mousePosRef.current) {
-        const radius = isDesktop ? 20 : 10;
+        const radius = 20;
         for (let dy = -radius; dy <= radius; dy++) {
           for (let dx = -radius; dx <= radius; dx++) {
             if (dx * dx + dy * dy <= radius * radius) {
@@ -147,7 +146,7 @@ const HeroASCIIArt = () => {
       }
 
       // Add a few random cells to introduce some variability
-      const factor = isDesktop ? 0.025 : 0.05;
+      const factor = 0.025;
       for (let i = 0; i < Math.floor(rows * cols * factor); i++) {
         const y = Math.floor(Math.random() * rows);
         const x = Math.floor(Math.random() * cols);
