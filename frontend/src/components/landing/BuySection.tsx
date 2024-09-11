@@ -10,8 +10,8 @@ export default function BuySection() {
             <div className="inline-block rounded-lg bg-gray-200 px-3 py-1 text-sm dark:bg-gray-800">
               New Release
             </div>
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">
-              Meet K-1
+            <h2 className="font-orbitron text-3xl font-bold tracking-tight sm:text-5xl">
+              Stompy Pro
             </h2>
             <p className="max-w-[700px] text-gray-500 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed dark:text-gray-400">
               Exceptional build quality and all the capabilities of other
@@ -57,7 +57,7 @@ export default function BuySection() {
             </ul>
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button className="w-full sm:w-auto inline-flex h-10 items-center justify-center rounded-md bg-gray-900 px-8 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300">
-                Buy Now - $16,000
+                Buy Now
               </Button>
               <Button variant="outline" className="w-full sm:w-auto">
                 Learn More
