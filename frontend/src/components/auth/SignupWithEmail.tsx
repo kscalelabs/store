@@ -1,13 +1,12 @@
 import { useForm } from "react-hook-form";
 
+import { Button } from "@/components/ui/Buttons/Button";
+import ErrorMessage from "@/components/ui/ErrorMessage";
+import { Input } from "@/components/ui/Input/Input";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
+import { EmailSignupSchema, EmailSignupType } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
-import { EmailSignupSchema, EmailSignupType } from "types";
-
-import { Button } from "components/ui/Button/Button";
-import ErrorMessage from "components/ui/ErrorMessage";
-import { Input } from "components/ui/Input/Input";
 
 interface EmailSignUpResponse {
   message: string;

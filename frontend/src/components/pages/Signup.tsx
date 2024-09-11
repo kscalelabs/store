@@ -1,4 +1,4 @@
-import AuthBlock from "components/auth/AuthBlock";
+import AuthBlock from "@/components/auth/AuthBlock";
 
 const Signup = () => {
   return (

@@ -2,12 +2,11 @@ import { useEffect, useState } from "react";
 import Masonry from "react-masonry-css";
 import { Link } from "react-router-dom";
 
-import { paths } from "gen/api";
-import { useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
-
-import ListingGridCard from "components/listings/ListingGridCard";
-import Spinner from "components/ui/Spinner";
+import ListingGridCard from "@/components/listings/ListingGridCard";
+import Spinner from "@/components/ui/Spinner";
+import { paths } from "@/gen/api";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
 
 type ListingInfo =
   paths["/listings/batch"]["get"]["responses"][200]["content"]["application/json"]["listings"];

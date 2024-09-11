@@ -7,10 +7,10 @@ import {
 } from "react-hook-form";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
+import ErrorMessage from "@/components/ui/ErrorMessage";
 import zxcvbn from "zxcvbn";
 
-import ErrorMessage from "components/ui/ErrorMessage";
-import { Input } from "components/ui/Input/Input";
+import { Input } from "./Input";
 
 interface PasswordInputProps<T extends FieldValues> {
   placeholder: string;

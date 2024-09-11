@@ -9,10 +9,9 @@ import {
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 
+import { Button } from "@/components/ui/Buttons/Button";
+import { components } from "@/gen/api";
 import { cx } from "class-variance-authority";
-import { components } from "gen/api";
-
-import { Button } from "components/ui/Button/Button";
 
 type SingleArtifactResponse = components["schemas"]["SingleArtifactResponse"];
 

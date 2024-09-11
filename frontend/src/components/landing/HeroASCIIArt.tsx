@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { isDesktop } from "react-device-detect";
 
-import { useWindowSize } from "hooks/useWindowSize";
-
-import Meteors from "components/ui/Meteors";
+import Meteors from "@/components/ui/Meteors";
+import { useWindowSize } from "@/hooks/useWindowSize";
 
 const HeroASCIIArt = () => {
   const asciiRef = useRef<HTMLDivElement>(null);

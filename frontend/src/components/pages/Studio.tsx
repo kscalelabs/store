@@ -13,12 +13,12 @@ const Studio = () => {
       <h1 className="text-3xl font-bold mb-6 text-center">
         Everything for your project
       </h1>
-      <BentoGrid className="grid-cols-2 md:grid-cols-4">
+      <BentoGrid className="grid-cols-1 sm:grid-cols-2 gap-4">
         <BentoCard
+          className=""
           name="Get Started"
-          className="col-span-1"
           background={
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-blue-200" />
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200" />
           }
           Icon={RocketIcon}
           description="Begin your K-Scale Dev journey"
@@ -26,10 +26,10 @@ const Studio = () => {
           cta="Start now"
         />
         <BentoCard
+          className=""
           name="Downloads"
-          className="col-span-1"
           background={
-            <div className="absolute inset-0 bg-gradient-to-br from-green-100 to-green-200" />
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300" />
           }
           Icon={DownloadIcon}
           description="Access official and community resources"
@@ -37,10 +37,10 @@ const Studio = () => {
           cta="Get files"
         />
         <BentoCard
+          className=""
           name="Browse Builds"
-          className="col-span-1"
           background={
-            <div className="absolute inset-0 bg-gradient-to-br from-yellow-100 to-yellow-200" />
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-300 to-gray-400" />
           }
           Icon={MagnifyingGlassIcon}
           description="Explore published robot builds"
@@ -48,10 +48,10 @@ const Studio = () => {
           cta="Discover"
         />
         <BentoCard
+          className=""
           name="K-Lang"
-          className="col-span-1"
           background={
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-100 to-purple-200" />
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-400 to-gray-500" />
           }
           Icon={CodeIcon}
           description="Write and run K-Lang programs (Coming Soon)"

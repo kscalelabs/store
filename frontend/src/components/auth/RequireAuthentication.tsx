@@ -1,9 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-import { useAuthentication } from "hooks/useAuth";
-
-import AuthBlock from "components/auth/AuthBlock";
+import AuthBlock from "@/components/auth/AuthBlock";
+import { useAuthentication } from "@/hooks/useAuth";
 
 interface Props {
   children: React.ReactNode;

@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 
+import { Button } from "@/components/ui/Buttons/Button";
+import { BACKEND_URL } from "@/constants/env";
+import { humanReadableError } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
 import { cx } from "class-variance-authority";
-import { BACKEND_URL } from "constants/env";
-import { humanReadableError } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
-
-import { Button } from "components/ui/Button/Button";
 
 type Level = "success" | "info" | "error";
 

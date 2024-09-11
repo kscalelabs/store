@@ -1,4 +1,4 @@
-const BuyStompy = () => {
+const BuyPage = () => {
   return (
     <section>
       <div className="py-8 px-4 mx-auto min-h-screen max-w-screen-xl text-center lg:py-16">
@@ -14,4 +14,4 @@ const BuyStompy = () => {
   );
 };
 
-export default BuyStompy;
+export default BuyPage;

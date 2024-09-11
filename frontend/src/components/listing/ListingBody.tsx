@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import Masonry from "react-masonry-css";
 
-import { components, paths } from "gen/api";
-import { useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
-
-import ListingChildren from "components/listing/ListingChildren";
-import ListingDescription from "components/listing/ListingDescription";
-import ListingOnshape from "components/listing/onshape/ListingOnshape";
+import ListingChildren from "@/components/listing/ListingChildren";
+import ListingDescription from "@/components/listing/ListingDescription";
+import ListingOnshape from "@/components/listing/onshape/ListingOnshape";
+import { components, paths } from "@/gen/api";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
 
 import ArtifactCard from "./artifacts/ArtifactCard";
 import LoadingArtifactCard from "./artifacts/LoadingArtifactCard";

@@ -2,16 +2,15 @@ import { useEffect, useState } from "react";
 import { FaDownload, FaFileDownload, FaHome, FaList } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { components } from "gen/api";
-import { humanReadableError, useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
+import FileRenderer from "@/components/files/FileRenderer";
+import FileTreeViewer from "@/components/files/FileTreeViewer";
+import { parseTar } from "@/components/files/Tarfile";
+import { Button } from "@/components/ui/Buttons/Button";
+import Spinner from "@/components/ui/Spinner";
+import { components } from "@/gen/api";
+import { humanReadableError, useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
 import pako from "pako";
-
-import FileRenderer from "components/files/FileRenderer";
-import FileTreeViewer from "components/files/FileTreeViewer";
-import { parseTar } from "components/files/Tarfile";
-import { Button } from "components/ui/Button/Button";
-import Spinner from "components/ui/Spinner";
 
 type SingleArtifactResponse = components["schemas"]["SingleArtifactResponse"];
 

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
-import { paths } from "gen/api";
-import { useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
+import { paths } from "@/gen/api";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
 
 type ListingResponse =
   paths["/listings/{id}"]["get"]["responses"][200]["content"]["application/json"];

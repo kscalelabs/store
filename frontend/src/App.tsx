@@ -1,30 +1,30 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
-import "App.css";
+import "@/App.css";
 
-import { AlertQueue, AlertQueueProvider } from "hooks/useAlertQueue";
-import { AuthenticationProvider } from "hooks/useAuth";
-import { DarkModeProvider } from "hooks/useDarkMode";
-
-import Container from "components/Container";
-import NotFoundRedirect from "components/NotFoundRedirect";
-import Footer from "components/footer/Footer";
-import Navbar from "components/nav/Navbar";
-import APIKeys from "components/pages/APIKeys";
-import About from "components/pages/About";
-import Browse from "components/pages/Browse";
-import BuyStompy from "components/pages/BuyStompy";
-import Create from "components/pages/Create";
-import EmailSignup from "components/pages/EmailSignup";
-import FileBrowser from "components/pages/FileBrowser";
-import Home from "components/pages/Home";
-import ListingDetails from "components/pages/ListingDetails";
-import Login from "components/pages/Login";
-import Logout from "components/pages/Logout";
-import NotFound from "components/pages/NotFound";
-import Profile from "components/pages/Profile";
-import Signup from "components/pages/Signup";
-import Studio from "components/pages/Studio";
+import Container from "@/components/Container";
+import NotFoundRedirect from "@/components/NotFoundRedirect";
+import Footer from "@/components/footer/Footer";
+import LandingPage from "@/components/landing/LandingPage";
+import Navbar from "@/components/nav/Navbar";
+import APIKeys from "@/components/pages/APIKeys";
+import About from "@/components/pages/About";
+import Browse from "@/components/pages/Browse";
+import BuyPage from "@/components/pages/BuyPage";
+import Create from "@/components/pages/Create";
+import EmailSignup from "@/components/pages/EmailSignup";
+import FileBrowser from "@/components/pages/FileBrowser";
+import Home from "@/components/pages/Home";
+import ListingDetails from "@/components/pages/ListingDetails";
+import Login from "@/components/pages/Login";
+import Logout from "@/components/pages/Logout";
+import NotFound from "@/components/pages/NotFound";
+import Profile from "@/components/pages/Profile";
+import Signup from "@/components/pages/Signup";
+import Studio from "@/components/pages/Studio";
+import { AlertQueue, AlertQueueProvider } from "@/hooks/useAlertQueue";
+import { AuthenticationProvider } from "@/hooks/useAuth";
+import { DarkModeProvider } from "@/hooks/useDarkMode";
 
 const App = () => {
   return (
@@ -41,7 +41,7 @@ const App = () => {
                       <Route path="/" element={<Home />} />
 
                       <Route path="/about" element={<About />} />
-                      <Route path="/buy-stompy" element={<BuyStompy />} />
+                      <Route path="/buy-stompy" element={<BuyPage />} />
 
                       <Route path="/studio" element={<Studio />} />
                       <Route path="/browse/:page?" element={<Browse />} />
@@ -62,6 +62,8 @@ const App = () => {
                       <Route path="/profile/:id?" element={<Profile />} />
                       <Route path="/404" element={<NotFound />} />
                       <Route path="*" element={<NotFoundRedirect />} />
+
+                      <Route path="/landing" element={<LandingPage />} />
                     </Routes>
                   </Container>
                 </div>

@@ -1,19 +1,18 @@
 import { useCallback, useState } from "react";
 import { DropzoneOptions } from "react-dropzone";
 
-import { components } from "gen/api";
-import { useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
-import { Paperclip } from "lucide-react";
-
 import {
   FileInput,
   FileSubmitButton,
   FileUploader,
   FileUploaderContent,
   FileUploaderItem,
-} from "components/listing/FileUpload";
-import Spinner from "components/ui/Spinner";
+} from "@/components/listing/FileUpload";
+import Spinner from "@/components/ui/Spinner";
+import { components } from "@/gen/api";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
+import { Paperclip } from "lucide-react";
 
 interface Props {
   description: string;
