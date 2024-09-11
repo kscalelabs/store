@@ -1,23 +1,23 @@
 import { useState } from "react";
 import { isMobile } from "react-device-detect";
 import {
-  // FaMoon,
-  // FaSun,
+  FaMoon,
   FaSignInAlt,
+  FaSun,
   FaUserCircle,
   FaUserPlus,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-// import { useDarkMode } from "hooks/useDarkMode";
 import Sidebar from "@/components/nav/Sidebar";
 import { useAuthentication } from "@/hooks/useAuth";
+import { useDarkMode } from "@/hooks/useDarkMode";
 
 const ICON_SIZE = isMobile ? 16 : 20;
 
 const Navbar = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
-  // const { darkMode, setDarkMode } = useDarkMode();
+  const { darkMode, setDarkMode } = useDarkMode();
   const { isAuthenticated } = useAuthentication();
   const navigate = useNavigate();
 
@@ -33,14 +33,14 @@ const Navbar = () => {
               K-Scale Labs
             </span>
           </a>
-          <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-            {/* <button onClick={() => setDarkMode(!darkMode)}>
+          <div className="flex md:order-2 space-x-3 rtl:space-x-reverse">
+            <button onClick={() => setDarkMode(!darkMode)}>
               {darkMode ? (
                 <FaMoon size={ICON_SIZE} />
               ) : (
                 <FaSun size={ICON_SIZE} />
               )}
-            </button> */}
+            </button>
             {isAuthenticated ? (
               <button onClick={() => setShowSidebar(true)} className="pl-4">
                 <FaUserCircle size={ICON_SIZE} />
