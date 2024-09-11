@@ -16,7 +16,6 @@ const HeroASCIIArt = () => {
   const [currentRule, setCurrentRule] = useState(0);
   const [gridInitialized, setGridInitialized] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [noUpdateCount, setNoUpdateCount] = useState(0);
 
   const rules = [
     // Mazectric rules
@@ -53,7 +52,6 @@ const HeroASCIIArt = () => {
       const rule = rules[currentRule];
       const newGrid = currentGrid.map((row) => [...row]);
       const newActiveCells = new Set<string>();
-      let cellsUpdated = false;
 
       const checkAndUpdateCell = (y: number, x: number) => {
         const neighbors = [
@@ -85,10 +83,6 @@ const HeroASCIIArt = () => {
             }
           }
         }
-
-        if (newState !== currentGrid[y][x]) {
-          cellsUpdated = true;
-        }
       };
 
       // Check all currently active cells and their neighbors
@@ -110,12 +104,6 @@ const HeroASCIIArt = () => {
             }
           }
         }
-      }
-
-      if (!cellsUpdated) {
-        setNoUpdateCount((prev) => prev + 1);
-      } else {
-        setNoUpdateCount(0);
       }
 
       activeCellsRef.current = newActiveCells;
@@ -243,12 +231,6 @@ const HeroASCIIArt = () => {
 
     const updateAndDraw = () => {
       gridRef.current = updateGrid(gridRef.current);
-
-      if (noUpdateCount >= 2) {
-        gridRef.current = drawHardCodedStartingBlock(gridRef.current);
-        setNoUpdateCount(0);
-      }
-
       drawGrid(gridRef.current);
     };
 
@@ -299,7 +281,6 @@ const HeroASCIIArt = () => {
     initializeGrid,
     updateGrid,
     gridInitialized,
-    noUpdateCount,
     drawHardCodedStartingBlock,
   ]);
 
