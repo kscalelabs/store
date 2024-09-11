@@ -9,9 +9,9 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { BACKEND_URL } from "@/constants/env";
 import type { paths } from "@/gen/api";
 import api from "@/hooks/api";
+import { BACKEND_URL } from "@/lib/constants/env";
 import createClient, { Client } from "openapi-fetch";
 
 const AUTH_KEY_ID = "AUTH";

@@ -1,13 +1,13 @@
 import { FaDiscord, FaGithub, FaLinkedinIn } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import smallLogo from "@/assets/small-logo.png";
 import SocialLink from "@/components/footer/SocialLink";
+import smallLogo from "@/images/small-logo.png";
 import {
   DiscordPrimaryColor,
   GithubPrimaryColor,
   LinkedinPrimaryColor,
-} from "@/types/colors";
+} from "@/lib/types/colors";
 
 const Footer = () => {
   const navigate = useNavigate();

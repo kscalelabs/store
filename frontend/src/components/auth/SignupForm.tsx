@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/Input/Input";
 import PasswordInput from "@/components/ui/Input/PasswordInput";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
-import { SignUpSchema, SignupType } from "@/types";
+import { SignUpSchema, SignupType } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import zxcvbn from "zxcvbn";
 

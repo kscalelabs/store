@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 
 import { Button } from "@/components/ui/Buttons/Button";
-import { BACKEND_URL } from "@/constants/env";
 import { humanReadableError } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import { BACKEND_URL } from "@/lib/constants/env";
 import { cx } from "class-variance-authority";
 
 type Level = "success" | "info" | "error";

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/Input/Input";
 import PasswordInput from "@/components/ui/Input/PasswordInput";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
-import { LoginSchema, LoginType } from "@/types";
+import { LoginSchema, LoginType } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const LoginForm = () => {

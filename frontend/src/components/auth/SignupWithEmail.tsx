@@ -5,7 +5,7 @@ import ErrorMessage from "@/components/ui/ErrorMessage";
 import { Input } from "@/components/ui/Input/Input";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
-import { EmailSignupSchema, EmailSignupType } from "@/types";
+import { EmailSignupSchema, EmailSignupType } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 interface EmailSignUpResponse {

@@ -9,8 +9,8 @@ import Spinner from "@/components/ui/Spinner";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
-import { formatNumber } from "@/utils/formatNumber";
-import { formatTimeSince } from "@/utils/formatTimeSince";
+import { formatNumber } from "@/lib/utils/formatNumber";
+import { formatTimeSince } from "@/lib/utils/formatTimeSince";
 
 import ListingDeleteButton from "./ListingDeleteButton";
 

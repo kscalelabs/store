@@ -65,7 +65,7 @@ export default function NavSection() {
           ].map((item, index) => (
             <Card
               key={index}
-              className="cursor-pointer flex flex-col h-full transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg bg-gradient-to-br from-white to-gray-100 dark:from-[#222222] dark:to-[#111111]"
+              className="cursor-pointer flex flex-col h-full transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg bg-gradient-to-br from-white to-gray-100 dark:from-[#111111] dark:to-black"
               onClick={() => navigate(item.path)}
             >
               <CardHeader>
