@@ -1,162 +1,196 @@
-import { useEffect, useRef, useState } from "react";
-import { isDesktop } from "react-device-detect";
+import { useCallback, useEffect, useRef } from "react";
 
-import Meteors from "@/components/ui/Meteors";
 import { useWindowSize } from "@/hooks/useWindowSize";
 
 const HeroASCIIArt = () => {
-  const asciiRef = useRef<HTMLDivElement>(null);
-  const [startTime, setStartTime] = useState(0);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const gridRef = useRef<boolean[][]>([]);
+  const intervalRef = useRef<number>();
   const { width: windowWidth, height: windowHeight } = useWindowSize();
 
-  useEffect(() => {
-    if (!asciiRef.current) return;
+  const initializeGrid = useCallback((rows: number, cols: number) => {
+    const grid = Array(rows)
+      .fill(null)
+      .map(() => Array(cols).fill(false));
 
-    // Adjust these values based on device type
-    const charWidth = isDesktop ? 7 : 4;
-    const charHeight = isDesktop ? 14 : 10;
-    const padding = isDesktop ? 7 : 4;
+    // Add a hard-coded starting square in the center
+    const centerY = Math.floor(rows / 2);
+    const centerX = Math.floor(cols / 2);
+    const squareSize = 5;
 
-    const getSize = () => {
-      return {
-        width: Math.floor((windowWidth - padding * 2) / charWidth),
-        height: Math.floor((windowHeight - padding * 2) / charHeight),
-      };
-    };
-
-    const textStrings = [
-      "Meet Stompy  Meet Stompy  Meet Stompy",
-      "Program robots easily with K-Lang  Program robots easily with K-Lang  Program robots easily with K-Lang",
-      "Affordable and functional humanoid robots  Affordable and functional humanoid robots  Affordable and functional humanoid robots",
-      "Meet Stompy Mini  Meet Stompy Mini  Meet Stompy Mini",
-      "How to write a walking policy  How to write a walking policy",
-      "How to build a robot  How to build a robot",
-      "Run robot simulations in your browser  Run robot simulations in your browser",
-      "K-Scale has the best robot developer ecosystem  K-Scale has the best robot developer ecosystem",
-      "Download kernel images, robot models, and more  Download kernel images, robot models, and more",
-      "Download URDFs  Download Mujoco models",
-      "View Onshape models  View Onshape models  View Onshape models",
-      "AI-POWERED ROBOTS  AI-POWERED ROBOTS  AI-POWERED ROBOTS",
-      "Developing with K-Lang is the easiest way to program robots",
-      "K-Scale is the best place to learn about robots",
-      "K-Scale's robot development platform is the best in the world",
-      "How to train your own robot models  How to train your own robot models",
-      "How to train your own robot policies  How to train your own robot policies",
-      "How to build your own robot  How to build your own robot",
-      "Buy a fully functional humanoid robot  Buy a fully functional humanoid robot",
-      "Stompy can walk and talk Stompy can walk and talk",
-      "You can control and train Stompy with K-Lang",
-      "Stompy is the first functional and affordable humanoid robot availble to the public",
-      "Open Source Robotics Open Source Robotics",
-      "K-Lang is a neural net programming language for robots",
-    ];
-
-    const kScaleLabsLogo = [
-      "                                                                                           ",
-      " ██╗  ██╗      ███████╗ ██████╗ █████╗ ██╗     ███████╗   ██╗      █████╗ ██████╗ ███████╗ ",
-      " ██║ ██╔╝      ██╔════╝██╔════╝██╔══██╗██║     ██╔════╝   ██║     ██╔══██╗██╔══██╗██╔════╝ ",
-      " █████╔╝ █████╗███████╗██║     ███████║██║     █████╗     ██║     ███████║██████╔╝███████╗ ",
-      " ██╔═██╗ ╚════╝╚════██║██║     ██╔══██║██║     ██╔══╝     ██║     ██╔══██║██╔══██╗╚════██║ ",
-      " ██║  ██╗      ███████║╚██████╗██║  ██║███████╗███████╗   ███████╗██║  ██║██████╔╝███████║ ",
-      " ╚═╝  ╚═╝      ╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝   ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝ ",
-      "                                                                                           ",
-    ];
-
-    const kScaleLabsLogoMobile = [
-      "                                                        ",
-      " ██╗  ██╗      ███████╗ ██████╗ █████╗ ██╗     ███████╗ ",
-      " ██║ ██╔╝      ██╔════╝██╔════╝██╔══██╗██║     ██╔════╝ ",
-      " █████╔╝ █████╗███████╗██║     ███████║██║     █████╗   ",
-      " ██╔═██╗ ╚════╝╚════██║██║     ██╔══██║██║     ██╔══╝   ",
-      " ██║  ██╗      ███████║╚██████╗██║  ██║███████╗███████╗ ",
-      " ╚═╝  ╚═╝      ╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝ ",
-      "                                                        ",
-      "            ██╗      █████╗ ██████╗ ███████╗            ",
-      "            ██║     ██╔══██╗██╔══██╗██╔════╝            ",
-      "            ██║     ███████║██████╔╝███████╗            ",
-      "            ██║     ██╔══██║██╔══██╗╚════██║            ",
-      "            ███████╗██║  ██║██████╔╝███████║            ",
-      "            ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝            ",
-      "                                                        ",
-    ];
-
-    // Get the size of the Logo ASCII art
-    const { width, height } = getSize();
-    const logo = isDesktop ? kScaleLabsLogo : kScaleLabsLogoMobile;
-    const logoHeight = logo.length;
-    const logoWidth = logo[0].length;
-
-    // Logo position
-    const logoY = Math.max(0, Math.floor((height - logoHeight) / 2) - 2);
-    const logoX = Math.max(0, Math.floor((width - logoWidth) / 2) - 5);
-
-    // Add a vertical offset to move the entire ASCII art up
-    const verticalOffset = isDesktop ? 0 : -5; // Adjust this value as needed
-
-    const animate = (timestamp: number) => {
-      if (!startTime) setStartTime(timestamp);
-      const elapsed = timestamp - startTime;
-      const progress = Math.min(1, elapsed / 1500); // 1.5-second animation
-
-      const a = 0.0007 * elapsed * progress;
-
-      let result = "";
-      for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-          const adjustedY = y + verticalOffset;
-          if (
-            adjustedY >= logoY &&
-            adjustedY < logoY + logoHeight &&
-            x >= logoX &&
-            x < logoX + logoWidth
-          ) {
-            const logoChar = logo[adjustedY - logoY][x - logoX] || " ";
-            result += logoChar;
-          } else {
-            const s = 1 - (2 * y) / height;
-            const o = (2 * x) / width - 1;
-            const d = Math.sqrt(o * o + s * s);
-            const l = (0.15 * a) / Math.max(0.1, d);
-            const f = Math.sin(l);
-            const b = Math.cos(l);
-            const u = o * f - s * b;
-            const m = Math.round(((o * b + s * f + 1) / 2) * width);
-            const h =
-              Math.round(((u + 1) / 2) * textStrings.length) %
-              textStrings.length;
-            const char =
-              m < 0 || m >= width || h < 0 || h >= textStrings.length
-                ? " "
-                : textStrings[h][m] || " ";
-            result += char;
-          }
+    for (let y = centerY - squareSize; y < centerY + squareSize; y++) {
+      for (let x = centerX - squareSize; x < centerX + squareSize; x++) {
+        if (y >= 0 && y < rows && x >= 0 && x < cols) {
+          grid[y][x] = true;
         }
-        result += "\n";
       }
+    }
 
-      if (asciiRef.current) {
-        // Adjust font size based on device type for better fit
-        const fontSize = isDesktop ? "12px" : "7px"; // Slightly reduced for mobile
-        asciiRef.current.style.fontSize = fontSize;
-        asciiRef.current.style.lineHeight = "1";
-        asciiRef.current.textContent = result;
+    // Add a few random cells to introduce some variability
+    for (let i = 0; i < Math.floor(rows * cols * 0.02); i++) {
+      const y = Math.floor(Math.random() * rows);
+      const x = Math.floor(Math.random() * cols);
+      grid[y][x] = true;
+    }
+
+    return grid;
+  }, []);
+
+  const updateGrid = useCallback((currentGrid: boolean[][]) => {
+    const rows = currentGrid.length;
+    const cols = currentGrid[0].length;
+    return currentGrid.map((row, y) =>
+      row.map((cell, x) => {
+        const neighbors = [
+          [-1, -1],
+          [-1, 0],
+          [-1, 1],
+          [0, -1],
+          [0, 1],
+          [1, -1],
+          [1, 0],
+          [1, 1],
+        ].reduce((count, [dy, dx]) => {
+          const newY = (y + dy + rows) % rows;
+          const newX = (x + dx + cols) % cols;
+          return count + (currentGrid[newY][newX] ? 1 : 0);
+        }, 0);
+
+        if (cell) {
+          // Mazectric rules for live cells
+          return neighbors >= 1 && neighbors <= 5;
+        } else {
+          // Mazectric rules for dead cells
+          return neighbors === 3;
+        }
+      }),
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const charWidth = 5;
+    const charHeight = 8;
+    const padding = 5;
+
+    const cols = Math.floor((windowWidth - padding * 2) / charWidth);
+    const rows = Math.floor((windowHeight - padding * 2) / charHeight);
+
+    canvas.width = windowWidth;
+    canvas.height = windowHeight;
+
+    gridRef.current = initializeGrid(rows, cols);
+
+    const drawGrid = (currentGrid: boolean[][]) => {
+      const backgroundColor = "#000000";
+      const textColor = "#ffffff";
+
+      ctx.fillStyle = backgroundColor;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = textColor;
+      ctx.font = `${charHeight}px monospace`;
+
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const char = getCharForPosition(currentGrid, x, y);
+          ctx.fillText(char, x * charWidth + padding, y * charHeight + padding);
+        }
       }
-
-      requestAnimationFrame(animate);
     };
 
-    requestAnimationFrame(animate);
-  }, [windowWidth, windowHeight]);
+    const updateAndDraw = () => {
+      gridRef.current = updateGrid(gridRef.current);
+      drawGrid(gridRef.current);
+    };
+
+    drawGrid(gridRef.current);
+    intervalRef.current = window.setInterval(updateAndDraw, 100);
+
+    const observer = new MutationObserver(() => {
+      drawGrid(gridRef.current);
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      observer.disconnect();
+    };
+  }, [windowWidth, windowHeight, initializeGrid, updateGrid]);
 
   return (
     <div className="relative rounded-lg w-full overflow-hidden">
-      <Meteors />
-      <div
-        ref={asciiRef}
-        className="font-mono text-xs whitespace-pre overflow-hidden m-2 my-4 sm:mx-4 md:mx-8 max-w-full max-h-[100vh] rounded-3xl"
-      />
+      <canvas ref={canvasRef} className="w-full h-full" />
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="max-w-2/3 border border-white p-4 bg-black text-xs md:text-base">
+          <pre className="text-white leading-none whitespace-pre font-mono">
+            {kScaleLabsLogo.join("\n")}
+          </pre>
+        </div>
+      </div>
     </div>
   );
 };
+
+const getCharForPosition = (
+  grid: boolean[][],
+  x: number,
+  y: number,
+): string => {
+  if (!grid[y][x]) return " ";
+
+  const top = y > 0 && grid[y - 1][x];
+  const bottom = y < grid.length - 1 && grid[y + 1][x];
+  const left = x > 0 && grid[y][x - 1];
+  const right = x < grid[0].length - 1 && grid[y][x + 1];
+
+  if (top && bottom && left && right) return "╬";
+  if (top && bottom && left) return "╣";
+  if (top && bottom && right) return "╠";
+  if (top && left && right) return "╩";
+  if (bottom && left && right) return "╦";
+  if (top && bottom) return "║";
+  if (left && right) return "═";
+  if (top && right) return "╚";
+  if (top && left) return "╝";
+  if (bottom && right) return "╔";
+  if (bottom && left) return "╗";
+  if (top) return "╨";
+  if (bottom) return "╥";
+  if (left) return "╡";
+  if (right) return "╞";
+
+  return "█";
+};
+
+const kScaleLabsLogo = [
+  "                                            ",
+  " ██╗ ██╗    █████╗█████╗ ████╗ ██╗   ████╗ ",
+  " ██║██╔╝    ██╔══╝██╔══╝██╔═██╗██║   ██╔═╝ ",
+  " █████╔╝███╗█████╗██║   ██████║██║   ███╗  ",
+  " ██╔═██╗╚══╝╚══██║██║   ██╔═██║██║   ██╔╝  ",
+  " ██║ ██╗    █████║█████╗██║ ██║█████╗████╗ ",
+  " ╚═╝ ╚═╝    ╚════╝╚════╝╚═╝ ╚═╝╚════╝╚═══╝ ",
+  "                                           ",
+  "          ██╗    ████╗ █████╗ █████╗       ",
+  "          ██║   ██╔═██╗██╔═██╗██╔══╝       ",
+  "          ██║   ██████║█████╔╝█████╗       ",
+  "          ██║   ██╔═██║██╔═██╗╚══██║       ",
+  "          █████╗██║ ██║█████╔╝█████║       ",
+  "          ╚════╝╚═╝ ╚═╝╚════╝ ╚════╝       ",
+  "                                           ",
+  "   MOVING HUMANITY UP THE KARDASHEV SCALE  ",
+  "                                           ",
+];
 
 export default HeroASCIIArt;
