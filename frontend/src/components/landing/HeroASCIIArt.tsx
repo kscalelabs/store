@@ -13,104 +13,74 @@ const HeroASCIIArt = () => {
   const mousePosRef = useRef<{ x: number; y: number } | null>(null);
 
   const [logoExpanded, setLogoExpanded] = useState(false);
-  const [currentRule, setCurrentRule] = useState(0);
   const [gridInitialized, setGridInitialized] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
-  const rules = [
-    // Mazectric rules
-    (neighbors: number, cell: boolean) =>
-      cell ? neighbors >= 1 && neighbors <= 5 : neighbors === 3,
-    // Conway's Game of Life rules
-    // (neighbors: number, cell: boolean) =>
-    //   cell ? neighbors === 2 || neighbors === 3 : neighbors === 3,
-    // HighLife rules
-    // (neighbors: number, cell: boolean) =>
-    //   cell
-    //     ? neighbors === 2 || neighbors === 3
-    //     : neighbors === 3 || neighbors === 6,
-    // Seeds rules
-    // (neighbors: number, cell: boolean) =>
-    //   cell ? neighbors === 2 || neighbors === 3 : neighbors === 2,
-    // Brians Brain rules
-    // (neighbors: number, cell: boolean) =>
-    //   cell
-    //     ? neighbors === 2 || neighbors === 3
-    //     : neighbors === 3 || neighbors === 6,
-    // 34 Life rules
-    // (neighbors: number, cell: boolean) =>
-    //   cell ? neighbors === 3 || neighbors === 4 : neighbors === 3,
-    // 2x2 rules
-    // (neighbors: number, cell: boolean) =>
-    //   cell ? neighbors === 2 || neighbors === 3 : neighbors === 2,
-  ];
+  const rule = (neighbors: number, cell: boolean) =>
+    cell ? neighbors >= 1 && neighbors <= 5 : neighbors === 3;
 
-  const updateGrid = useCallback(
-    (currentGrid: boolean[][]) => {
-      const rows = currentGrid.length;
-      const cols = currentGrid[0].length;
-      const rule = rules[currentRule];
-      const newGrid = currentGrid.map((row) => [...row]);
-      const newActiveCells = new Set<string>();
+  const updateGrid = useCallback((currentGrid: boolean[][]) => {
+    const rows = currentGrid.length;
+    const cols = currentGrid[0].length;
+    const newGrid = currentGrid.map((row) => [...row]);
+    const newActiveCells = new Set<string>();
 
-      const checkAndUpdateCell = (y: number, x: number) => {
-        const neighbors = [
-          [-1, -1],
-          [-1, 0],
-          [-1, 1],
-          [0, -1],
-          [0, 1],
-          [1, -1],
-          [1, 0],
-          [1, 1],
-        ].reduce((count, [dy, dx]) => {
-          const newY = (y + dy + rows) % rows;
-          const newX = (x + dx + cols) % cols;
-          return count + (currentGrid[newY][newX] ? 1 : 0);
-        }, 0);
+    const checkAndUpdateCell = (y: number, x: number) => {
+      const neighbors = [
+        [-1, -1],
+        [-1, 0],
+        [-1, 1],
+        [0, -1],
+        [0, 1],
+        [1, -1],
+        [1, 0],
+        [1, 1],
+      ].reduce((count, [dy, dx]) => {
+        const newY = (y + dy + rows) % rows;
+        const newX = (x + dx + cols) % cols;
+        return count + (currentGrid[newY][newX] ? 1 : 0);
+      }, 0);
 
-        const newState = rule(neighbors, currentGrid[y][x]);
-        newGrid[y][x] = newState;
+      const prevState = currentGrid[y][x];
+      const newState = rule(neighbors, currentGrid[y][x]);
+      newGrid[y][x] = newState;
 
-        if (newState) {
-          newActiveCells.add(`${y},${x}`);
-          // Add neighbors to be checked in the next iteration
-          for (let dy = -1; dy <= 1; dy++) {
-            for (let dx = -1; dx <= 1; dx++) {
-              const newY = (y + dy + rows) % rows;
-              const newX = (x + dx + cols) % cols;
-              newActiveCells.add(`${newY},${newX}`);
-            }
-          }
-        }
-      };
-
-      // Check all currently active cells and their neighbors
-      activeCellsRef.current.forEach((cellKey) => {
-        const [y, x] = cellKey.split(",").map(Number);
-        checkAndUpdateCell(y, x);
-      });
-
-      // Unset cells in a circular radius around the mouse position
-      if (mousePosRef.current) {
-        const radius = 20;
-        for (let dy = -radius; dy <= radius; dy++) {
-          for (let dx = -radius; dx <= radius; dx++) {
-            if (dx * dx + dy * dy <= radius * radius) {
-              const y = (mousePosRef.current.y + dy + rows) % rows;
-              const x = (mousePosRef.current.x + dx + cols) % cols;
-              newGrid[y][x] = false;
-              newActiveCells.delete(`${y},${x}`);
-            }
+      if (newState !== prevState) {
+        newActiveCells.add(`${y},${x}`);
+        // Add neighbors to be checked in the next iteration
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            const newY = (y + dy + rows) % rows;
+            const newX = (x + dx + cols) % cols;
+            newActiveCells.add(`${newY},${newX}`);
           }
         }
       }
+    };
 
-      activeCellsRef.current = newActiveCells;
-      return newGrid;
-    },
-    [currentRule, rules],
-  );
+    // Check all currently active cells and their neighbors
+    activeCellsRef.current.forEach((cellKey) => {
+      const [y, x] = cellKey.split(",").map(Number);
+      checkAndUpdateCell(y, x);
+    });
+
+    if (mousePosRef.current) {
+      const radius = 15;
+      for (let dy = -radius; dy <= radius; dy++) {
+        for (let dx = -radius; dx <= radius; dx++) {
+          if (dx * dx + dy * dy <= radius * radius) {
+            const y = (mousePosRef.current.y + dy + rows) % rows;
+            const x = (mousePosRef.current.x + dx + cols) % cols;
+            newGrid[y][x] = false;
+            newActiveCells.add(`${y},${x}`);
+          }
+        }
+      }
+    }
+
+    activeCellsRef.current = newActiveCells;
+    return newGrid;
+  }, []);
 
   const initializeGrid = useCallback(
     (rows: number, cols: number) => {
@@ -119,27 +89,37 @@ const HeroASCIIArt = () => {
         .map(() => Array(cols).fill(false));
       const activeSet = new Set<string>();
 
-      // Add a hard-coded starting square in the center
-      const centerY = Math.floor(rows / 2);
-      const centerX = Math.floor(cols / 2);
-      const squareSize = 5;
+      const spawnPattern = (centerX: number, centerY: number) => {
+        const radius = 4;
 
-      for (let y = centerY - squareSize; y < centerY + squareSize; y++) {
-        for (let x = centerX - squareSize; x < centerX + squareSize; x++) {
-          if (y >= 0 && y < rows && x >= 0 && x < cols) {
-            grid[y][x] = true;
-            activeSet.add(`${y},${x}`);
+        for (let y = 0; y < radius; y++) {
+          for (let x = 0; x < radius; x++) {
+            const gridY = centerY - Math.floor(radius / 2) + y;
+            const gridX = centerX - Math.floor(radius / 2) + x;
+            if (gridY >= 0 && gridY < rows && gridX >= 0 && gridX < cols) {
+              grid[gridY][gridX] = Math.random() < 0.5;
+              if (grid[gridY][gridX]) {
+                activeSet.add(`${gridY},${gridX}`);
+                for (let dy = -1; dy <= 1; dy++) {
+                  for (let dx = -1; dx <= 1; dx++) {
+                    const newY = (gridY + dy + rows) % rows;
+                    const newX = (gridX + dx + cols) % cols;
+                    activeSet.add(`${newY},${newX}`);
+                  }
+                }
+              }
+            }
           }
         }
-      }
+      };
 
-      // Add a few random cells to introduce some variability
-      const factor = 0.025;
-      for (let i = 0; i < Math.floor(rows * cols * factor); i++) {
-        const y = Math.floor(Math.random() * rows);
-        const x = Math.floor(Math.random() * cols);
-        grid[y][x] = true;
-        activeSet.add(`${y},${x}`);
+      spawnPattern(Math.floor(cols / 2), Math.floor(rows / 2));
+
+      for (let i = 0; i < 10; i++) {
+        spawnPattern(
+          Math.floor(Math.random() * cols),
+          Math.floor(Math.random() * rows),
+        );
       }
 
       activeCellsRef.current = activeSet;
@@ -152,44 +132,6 @@ const HeroASCIIArt = () => {
     [updateGrid],
   );
 
-  const drawHardCodedStartingBlock = useCallback((grid: boolean[][]) => {
-    const rows = grid.length;
-    const cols = grid[0].length;
-
-    // Generate random position for the center of the pattern
-    const centerY = Math.floor(Math.random() * rows);
-    const centerX = Math.floor(Math.random() * cols);
-
-    // Clear a circular area
-    const clearRadius = 20;
-    for (let dy = -clearRadius; dy <= clearRadius; dy++) {
-      for (let dx = -clearRadius; dx <= clearRadius; dx++) {
-        if (dx * dx + dy * dy <= clearRadius * clearRadius) {
-          const gridY = (centerY + dy + rows) % rows;
-          const gridX = (centerX + dx + cols) % cols;
-          grid[gridY][gridX] = false;
-          activeCellsRef.current.delete(`${gridY},${gridX}`);
-        }
-      }
-    }
-
-    // Add some random noise around the pattern
-    const noiseRadius = 3;
-    for (let dy = -noiseRadius; dy <= noiseRadius; dy++) {
-      for (let dx = -noiseRadius; dx <= noiseRadius; dx++) {
-        const gridY = (centerY + dy + rows) % rows;
-        const gridX = (centerX + dx + cols) % cols;
-        if (Math.random() < 0.3) {
-          // 30% chance of adding a live cell
-          grid[gridY][gridX] = true;
-          activeCellsRef.current.add(`${gridY},${gridX}`);
-        }
-      }
-    }
-
-    return grid;
-  }, []);
-
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -197,12 +139,24 @@ const HeroASCIIArt = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const charWidth = 5;
-    const charHeight = 8;
-    const padding = 5;
+    const desiredCellCount = 200;
+    let charWidth: number, charHeight: number;
+    if (windowWidth > windowHeight) {
+      charWidth = Math.floor(windowWidth / desiredCellCount);
+      charHeight = charWidth; // Make cells square
+    } else {
+      charHeight = Math.floor(windowHeight / desiredCellCount);
+      charWidth = charHeight; // Make cells square
+    }
 
-    const cols = Math.floor((windowWidth - padding * 2) / charWidth);
-    const rows = Math.floor((windowHeight - padding * 2) / charHeight);
+    // Minimum char width and height
+    const minCharWidth = 5;
+    const minCharHeight = 8;
+    if (charWidth < minCharWidth) charWidth = minCharWidth;
+    if (charHeight < minCharHeight) charHeight = minCharHeight;
+
+    const cols = Math.floor(windowWidth / charWidth);
+    const rows = Math.floor(windowHeight / charHeight);
 
     canvas.width = windowWidth;
     canvas.height = windowHeight;
@@ -224,7 +178,7 @@ const HeroASCIIArt = () => {
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
           const char = getCharForPosition(currentGrid, x, y);
-          ctx.fillText(char, x * charWidth + padding, y * charHeight + padding);
+          ctx.fillText(char, x * charWidth, (y + 1) * charHeight);
         }
       }
     };
@@ -235,12 +189,7 @@ const HeroASCIIArt = () => {
     };
 
     drawGrid(gridRef.current);
-    intervalRef.current = window.setInterval(updateAndDraw, 50);
-
-    // Add rule changing interval
-    const ruleChangeInterval = window.setInterval(() => {
-      setCurrentRule((prevRule) => (prevRule + 1) % rules.length);
-    }, 2500);
+    intervalRef.current = window.setInterval(updateAndDraw, 25);
 
     const observer = new MutationObserver(() => {
       drawGrid(gridRef.current);
@@ -253,8 +202,8 @@ const HeroASCIIArt = () => {
 
     const handleMouseMove = (event: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
-      const x = Math.floor((event.clientX - rect.left - padding) / charWidth);
-      const y = Math.floor((event.clientY - rect.top - padding) / charHeight);
+      const x = Math.floor((event.clientX - rect.left) / charWidth);
+      const y = Math.floor((event.clientY - rect.top) / charHeight);
       mousePosRef.current = { x, y };
     };
 
@@ -270,19 +219,11 @@ const HeroASCIIArt = () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
-      clearInterval(ruleChangeInterval);
       observer.disconnect();
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseleave", handleMouseLeave);
     };
-  }, [
-    windowWidth,
-    windowHeight,
-    initializeGrid,
-    updateGrid,
-    gridInitialized,
-    drawHardCodedStartingBlock,
-  ]);
+  }, [windowWidth, windowHeight, initializeGrid, updateGrid, gridInitialized]);
 
   // Separate useEffect for logo expansion
   useEffect(() => {
@@ -320,7 +261,7 @@ const HeroASCIIArt = () => {
       <div className="absolute inset-0 flex items-center justify-center m-4">
         <div
           style={logoContainerStyle}
-          className="border-2 border-white max-w-96 rounded-lg"
+          className="border-2 border-white max-w-96 rounded-lg hover:border-gray-300"
         >
           <img
             src={mainLogo}
@@ -372,7 +313,7 @@ const getCharForPosition = (
   if (left) return "━";
   if (right) return "━";
 
-  return "·";
+  return " ";
 };
 
 export default HeroASCIIArt;
