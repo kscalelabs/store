@@ -1,7 +1,11 @@
+import { useNavigate } from "react-router-dom";
+
 import { Button } from "@/components/ui/Buttons/Button";
 import KScale_Garage from "@/images/KScale_Garage.jpeg";
 
 export default function BuySection() {
+  const navigate = useNavigate();
+
   return (
     <section className="w-full py-12 md:py-24 lg:py-32">
       <div className="container mx-auto px-4 md:px-6">
@@ -56,10 +60,17 @@ export default function BuySection() {
               </li>
             </ul>
             <div className="flex flex-col gap-2 sm:flex-row">
-              <Button className="w-full sm:w-auto inline-flex h-10 items-center justify-center rounded-md bg-gray-900 px-8 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300">
+              <Button
+                className="w-full sm:w-auto inline-flex h-10 items-center justify-center rounded-md bg-gray-900 px-8 text-sm font-medium text-gray-50 shadow transition-colors hover:bg-gray-900/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 disabled:pointer-events-none disabled:opacity-50 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-50/90 dark:focus-visible:ring-gray-300"
+                onClick={() => navigate("/buy")}
+              >
                 Buy Now
               </Button>
-              <Button variant="outline" className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto"
+                onClick={() => navigate("/buy")}
+              >
                 Learn More
               </Button>
             </div>
