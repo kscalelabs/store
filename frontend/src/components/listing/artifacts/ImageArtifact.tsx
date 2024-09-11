@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
-import { components } from "gen/api";
+import { components } from "@/gen/api";
 
 import ImageModal from "./ImageModal";
 

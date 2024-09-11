@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
-import { paths } from "gen/api";
-import { useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
-
-import ListingBody from "components/listing/ListingBody";
-import ListingHeader from "components/listing/ListingHeader";
-import Spinner from "components/ui/Spinner";
+import ListingBody from "@/components/listing/ListingBody";
+import ListingHeader from "@/components/listing/ListingHeader";
+import Spinner from "@/components/ui/Spinner";
+import { paths } from "@/gen/api";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
 
 type ListingResponse =
   paths["/listings/{id}"]["get"]["responses"][200]["content"]["application/json"];

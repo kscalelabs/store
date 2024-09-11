@@ -10,8 +10,8 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
+import { useAuthentication } from "@/hooks/useAuth";
 import clsx from "clsx";
-import { useAuthentication } from "hooks/useAuth";
 
 interface SidebarItemProps {
   title: string;

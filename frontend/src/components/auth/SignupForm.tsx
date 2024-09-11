@@ -1,16 +1,15 @@
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 
+import { Button } from "@/components/ui/Buttons/Button";
+import ErrorMessage from "@/components/ui/ErrorMessage";
+import { Input } from "@/components/ui/Input/Input";
+import PasswordInput from "@/components/ui/Input/PasswordInput";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
+import { SignUpSchema, SignupType } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
-import { SignUpSchema, SignupType } from "types";
 import zxcvbn from "zxcvbn";
-
-import { Button } from "components/ui/Button/Button";
-import ErrorMessage from "components/ui/ErrorMessage";
-import { Input } from "components/ui/Input/Input";
-import PasswordInput from "components/ui/Input/PasswordInput";
 
 interface SignupFormProps {
   signupTokenId: string;

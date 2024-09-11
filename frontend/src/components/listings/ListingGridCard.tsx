@@ -1,4 +1,4 @@
-import { paths } from "gen/api";
+import { paths } from "@/gen/api";
 
 type ListingInfo =
   paths["/listings/batch"]["get"]["responses"][200]["content"]["application/json"]["listings"][0];

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { cn } from "utils";
+import { cn } from "@/utils";
 
 interface TypingAnimationProps {
   text: string;

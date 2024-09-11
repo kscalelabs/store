@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 
+import RequireAuthentication from "@/components/auth/RequireAuthentication";
+import { Button } from "@/components/ui/Buttons/Button";
+import Spinner from "@/components/ui/Spinner";
+import { paths } from "@/gen/api";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
 import { cx } from "class-variance-authority";
-import { paths } from "gen/api";
-import { useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
-
-import RequireAuthentication from "components/auth/RequireAuthentication";
-import { Button } from "components/ui/Button/Button";
-import Spinner from "components/ui/Spinner";
 
 type KeysResponse =
   paths["/keys/list"]["get"]["responses"][200]["content"]["application/json"]["keys"];

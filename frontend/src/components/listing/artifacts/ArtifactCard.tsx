@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { FaTrash } from "react-icons/fa";
 
+import { components } from "@/gen/api";
+import { humanReadableError, useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
 import { format } from "date-fns";
-import { components } from "gen/api";
-import { humanReadableError, useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
 
 import ImageArtifact from "./ImageArtifact";
 import TgzArtifact from "./TgzArtifact";

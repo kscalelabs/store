@@ -2,16 +2,15 @@ import { useState } from "react";
 import { FaCheck, FaEye, FaHome, FaList, FaPen } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-import { paths } from "gen/api";
-import { useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
-import { formatNumber } from "utils/formatNumber";
-import { formatTimeSince } from "utils/formatTimeSince";
-
-import ListingVoteButtons from "components/listing/ListingVoteButtons";
-import { Button } from "components/ui/Button/Button";
-import { Input } from "components/ui/Input/Input";
-import Spinner from "components/ui/Spinner";
+import ListingVoteButtons from "@/components/listing/ListingVoteButtons";
+import { Button } from "@/components/ui/Buttons/Button";
+import { Input } from "@/components/ui/Input/Input";
+import Spinner from "@/components/ui/Spinner";
+import { paths } from "@/gen/api";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
+import { formatNumber } from "@/utils/formatNumber";
+import { formatTimeSince } from "@/utils/formatTimeSince";
 
 import ListingDeleteButton from "./ListingDeleteButton";
 

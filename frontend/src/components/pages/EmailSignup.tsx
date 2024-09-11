@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { paths } from "gen/api";
-import { useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
-
-import SignupForm from "components/auth/SignupForm";
-import { Button } from "components/ui/Button/Button";
-import { Card, CardContent, CardHeader } from "components/ui/Card";
-import Header from "components/ui/Header";
+import SignupForm from "@/components/auth/SignupForm";
+import { Button } from "@/components/ui/Buttons/Button";
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
+import Header from "@/components/ui/Header";
+import { paths } from "@/gen/api";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
 
 type GetEmailSignUpTokenResponse =
   paths["/email/signup/get/{id}"]["get"]["responses"][200]["content"]["application/json"];

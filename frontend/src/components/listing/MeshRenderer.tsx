@@ -1,13 +1,12 @@
 import { Suspense, useRef, useState } from "react";
 
+import Loader from "@/components/listing/Loader";
+import { Button } from "@/components/ui/Buttons/Button";
 import { Center, OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { Canvas, useLoader } from "@react-three/fiber";
 import { cx } from "class-variance-authority";
 import { Group } from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader";
-
-import Loader from "components/listing/Loader";
-import { Button } from "components/ui/Button/Button";
 
 interface ObjModelProps {
   url: string;

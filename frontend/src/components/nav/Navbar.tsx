@@ -9,10 +9,9 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-import { useAuthentication } from "hooks/useAuth";
-
 // import { useDarkMode } from "hooks/useDarkMode";
-import Sidebar from "components/nav/Sidebar";
+import Sidebar from "@/components/nav/Sidebar";
+import { useAuthentication } from "@/hooks/useAuth";
 
 const ICON_SIZE = isMobile ? 16 : 20;
 

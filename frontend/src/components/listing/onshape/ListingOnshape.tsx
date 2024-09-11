@@ -8,13 +8,12 @@ import {
   FaTimes,
 } from "react-icons/fa";
 
-import { useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
-
-import ListingOnshapeUpdate from "components/listing/onshape/ListingOnshapeUpdate";
-import { Button } from "components/ui/Button/Button";
-import { Input } from "components/ui/Input/Input";
-import Spinner from "components/ui/Spinner";
+import ListingOnshapeUpdate from "@/components/listing/onshape/ListingOnshapeUpdate";
+import { Button } from "@/components/ui/Buttons/Button";
+import { Input } from "@/components/ui/Input/Input";
+import Spinner from "@/components/ui/Spinner";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
 
 interface UrlInputProps {
   url: string | null;

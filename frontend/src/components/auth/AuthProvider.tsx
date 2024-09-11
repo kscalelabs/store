@@ -2,12 +2,11 @@ import { useEffect, useState } from "react";
 import { FaGithub } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 
+import { Button } from "@/components/ui/Buttons/Button";
+import Spinner from "@/components/ui/Spinner";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
-import { useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
-
-import { Button } from "components/ui/Button/Button";
-import Spinner from "components/ui/Spinner";
 
 const GITHUB_OAUTH_URL_BASE =
   "https://github.com/login/oauth/authorize?scope=user:email&client_id=";

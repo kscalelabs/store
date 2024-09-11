@@ -1,14 +1,13 @@
 import { FaDiscord, FaGithub, FaLinkedinIn } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import smallLogo from "assets/small-logo.png";
+import smallLogo from "@/assets/small-logo.png";
+import SocialLink from "@/components/footer/SocialLink";
 import {
   DiscordPrimaryColor,
   GithubPrimaryColor,
   LinkedinPrimaryColor,
-} from "types/colors";
-
-import SocialLink from "components/footer/SocialLink";
+} from "@/types/colors";
 
 const Footer = () => {
   const navigate = useNavigate();
@@ -29,7 +28,7 @@ const Footer = () => {
   }
 
   return (
-    <footer className="bg-gray-50 dark:bg-[#191919] text-sm py-20">
+    <footer className="bg-gray-50 dark:bg-[#111111] text-sm py-20">
       <div className="flex flex-col gap-4 mx-12 sm:mx-36">
         {/* Logo and Social Links */}
         <div className="flex flex-row justify-between items-center mb-8">

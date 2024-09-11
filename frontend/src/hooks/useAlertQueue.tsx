@@ -6,7 +6,7 @@ import {
   useState,
 } from "react";
 
-import Toast from "components/ui/Toast";
+import Toast from "@/components/ui/Toast";
 
 const DELAY = 5000;
 const MAX_ALERTS = 5;

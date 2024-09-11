@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
+import ListingGrid from "@/components/listings/ListingGrid";
+import { Button } from "@/components/ui/Buttons/Button";
+import { Input, TextArea } from "@/components/ui/Input/Input";
+import Spinner from "@/components/ui/Spinner";
+import { paths } from "@/gen/api";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
 import { format } from "date-fns";
-import { paths } from "gen/api";
-import { useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
-
-import ListingGrid from "components/listings/ListingGrid";
-import { Button } from "components/ui/Button/Button";
-import { Input, TextArea } from "components/ui/Input/Input";
-import Spinner from "components/ui/Spinner";
 
 type UserResponse =
   paths["/users/public/{id}"]["get"]["responses"][200]["content"]["application/json"];

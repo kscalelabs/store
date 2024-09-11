@@ -1,4 +1,4 @@
-import type { paths } from "gen/api";
+import type { paths } from "@/gen/api";
 import { Client } from "openapi-fetch";
 
 export default class api {

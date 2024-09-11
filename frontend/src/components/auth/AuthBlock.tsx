@@ -1,15 +1,19 @@
 import { useEffect, useState } from "react";
 
-import { useAlertQueue } from "hooks/useAlertQueue";
-import { useAuthentication } from "hooks/useAuth";
-
-import AuthProvider from "components/auth/AuthProvider";
-import LoginForm from "components/auth/LoginForm";
-import SignupWithEmail from "components/auth/SignupWithEmail";
-import BackButton from "components/ui/Button/BackButton";
-import { Card, CardContent, CardFooter, CardHeader } from "components/ui/Card";
-import Header from "components/ui/Header";
-import Spinner from "components/ui/Spinner";
+import AuthProvider from "@/components/auth/AuthProvider";
+import LoginForm from "@/components/auth/LoginForm";
+import SignupWithEmail from "@/components/auth/SignupWithEmail";
+import BackButton from "@/components/ui/Buttons/BackButton";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/Card";
+import Header from "@/components/ui/Header";
+import Spinner from "@/components/ui/Spinner";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
 
 interface AuthBlockProps {
   title?: string;
