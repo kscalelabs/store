@@ -77,7 +77,7 @@ const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
     <div className="pt-4 flex flex-col max-w-full">
       <div
         ref={messageContainerRef}
-        className="p-4 rounded-lg border border-dashed max-h-96 overflow-auto bg-gray-100 w-full"
+        className="p-4 rounded-lg border border-dashed max-h-96 overflow-auto bg-gray-12 w-full"
       >
         <div className="whitespace-pre">
           {messages
@@ -89,7 +89,7 @@ const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
                 className={cx(
                   "text-sm font-mono break-words",
                   level === "success" && "text-green-600 font-bold my-1",
-                  level === "info" && "text-gray-600 dark:text-gray-400",
+                  level === "info" && "text-gray-11",
                   level === "error" && "text-red-600 font-bold my-1",
                 )}
               >

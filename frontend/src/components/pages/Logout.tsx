@@ -24,7 +24,7 @@ const Logout = () => {
   return (
     <div className="mx-8">
       <div className="flex justify-center items-center">
-        <Card className="w-[400px] shadow-md bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg">
+        <Card className="w-[400px] shadow-md bg-gray-2 text-gray-12 rounded-lg">
           <CardHeader>
             <Header title="Logout" />
           </CardHeader>

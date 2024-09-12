@@ -1,7 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
-  darkMode: "class",
   theme: {
     fontFamily: {
       sans: ["Manrope", "sans-serif"],
@@ -32,45 +31,60 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       colors: {
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        // Radix UI Gray Colorscale 1-12 (dark)
+        gray: {
+          1: "#111111",
+          2: "#191919",
+          3: "#222222",
+          4: "#2A2A2A",
+          5: "#313131",
+          6: "#3A3A3A",
+          7: "#484848",
+          8: "#606060",
+          9: "#6E6E6E",
+          10: "#7B7B7B",
+          11: "#B4B4B4",
+          12: "#EEEEEE",
+        },
+        background: "#111111", // Dark background
+        foreground: "#EEEEEE", // Light text
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          DEFAULT: "#191919",
+          foreground: "#EEEEEE",
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: "#191919",
+          foreground: "#EEEEEE",
         },
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "#EEEEEE",
+          foreground: "#191919",
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: "#2A2A2A",
+          foreground: "#EEEEEE",
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: "#2A2A2A",
+          foreground: "#A1A1AA",
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: "#2A2A2A",
+          foreground: "#EEEEEE",
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: "#7F1D1D",
+          foreground: "#EEEEEE",
         },
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
+        border: "#2A2A2A",
+        input: "#2A2A2A",
+        ring: "#D4D4D8",
         chart: {
-          1: "hsl(var(--chart-1))",
-          2: "hsl(var(--chart-2))",
-          3: "hsl(var(--chart-3))",
-          4: "hsl(var(--chart-4))",
-          5: "hsl(var(--chart-5))",
+          1: "rgb(59, 130, 246)",
+          2: "rgb(16, 185, 129)",
+          3: "rgb(251, 146, 60)",
+          4: "rgb(147, 51, 234)",
+          5: "rgb(236, 72, 153)",
         },
       },
     },

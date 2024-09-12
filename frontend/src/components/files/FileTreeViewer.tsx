@@ -51,7 +51,7 @@ const FileTreeView: React.FC<FileTreeViewProps> = ({
     return (
       <div>
         <div
-          className="flex items-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 py-1"
+          className="flex items-center cursor-pointer hover:bg-gray-5 py-1"
           style={{ paddingLeft: `${indent}px` }}
           onClick={toggleOpen}
         >
@@ -60,10 +60,7 @@ const FileTreeView: React.FC<FileTreeViewProps> = ({
           ) : (
             <FaFolder className="mr-2 text-yellow-500 flex-shrink-0" />
           )}
-          <span
-            className="text-sm truncate text-gray-800 dark:text-gray-200"
-            title={node.name}
-          >
+          <span className="text-sm truncate text-gray-11" title={node.name}>
             {node.name}
           </span>
         </div>
@@ -87,8 +84,8 @@ const FileTreeView: React.FC<FileTreeViewProps> = ({
     const truncatedName = truncateFilename(node.name, 30);
     return (
       <div
-        className={`flex items-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 py-1 ${
-          isSelected ? "bg-blue-100 dark:bg-blue-800" : ""
+        className={`flex items-center cursor-pointer hover:bg-gray-6 py-1 ${
+          isSelected ? "bg-blue-800" : ""
         }`}
         style={{ paddingLeft: `${indent}px` }}
         onClick={() =>
@@ -98,14 +95,12 @@ const FileTreeView: React.FC<FileTreeViewProps> = ({
       >
         <FaFile
           className={`mr-2 flex-shrink-0 ${
-            isSelected ? "text-blue-500" : "text-gray-500 dark:text-gray-400"
+            isSelected ? "text-blue-500" : "text-gray-10"
           }`}
         />
         <span
           className={`text-sm truncate ${
-            isSelected
-              ? "font-semibold text-blue-700 dark:text-blue-300"
-              : "text-gray-800 dark:text-gray-200"
+            isSelected ? "font-semibold text-blue-300" : "text-gray-11"
           }`}
         >
           {truncatedName}

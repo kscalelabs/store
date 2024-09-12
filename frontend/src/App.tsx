@@ -64,9 +64,9 @@ const App = () => {
           <AlertQueueProvider>
             <AlertQueue>
               <ScrollToTop>
-                <div className="dark:bg-black dark:text-white min-h-screen flex flex-col">
+                <div className="flex flex-col bg-gray-1 text-gray-12 min-h-screen">
                   <Navbar />
-                  <PendoInitializer />{" "}
+                  <PendoInitializer />
                   {/* This component is where Pendo is initialized */}
                   <div className="flex-grow">
                     <Container>

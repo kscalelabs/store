@@ -31,7 +31,7 @@ const SidebarItem = ({
   return (
     <li>
       <button onClick={onClick} className="w-full focus:outline-none">
-        <span className="flex items-center py-2 px-4 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+        <span className="flex items-center py-2 px-4 text-gray-12 rounded-lg hover:bg-gray-3 group">
           {align === "right" ? (
             <>
               <span className="flex-grow" />
@@ -69,7 +69,7 @@ const SidebarItem = ({
 const SidebarSeparator = () => {
   return (
     <li className="py-1">
-      <div className="border-t border-gray-200 dark:border-gray-700" />
+      <div className="border-t border-gray-3" />
     </li>
   );
 };
@@ -87,13 +87,13 @@ const Sidebar = ({ show, onClose }: Props) => {
     <div>
       {show ? (
         <div
-          className="fixed top-0 right-0 z-40 w-full sm:w-64 h-screen p-4 overflow-y-auto transition-transform bg-white dark:bg-gray-800"
+          className="fixed top-0 right-0 z-40 w-full sm:w-64 h-screen p-4 overflow-y-auto transition-transform bg-gray-3"
           tabIndex={-1}
         >
           <div className="flex justify-between items-center">
             <h5
               id="drawer-navigation-label"
-              className="text-base font-semibold text-gray-500 uppercase dark:text-gray-300"
+              className="text-base font-semibold text-gray-8 uppercase"
             >
               {/* SETTINGS */}
             </h5>
@@ -101,7 +101,7 @@ const Sidebar = ({ show, onClose }: Props) => {
             <button
               type="button"
               onClick={onClose}
-              className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+              className="text-gray-8 bg-transparent hover:bg-gray-3 hover:text-gray-12 rounded-lg text-sm p-1.5 inline-flex items-center"
             >
               <FaTimes />
               <span className="sr-only">Close menu</span>

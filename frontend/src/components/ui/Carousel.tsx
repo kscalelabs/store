@@ -51,7 +51,7 @@ const Carousel = ({ items }: Props) => {
         className="absolute top-0 start-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
         data-carousel-prev
       >
-        <FaCaretLeft className="w-4 h-4 text-white dark:text-gray-800 rtl:rotate-180" />
+        <FaCaretLeft className="w-4 h-4 text-gray-2 rtl:rotate-180" />
         <span className="sr-only">Previous</span>
       </button>
       <button
@@ -59,7 +59,7 @@ const Carousel = ({ items }: Props) => {
         className="absolute top-0 end-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"
         data-carousel-next
       >
-        <FaCaretRight className="w-4 h-4 text-white dark:text-gray-800 rtl:rotate-180" />
+        <FaCaretRight className="w-4 h-4 text-gray-2 rtl:rotate-180" />
         <span className="sr-only">Next</span>
       </button>
     </div>

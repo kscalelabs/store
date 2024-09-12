@@ -80,14 +80,12 @@ const ListingVoteButtons = ({
 
   return (
     <div
-      className={`flex flex-col items-center rounded-full p-1 ${"dark:bg-gray-800 bg-gray-200"}`}
+      className={`flex flex-col items-center rounded-full p-1 ${"bg-gray-3"}`}
     >
       <button
         onClick={(e) => handleVote(true, e)}
         className={`${small ? "text-xl" : "text-2xl"} ${
-          userVote === true
-            ? "text-green-500"
-            : "text-gray-600 dark:text-gray-300"
+          userVote === true ? "text-green-500" : "text-gray-11"
         } hover:text-green-600 transition-colors duration-200 mb-2`}
         disabled={isVoting}
       >
@@ -96,9 +94,7 @@ const ListingVoteButtons = ({
       <button
         onClick={(e) => handleVote(false, e)}
         className={`${small ? "text-xl" : "text-2xl"} ${
-          userVote === false
-            ? "text-red-500"
-            : "dark:text-gray-300 text-gray-600"
+          userVote === false ? "text-red-500" : "text-gray-11"
         } hover:text-red-600 transition-colors duration-200`}
         disabled={isVoting}
       >

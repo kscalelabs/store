@@ -28,7 +28,7 @@ const Footer = () => {
   }
 
   return (
-    <footer className="bg-gray-50 dark:bg-[#111111] text-sm py-20">
+    <footer className="bg-gray-1 text-sm py-20">
       <div className="flex flex-col gap-4 mx-12 sm:mx-36">
         {/* Logo and Social Links */}
         <div className="flex flex-row justify-between items-center mb-8">
@@ -36,12 +36,8 @@ const Footer = () => {
             className="flex items-center active cursor-pointer"
             onClick={() => navigate("/")}
           >
-            <img
-              src={smallLogo}
-              alt="kscale logo"
-              className="h-8 dark:invert"
-            />
-            <span className="ml-2 text-xl font-bold text-gray-800 dark:text-gray-200">
+            <img src={smallLogo} alt="kscale logo" className="h-8 invert" />
+            <span className="ml-2 text-xl font-bold text-gray-12">
               K-Scale Labs
             </span>
           </a>
