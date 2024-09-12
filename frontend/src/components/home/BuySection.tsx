@@ -1,15 +1,44 @@
+import { useInView } from "react-intersection-observer";
 import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/Buttons/Button";
 import KScale_Garage from "@/images/KScale_Garage.jpeg";
+import { motion } from "framer-motion";
 
 export default function BuySection() {
   const navigate = useNavigate();
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
+  const containerVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, staggerChildren: 0.2 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
 
   return (
-    <section className="w-full py-12 md:py-24 lg:py-32">
+    <motion.section
+      ref={ref}
+      initial="hidden"
+      animate={inView ? "visible" : "hidden"}
+      variants={containerVariants}
+      className="w-full py-12 md:py-24 lg:py-32"
+    >
       <div className="container mx-auto px-4 md:px-6">
-        <div className="flex flex-col items-center justify-center space-y-4 text-center">
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-col items-center justify-center space-y-4 text-center"
+        >
           <div className="space-y-2">
             <div className="inline-block rounded-lg bg-gray-2 px-3 py-1 text-sm">
               New Release
@@ -23,16 +52,20 @@ export default function BuySection() {
               of the price.
             </p>
           </div>
-        </div>
+        </motion.div>
         <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-2 lg:gap-12">
-          <img
+          <motion.img
+            variants={itemVariants}
             alt="Robot"
             className="mx-auto w-full max-w-md aspect-video overflow-hidden rounded-xl object-cover object-center lg:order-last"
             height="310"
             src={KScale_Garage}
             width="550"
           />
-          <div className="flex flex-col justify-center space-y-4">
+          <motion.div
+            variants={itemVariants}
+            className="flex flex-col justify-center space-y-4"
+          >
             <ul className="grid gap-6">
               <li>
                 <div className="grid gap-1">
@@ -74,9 +107,9 @@ export default function BuySection() {
                 Learn More
               </Button>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 }

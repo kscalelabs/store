@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export default function CommunitySection() {
   return (
-    <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-2">
+    <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-1">
       <div className="md:w-[50%] mx-auto px-4 md:px-6 text-center">
         <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-4 text-gray-12">
           Join Our Community
