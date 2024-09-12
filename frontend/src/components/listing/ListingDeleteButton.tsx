@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { FaExclamation } from "react-icons/fa";
+import { FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-import { Button } from "@/components/ui/Buttons/Button";
 import Modal from "@/components/ui/Modal";
+import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 
@@ -47,28 +47,33 @@ const ListingDeleteButton = (props: Props) => {
         onClick={() => setConfirmDelete(true)}
         variant={deleting ? "ghost" : "destructive"}
         disabled={deleting}
+        className="flex items-center space-x-2 px-3 py-1 rounded-lg transition-all duration-300 hover:bg-red-600 hover:text-white"
       >
-        <span className="mr-2">{deleting ? "Deleting..." : "Delete"}</span>
-        <FaExclamation />
+        <FaTrash className="text-lg" />
+        <span>{deleting ? "Deleting..." : "Delete Listing"}</span>
       </Button>
       <Modal isOpen={confirmDelete} onClose={() => setConfirmDelete(false)}>
-        <div className="p-6">
-          <h2 className="text-xl font-bold mb-4">Confirm Deletion</h2>
-          <p className="text-lg mb-6">
-            Are you sure you want to delete this listing?
+        <div className="p-8 bg-gray-3 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold mb-4 text-gray-12">
+            Confirm Deletion
+          </h2>
+          <p className="mb-6 text-gray-11">
+            Are you sure you want to delete this listing? This action cannot be
+            undone.
           </p>
           <div className="flex justify-end space-x-4">
+            <Button onClick={() => setConfirmDelete(false)} variant="secondary">
+              Cancel
+            </Button>
             <Button
               onClick={() => {
                 handleDelete();
                 setConfirmDelete(false);
               }}
               variant="destructive"
+              className="rounded-lg bg-red-500 hover:bg-red-600 text-white"
             >
               Yes, delete
-            </Button>
-            <Button onClick={() => setConfirmDelete(false)} variant="secondary">
-              Cancel
             </Button>
           </div>
         </div>

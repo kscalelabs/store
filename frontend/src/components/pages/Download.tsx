@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import { Download, Search, Upload } from "lucide-react";
 
 // Mock data for demonstration
@@ -116,9 +117,22 @@ export default function DownloadsPage() {
             <CardHeader>
               <CardTitle className="flex justify-between items-center">
                 {resource.name}
-                {resource.official && (
-                  <Badge variant="secondary">Official</Badge>
-                )}
+                <div className="flex gap-2">
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      resource.type === "kernel" && "bg-blue-100 text-blue-800",
+                      resource.type === "urdf" && "bg-green-100 text-green-800",
+                      resource.type === "ml" && "bg-purple-100 text-purple-800",
+                      resource.type === "other" && "bg-gray-100 text-gray-800",
+                    )}
+                  >
+                    {resource.type}
+                  </Badge>
+                  {resource.official && (
+                    <Badge variant="secondary">Official</Badge>
+                  )}
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent>

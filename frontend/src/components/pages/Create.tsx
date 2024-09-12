@@ -56,7 +56,7 @@ const Create = () => {
       <div className="container mx-auto max-w-lg shadow-md rounded-lg bg-gray-2 text-gray-12">
         <Card className="shadow-md">
           <CardHeader>
-            <Header title="Create" />
+            <Header title="Post new build" />
           </CardHeader>
           <CardContent>
             <form
@@ -65,7 +65,14 @@ const Create = () => {
             >
               {/* Name */}
               <div>
+                <label
+                  htmlFor="name"
+                  className="block mb-2 text-sm font-medium text-gray-11"
+                >
+                  Name
+                </label>
                 <Input
+                  id="name"
                   placeholder="Name (at least 4 characters)"
                   type="text"
                   {...register("name")}
@@ -77,7 +84,14 @@ const Create = () => {
 
               {/* Description Input */}
               <div className="relative">
+                <label
+                  htmlFor="description"
+                  className="block mb-2 text-sm font-medium text-gray-11"
+                >
+                  Description (supports Markdown formatting)
+                </label>
                 <TextArea
+                  id="description"
                   placeholder="Description (at least 6 characters)"
                   rows={4}
                   {...register("description", {
@@ -95,6 +109,7 @@ const Create = () => {
               {/* Render Description */}
               {description && (
                 <div className="relative">
+                  <h3 className="font-semibold mb-2">Description Preview</h3>
                   <RenderDescription description={description} />
                 </div>
               )}

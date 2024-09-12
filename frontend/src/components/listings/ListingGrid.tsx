@@ -3,6 +3,7 @@ import Masonry from "react-masonry-css";
 import { Link } from "react-router-dom";
 
 import ListingGridCard from "@/components/listings/ListingGridCard";
+import { Card } from "@/components/ui/Card";
 import Spinner from "@/components/ui/Spinner";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
@@ -65,13 +66,15 @@ const ListingGrid = (props: ListingGridProps) => {
       columnClassName="pl-4 sm:pl-6 bg-clip-padding"
     >
       {listingIds.map((listingId) => (
-        <Link key={listingId} to={`/item/${listingId}`}>
-          <ListingGridCard
-            listingId={listingId}
-            listing={listingInfo?.find((l) => l.id === listingId)}
-            showDescription={true}
-          />
-        </Link>
+        <Card key={listingId} className="mb-4 sm:mb-6 overflow-hidden">
+          <Link to={`/item/${listingId}`}>
+            <ListingGridCard
+              listingId={listingId}
+              listing={listingInfo?.find((l) => l.id === listingId)}
+              showDescription={true}
+            />
+          </Link>
+        </Card>
       ))}
     </Masonry>
   );
