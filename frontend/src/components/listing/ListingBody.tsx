@@ -94,18 +94,18 @@ const ListingBody = (props: ListingBodyProps) => {
       </Card>
       <Card>
         <CardContent className="pt-6">
-          <ListingChildren
-            child_ids={listing.child_ids}
+          <ListingOnshape
+            listingId={listing.id}
+            onshapeUrl={listing.onshape_url}
+            addArtifactId={addArtifactId}
             edit={listing.can_edit}
           />
         </CardContent>
       </Card>
       <Card>
         <CardContent className="pt-6">
-          <ListingOnshape
-            listingId={listing.id}
-            onshapeUrl={listing.onshape_url}
-            addArtifactId={addArtifactId}
+          <ListingChildren
+            child_ids={listing.child_ids}
             edit={listing.can_edit}
           />
         </CardContent>
