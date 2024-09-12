@@ -4,6 +4,7 @@ import Masonry from "react-masonry-css";
 import ListingChildren from "@/components/listing/ListingChildren";
 import ListingDescription from "@/components/listing/ListingDescription";
 import ListingOnshape from "@/components/listing/onshape/ListingOnshape";
+import { Card, CardContent } from "@/components/ui/card";
 import { components, paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
@@ -81,19 +82,34 @@ const ListingBody = (props: ListingBodyProps) => {
   }, [listing.id, artifacts, auth.client, addErrorAlert]);
 
   return (
-    <div className="px-4">
-      <ListingDescription
-        listingId={listing.id}
-        description={listing.description}
-        edit={listing.can_edit}
-      />
-      <ListingChildren child_ids={listing.child_ids} edit={listing.can_edit} />
-      <ListingOnshape
-        listingId={listing.id}
-        onshapeUrl={listing.onshape_url}
-        addArtifactId={addArtifactId}
-        edit={listing.can_edit}
-      />
+    <div className="space-y-6">
+      <Card>
+        <CardContent className="pt-6">
+          <ListingDescription
+            listingId={listing.id}
+            description={listing.description}
+            edit={listing.can_edit}
+          />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="pt-6">
+          <ListingChildren
+            child_ids={listing.child_ids}
+            edit={listing.can_edit}
+          />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent className="pt-6">
+          <ListingOnshape
+            listingId={listing.id}
+            onshapeUrl={listing.onshape_url}
+            addArtifactId={addArtifactId}
+            edit={listing.can_edit}
+          />
+        </CardContent>
+      </Card>
       <div className="mt-4">
         <Masonry
           breakpointCols={breakpointColumnsObj}
@@ -107,13 +123,17 @@ const ListingBody = (props: ListingBodyProps) => {
               .slice()
               .reverse()
               .map((artifact) => (
-                <div key={artifact.artifact_id} className="mb-4">
-                  <ArtifactCard
-                    artifact={artifact}
-                    onDelete={() => handleDeleteArtifact(artifact.artifact_id)}
-                    canEdit={listing.can_edit}
-                  />
-                </div>
+                <Card key={artifact.artifact_id} className="mb-4">
+                  <CardContent className="p-4">
+                    <ArtifactCard
+                      artifact={artifact}
+                      onDelete={() =>
+                        handleDeleteArtifact(artifact.artifact_id)
+                      }
+                      canEdit={listing.can_edit}
+                    />
+                  </CardContent>
+                </Card>
               ))
           )}
         </Masonry>

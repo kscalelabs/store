@@ -21,6 +21,7 @@ import Create from "@/components/pages/Create";
 import EmailSignup from "@/components/pages/EmailSignup";
 import FileBrowser from "@/components/pages/FileBrowser";
 import Home from "@/components/pages/Home";
+import KLangPage from "@/components/pages/KLangPage";
 import ListingDetails from "@/components/pages/ListingDetails";
 import Login from "@/components/pages/Login";
 import Logout from "@/components/pages/Logout";
@@ -29,7 +30,6 @@ import Profile from "@/components/pages/Profile";
 import Signup from "@/components/pages/Signup";
 import { AlertQueue, AlertQueueProvider } from "@/hooks/useAlertQueue";
 import { AuthenticationProvider } from "@/hooks/useAuth";
-import { DarkModeProvider } from "@/hooks/useDarkMode";
 
 import DownloadsPage from "./components/pages/Download";
 
@@ -59,52 +59,50 @@ const PendoInitializer = () => {
 const App = () => {
   return (
     <Router>
-      <DarkModeProvider>
-        <AuthenticationProvider>
-          <AlertQueueProvider>
-            <AlertQueue>
-              <ScrollToTop>
-                <div className="flex flex-col bg-gray-1 text-gray-12 min-h-screen">
-                  <Navbar />
-                  <PendoInitializer />
-                  {/* This component is where Pendo is initialized */}
-                  <div className="flex-grow">
-                    <Container>
-                      <Routes>
-                        <Route path="/" element={<Home />} />
+      <AuthenticationProvider>
+        <AlertQueueProvider>
+          <AlertQueue>
+            <ScrollToTop>
+              <div className="flex flex-col bg-gray-1 text-gray-12 min-h-screen">
+                <Navbar />
+                {/* This component is where Pendo is initialized */}
+                <PendoInitializer />
+                <div className="flex-grow">
+                  <Container>
+                    <Routes>
+                      <Route path="/" element={<Home />} />
 
-                        <Route path="/about" element={<About />} />
-                        <Route path="/buy" element={<BuyPage />} />
-                        <Route path="/downloads" element={<DownloadsPage />} />
+                      <Route path="/about" element={<About />} />
+                      <Route path="/buy" element={<BuyPage />} />
+                      <Route path="/downloads" element={<DownloadsPage />} />
+                      <Route path="/k-lang" element={<KLangPage />} />
+                      <Route path="/browse/:page?" element={<Browse />} />
+                      <Route
+                        path="/file/:artifactId"
+                        element={<FileBrowser />}
+                      />
 
-                        <Route path="/browse/:page?" element={<Browse />} />
-                        <Route
-                          path="/file/:artifactId"
-                          element={<FileBrowser />}
-                        />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/logout" element={<Logout />} />
+                      <Route path="/signup/" element={<Signup />} />
+                      <Route path="/signup/:id" element={<EmailSignup />} />
 
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/logout" element={<Logout />} />
-                        <Route path="/signup/" element={<Signup />} />
-                        <Route path="/signup/:id" element={<EmailSignup />} />
+                      <Route path="/create" element={<Create />} />
+                      <Route path="/item/:id" element={<ListingDetails />} />
+                      <Route path="/keys" element={<APIKeys />} />
 
-                        <Route path="/create" element={<Create />} />
-                        <Route path="/item/:id" element={<ListingDetails />} />
-                        <Route path="/keys" element={<APIKeys />} />
-
-                        <Route path="/profile/:id?" element={<Profile />} />
-                        <Route path="/404" element={<NotFound />} />
-                        <Route path="*" element={<NotFoundRedirect />} />
-                      </Routes>
-                    </Container>
-                  </div>
-                  <Footer />
+                      <Route path="/profile/:id?" element={<Profile />} />
+                      <Route path="/404" element={<NotFound />} />
+                      <Route path="*" element={<NotFoundRedirect />} />
+                    </Routes>
+                  </Container>
                 </div>
-              </ScrollToTop>
-            </AlertQueue>
-          </AlertQueueProvider>
-        </AuthenticationProvider>
-      </DarkModeProvider>
+                <Footer />
+              </div>
+            </ScrollToTop>
+          </AlertQueue>
+        </AlertQueueProvider>
+      </AuthenticationProvider>
     </Router>
   );
 };

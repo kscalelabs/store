@@ -6,6 +6,7 @@ import ListingVoteButtons from "@/components/listing/ListingVoteButtons";
 import { Button } from "@/components/ui/Buttons/Button";
 import { Input } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
@@ -82,7 +83,7 @@ const ListingTitle = (props: Props) => {
               autoFocus
             />
           ) : (
-            <h1 className="text-2xl font-semibold">{newTitle}</h1>
+            <h1 className="text-2xl font-semibold pr-2">{newTitle}</h1>
           )}
           {listing.can_edit && (
             <Button
@@ -135,35 +136,39 @@ const ListingHeader = (props: Props) => {
   const navigate = useNavigate();
 
   return (
-    <div className="relative p-4 mb-4">
-      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-4 items-center">
-        <ListingVoteButtons
-          listingId={listing.id}
-          initialScore={listing.score}
-          initialUserVote={listing.user_vote}
-        />
-        <div>
-          <ListingTitle {...props} />
-          <div className="mt-2 text-sm text-gray-9 flex items-center gap-4 flex-wrap">
-            <div className="flex items-center">
-              <FaEye className="mr-1" />
-              <span>{formatNumber(listing.views)} views</span>
-            </div>
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>
+          <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-4 items-center">
+            <ListingVoteButtons
+              listingId={listing.id}
+              initialScore={listing.score}
+              initialUserVote={listing.user_vote}
+            />
             <div>
-              Posted {formatTimeSince(new Date(listing.created_at * 1000))}
+              <ListingTitle {...props} />
+              <div className="mt-2 text-sm text-muted-foreground flex items-center gap-4 flex-wrap">
+                <div className="flex items-center">
+                  <FaEye className="mr-1" />
+                  <span>{formatNumber(listing.views)} views</span>
+                </div>
+                <div>
+                  Posted {formatTimeSince(new Date(listing.created_at * 1000))}
+                </div>
+              </div>
+              {listing.creator_name && (
+                <div className="text-sm mt-1 flex items-center text-primary hover:underline hover:text-primary/80 cursor-pointer">
+                  <p onClick={() => navigate(`/profile/${listing.creator_id}`)}>
+                    By {listing.creator_name}
+                  </p>{" "}
+                </div>
+              )}
             </div>
+            <NavigationButtons {...props} />
           </div>
-          {listing.creator_name && (
-            <div className="text-sm mt-1 flex items-center text-blue-600 hover:text-blue-800 hover:underline cursor-pointer">
-              <p onClick={() => navigate(`/profile/${listing.creator_id}`)}>
-                By {listing.creator_name}
-              </p>{" "}
-            </div>
-          )}
-        </div>
-        <NavigationButtons {...props} />
-      </div>
-    </div>
+        </CardTitle>
+      </CardHeader>
+    </Card>
   );
 };
 

@@ -219,18 +219,20 @@ const ListingOnshape = (props: Props) => {
   };
 
   const renderUrdfInstructions = () => (
-    <div className="mt-4 p-4 bg-blue-900 rounded-md w-full">
-      <h4 className="text-lg font-semibold mb-2">URDF Upload Instructions</h4>
-      <ol className="list-decimal list-inside space-y-2 text-sm">
+    <div className="mt-4 p-6 bg-gray-800 rounded-lg shadow-md w-full">
+      <h4 className="text-xl font-semibold mb-4 text-blue-400">
+        URDF Upload Instructions
+      </h4>
+      <ol className="list-decimal list-inside space-y-4 text-sm text-gray-300">
         <li>
           Install the K-Scale CLI by running:
-          <pre className="bg-gray-11 text-gray-2 p-2 rounded-md mt-1 overflow-x-auto">
+          <pre className="bg-gray-700 text-green-400 p-3 rounded-md mt-2 overflow-x-auto font-mono text-sm">
             pip install kscale
           </pre>
         </li>
         <li>
           To upload a URDF directly, use the following command:
-          <pre className="bg-gray-11 text-gray-2 p-2 rounded-md mt-1 overflow-x-auto">
+          <pre className="bg-gray-700 text-green-400 p-3 rounded-md mt-2 overflow-x-auto font-mono text-sm">
             kscale urdf upload {listingId}
           </pre>
         </li>
@@ -240,7 +242,7 @@ const ListingOnshape = (props: Props) => {
             href="https://github.com/kscalelabs/kscale"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-400 hover:underline"
+            className="text-blue-400 hover:text-blue-300 hover:underline transition-colors duration-200"
           >
             here
           </a>

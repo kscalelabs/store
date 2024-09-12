@@ -5,6 +5,7 @@ import ListingGrid from "@/components/listings/ListingGrid";
 import { Button } from "@/components/ui/Buttons/Button";
 import { Input, TextArea } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
@@ -17,10 +18,11 @@ interface RenderProfileProps {
   user: UserResponse;
   onUpdateProfile: (updatedUser: Partial<UserResponse>) => Promise<void>;
   canEdit: boolean;
+  listingIds: string[] | null;
 }
 
 const RenderProfile = (props: RenderProfileProps) => {
-  const { user, onUpdateProfile, canEdit } = props;
+  const { user, onUpdateProfile, canEdit, listingIds } = props;
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [firstName, setFirstName] = useState(user.first_name || "");
@@ -50,103 +52,117 @@ const RenderProfile = (props: RenderProfileProps) => {
   };
 
   return (
-    <div className="container mx-auto max-w-md shadow-md rounded-lg bg-gray-2 text-gray-12 border relative">
-      <div className="p-6">
-        <h1 className="text-3xl font-extrabold mb-6 text-center">Profile</h1>
-        {isEditing ? (
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label htmlFor="first_name" className="block text-lg font-medium">
-                First Name
-              </label>
-              <Input
-                id="first_name"
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                className="mt-1 block w-full"
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="last_name" className="block text-lg font-medium">
-                Last Name
-              </label>
-              <Input
-                id="last_name"
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="mt-1 block w-full"
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="bio" className="block text-lg font-medium">
-                Bio
-              </label>
-              <TextArea
-                id="bio"
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-11 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                rows={4}
-              />
-            </div>
-            {isSubmitting ? (
-              <div className="mt-4 flex justify-center items-center">
-                <Spinner />
-              </div>
-            ) : (
-              <div className="mt-4 flex justify-center space-x-2">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setIsEditing(false)}
+    <div className="space-y-8">
+      <Card className="w-full max-w-4xl mx-auto">
+        <CardHeader className="flex flex-col items-center space-y-4">
+          <h1 className="text-3xl font-bold">
+            {user.first_name || user.last_name
+              ? `${user.first_name || ""} ${user.last_name || ""}`
+              : "No name set"}
+          </h1>
+          <p className="text-sm text-gray-11">
+            Joined on{" "}
+            {user.created_at ? formatJoinDate(user.created_at) : "Unknown date"}
+          </p>
+          {!isEditing && canEdit && (
+            <Button onClick={() => setIsEditing(true)} variant="outline">
+              Edit Profile
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent>
+          {isEditing ? (
+            <form onSubmit={handleSubmit}>
+              <div className="mb-4">
+                <label
+                  htmlFor="first_name"
+                  className="block text-lg font-medium"
                 >
-                  Cancel
-                </Button>
-                <Button type="submit" variant="primary">
-                  Save Changes
-                </Button>
+                  First Name
+                </label>
+                <Input
+                  id="first_name"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="mt-1 block w-full"
+                />
               </div>
-            )}
-          </form>
-        ) : (
-          <div>
-            <h2 className="text-2xl font-bold mb-2 text-center">
-              {user.first_name || user.last_name
-                ? `${user.first_name || ""} ${user.last_name || ""}`
-                : "No name set"}
-            </h2>
-            {user.bio ? (
-              <p className="mb-2">{user.bio}</p>
-            ) : (
-              <p className="mb-2 text-gray-11">
-                No bio set. Edit your profile to add a bio.
-              </p>
-            )}
-            <p className="mb-2 text-gray-12">
-              Email: {user.email || "No email set"}
-            </p>
-            <p className="mb-4 text-sm text-gray-11">
-              Joined on{" "}
-              {user.created_at
-                ? formatJoinDate(user.created_at)
-                : "Unknown date"}
-            </p>
-            {!isEditing && canEdit && (
-              <div className="flex justify-center">
-                <Button
-                  className="mt-4"
-                  onClick={() => setIsEditing(true)}
-                  variant="primary"
+              <div className="mb-4">
+                <label
+                  htmlFor="last_name"
+                  className="block text-lg font-medium"
                 >
-                  Edit Profile
-                </Button>
+                  Last Name
+                </label>
+                <Input
+                  id="last_name"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="mt-1 block w-full"
+                />
               </div>
-            )}
-          </div>
-        )}
-      </div>
+              <div className="mb-4">
+                <label htmlFor="bio" className="block text-lg font-medium">
+                  Bio
+                </label>
+                <TextArea
+                  id="bio"
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  className="mt-1 block w-full rounded-md border-gray-11 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                  rows={4}
+                />
+              </div>
+              {isSubmitting ? (
+                <div className="mt-4 flex justify-center items-center">
+                  <Spinner />
+                </div>
+              ) : (
+                <div className="mt-4 flex justify-center space-x-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setIsEditing(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" variant="primary">
+                    Save Changes
+                  </Button>
+                </div>
+              )}
+            </form>
+          ) : (
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-xl font-semibold mb-2">Bio</h2>
+                {user.bio ? (
+                  <p>{user.bio}</p>
+                ) : (
+                  <p className="text-gray-11">
+                    No bio set. Edit your profile to add a bio.
+                  </p>
+                )}
+              </div>
+              <div>
+                <h2 className="text-xl font-semibold mb-2">Contact</h2>
+                <p>Email: {user.email || "No email set"}</p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="w-full max-w-4xl mx-auto">
+        <CardHeader>
+          <h2 className="text-2xl font-bold">Listings</h2>
+        </CardHeader>
+        <CardContent>
+          {listingIds && <ListingGrid listingIds={listingIds} />}
+        </CardContent>
+      </Card>
     </div>
   );
 };
@@ -274,6 +290,7 @@ const Profile = () => {
         user={user}
         onUpdateProfile={handleUpdateProfile}
         canEdit={canEdit}
+        listingIds={listingIds}
       />
       {listingIds && (
         <div className="mt-4">

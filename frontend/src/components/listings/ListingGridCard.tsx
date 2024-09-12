@@ -1,5 +1,7 @@
 import { paths } from "@/gen/api";
 
+import { RenderDescription } from "../listing/ListingDescription";
+
 type ListingInfo =
   paths["/listings/batch"]["get"]["responses"][200]["content"]["application/json"]["listings"][0];
 
@@ -37,9 +39,11 @@ const ListingGridCard = ({
               {listing.name}
             </h3>
             {showDescription && listing.description !== null && (
-              <p className="text-sm text-gray-600">
-                {getFirstLine(listing.description)}
-              </p>
+              <div className="text-sm text-gray-600">
+                <RenderDescription
+                  description={getFirstLine(listing.description) || ""}
+                />
+              </div>
             )}
           </div>
         </>

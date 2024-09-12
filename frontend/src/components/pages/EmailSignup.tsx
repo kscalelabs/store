@@ -3,8 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 
 import SignupForm from "@/components/auth/SignupForm";
 import { Button } from "@/components/ui/Buttons/Button";
-import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import Header from "@/components/ui/Header";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
