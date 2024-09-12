@@ -1,7 +1,7 @@
-import BuySection from "@/components/landing/BuySection";
-import HeroASCIIArt from "@/components/landing/HeroASCIIArt";
-import KLangDemo from "@/components/landing/KLangDemo";
-import NavSection from "@/components/landing/NavSection";
+import BuySection from "@/components/home/BuySection";
+import HeroASCIIArt from "@/components/home/HeroASCIIArt";
+import KLangDemo from "@/components/home/KLangDemo";
+import NavSection from "@/components/home/NavSection";
 
 const Home = () => {
   return (

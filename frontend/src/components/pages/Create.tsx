@@ -11,7 +11,7 @@ import Header from "@/components/ui/Header";
 import { Input, TextArea } from "@/components/ui/Input/Input";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
-import { NewListingSchema, NewListingType } from "@/types";
+import { NewListingSchema, NewListingType } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const Create = () => {

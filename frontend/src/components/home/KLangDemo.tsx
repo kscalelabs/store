@@ -66,8 +66,8 @@ speakPhrase("Hello, I am a robot.");`,
             Watch K-Lang in action
           </p>
         </div>
-        <div className="grid gap-6">
-          <div className="flex flex-row space-x-4">
+        <div className="grid gap-6 md:grid-cols-3">
+          <div className="flex flex-row gap-4 col-span-2 md:col-span-1 md:flex-col">
             <Button
               variant={activeAction === "manipulate" ? "default" : "outline"}
               onClick={() => setActiveAction("manipulate")}
@@ -88,10 +88,10 @@ speakPhrase("Hello, I am a robot.");`,
             </Button>
           </div>
           <div
-            className="rounded-lg border bg-card text-card-foreground shadow-sm"
+            className="rounded-lg border bg-card text-card-foreground shadow-sm col-span-2 md:col-span-2"
             data-v0-t="card"
           >
-            <pre className="text-sm text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-gray-900 p-4 rounded-md overflow-x-auto">
+            <pre className="text-sm text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-[#222222] p-4 rounded-md overflow-x-auto">
               <code>{codeSnippets[activeAction]}</code>
             </pre>
           </div>

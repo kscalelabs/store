@@ -19,7 +19,7 @@ import {
 import { buttonVariants } from "@/components/ui/Buttons/Button";
 import { Input } from "@/components/ui/Input/Input";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
-import { cn } from "@/utils";
+import { cn } from "@/lib/utils";
 import { Trash2 as RemoveIcon } from "lucide-react";
 
 type DirectionOptions = "rtl" | "ltr" | undefined;
