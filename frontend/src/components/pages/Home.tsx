@@ -1,4 +1,5 @@
 import BuySection from "@/components/home/BuySection";
+import CommunitySection from "@/components/home/CommunitySection";
 import HeroASCIIArt from "@/components/home/HeroASCIIArt";
 import KLangDemo from "@/components/home/KLangDemo";
 import NavSection from "@/components/home/NavSection";
@@ -12,6 +13,7 @@ const Home = () => {
       <KLangDemo />
       <BuySection />
       <NavSection />
+      <CommunitySection />
     </main>
   );
 };
