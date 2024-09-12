@@ -53,7 +53,7 @@ const Create = () => {
 
   return (
     <RequireAuthentication>
-      <div className="container mx-auto max-w-lg shadow-md rounded-lg bg-white dark:bg-gray-800 dark:text-white">
+      <div className="container mx-auto max-w-lg shadow-md rounded-lg bg-gray-2 text-gray-12">
         <Card className="shadow-md">
           <CardHeader>
             <Header title="Create" />

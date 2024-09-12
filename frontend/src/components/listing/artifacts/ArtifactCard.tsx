@@ -55,16 +55,16 @@ const ArtifactCard: React.FC<Props> = ({ artifact, onDelete, canEdit }) => {
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden flex flex-col relative ${deleting ? "opacity-50" : ""}`}
+      className={`bg-gray-2 shadow-md rounded-lg overflow-hidden flex flex-col relative ${deleting ? "opacity-50" : ""}`}
     >
       {deleting && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-10">
-          <p className="text-white font-semibold">Deleting...</p>
+          <p className="text-gray-12 font-semibold">Deleting...</p>
         </div>
       )}
       <div className="p-4 flex-grow">
         <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg text-gray-800 dark:text-gray-200 font-semibold">
+          <h3 className="text-lg text-gray-11 font-semibold">
             {artifact.name}
           </h3>
           {canEdit && (
@@ -78,12 +78,8 @@ const ArtifactCard: React.FC<Props> = ({ artifact, onDelete, canEdit }) => {
             </button>
           )}
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-          {artifact.description}
-        </p>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-          Created on {formattedDate}
-        </p>
+        <p className="text-sm text-gray-10 mb-2">{artifact.description}</p>
+        <p className="text-xs text-gray-10 mb-4">Created on {formattedDate}</p>
         {artifact.artifact_type === "tgz" && (
           <TgzArtifact artifact={artifact} />
         )}

@@ -49,7 +49,7 @@ const EmailSignup = () => {
 
   return (
     <div className="flex flex-col items-center mt-20">
-      <Card className="w-[400px] shadow-md bg-white dark:bg-gray-800 text-black dark:text-white rounded-lg">
+      <Card className="w-[400px] shadow-md bg-gray-2 text-gray-12 rounded-lg">
         <CardHeader>
           <Header title="Sign Up" />
         </CardHeader>

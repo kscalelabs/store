@@ -167,7 +167,7 @@ const HeroASCIIArt = () => {
     }
 
     const drawGrid = (currentGrid: boolean[][]) => {
-      const backgroundColor = "#000000";
+      const backgroundColor = "#111111";
       const textColor = "#cccccc";
 
       ctx.fillStyle = backgroundColor;
@@ -189,7 +189,7 @@ const HeroASCIIArt = () => {
     };
 
     drawGrid(gridRef.current);
-    intervalRef.current = window.setInterval(updateAndDraw, 25);
+    intervalRef.current = window.setInterval(updateAndDraw, 33);
 
     const observer = new MutationObserver(() => {
       drawGrid(gridRef.current);
@@ -227,14 +227,14 @@ const HeroASCIIArt = () => {
 
   // Separate useEffect for logo expansion
   useEffect(() => {
-    const timer = setTimeout(() => setLogoExpanded(true), 500);
+    const timer = setTimeout(() => setLogoExpanded(true), 250);
     return () => clearTimeout(timer);
   }, []);
 
   const logoContainerStyle: React.CSSProperties = {
     opacity: logoExpanded ? 1 : 0,
-    transition: "opacity 2s ease-in-out",
-    boxShadow: "0 0 50px 10px rgba(255, 255, 255, 0.3)",
+    transition: "opacity 1s ease-in-out",
+    boxShadow: "0 0 32px 8px rgba(255, 255, 255, 0.3)",
   };
 
   // Separate useEffect for expansion
@@ -261,7 +261,7 @@ const HeroASCIIArt = () => {
       <div className="absolute inset-0 flex items-center justify-center m-4">
         <div
           style={logoContainerStyle}
-          className="border-2 border-white max-w-96 rounded-lg hover:border-gray-300"
+          className="border-2 border-gray-12 max-w-96 rounded-lg hover:border-gray-11"
         >
           <img
             src={mainLogo}
@@ -279,7 +279,7 @@ const HeroASCIIArt = () => {
         className="absolute bottom-8 left-0 right-0 flex justify-center items-center text-white animate-bounce cursor-pointer"
         onClick={handleScrollClick}
       >
-        <FaChevronDown size={24} />
+        <FaChevronDown size={32} />
       </div>
     </div>
   );

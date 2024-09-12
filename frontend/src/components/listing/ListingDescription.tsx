@@ -173,7 +173,7 @@ const ListingDescription = (props: Props) => {
                 setNewDescription(e.target.value);
                 setHasChanged(true);
               }}
-              className="border-b border-gray-300 dark:border-gray-700 mb-2"
+              className="border-b border-gray-5 mb-2"
               autoFocus
             />
           )}

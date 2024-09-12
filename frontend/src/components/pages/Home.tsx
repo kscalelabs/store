@@ -5,14 +5,14 @@ import NavSection from "@/components/home/NavSection";
 
 const Home = () => {
   return (
-    <div
-      className={`flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-[#111111]`}
+    <main
+      className={`flex flex-col items-center justify-center min-h-screen bg-gray-1`}
     >
       <HeroASCIIArt />
       <KLangDemo />
       <BuySection />
       <NavSection />
-    </div>
+    </main>
   );
 };
 

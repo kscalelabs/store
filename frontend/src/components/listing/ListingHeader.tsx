@@ -78,7 +78,7 @@ const ListingTitle = (props: Props) => {
                 setNewTitle(e.target.value);
                 setHasChanged(true);
               }}
-              className="border-b border-gray-300 dark:border-gray-700"
+              className="border-b border-gray-5"
               autoFocus
             />
           ) : (
@@ -112,7 +112,7 @@ const NavigationButtons = ({ listing }: Props) => {
       <Button
         onClick={() => navigate("/")}
         variant="outline"
-        className="hover:bg-gray-200 dark:hover:bg-gray-700 bg-opacity-50"
+        className="hover:bg-gray-6 bg-opacity-50"
       >
         <FaHome className="mr-2" />
         <span className="hidden md:inline">Home</span>
@@ -120,7 +120,7 @@ const NavigationButtons = ({ listing }: Props) => {
       <Button
         onClick={() => navigate("/browse")}
         variant="outline"
-        className="hover:bg-gray-200 dark:hover:bg-gray-700 bg-opacity-50"
+        className="hover:bg-gray-6 bg-opacity-50"
       >
         <FaList className="mr-2" />
         <span className="hidden md:inline">Browse</span>
@@ -144,7 +144,7 @@ const ListingHeader = (props: Props) => {
         />
         <div>
           <ListingTitle {...props} />
-          <div className="mt-2 text-sm text-gray-500 flex items-center gap-4 flex-wrap">
+          <div className="mt-2 text-sm text-gray-9 flex items-center gap-4 flex-wrap">
             <div className="flex items-center">
               <FaEye className="mr-1" />
               <span>{formatNumber(listing.views)} views</span>

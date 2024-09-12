@@ -50,7 +50,7 @@ const RenderProfile = (props: RenderProfileProps) => {
   };
 
   return (
-    <div className="container mx-auto max-w-md shadow-md rounded-lg bg-white dark:bg-gray-800 dark:text-white border bg-card text-card-foreground relative">
+    <div className="container mx-auto max-w-md shadow-md rounded-lg bg-gray-2 text-gray-12 border relative">
       <div className="p-6">
         <h1 className="text-3xl font-extrabold mb-6 text-center">Profile</h1>
         {isEditing ? (
@@ -87,7 +87,7 @@ const RenderProfile = (props: RenderProfileProps) => {
                 id="bio"
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                className="mt-1 block w-full rounded-md border-gray-11 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                 rows={4}
               />
             </div>
@@ -118,16 +118,16 @@ const RenderProfile = (props: RenderProfileProps) => {
                 : "No name set"}
             </h2>
             {user.bio ? (
-              <p className="mb-4">{user.bio}</p>
+              <p className="mb-2">{user.bio}</p>
             ) : (
-              <p className="mb-4 text-gray-500 dark:text-gray-400">
+              <p className="mb-2 text-gray-11">
                 No bio set. Edit your profile to add a bio.
               </p>
             )}
-            <p className="mb-2 text-gray-600 dark:text-gray-300">
+            <p className="mb-2 text-gray-12">
               Email: {user.email || "No email set"}
             </p>
-            <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mb-4 text-sm text-gray-11">
               Joined on{" "}
               {user.created_at
                 ? formatJoinDate(user.created_at)
