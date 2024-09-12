@@ -3,9 +3,9 @@ import { useParams } from "react-router-dom";
 
 import ListingGrid from "@/components/listings/ListingGrid";
 import { Button } from "@/components/ui/Buttons/Button";
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Input, TextArea } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";

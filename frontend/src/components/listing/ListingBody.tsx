@@ -4,7 +4,7 @@ import Masonry from "react-masonry-css";
 import ListingChildren from "@/components/listing/ListingChildren";
 import ListingDescription from "@/components/listing/ListingDescription";
 import ListingOnshape from "@/components/listing/onshape/ListingOnshape";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/Card";
 import { components, paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";

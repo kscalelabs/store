@@ -4,14 +4,14 @@ import AuthProvider from "@/components/auth/AuthProvider";
 import LoginForm from "@/components/auth/LoginForm";
 import SignupWithEmail from "@/components/auth/SignupWithEmail";
 import BackButton from "@/components/ui/Buttons/BackButton";
-import Header from "@/components/ui/Header";
-import Spinner from "@/components/ui/Spinner";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
-} from "@/components/ui/card";
+} from "@/components/ui/Card";
+import Header from "@/components/ui/Header";
+import Spinner from "@/components/ui/Spinner";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 

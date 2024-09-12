@@ -3,8 +3,8 @@ import Masonry from "react-masonry-css";
 import { Link } from "react-router-dom";
 
 import ListingGridCard from "@/components/listings/ListingGridCard";
+import { Card } from "@/components/ui/Card";
 import Spinner from "@/components/ui/Spinner";
-import { Card } from "@/components/ui/card";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
