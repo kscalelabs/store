@@ -110,7 +110,7 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
       setApiKeyId(newApiKeyId);
       setCurrentUser(null); // Reset current user to trigger a new fetch
       setIsLoading(true);
-      navigate("/");
+      if (window.location.pathname === "/login") navigate("/");
     },
     [navigate],
   );
