@@ -47,7 +47,7 @@ const PendoInitializer = () => {
   }, []);
 
   useEffect(() => {
-    // Track page views when the route changes
+    // Track page views when the route changes for Pendo
     if (window.pendo) {
       window.pendo.pageLoad(); // Notify Pendo of page transitions
     }
@@ -56,6 +56,27 @@ const PendoInitializer = () => {
   return null; // This component only handles Pendo initialization and page tracking
 };
 
+const SprigInitializer = () => {
+  const location = useLocation(); // Hook to get current route
+
+  useEffect(() => {
+    // Check if Sprig is available
+    const checkSprig = () => {
+      if (window.Sprig && typeof window.Sprig === "function") {
+        console.log("Sprig initialized");
+        // Track the current page view
+        window.Sprig("track", "page_view", { path: location.pathname });
+      } else {
+        console.log("Sprig is not ready yet. Retrying...");
+        setTimeout(checkSprig, 500); // Retry after 500ms if not available
+      }
+    };
+
+    checkSprig();
+  }, [location.pathname]);
+
+  return null; // This component only handles Sprig page tracking
+};
 const App = () => {
   return (
     <Router>
@@ -65,8 +86,9 @@ const App = () => {
             <ScrollToTop>
               <div className="flex flex-col bg-gray-1 text-gray-12 min-h-screen">
                 <Navbar />
-                {/* This component is where Pendo is initialized */}
+                {/* Pendo and Sprig are initialized separately here */}
                 <PendoInitializer />
+                <SprigInitializer />
                 <div className="flex-grow">
                   <Container>
                     <Routes>
