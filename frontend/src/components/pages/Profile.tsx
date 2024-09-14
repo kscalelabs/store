@@ -285,19 +285,12 @@ const Profile = () => {
   }
 
   return user ? (
-    <>
-      <RenderProfile
-        user={user}
-        onUpdateProfile={handleUpdateProfile}
-        canEdit={canEdit}
-        listingIds={listingIds}
-      />
-      {listingIds && (
-        <div className="mt-4">
-          <ListingGrid listingIds={listingIds} />
-        </div>
-      )}
-    </>
+    <RenderProfile
+      user={user}
+      onUpdateProfile={handleUpdateProfile}
+      canEdit={canEdit}
+      listingIds={listingIds}
+    />
   ) : (
     <div className="flex justify-center items-center pt-8">
       <p>User not found</p>
