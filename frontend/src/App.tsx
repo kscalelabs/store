@@ -32,6 +32,9 @@ import { AlertQueue, AlertQueueProvider } from "@/hooks/useAlertQueue";
 import { AuthenticationProvider } from "@/hooks/useAuth";
 
 import DownloadsPage from "./components/pages/Download";
+import TermsOfService from "./components/pages/TermsOfService";
+
+// Import the new Terms of Service component
 
 const PendoInitializer = () => {
   const location = useLocation(); // Hook to get current route
@@ -77,6 +80,7 @@ const SprigInitializer = () => {
 
   return null; // This component only handles Sprig page tracking
 };
+
 const App = () => {
   return (
     <Router>
@@ -103,7 +107,6 @@ const App = () => {
                         path="/file/:artifactId"
                         element={<FileBrowser />}
                       />
-
                       <Route path="/login" element={<Login />} />
                       <Route path="/logout" element={<Logout />} />
                       <Route path="/signup/" element={<Signup />} />
@@ -112,9 +115,12 @@ const App = () => {
                       <Route path="/create" element={<Create />} />
                       <Route path="/item/:id" element={<ListingDetails />} />
                       <Route path="/keys" element={<APIKeys />} />
-
                       <Route path="/profile/:id?" element={<Profile />} />
                       <Route path="/404" element={<NotFound />} />
+
+                      {/* Add the new Terms of Service route */}
+                      <Route path="/tos" element={<TermsOfService />} />
+
                       <Route path="*" element={<NotFoundRedirect />} />
                     </Routes>
                   </Container>
