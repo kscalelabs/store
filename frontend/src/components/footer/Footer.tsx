@@ -72,12 +72,12 @@ const Footer = () => {
             >
               K-Scale Labs
             </a> */}
-            <Link to={"/about"} className="hover:text-gray-5">
+            <Link to={"/about"} className="hover:text-primary-9">
               About
             </Link>
             <a
               href="https://blog.kscale.dev"
-              className="hover:text-gray-5"
+              className="hover:text-primary-9"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -86,10 +86,10 @@ const Footer = () => {
           </div>
           <div className="flex flex-col items-start gap-2 sm:gap-3">
             <h2 className="text-base sm:text-lg font-bold mb-1">Legal</h2>
-            <Link to={"/tos"} className="hover:text-gray-5">
+            <Link to={"/tos"} className="hover:text-primary-9">
               Terms of Service
             </Link>
-            <Link to={"/privacy"} className="hover:text-gray-5">
+            <Link to={"/privacy"} className="hover:text-primary-9">
               Privacy Policy
             </Link>
           </div>
@@ -97,7 +97,7 @@ const Footer = () => {
             <h2 className="text-base sm:text-lg font-bold mb-1">Links</h2>
             <a
               href="https://github.com/kscalelabs/store"
-              className="hover:text-gray-5"
+              className="hover:text-primary-9"
             >
               Website Source Code
             </a>

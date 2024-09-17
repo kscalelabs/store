@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 
 export default function CommunitySection() {
   return (
-    <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-12 rounded-lg">
+    <section className="w-full py-12 md:py-24 bg-gray-12 rounded-lg">
       <div className="md:w-[50%] mx-auto px-4 md:px-6 text-center">
         <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-4 text-gray-1">
           Join Our Community
@@ -15,7 +15,7 @@ export default function CommunitySection() {
           K-Scale developments.
         </p>
         <Button
-          className="inline-flex items-center bg-[#5865F2] hover:bg-[#4752C4] text-white"
+          className="inline-flex items-center bg-[#5865F2] hover:bg-[#4752C4] text-gray-1"
           onClick={() =>
             window.open("https://discord.com/invite/kscale", "_blank")
           }

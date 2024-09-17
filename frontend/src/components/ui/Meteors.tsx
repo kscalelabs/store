@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 interface MeteorsProps {
   number?: number;
 }
-export const Meteors = ({ number = 20 }: MeteorsProps) => {
+export const Meteors = ({ number = 33 }: MeteorsProps) => {
   const [meteorStyles, setMeteorStyles] = useState<Array<React.CSSProperties>>(
     [],
   );
@@ -17,7 +17,7 @@ export const Meteors = ({ number = 20 }: MeteorsProps) => {
       top: -5,
       left: Math.floor(Math.random() * window.innerWidth) + "px",
       animationDelay: Math.random() * 1 + 0.2 + "s",
-      animationDuration: Math.floor(Math.random() * 8 + 2) + "s",
+      animationDuration: Math.floor(Math.random() * 12 + 2) + "s",
     }));
     setMeteorStyles(styles);
   }, [number]);
