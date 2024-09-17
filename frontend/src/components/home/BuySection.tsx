@@ -98,16 +98,16 @@ export default function BuySection() {
                 </div>
               </li>
             </ul>
-            <div className="flex flex-col gap-2 sm:flex-row mt-2">
+            <div className="flex flex-col gap-3 sm:flex-row mt-2">
               <Button
-                className="w-full sm:w-auto inline-flex h-10 items-center justify-center rounded-md text-sm font-medium shadow-md"
+                variant="primary"
+                className="w-full sm:w-auto inline-flex font-medium shadow-md"
                 onClick={() => navigate("/buy")}
-                variant="secondary"
               >
                 Buy Now
               </Button>
               <Button
-                variant="outline"
+                variant="secondary"
                 className="w-full sm:w-auto"
                 onClick={() => navigate("/buy")}
               >
