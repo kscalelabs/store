@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -16,36 +15,8 @@ import {
   MagnifyingGlassIcon,
 } from "@radix-ui/react-icons";
 
-// Custom hook for intersection observer
-function useIntersectionObserver(options = {}) {
-  const [isIntersecting, setIsIntersecting] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      setIsIntersecting(entry.isIntersecting);
-    }, options);
-
-    if (ref.current) {
-      observer.observe(ref.current);
-    }
-
-    return () => {
-      if (ref.current) {
-        observer.unobserve(ref.current);
-      }
-    };
-  }, [options]);
-
-  return { ref, isIntersecting }; // Return an object instead of an array
-}
-
 export default function NavSection() {
   const navigate = useNavigate();
-  const { ref, isIntersecting } = useIntersectionObserver({
-    threshold: 0.1,
-    triggerOnce: true,
-  });
 
   return (
     <section className="w-full py-12 border-t border-b">
@@ -58,12 +29,7 @@ export default function NavSection() {
           future of robotics.
         </p>
       </div>
-      <div
-        ref={ref}
-        className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 transition-opacity duration-1000 ${
-          isIntersecting ? "opacity-100" : "opacity-0"
-        }`}
-      >
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           {
             title: "K-Lang",
