@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import AuthProvider from "@/components/auth/AuthProvider";
 import LoginForm from "@/components/auth/LoginForm";
 import SignupWithEmail from "@/components/auth/SignupWithEmail";
-import BackButton from "@/components/ui/Buttons/BackButton";
 import {
   Card,
   CardContent,
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/Card";
 import Header from "@/components/ui/Header";
 import Spinner from "@/components/ui/Spinner";
+import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 
@@ -82,14 +82,15 @@ export const AuthBlockInner: React.FC<{ initialSignup?: boolean }> = ({
         <AuthProvider />
       </CardFooter>
       <CardFooter>
-        <BackButton
+        <Button
           onClick={() => setIsSignup((s) => !s)}
-          label={
-            isSignup
-              ? "Already have an account? Login here."
-              : "Don't have an account? Create a new account."
-          }
-        />
+          variant="link"
+          className="font-normal w-full"
+        >
+          {isSignup
+            ? "Already have an account? Login here."
+            : "Don't have an account? Create a new account."}
+        </Button>
       </CardFooter>
     </>
   );

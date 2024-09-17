@@ -55,7 +55,7 @@ const RenderProfile = (props: RenderProfileProps) => {
     <div className="space-y-8 mb-12">
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader className="flex flex-col items-center space-y-4">
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-3xl font-bold text-primary-9">
             {user.first_name || user.last_name
               ? `${user.first_name || ""} ${user.last_name || ""}`
               : "No name set"}
@@ -123,7 +123,7 @@ const RenderProfile = (props: RenderProfileProps) => {
                 <div className="mt-4 flex justify-center space-x-2">
                   <Button
                     type="button"
-                    variant="secondary"
+                    variant="outline"
                     onClick={() => setIsEditing(false)}
                   >
                     Cancel
