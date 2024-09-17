@@ -1,16 +1,12 @@
-import { useEffect } from "react";
-import {
-  Route,
-  BrowserRouter as Router,
-  Routes,
-  useLocation,
-} from "react-router-dom";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
 import "@/App.css";
 
 import Container from "@/components/Container";
 import NotFoundRedirect from "@/components/NotFoundRedirect";
+import PendoInitializer from "@/components/PendoInitializer";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import SprigInitializer from "@/components/SprigInitializer";
 import Footer from "@/components/footer/Footer";
 import Navbar from "@/components/nav/Navbar";
 import APIKeys from "@/components/pages/APIKeys";
@@ -33,54 +29,8 @@ import { AlertQueue, AlertQueueProvider } from "@/hooks/useAlertQueue";
 import { AuthenticationProvider } from "@/hooks/useAuth";
 
 import DownloadsPage from "./components/pages/Download";
+import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import TermsOfService from "./components/pages/TermsOfService";
-
-// Import the new Terms of Service component
-
-const PendoInitializer = () => {
-  const location = useLocation(); // Hook to get current route
-
-  useEffect(() => {
-    if (window.pendo) {
-      window.pendo.initialize({
-        visitor: { id: "" }, // Leave empty for anonymous tracking
-        account: { id: "" },
-      });
-      console.log("Pendo initialized");
-    }
-  }, []);
-
-  useEffect(() => {
-    // Track page views when the route changes for Pendo
-    if (window.pendo) {
-      window.pendo.pageLoad(); // Notify Pendo of page transitions
-    }
-  }, [location.pathname]);
-
-  return null; // This component only handles Pendo initialization and page tracking
-};
-
-const SprigInitializer = () => {
-  const location = useLocation(); // Hook to get current route
-
-  useEffect(() => {
-    // Check if Sprig is available
-    const checkSprig = () => {
-      if (window.Sprig && typeof window.Sprig === "function") {
-        console.log("Sprig initialized");
-        // Track the current page view
-        window.Sprig("track", "page_view", { path: location.pathname });
-      } else {
-        console.log("Sprig is not ready yet. Retrying...");
-        setTimeout(checkSprig, 500); // Retry after 500ms if not available
-      }
-    };
-
-    checkSprig();
-  }, [location.pathname]);
-
-  return null; // This component only handles Sprig page tracking
-};
 
 const App = () => {
   return (
@@ -91,7 +41,6 @@ const App = () => {
             <ScrollToTop>
               <div className="flex flex-col bg-gray-1 text-gray-12 min-h-screen">
                 <Navbar />
-                {/* Pendo and Sprig are initialized separately here */}
                 <PendoInitializer />
                 <SprigInitializer />
                 <div className="flex-grow">
@@ -122,6 +71,7 @@ const App = () => {
 
                       {/* Add the new Terms of Service route */}
                       <Route path="/tos" element={<TermsOfService />} />
+                      <Route path="/privacy" element={<PrivacyPolicy />} />
 
                       <Route path="*" element={<NotFoundRedirect />} />
                     </Routes>
