@@ -19,9 +19,9 @@ export default function NavSection() {
   const navigate = useNavigate();
 
   return (
-    <section className="w-full py-12 border-t border-b">
+    <section className="w-full py-12 sm:py-24 border-t-2 border-b-2 border-primary-10">
       <div className="flex flex-col justify-center mb-8 text-center">
-        <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-2 text-gray-12">
+        <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-2 bg-gradient-to-r from-primary-6 to-primary-9 text-transparent bg-clip-text">
           The K-Scale Ecosystem
         </h2>
         <p className="text-lg text-gray-11">
@@ -63,18 +63,18 @@ export default function NavSection() {
         ].map((item, index) => (
           <Card
             key={index}
-            className="cursor-pointer flex flex-col h-full transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg bg-gradient-to-br from-gray-12 to-gray-12/90"
+            className="cursor-pointer flex flex-col h-full transition-all duration-300 ease-in-out hover:scale-[1.03] hover:shadow-lg bg-gradient-to-br from-gray-12 to-gray-12/95"
             onClick={() => navigate(item.path)}
           >
             <CardHeader>
-              <CardTitle className="text-gray-1">{item.title}</CardTitle>
+              <CardTitle className="text-gray-2">{item.title}</CardTitle>
               <CardDescription className="text-gray-7">
                 {item.description}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex-grow flex flex-col justify-end">
-              <item.icon className="w-12 h-12 mb-4 text-gray-7" />
-              <div className="inline-flex items-center text-sm font-medium text-gray-1">
+              <item.icon className="w-12 h-12 mb-4 text-primary-9" />
+              <div className="inline-flex items-center text-sm font-medium text-primary-1">
                 {item.buttonText}
                 <ChevronRightIcon className="ml-1 h-4 w-4" />
               </div>

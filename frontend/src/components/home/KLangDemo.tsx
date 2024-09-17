@@ -34,7 +34,7 @@ speakPhrase("Hello, I am a robot.");`,
     >
       <div className="space-y-4">
         <div className="flex flex-col items-center space-y-4 text-center">
-          <div className="w-full max-w-4xl aspect-video overflow-hidden rounded-xl border bg-gray-7">
+          <div className="w-full max-w-4xl aspect-video overflow-hidden rounded-xl border bg-gray-11">
             <video
               className="w-full h-full object-cover"
               autoPlay
@@ -51,17 +51,19 @@ speakPhrase("Hello, I am a robot.");`,
       <div className="mt-6">
         <div className="flex flex-col gap-2 mb-6 text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-gray-1">
-            Watch <span className="font-black text-orange-500">K-Lang</span> In
-            Action
+            Watch{" "}
+            <span className="font-black bg-gradient-to-r from-primary-9 to-primary-10 text-transparent bg-clip-text">
+              K-Lang
+            </span>{" "}
+            In Action
           </h2>
         </div>
         <div className="grid gap-6 sm:grid-cols-4">
-          <div className="flex flex-row gap-4 sm:flex-col sm:col-span-1">
+          <div className="flex flex-row gap-2 sm:gap-4 sm:flex-col sm:col-span-1">
             <Button
               variant={activeAction === "manipulate" ? "selected" : "secondary"}
               onClick={() => setActiveAction("manipulate")}
               className="w-full font-semibold tracking-wide"
-              size="sm"
             >
               Manipulation
             </Button>
@@ -69,7 +71,6 @@ speakPhrase("Hello, I am a robot.");`,
               variant={activeAction === "turn" ? "selected" : "secondary"}
               onClick={() => setActiveAction("turn")}
               className="w-full font-semibold tracking-wide"
-              size="sm"
             >
               Turning
             </Button>
@@ -77,7 +78,6 @@ speakPhrase("Hello, I am a robot.");`,
               variant={activeAction === "talk" ? "selected" : "secondary"}
               onClick={() => setActiveAction("talk")}
               className="w-full font-semibold tracking-wide"
-              size="sm"
             >
               Talking
             </Button>

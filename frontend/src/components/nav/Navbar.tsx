@@ -27,7 +27,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between py-3 mx-4 sm:mx-6 md:mx-12 lg:mx-20">
           <Link
             to="/"
-            className="flex items-center space-x-2 bg-gray-12 p-3 rounded-lg hover:bg-gray-12/80 transition-all duration-300"
+            className="flex items-center space-x-2 bg-gray-12 p-3 rounded-lg hover:bg-primary-12/80 transition-all duration-300"
           >
             <Logo />
           </Link>
@@ -38,7 +38,7 @@ const Navbar = () => {
                   <a
                     key={item.name}
                     href={item.path}
-                    className={`px-2 xl:px-3 py-2 rounded-md text-sm font-semibold tracking-wide xl:tracking-widest text-gray-300 hover:bg-gray-1 hover:text-gray-12`}
+                    className={`px-2 xl:px-3 py-2 rounded-md text-sm font-semibold tracking-wide xl:tracking-widest text-gray-1 hover:bg-primary-9`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
