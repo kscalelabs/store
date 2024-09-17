@@ -69,7 +69,7 @@ const SidebarItem = ({
 const SidebarSeparator = () => {
   return (
     <li className="py-1">
-      <div className="border-t border-gray-3" />
+      <div className="border-t border-gray-12" />
     </li>
   );
 };
@@ -87,7 +87,7 @@ const Sidebar = ({ show, onClose }: Props) => {
     <div>
       {show ? (
         <div
-          className="fixed top-0 right-0 z-40 w-full sm:w-64 h-screen p-4 overflow-y-auto transition-transform bg-gray-3"
+          className="fixed top-0 right-0 z-40 w-full h-full p-4 overflow-y-auto transition-transform bg-gray-1"
           tabIndex={-1}
         >
           <div className="flex justify-between items-center">

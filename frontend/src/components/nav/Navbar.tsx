@@ -1,53 +1,108 @@
 import { useState } from "react";
-import { isMobile } from "react-device-detect";
-import { FaUserCircle } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { FaBars } from "react-icons/fa";
+import { Link, useLocation } from "react-router-dom";
 
+import Logo from "@/components/Logo";
 import Sidebar from "@/components/nav/Sidebar";
-
-const ICON_SIZE = isMobile ? 16 : 20;
+import { useAuthentication } from "@/hooks/useAuth";
 
 const Navbar = () => {
+  const { isAuthenticated } = useAuthentication();
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
-  const navigate = useNavigate();
+  const location = useLocation();
+
+  const navItems = [
+    { name: "K-Lang", path: "/k-lang", isExternal: false },
+    { name: "Buy Robot", path: "/buy", isExternal: false },
+    { name: "Forum", path: "https://forum.kscale.dev/", isExternal: true },
+    { name: "Docs", path: "https://docs.kscale.dev/", isExternal: true },
+    { name: "Blog", path: "https://blog.kscale.dev/", isExternal: true },
+  ];
 
   return (
     <>
-      <nav className="fixed w-full z-30 top-0 start-0 bg-gray-1/90 backdrop-blur-sm">
-        <div className="flex flex-wrap items-center justify-between py-4 mx-4 sm:mx-8">
-          <a
-            className="flex items-center active cursor-pointer"
-            onClick={() => navigate("/")}
+      <nav className="fixed w-full z-30 top-0 start-0 bg-gray-1/30 backdrop-blur-lg">
+        <div className="flex items-center justify-between py-3 mx-4 sm:mx-6 md:mx-12 lg:mx-20">
+          <Link
+            to="/"
+            className="flex items-center space-x-2 bg-gray-12 p-3 rounded-lg hover:bg-gray-12/80 transition-all duration-300"
           >
-            <span className="text-lg text-gray-12 font-bold font-sans">
-              K-Scale Labs
-            </span>
-          </a>
-          <div className="flex items-center space-x-4">
-            <div className="hidden md:flex space-x-4">
-              <a
-                className="text-gray-12 hover:text-gray-11 cursor-pointer"
-                onClick={() => navigate("/k-lang")}
-              >
-                K-Lang
-              </a>
-              <a
-                className="text-gray-12 hover:text-gray-11 cursor-pointer"
-                onClick={() => navigate("/downloads")}
-              >
-                Downloads
-              </a>
-              <a
-                className="text-gray-12 hover:text-gray-11 cursor-pointer"
-                onClick={() => navigate("/browse")}
-              >
-                Browse Builds
-              </a>
+            <Logo />
+          </Link>
+          <div className="hidden md:flex items-center flex-grow justify-between ml-4">
+            <div className="flex space-x-1 bg-gray-12 rounded-lg p-2 flex-grow justify-center">
+              {navItems.map((item) =>
+                item.isExternal ? (
+                  <a
+                    key={item.name}
+                    href={item.path}
+                    className={`px-2 xl:px-3 py-2 rounded-md text-sm font-semibold tracking-widest text-gray-300 hover:bg-gray-1 hover:text-gray-12`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {item.name}
+                  </a>
+                ) : (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    className={`px-2 xl:px-3 py-2 rounded-md text-sm font-semibold tracking-widest ${
+                      location.pathname === item.path
+                        ? "bg-gray-11 text-gray-1"
+                        : "text-gray-300 hover:bg-gray-1 hover:text-gray-12"
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                ),
+              )}
             </div>
-            <button onClick={() => setShowSidebar(true)} className="pl-4">
-              <FaUserCircle size={ICON_SIZE} />
-            </button>
+            <div className="flex items-center space-x-2 text-gray-1 bg-gray-12 rounded-lg p-2 ml-4 text-sm font-semibold tracking-widest">
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    to="/account"
+                    className={`px-3 py-2 rounded-md hover:bg-gray-1 hover:text-gray-12 ${
+                      location.pathname === "/account"
+                        ? "bg-gray-11 text-gray-1"
+                        : ""
+                    }`}
+                  >
+                    Account
+                  </Link>
+                  <div className="h-6 w-px bg-gray-1" />
+                  <Link
+                    to="/logout"
+                    className="px-3 py-2 rounded-md hover:bg-blue-500"
+                  >
+                    Logout
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="px-3 py-2 rounded-md hover:bg-gray-1 hover:text-gray-12"
+                  >
+                    Sign In
+                  </Link>
+                  <div className="h-6 w-px bg-gray-1" />
+                  <Link
+                    to="/signup"
+                    className="px-3 py-2 rounded-md hover:bg-gray-1 hover:text-gray-12"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
+          <button
+            onClick={() => setShowSidebar(true)}
+            className="md:hidden text-gray-300 hover:bg-gray-700 bg-gray-12 hover:text-white p-4 rounded-md text-sm font-medium"
+          >
+            <FaBars size={20} />
+          </button>
         </div>
       </nav>
       <Sidebar show={showSidebar} onClose={() => setShowSidebar(false)} />

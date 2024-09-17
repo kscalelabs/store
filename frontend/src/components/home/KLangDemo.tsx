@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Button } from "@/components/ui/Buttons/Button";
+import { Button } from "@/components/ui/button";
 
 export default function KLangDemo() {
   const [activeAction, setActiveAction] =
@@ -29,21 +29,12 @@ speakPhrase("Hello, I am a robot.");`,
 
   return (
     <section
-      className="w-full py-12 md:py-20 lg:py-28 xl:py-36 bg-gray-2"
+      className="w-full py-8 bg-gray-12 rounded-lg mx-12 px-4"
       id="first-section"
     >
-      <div className="px-4 md:px-6">
+      <div className="space-y-4">
         <div className="flex flex-col items-center space-y-4 text-center">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none text-gray-12">
-              Welcome to the Future of Robotics
-            </h1>
-            <p className="mx-auto max-w-[800px] text-gray-11 md:text-xl">
-              Program your robot with K-Lang, our open source humanoid
-              programming language.
-            </p>
-          </div>
-          <div className="w-full max-w-4xl aspect-video overflow-hidden rounded-xl border bg-gray-1">
+          <div className="w-full max-w-4xl aspect-video overflow-hidden rounded-xl border bg-gray-7">
             <video
               className="w-full h-full object-cover"
               autoPlay
@@ -57,39 +48,41 @@ speakPhrase("Hello, I am a robot.");`,
           </div>
         </div>
       </div>
-      <div className="md:w-[75%] mx-auto px-4 md:px-6 mt-6">
-        <div className="flex flex-col gap-2 mb-6">
-          <h2 className="text-3xl font-bold tracking-tight md:text-4xl text-gray-12">
-            K-Lang
+      <div className="mt-6">
+        <div className="flex flex-col gap-2 mb-6 text-center">
+          <h2 className="text-4xl font-bold tracking-tight md:text-5xl text-gray-1">
+            Watch K-Lang In Action
           </h2>
-          <p className="text-gray-11 md:text-lg">Watch K-Lang in action</p>
         </div>
         <div className="grid gap-6 md:grid-cols-4">
           <div className="flex flex-row gap-4 col-span-2 md:col-span-1 md:flex-col">
             <Button
-              variant={activeAction === "manipulate" ? "default" : "outline"}
+              variant={activeAction === "manipulate" ? "selected" : "secondary"}
               onClick={() => setActiveAction("manipulate")}
+              className="w-full font-semibold tracking-wide"
+              size="lg"
             >
               Manipulation
             </Button>
             <Button
-              variant={activeAction === "turn" ? "default" : "outline"}
+              variant={activeAction === "turn" ? "selected" : "secondary"}
               onClick={() => setActiveAction("turn")}
+              className="w-full font-semibold tracking-wide"
+              size="lg"
             >
               Turning
             </Button>
             <Button
-              variant={activeAction === "talk" ? "default" : "outline"}
+              variant={activeAction === "talk" ? "selected" : "secondary"}
               onClick={() => setActiveAction("talk")}
+              className="w-full font-semibold tracking-wide"
+              size="lg"
             >
               Talking
             </Button>
           </div>
-          <div
-            className="rounded-lg border bg-gray-2 text-gray-12 shadow-sm col-span-2 md:col-span-3"
-            data-v0-t="card"
-          >
-            <pre className="text-sm text-gray-11 bg-gray-3 p-4 rounded-md overflow-x-auto">
+          <div className="rounded-lg border shadow-sm col-span-2 md:col-span-3 overflow-hidden">
+            <pre className="text-xs sm:text-sm text-gray-12 bg-gray-3 p-4 rounded-md overflow-x-auto whitespace-pre-wrap break-words">
               <code>{codeSnippets[activeAction]}</code>
             </pre>
           </div>

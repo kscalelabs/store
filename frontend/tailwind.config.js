@@ -31,54 +31,54 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       colors: {
-        // Radix UI Gray Colorscale 1-12 (dark)
+        // Radix UI Gray Colorscale 1-12 (light)
         gray: {
-          1: "#111111",
-          2: "#191919",
-          3: "#222222",
-          4: "#2A2A2A",
-          5: "#313131",
-          6: "#3A3A3A",
-          7: "#484848",
-          8: "#606060",
-          9: "#6E6E6E",
-          10: "#7B7B7B",
-          11: "#B4B4B4",
-          12: "#EEEEEE",
+          1: "#fcfcfc",
+          2: "#f9f9f9",
+          3: "#f0f0f0",
+          4: "#e8e8e8",
+          5: "#e0e0e0",
+          6: "#d9d9d9",
+          7: "#cecece",
+          8: "#bbbbbb",
+          9: "#8d8d8d",
+          10: "#838383",
+          11: "#646464",
+          12: "#202020",
         },
-        background: "#111111", // Dark background
-        foreground: "#EEEEEE", // Light text
+        background: "var(--gray1)",
+        foreground: "var(--gray12)",
         card: {
-          DEFAULT: "#191919",
-          foreground: "#EEEEEE",
+          DEFAULT: "var(--gray2)",
+          foreground: "var(--gray12)",
         },
         popover: {
-          DEFAULT: "#191919",
-          foreground: "#EEEEEE",
+          DEFAULT: "var(--gray2)",
+          foreground: "var(--gray11)",
         },
         primary: {
-          DEFAULT: "#EEEEEE",
-          foreground: "#191919",
+          DEFAULT: "var(--gray12)",
+          foreground: "var(--gray1)",
         },
         secondary: {
-          DEFAULT: "#2A2A2A",
-          foreground: "#EEEEEE",
+          DEFAULT: "var(--gray4)",
+          foreground: "var(--gray12)",
         },
         muted: {
-          DEFAULT: "#2A2A2A",
-          foreground: "#A1A1AA",
+          DEFAULT: "var(--gray3)",
+          foreground: "var(--gray11)",
         },
         accent: {
-          DEFAULT: "#2A2A2A",
-          foreground: "#EEEEEE",
+          DEFAULT: "var(--gray4)",
+          foreground: "var(--gray12)",
         },
         destructive: {
           DEFAULT: "#7F1D1D",
-          foreground: "#EEEEEE",
+          foreground: "var(--gray1)",
         },
-        border: "#2A2A2A",
-        input: "#2A2A2A",
-        ring: "#D4D4D8",
+        border: "var(--gray6)",
+        input: "var(--gray2)",
+        ring: "var(--gray7)",
         chart: {
           1: "rgb(59, 130, 246)",
           2: "rgb(16, 185, 129)",
@@ -90,4 +90,9 @@ export default {
     },
   },
   plugins: [require("tailwindcss-animate")],
+  base: {
+    "html, body": {
+      color: "var(--gray1)",
+    },
+  },
 };
