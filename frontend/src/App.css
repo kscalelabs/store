@@ -67,4 +67,7 @@ p.card-text {
   body {
     @apply bg-background text-foreground;
   }
+  body {
+    @apply text-gray-1;
+  }
 }

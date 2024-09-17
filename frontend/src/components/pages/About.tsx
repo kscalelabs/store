@@ -1,31 +1,52 @@
+import PageHeader from "../ui/PageHeader";
+
 const About = () => {
   return (
-    <section>
-      <div className="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16">
-        <h1 className="mb-8 text-4xl font-extrabold tracking-tight leading-none md:text-5xl lg:text-6xl">
-          About
-        </h1>
-        <p className="mb-4 text-lg font-normal lg:text-xl sm:px-16 lg:px-48">
-          This is a simple store to help make it easy to buy, sell and build
-          robots.
-        </p>
-        <p className="text-lg font-normal lg:text-xl sm:px-16 lg:px-48">
-          It is maintained by{" "}
-          <a
-            href="https://kscale.dev"
-            className="text-blue-700 underline hover:text-blue-900"
-          >
-            K-Scale Labs
-          </a>{" "}
-          with open-source code freely available on{" "}
-          <a
-            href="https://github.com/kscalelabs/store"
-            className="text-blue-700 underline"
-          >
-            Github
-          </a>
-          .
-        </p>
+    <section className="my-12">
+      <PageHeader
+        title="About Us"
+        subheading="Simplifying the world of robotics for everyone"
+      />
+
+      <div className="text-center bg-gray-12 text-gray-1 rounded-lg p-8">
+        <div className="max-w-3xl mx-auto">
+          <p className=" mb-6 text-lg">
+            We&apos;re on a mission to make it easy for anyone to buy, sell, and
+            build robots. Our platform connects enthusiasts, professionals, and
+            businesses in the exciting world of robotics.
+          </p>
+
+          <p className="mb-8 text-lg">
+            Whether you&apos;re looking for cutting-edge components or
+            ready-to-use robots, we&apos;ve got you covered with our extensive
+            marketplace and supportive community.
+          </p>
+
+          <div className="text-lg">
+            <p className="mb-2">
+              Maintained with ❤️ by{" "}
+              <a
+                href="https://kscale.dev"
+                className="text-blue-600 hover:text-blue-800 underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                K-Scale Labs
+              </a>
+            </p>
+            <p>
+              Open-source code available on{" "}
+              <a
+                href="https://github.com/kscalelabs/store"
+                className="text-blue-600 hover:text-blue-800 underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub
+              </a>
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );

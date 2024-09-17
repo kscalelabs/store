@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 
 export default function CommunitySection() {
   return (
-    <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-1">
+    <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-12 rounded-lg">
       <div className="md:w-[50%] mx-auto px-4 md:px-6 text-center">
-        <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-4 text-gray-12">
+        <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-4 text-gray-1">
           Join Our Community
         </h2>
-        <p className="text-lg text-gray-11 mb-8">
+        <p className="text-sm md:text-lg text-gray-7 mb-8">
           Connect with fellow robot enthusiasts, industry experts, and
           researchers. Share ideas and projects, and stay updated on the latest
           K-Scale developments.

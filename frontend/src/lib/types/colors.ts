@@ -1,4 +1,4 @@
 // External brand colors (used in social links)
 export const LinkedinPrimaryColor = "#0a66c2";
 export const GithubPrimaryColor = "#333";
-export const DiscordPrimaryColor = "#7289da";
+export const DiscordPrimaryColor = "#5865F2";

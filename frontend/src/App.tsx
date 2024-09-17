@@ -15,6 +15,7 @@ import Footer from "@/components/footer/Footer";
 import Navbar from "@/components/nav/Navbar";
 import APIKeys from "@/components/pages/APIKeys";
 import About from "@/components/pages/About";
+import Account from "@/components/pages/Account";
 import Browse from "@/components/pages/Browse";
 import BuyPage from "@/components/pages/BuyPage";
 import Create from "@/components/pages/Create";
@@ -112,6 +113,7 @@ const App = () => {
                       <Route path="/signup/" element={<Signup />} />
                       <Route path="/signup/:id" element={<EmailSignup />} />
 
+                      <Route path="/account" element={<Account />} />
                       <Route path="/create" element={<Create />} />
                       <Route path="/item/:id" element={<ListingDetails />} />
                       <Route path="/keys" element={<APIKeys />} />
