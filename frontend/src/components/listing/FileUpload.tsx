@@ -16,8 +16,8 @@ import {
   useDropzone,
 } from "react-dropzone";
 
-import { buttonVariants } from "@/components/ui/Buttons/Button";
 import { Input } from "@/components/ui/Input/Input";
+import { buttonVariants } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { cn } from "@/lib/utils";
 import { Trash2 as RemoveIcon } from "lucide-react";

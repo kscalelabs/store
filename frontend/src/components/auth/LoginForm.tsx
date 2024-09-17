@@ -1,9 +1,9 @@
 import { SubmitHandler, useForm } from "react-hook-form";
 
-import { Button } from "@/components/ui/Buttons/Button";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import { Input } from "@/components/ui/Input/Input";
 import PasswordInput from "@/components/ui/Input/PasswordInput";
+import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { LoginSchema, LoginType } from "@/lib/types";

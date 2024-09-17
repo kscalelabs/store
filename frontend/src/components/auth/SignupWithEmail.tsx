@@ -1,8 +1,8 @@
 import { useForm } from "react-hook-form";
 
-import { Button } from "@/components/ui/Buttons/Button";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import { Input } from "@/components/ui/Input/Input";
+import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { EmailSignupSchema, EmailSignupType } from "@/lib/types";

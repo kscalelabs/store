@@ -1,7 +1,7 @@
 import { Suspense, useRef, useState } from "react";
 
 import Loader from "@/components/listing/Loader";
-import { Button } from "@/components/ui/Buttons/Button";
+import { Button } from "@/components/ui/button";
 import { Center, OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import { Canvas, useLoader } from "@react-three/fiber";
 import { cx } from "class-variance-authority";

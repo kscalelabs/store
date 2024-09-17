@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import ListingGrid from "@/components/listings/ListingGrid";
-import { Button } from "@/components/ui/Buttons/Button";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Input, TextArea } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
+import { Button } from "@/components/ui/button";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
@@ -52,7 +52,7 @@ const RenderProfile = (props: RenderProfileProps) => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 mb-12">
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader className="flex flex-col items-center space-y-4">
           <h1 className="text-3xl font-bold">

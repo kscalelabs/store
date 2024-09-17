@@ -9,7 +9,7 @@ import {
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 
-import { Button } from "@/components/ui/Buttons/Button";
+import { Button } from "@/components/ui/button";
 import { components } from "@/gen/api";
 import { cx } from "class-variance-authority";
 

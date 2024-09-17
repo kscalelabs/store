@@ -32,6 +32,7 @@ export default {
       },
       colors: {
         // Radix UI Gray Colorscale 1-12 (light)
+        // compliments international orange primary color palette
         gray: {
           1: "#fcfcfd",
           2: "#f9f9fb",
@@ -46,6 +47,23 @@ export default {
           11: "#62636c",
           12: "#1e1f24",
         },
+        // Radix UI International Orange Colorscale 1-12 (light)
+        primary: {
+          1: "#fefcfb",
+          2: "#fff5f1",
+          3: "#ffe8de",
+          4: "#ffd7c7",
+          5: "#ffc9b4",
+          6: "#ffb89f",
+          7: "#ffa284",
+          8: "#fb8765",
+          9: "#ff4f00",
+          10: "#f14000",
+          11: "#de3500",
+          12: "#5d291a",
+          DEFAULT: "#ff4f00",
+          foreground: "#5d291a",
+        },
         background: "var(--gray1)",
         foreground: "var(--gray12)",
         card: {
@@ -55,22 +73,6 @@ export default {
         popover: {
           DEFAULT: "var(--gray2)",
           foreground: "var(--gray11)",
-        },
-        primary: {
-          1: "#fefcfb",
-          2: "#fff5f0",
-          3: "#ffe8de",
-          4: "#ffd7c6",
-          5: "#ffc9b4",
-          6: "#ffb89f",
-          7: "#ffa284",
-          8: "#fa8865",
-          9: "#ff5000",
-          10: "#f14100",
-          11: "#de3600",
-          12: "#5c291a",
-          DEFAULT: "#ff5000",
-          foreground: "#5c291a",
         },
         secondary: {
           DEFAULT: "var(--gray4)",

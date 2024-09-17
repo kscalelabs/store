@@ -7,7 +7,7 @@ import {
   FaTimesCircle,
 } from "react-icons/fa";
 
-import { Button } from "@/components/ui/Buttons/Button";
+import { Button } from "@/components/ui/button";
 
 export type ToastKind = "success" | "error" | "warning" | "info";
 

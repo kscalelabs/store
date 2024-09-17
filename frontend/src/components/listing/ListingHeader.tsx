@@ -3,10 +3,10 @@ import { FaCheck, FaEye, FaHome, FaList, FaPen } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 import ListingVoteButtons from "@/components/listing/ListingVoteButtons";
-import { Button } from "@/components/ui/Buttons/Button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
+import { Button } from "@/components/ui/button";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";

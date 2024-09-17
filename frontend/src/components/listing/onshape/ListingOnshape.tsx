@@ -9,9 +9,9 @@ import {
 } from "react-icons/fa";
 
 import ListingOnshapeUpdate from "@/components/listing/onshape/ListingOnshapeUpdate";
-import { Button } from "@/components/ui/Buttons/Button";
 import { Input } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
+import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 
