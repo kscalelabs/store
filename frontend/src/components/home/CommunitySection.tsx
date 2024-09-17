@@ -11,7 +11,7 @@ export default function CommunitySection() {
         </h2>
         <p className="text-sm md:text-lg text-gray-7 mb-8">
           Connect with fellow robot enthusiasts, industry experts, and
-          researchers. Share ideas and projects, and stay updated on the latest
+          researchers. Share projects and ideas, and stay updated on the latest
           K-Scale developments.
         </p>
         <Button

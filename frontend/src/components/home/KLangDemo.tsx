@@ -29,7 +29,7 @@ speakPhrase("Hello, I am a robot.");`,
 
   return (
     <section
-      className="w-full py-8 bg-gray-12 rounded-lg mx-12 px-4"
+      className="w-full py-8 bg-gray-12 rounded-lg px-4"
       id="first-section"
     >
       <div className="space-y-4">
@@ -50,18 +50,18 @@ speakPhrase("Hello, I am a robot.");`,
       </div>
       <div className="mt-6">
         <div className="flex flex-col gap-2 mb-6 text-center">
-          <h2 className="text-4xl font-bold tracking-tight md:text-5xl text-gray-1">
-            Watch <span className="font-black text-orange-400">K-Lang</span> In
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-gray-1">
+            Watch <span className="font-black text-orange-500">K-Lang</span> In
             Action
           </h2>
         </div>
-        <div className="grid gap-6 md:grid-cols-4">
-          <div className="flex flex-row gap-4 col-span-2 md:col-span-1 md:flex-col">
+        <div className="grid gap-6 sm:grid-cols-4">
+          <div className="flex flex-row gap-4 sm:flex-col sm:col-span-1">
             <Button
               variant={activeAction === "manipulate" ? "selected" : "secondary"}
               onClick={() => setActiveAction("manipulate")}
               className="w-full font-semibold tracking-wide"
-              size="lg"
+              size="sm"
             >
               Manipulation
             </Button>
@@ -69,7 +69,7 @@ speakPhrase("Hello, I am a robot.");`,
               variant={activeAction === "turn" ? "selected" : "secondary"}
               onClick={() => setActiveAction("turn")}
               className="w-full font-semibold tracking-wide"
-              size="lg"
+              size="sm"
             >
               Turning
             </Button>
@@ -77,12 +77,12 @@ speakPhrase("Hello, I am a robot.");`,
               variant={activeAction === "talk" ? "selected" : "secondary"}
               onClick={() => setActiveAction("talk")}
               className="w-full font-semibold tracking-wide"
-              size="lg"
+              size="sm"
             >
               Talking
             </Button>
           </div>
-          <div className="rounded-lg border shadow-sm col-span-2 md:col-span-3 overflow-hidden">
+          <div className="rounded-lg border shadow-sm sm:col-span-3 overflow-hidden">
             <pre className="text-xs sm:text-sm text-gray-12 bg-gray-3 p-4 rounded-md overflow-x-auto whitespace-pre-wrap break-words">
               <code>{codeSnippets[activeAction]}</code>
             </pre>

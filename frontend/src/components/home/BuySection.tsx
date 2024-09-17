@@ -1,6 +1,7 @@
 import { useInView } from "react-intersection-observer";
 import { useNavigate } from "react-router-dom";
 
+import { Image } from "@/components/Image";
 import { Button } from "@/components/ui/button";
 import KScale_Garage from "@/images/KScale_Garage.jpeg";
 import { motion } from "framer-motion";
@@ -54,14 +55,19 @@ export default function BuySection() {
           </div>
         </motion.div>
         <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-2 lg:gap-12">
-          <motion.img
+          <motion.div
             variants={itemVariants}
-            alt="Robot"
             className="mx-auto w-full max-w-md aspect-video overflow-hidden rounded-xl object-cover object-center lg:order-last"
-            height="310"
-            src={KScale_Garage}
-            width="550"
-          />
+          >
+            <Image
+              src={KScale_Garage}
+              alt="Robot"
+              width={550}
+              height={310}
+              className="object-cover object-center"
+              quality={85}
+            />
+          </motion.div>
           <motion.div
             variants={itemVariants}
             className="flex flex-col justify-center space-y-4"

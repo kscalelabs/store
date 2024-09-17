@@ -3,9 +3,15 @@ import { FaTimes } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import ListingGrid from "@/components/listings/ListingGrid";
-import { Button } from "@/components/ui/Buttons/Button";
 import { Input } from "@/components/ui/Input/Input";
-import { Select } from "@/components/ui/Select/Select";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { components } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
@@ -73,13 +79,27 @@ const Browse = () => {
       <div className="pb-8">
         <div className="flex flex-col md:flex-row justify-center items-center mt-4 gap-y-2 md:gap-x-2">
           <div className="w-full md:w-auto">
-            <Select
-              value={sortOption}
-              onChange={(e) => setSortOption(e.target.value as SortOption)}
-              options={options}
-              variant="default"
-              className="w-full md:w-auto"
-            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  Sort By:{" "}
+                  {options.find((opt) => opt.value === sortOption)?.label}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>Sort Options</DropdownMenuLabel>
+                {options.map((option) => (
+                  <DropdownMenuCheckboxItem
+                    key={option.value}
+                    checked={sortOption === option.value}
+                    onCheckedChange={() => setSortOption(option.value)}
+                    className={`text-gray-11 cursor-pointer ${sortOption === option.value ? "text-gray-12 bg-gray-3" : ""}`}
+                  >
+                    {option.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <div className="relative w-full md:w-auto">
             <Input

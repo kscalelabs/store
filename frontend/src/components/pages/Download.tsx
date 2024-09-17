@@ -79,7 +79,7 @@ export default function DownloadsPage() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="px-4 py-8 rounded-lg">
       <h1 className="text-3xl font-bold mb-2">K-Scale Downloads</h1>
       <p className="text-muted-foreground mb-6">
         View and download official K-Scale and community uploaded kernel images,
