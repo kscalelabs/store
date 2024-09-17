@@ -36,12 +36,12 @@ const HeroSection: React.FC = () => {
     <div className="relative flex flex-col w-full overflow-hidden items-center justify-center text-gray-1 py-16 sm:py-28 px-4 rounded-lg">
       {/* Gradient Background */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-6 via-primary-9 to-gray-12 opacity-50"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-7 via-primary-9 to-gray-12 opacity-50"></div>
         <div className="absolute inset-0 bg-gray-10 mix-blend-overlay"></div>
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-1/4 w-1/3 h-1/3 rounded-full bg-gray-10 opacity-30 blur-3xl"></div>
-          <div className="absolute bottom-1/3 right-1/4 w-1/4 h-1/4 rounded-full bg-primary-7 opacity-30 blur-3xl"></div>
-          <div className="absolute top-1/2 right-1/3 w-1/5 h-1/5 rounded-full bg-primary-6 opacity-30 blur-3xl"></div>
+          <div className="absolute bottom-1/3 right-1/4 w-1/4 h-1/4 rounded-full bg-primary-7 opacity-20 blur-3xl"></div>
+          <div className="absolute top-1/2 right-1/3 w-1/5 h-1/5 rounded-full bg-primary-6 opacity-20 blur-3xl"></div>
         </div>
       </div>
       {/* Content */}

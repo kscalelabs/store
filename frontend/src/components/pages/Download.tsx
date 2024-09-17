@@ -52,20 +52,6 @@ const resources = [
     official: false,
     downloads: 600,
   },
-  {
-    id: 7,
-    name: "K-Scale Documentation",
-    type: "other",
-    official: true,
-    downloads: 3000,
-  },
-  {
-    id: 8,
-    name: "Community Guidelines",
-    type: "other",
-    official: true,
-    downloads: 500,
-  },
 ];
 
 export default function DownloadsPage() {
@@ -107,7 +93,6 @@ export default function DownloadsPage() {
           <TabsTrigger value="kernel">Kernel Images</TabsTrigger>
           <TabsTrigger value="urdf">URDFs</TabsTrigger>
           <TabsTrigger value="ml">ML Models</TabsTrigger>
-          <TabsTrigger value="other">Other</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -130,7 +115,7 @@ export default function DownloadsPage() {
                     {resource.type}
                   </Badge>
                   {resource.official && (
-                    <Badge variant="secondary">Official</Badge>
+                    <Badge variant="primary">Official</Badge>
                   )}
                 </div>
               </CardTitle>

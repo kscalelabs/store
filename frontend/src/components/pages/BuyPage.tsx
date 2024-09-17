@@ -30,14 +30,14 @@ const HeroSection: React.FC = () => {
   return (
     <motion.section
       ref={ref}
-      className="h-screen flex flex-col items-center justify-center text-center p-4"
+      className="h-screen flex flex-col items-center justify-center text-center p-4 bg-gray-3 rounded-lg"
       style={{ opacity, scale }}
     >
-      <h1 className="text-6xl font-bold mb-4">Stompy Pro</h1>
+      <h1 className="text-6xl font-bold mb-4 font-orbitron">Stompy Pro</h1>
       <p className="text-xl text-gray-11 mb-8">
         The future of robotics, now at your fingertips.
       </p>
-      <Button variant="default" size="lg">
+      <Button variant="primary" size="lg">
         Buy Now - $16,000
       </Button>
     </motion.section>
@@ -56,7 +56,7 @@ const FeaturesSection: React.FC = () => {
   return (
     <motion.section
       ref={ref}
-      className="min-h-screen flex items-center justify-center relative overflow-hidden"
+      className="min-h-screen flex items-center justify-center relative overflow-hidden rounded-lg"
       style={{ y }}
     >
       <div className="text-center max-w-2xl">
@@ -84,7 +84,7 @@ const PerformanceSection: React.FC = () => {
   return (
     <motion.section
       ref={ref}
-      className="min-h-screen flex items-center justify-center bg-gray-2"
+      className="min-h-screen flex items-center justify-center bg-gray-2 rounded-lg"
       style={{ opacity, scale }}
     >
       <div className="text-center max-w-2xl">
@@ -110,7 +110,7 @@ const DesignSection: React.FC = () => {
   return (
     <motion.section
       ref={ref}
-      className="min-h-screen flex items-center justify-center relative overflow-hidden"
+      className="min-h-screen flex items-center justify-center relative overflow-hidden rounded-lg"
       style={{ x }}
     >
       <div className="text-center max-w-2xl">
@@ -128,7 +128,7 @@ const DesignSection: React.FC = () => {
 
 const CTASection: React.FC = () => {
   return (
-    <section className="min-h-screen flex flex-col items-center justify-center text-center p-4 bg-gray-2">
+    <section className="min-h-screen flex flex-col items-center justify-center text-center p-4 bg-gray-2 rounded-lg">
       <h2 className="text-4xl font-bold mb-4">
         Ready to transform your world?
       </h2>

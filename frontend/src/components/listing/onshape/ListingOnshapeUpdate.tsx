@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 
-import { Button } from "@/components/ui/Buttons/Button";
+import { Button } from "@/components/ui/button";
 import { humanReadableError } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { BACKEND_URL } from "@/lib/constants/env";

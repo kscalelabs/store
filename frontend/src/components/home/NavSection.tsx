@@ -21,7 +21,7 @@ export default function NavSection() {
   return (
     <section className="w-full py-12 sm:py-24 border-t-2 border-b-2 border-primary-10">
       <div className="flex flex-col justify-center mb-8 text-center">
-        <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-2 bg-gradient-to-r from-primary-6 to-primary-9 text-transparent bg-clip-text">
+        <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-2 bg-gradient-to-r from-primary-7 to-primary-9 text-transparent bg-clip-text">
           The K-Scale Ecosystem
         </h2>
         <p className="text-lg text-gray-11">
@@ -63,7 +63,7 @@ export default function NavSection() {
         ].map((item, index) => (
           <Card
             key={index}
-            className="cursor-pointer flex flex-col h-full transition-all duration-300 ease-in-out hover:scale-[1.03] hover:shadow-lg bg-gradient-to-br from-gray-12 to-gray-12/95"
+            className="cursor-pointer flex flex-col h-full transition-all duration-300 ease-in-out hover:scale-[1.03] hover:shadow-lg bg-gray-12"
             onClick={() => navigate(item.path)}
           >
             <CardHeader>

@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { FaFile, FaPen } from "react-icons/fa";
 import Markdown from "react-markdown";
 
-import { Button } from "@/components/ui/Buttons/Button";
 import { TextArea } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
+import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import remarkGfm from "remark-gfm";

@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
 import RequireAuthentication from "@/components/auth/RequireAuthentication";
-import { Button } from "@/components/ui/Buttons/Button";
 import Spinner from "@/components/ui/Spinner";
+import { Button } from "@/components/ui/button";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";

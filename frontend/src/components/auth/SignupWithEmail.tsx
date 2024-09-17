@@ -1,8 +1,8 @@
 import { useForm } from "react-hook-form";
 
-import { Button } from "@/components/ui/Buttons/Button";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import { Input } from "@/components/ui/Input/Input";
+import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { EmailSignupSchema, EmailSignupType } from "@/lib/types";
@@ -53,12 +53,7 @@ const SignupWithEmail = () => {
         {errors?.email && <ErrorMessage>{errors?.email?.message}</ErrorMessage>}
       </div>
       {/* Signup Button */}
-      <Button
-        variant="outline"
-        className="w-full text-white bg-blue-600 hover:bg-opacity-70"
-      >
-        Sign up with email
-      </Button>
+      <Button variant="primary">Sign up with email</Button>
     </form>
   );
 };
