@@ -51,7 +51,8 @@ speakPhrase("Hello, I am a robot.");`,
       <div className="mt-6">
         <div className="flex flex-col gap-2 mb-6 text-center">
           <h2 className="text-4xl font-bold tracking-tight md:text-5xl text-gray-1">
-            Watch K-Lang In Action
+            Watch <span className="font-black text-orange-400">K-Lang</span> In
+            Action
           </h2>
         </div>
         <div className="grid gap-6 md:grid-cols-4">

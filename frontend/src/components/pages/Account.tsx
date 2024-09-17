@@ -10,7 +10,7 @@ import { useAuthentication } from "@/hooks/useAuth";
 import { format } from "date-fns";
 
 type UserResponse =
-  paths["/users/public/me"]["get"]["responses"][200]["content"]["application/json"];
+  paths["/users/public/{id}"]["get"]["responses"][200]["content"]["application/json"];
 
 const Account = () => {
   const { addErrorAlert, addAlert } = useAlertQueue();

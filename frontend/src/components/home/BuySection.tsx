@@ -39,14 +39,14 @@ export default function BuySection() {
           variants={itemVariants}
           className="flex flex-col items-center justify-center space-y-4 text-center"
         >
-          <div className="space-y-2">
-            <div className="inline-block rounded-lg bg-gray-7 px-3 py-1 text-sm">
+          <div className="flex flex-col items-center gap-2">
+            <div className="inline-block rounded-lg bg-gray-7 px-3 py-1 text-sm w-fit">
               New Release
             </div>
             <h2 className="text-gray-1 font-orbitron text-3xl font-bold tracking-tight sm:text-5xl">
               Stompy Pro
             </h2>
-            <p className="max-w-[700px] text-gray-1 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
+            <p className="max-w-[700px] text-gray-1 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed mt-3">
               Exceptional build quality and all the capabilities of other
               humanoid robot platforms, with full customizability at a fraction
               of the price.

@@ -14,6 +14,8 @@ const Navbar = () => {
   const navItems = [
     { name: "K-Lang", path: "/k-lang", isExternal: false },
     { name: "Buy Robot", path: "/buy", isExternal: false },
+    { name: "Browse Builds", path: "/browse", isExternal: false },
+    { name: "Downloads", path: "/downloads", isExternal: false },
     { name: "Forum", path: "https://forum.kscale.dev/", isExternal: true },
     { name: "Docs", path: "https://docs.kscale.dev/", isExternal: true },
     { name: "Blog", path: "https://blog.kscale.dev/", isExternal: true },
@@ -29,14 +31,14 @@ const Navbar = () => {
           >
             <Logo />
           </Link>
-          <div className="hidden md:flex items-center flex-grow justify-between ml-4">
+          <div className="hidden lg:flex items-center flex-grow justify-between ml-4">
             <div className="flex space-x-1 bg-gray-12 rounded-lg p-2 flex-grow justify-center">
               {navItems.map((item) =>
                 item.isExternal ? (
                   <a
                     key={item.name}
                     href={item.path}
-                    className={`px-2 xl:px-3 py-2 rounded-md text-sm font-semibold tracking-widest text-gray-300 hover:bg-gray-1 hover:text-gray-12`}
+                    className={`px-2 xl:px-3 py-2 rounded-md text-sm font-semibold tracking-wide xl:tracking-widest text-gray-300 hover:bg-gray-1 hover:text-gray-12`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -70,7 +72,6 @@ const Navbar = () => {
                   >
                     Account
                   </Link>
-                  <div className="h-6 w-px bg-gray-1" />
                   <Link
                     to="/logout"
                     className="px-3 py-2 rounded-md hover:bg-blue-500"
@@ -86,7 +87,6 @@ const Navbar = () => {
                   >
                     Sign In
                   </Link>
-                  <div className="h-6 w-px bg-gray-1" />
                   <Link
                     to="/signup"
                     className="px-3 py-2 rounded-md hover:bg-gray-1 hover:text-gray-12"
@@ -99,7 +99,7 @@ const Navbar = () => {
           </div>
           <button
             onClick={() => setShowSidebar(true)}
-            className="md:hidden text-gray-300 hover:bg-gray-700 bg-gray-12 hover:text-white p-4 rounded-md text-sm font-medium"
+            className="lg:hidden text-gray-300 hover:bg-gray-700 bg-gray-12 hover:text-white p-4 rounded-md text-sm font-medium"
           >
             <FaBars size={20} />
           </button>

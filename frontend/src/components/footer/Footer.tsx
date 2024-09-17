@@ -89,9 +89,9 @@ const Footer = () => {
             <Link to={"/tos"} className="hover:text-gray-5">
               Terms of Service
             </Link>
-            {/* <Link to={"/privacy"} className="hover:text-gray-5">
+            <Link to={"/privacy"} className="hover:text-gray-5">
               Privacy Policy
-            </Link> */}
+            </Link>
           </div>
           <div className="flex flex-col items-start gap-2 sm:gap-3">
             <h2 className="text-base sm:text-lg font-bold mb-1">Links</h2>

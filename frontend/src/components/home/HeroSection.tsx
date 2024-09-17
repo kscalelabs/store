@@ -49,7 +49,7 @@ const HeroSection: React.FC = () => {
         robots.
       </p>
       <div className="mt-8 flex space-x-4">
-        <button className="border border-white px-6 py-2 rounded-md font-semibold hover:bg-gray-1 hover:text-gray-12">
+        <button className="border border-white px-6 py-2 rounded-md font-semibold hover:bg-orange-400 hover:border-orange-400 hover:text-gray-12">
           Watch Demo 1 Minute
         </button>
       </div>
