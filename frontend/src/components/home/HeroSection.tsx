@@ -1,52 +1,30 @@
 import React from "react";
 import { FaCirclePlay } from "react-icons/fa6";
 
+import KScaleASCII from "@/images/KScaleASCII.png";
+import KScaleASCIIMobile from "@/images/KScaleASCIIMobile.png";
+
 import Meteors from "../ui/Meteors";
 import { Button } from "../ui/button";
 
 const HeroSection: React.FC = () => {
-  const kScaleLabsLogo = [
-    "                                                                                          ",
-    " ██╗  ██╗      ███████╗ ██████╗ █████╗ ██╗     ███████╗   ██╗      █████╗ ██████╗ ███████╗ ",
-    " ██║ ██╔╝      ██╔════╝██╔════╝██╔══██╗██║     ██╔════╝   ██║     ██╔══██╗██╔══██╗██╔════╝ ",
-    " █████╔╝ █████╗███████╗██║     ███████║██║     █████╗     ██║     ███████║██████╔╝███████╗ ",
-    " ██╔═██╗ ╚════╝╚════██║██║     ██╔══██║██║     ██╔══╝     ██║     ██╔══██║██╔══██╗╚════██║ ",
-    " ██║  ██╗      ███████║╚██████╗██║  ██║███████╗███████╗   ███████╗██║  ██║██████╔╝███████║ ",
-    " ╚═╝  ╚═╝      ╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝   ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝ ",
-    "                                                                                          ",
-  ];
-
-  const kScaleLabsLogoMobile = [
-    "                                                        ",
-    " ██╗  ██╗      ███████╗ ██████╗ █████╗ ██╗     ███████╗ ",
-    " ██║ ██╔╝      ██╔════╝██╔════╝██╔══██╗██║     ██╔════╝ ",
-    " █████╔╝ █████╗███████╗██║     ███████║██║     █████╗   ",
-    " ██╔═██╗ ╚════╝╚════██║██║     ██╔══██║██║     ██╔══╝   ",
-    " ██║  ██╗      ███████║╚██████╗██║  ██║███████╗███████╗ ",
-    " ╚═╝  ╚═╝      ╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝ ",
-    "                                                        ",
-    "            ██╗      █████╗ ██████╗ ███████╗            ",
-    "            ██║     ██╔══██╗██╔══██╗██╔════╝            ",
-    "            ██║     ███████║██████╔╝███████╗            ",
-    "            ██║     ██╔══██║██╔══██╗╚════██║            ",
-    "            ███████╗██║  ██║██████╔╝███████║            ",
-    "            ╚══════╝╚═╝  ╚═╝╚═════╝ ╚══════╝            ",
-    "                                                        ",
-  ];
-
   return (
     <div className="relative flex flex-col w-full overflow-hidden items-center justify-center text-gray-1 bg-gray-12 py-16 sm:py-28 px-4 rounded-lg">
       <div className="hidden md:block select-none">
-        <pre className="text-[0.8rem] leading-[0.8rem]">
-          {kScaleLabsLogo.join("\n")}
-        </pre>
+        <img
+          src={KScaleASCII}
+          alt="K Scale Labs Logo"
+          className="w-[720px] h-[80px]"
+        />
       </div>
       <div className="md:hidden select-none text-center">
-        <pre className="text-[0.5rem] leading-[0.5rem]">
-          {kScaleLabsLogoMobile.join("\n")}
-        </pre>
+        <img
+          src={KScaleASCIIMobile}
+          alt="K Scale Labs Logo Mobile"
+          className="w-[300px] h-[120px]"
+        />
       </div>
-      <p className="text-lg sm:text-xl md:text-2xl text-center md:max-w-2xl mt-4 sm:mt-6">
+      <p className="text-lg sm:text-xl md:text-2xl text-center md:max-w-2xl mt-6 sm:mt-10">
         Program robots with K-Lang, our language purpose-built for humanoid
         robots.
       </p>
