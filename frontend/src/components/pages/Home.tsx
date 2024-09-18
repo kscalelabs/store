@@ -7,7 +7,7 @@ import NavSection from "@/components/home/NavSection";
 const Home = () => {
   return (
     <main
-      className={`flex flex-col gap-8 items-center justify-center min-h-screen bg-gray-1 mb-12`}
+      className={`flex flex-col gap-8 items-center justify-center min-h-screen bg-gray-1`}
     >
       <HeroSection />
       <KLangDemo />
