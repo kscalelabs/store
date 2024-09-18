@@ -80,7 +80,7 @@ const SingleKey = ({ token, permissions, onDelete }: SingleKeyProps) => {
           onClick={() => setIsKeyVisible(!isKeyVisible)}
           variant="primary"
         >
-          {isKeyVisible ? "Hide" : "Show"}
+          {isKeyVisible ? "Hide" : "Show Key"}
         </Button>
       </p>
 
@@ -182,10 +182,10 @@ const APIKeys = () => {
                   />
                   <div
                     className={cx(
-                      "relative w-11 h-6 bg-gray-3 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800",
+                      "relative w-11 h-6 bg-gray-3 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-9",
                       "rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full",
                       "peer-checked:after:border-gray-12 after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-gray-12",
-                      "after:border-gray-6 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600",
+                      "after:border-gray-6 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-9",
                     )}
                   ></div>
                 </label>

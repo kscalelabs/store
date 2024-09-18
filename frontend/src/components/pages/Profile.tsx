@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import ListingGrid from "@/components/listings/ListingGrid";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
@@ -22,6 +22,7 @@ interface RenderProfileProps {
 }
 
 const RenderProfile = (props: RenderProfileProps) => {
+  const navigate = useNavigate();
   const { user, onUpdateProfile, canEdit, listingIds } = props;
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,9 +66,14 @@ const RenderProfile = (props: RenderProfileProps) => {
             {user.created_at ? formatJoinDate(user.created_at) : "Unknown date"}
           </p>
           {!isEditing && canEdit && (
-            <Button onClick={() => setIsEditing(true)} variant="outline">
-              Edit Profile
-            </Button>
+            <div className="flex space-x-2">
+              <Button onClick={() => navigate("/keys")} variant="primary">
+                API Keys
+              </Button>
+              <Button onClick={() => setIsEditing(true)} variant="outline">
+                Edit Profile
+              </Button>
+            </div>
           )}
         </CardHeader>
         <CardContent>
