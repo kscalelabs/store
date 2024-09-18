@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { VideoDemo } from "@/components/VideoDemo";
 import { Button } from "@/components/ui/button";
 
 export default function KLangDemo() {
@@ -35,16 +36,12 @@ speakPhrase("Hello, I am a robot.");`,
       <div className="space-y-4">
         <div className="flex flex-col items-center space-y-4 text-center">
           <div className="w-full max-w-4xl aspect-video overflow-hidden rounded-xl border bg-gray-11">
-            <video
-              className="w-full h-full object-cover"
-              autoPlay
-              loop
-              muted
-              playsInline
-            >
-              <source src="/placeholder.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
+            <VideoDemo
+              src="https://www.youtube.com/embed/Y-mD7Cp9KSs"
+              type="youtube"
+              title="Minimal PPO Implementation"
+              autoplay={true}
+            />
           </div>
         </div>
       </div>
