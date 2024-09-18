@@ -94,10 +94,20 @@ const Footer = () => {
             </Link>
           </div>
           <div className="flex flex-col items-start gap-2 sm:gap-3">
-            <h2 className="text-base sm:text-lg font-bold mb-1">Links</h2>
+            <div className="mb-1">___</div>
+            <a
+              href="https://forms.gle/HB5uj5r5mGQZUBtd8"
+              className="hover:text-primary-9"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Submit Feedback
+            </a>
             <a
               href="https://github.com/kscalelabs/store"
               className="hover:text-primary-9"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Website Source Code
             </a>

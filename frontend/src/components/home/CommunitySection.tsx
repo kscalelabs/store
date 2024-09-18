@@ -40,7 +40,7 @@ export default function CommunitySection() {
               simulations, and more.
             </p>
             <Button
-              className="inline-flex items-center bg-[#333] hover:bg-[#24292e] text-gray-1 sm:text-lg p-5 sm:p-6"
+              className="inline-flex items-center bg-[#333] hover:bg-[#333]/70 text-gray-1 sm:text-lg p-5 sm:p-6"
               onClick={() =>
                 window.open("https://github.com/kscalelabs", "_blank")
               }
