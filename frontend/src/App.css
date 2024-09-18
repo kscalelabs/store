@@ -35,6 +35,8 @@
   --orange-surface: #fff3eecc;
   --orange-indicator: #ff4f00;
   --orange-track: #ff4f00;
+
+  --font-sans: "Inter", sans-serif;
 }
 
 @supports (color: color(display-p3 1 1 1)) {
@@ -104,7 +106,7 @@ a.link:hover {
 html,
 body {
   word-wrap: break-word;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-sans);
 }
 
 form {

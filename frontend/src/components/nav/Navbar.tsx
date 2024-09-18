@@ -16,18 +16,17 @@ const Navbar = () => {
     { name: "Buy Robot", path: "/buy", isExternal: false },
     { name: "Browse Builds", path: "/browse", isExternal: false },
     { name: "Downloads", path: "/downloads", isExternal: false },
-    { name: "Forum", path: "https://forum.kscale.dev/", isExternal: true },
     { name: "Docs", path: "https://docs.kscale.dev/", isExternal: true },
-    { name: "Blog", path: "https://blog.kscale.dev/", isExternal: true },
+    // { name: "Blog", path: "https://blog.kscale.dev/", isExternal: true },
   ];
 
   return (
     <>
       <nav className="fixed w-full z-30 top-0 start-0 bg-gray-1/30 backdrop-blur-lg">
-        <div className="flex items-center justify-between py-3 mx-4 sm:mx-6 md:mx-12 lg:mx-20">
+        <div className="flex items-center justify-between py-3 mx-4 sm:mx-6 md:mx-12 lg:mx-20 font-semibold">
           <Link
             to="/"
-            className="flex items-center space-x-2 bg-gray-12 p-3 rounded-lg hover:bg-primary-12/80 transition-all duration-300"
+            className="flex items-center space-x-2 bg-gray-12 p-3 rounded-lg hover:bg-primary-9 transition-all duration-300"
           >
             <Logo />
           </Link>
@@ -38,7 +37,7 @@ const Navbar = () => {
                   <a
                     key={item.name}
                     href={item.path}
-                    className={`px-2 xl:px-3 py-2 rounded-md text-sm font-semibold tracking-wide xl:tracking-widest text-gray-1 hover:bg-primary-9`}
+                    className={`px-2 xl:px-3 py-2 rounded-md text-sm tracking-wide xl:tracking-widest text-gray-1 hover:bg-primary-9`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -48,10 +47,10 @@ const Navbar = () => {
                   <Link
                     key={item.name}
                     to={item.path}
-                    className={`px-2 xl:px-3 py-2 rounded-md text-sm font-semibold tracking-widest ${
+                    className={`px-2 xl:px-3 py-2 rounded-md text-sm tracking-widest ${
                       location.pathname === item.path
                         ? "bg-gray-11 text-gray-1"
-                        : "text-gray-300 hover:bg-gray-1 hover:text-gray-12"
+                        : "text-gray-1 hover:bg-gray-1 hover:text-primary-9"
                     }`}
                   >
                     {item.name}
@@ -59,12 +58,12 @@ const Navbar = () => {
                 ),
               )}
             </div>
-            <div className="flex items-center space-x-2 text-gray-1 bg-gray-12 rounded-lg p-2 ml-4 text-sm font-semibold tracking-widest">
+            <div className="flex items-center space-x-2 text-gray-1 bg-gray-12 rounded-lg p-2 ml-4 text-sm tracking-widest">
               {isAuthenticated ? (
                 <>
                   <Link
                     to="/account"
-                    className={`px-3 py-2 rounded-md hover:bg-gray-1 hover:text-gray-12 ${
+                    className={`px-3 py-2 rounded-md hover:bg-gray-1 hover:text-primary-9 ${
                       location.pathname === "/account"
                         ? "bg-gray-11 text-gray-1"
                         : ""
@@ -83,13 +82,13 @@ const Navbar = () => {
                 <>
                   <Link
                     to="/login"
-                    className="px-3 py-2 rounded-md hover:bg-gray-1 hover:text-gray-12"
+                    className="px-3 py-2 rounded-md hover:bg-gray-1 hover:text-primary-9"
                   >
                     Sign In
                   </Link>
                   <Link
                     to="/signup"
-                    className="px-3 py-2 rounded-md hover:bg-gray-1 hover:text-gray-12"
+                    className="px-3 py-2 rounded-md hover:bg-gray-1 hover:text-primary-9"
                   >
                     Sign Up
                   </Link>
@@ -99,7 +98,7 @@ const Navbar = () => {
           </div>
           <button
             onClick={() => setShowSidebar(true)}
-            className="lg:hidden text-gray-300 hover:bg-gray-700 bg-gray-12 hover:text-white p-4 rounded-md text-sm font-medium"
+            className="lg:hidden text-gray-300 hover:bg-gray-700 bg-gray-12 hover:text-white p-4 rounded-md text-sm"
           >
             <FaBars size={20} />
           </button>

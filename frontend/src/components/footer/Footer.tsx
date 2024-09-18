@@ -28,11 +28,11 @@ const Footer = () => {
 
   return (
     <footer className="bg-gray-12 text-gray-1 py-10 mx-4 sm:mx-6 md:mx-12 lg:mx-20 rounded-lg mb-8">
-      <div className="flex flex-col gap-4 mx-12">
+      <div className="flex flex-col gap-4 mx-8 sm:mx-12">
         {/* Logo and Social Links */}
-        <div className="flex flex-row justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row items-start justify-between sm:items-center mb-8">
           <Logo />
-          <div className="flex flex-row gap-4 rounded-full">
+          <div className="flex flex-row gap-4 rounded-full mt-4 sm:mt-0">
             <SocialLink
               href="https://www.linkedin.com/company/kscale"
               ariaLabel="Visit K-Scale's LinkedIn Page"
