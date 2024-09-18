@@ -21,10 +21,10 @@ export default function NavSection() {
   return (
     <section className="w-full py-12 sm:py-24 border-t-2 border-b-2 border-primary-10">
       <div className="flex flex-col justify-center mb-8 text-center">
-        <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-2 bg-gradient-to-r from-primary-7 to-primary-9 text-transparent bg-clip-text">
+        <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-2 text-primary-9">
           The K-Scale Ecosystem
         </h2>
-        <p className="text-lg text-gray-11">
+        <p className="text-base px-4 sm:px-0 sm:text-lg text-gray-11">
           We&apos;re open source and always iterating. Join us in building the
           future of robotics.
         </p>
@@ -67,8 +67,10 @@ export default function NavSection() {
             onClick={() => navigate(item.path)}
           >
             <CardHeader>
-              <CardTitle className="text-gray-2">{item.title}</CardTitle>
-              <CardDescription className="text-gray-7">
+              <CardTitle className="text-gray-2 text-lg sm:text-xl">
+                {item.title}
+              </CardTitle>
+              <CardDescription className="text-gray-7 font-light">
                 {item.description}
               </CardDescription>
             </CardHeader>

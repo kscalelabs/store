@@ -48,14 +48,11 @@ speakPhrase("Hello, I am a robot.");`,
           </div>
         </div>
       </div>
-      <div className="mt-6">
+      <div className="mt-6 px-4">
         <div className="flex flex-col gap-2 mb-6 text-center">
           <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-gray-1">
-            Watch{" "}
-            <span className="font-black bg-gradient-to-r from-primary-9 to-primary-10 text-transparent bg-clip-text">
-              K-Lang
-            </span>{" "}
-            In Action
+            Watch <span className="font-black text-primary-9">K-Lang</span> In
+            Action
           </h2>
         </div>
         <div className="grid gap-6 sm:grid-cols-4">
@@ -63,21 +60,21 @@ speakPhrase("Hello, I am a robot.");`,
             <Button
               variant={activeAction === "manipulate" ? "selected" : "secondary"}
               onClick={() => setActiveAction("manipulate")}
-              className="w-full font-semibold tracking-wide"
+              className="w-full font-medium tracking-wide"
             >
               Manipulation
             </Button>
             <Button
               variant={activeAction === "turn" ? "selected" : "secondary"}
               onClick={() => setActiveAction("turn")}
-              className="w-full font-semibold tracking-wide"
+              className="w-full font-medium tracking-wide"
             >
               Turning
             </Button>
             <Button
               variant={activeAction === "talk" ? "selected" : "secondary"}
               onClick={() => setActiveAction("talk")}
-              className="w-full font-semibold tracking-wide"
+              className="w-full font-medium tracking-wide"
             >
               Talking
             </Button>

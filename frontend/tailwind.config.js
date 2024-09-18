@@ -3,7 +3,7 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     fontFamily: {
-      sans: ["Manrope", "sans-serif"],
+      sans: ["Inter", "sans-serif"],
       orbitron: ["Orbitron", "sans-serif"],
     },
     extend: {
