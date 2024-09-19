@@ -37,8 +37,8 @@ const HeroSection: React.FC = () => {
       <p className="text-xl text-gray-11 mb-8">
         The future of robotics, now at your fingertips.
       </p>
-      <Button variant="primary" size="lg" className="blur-lg">
-        Buy Now - $16,000
+      <Button variant="primary" size="lg">
+        Buy Now - $...
       </Button>
     </motion.section>
   );
