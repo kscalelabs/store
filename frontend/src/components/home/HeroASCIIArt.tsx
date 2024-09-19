@@ -1,13 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { useWindowSize } from "@/hooks/useWindowSize";
+import mainLogo from "@/images/KScaleASCII.png";
 
-interface PageHeaderProps {
-  title: string;
-  subheading: string;
-}
-
-const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
+const HeroASCIIArt = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gridRef = useRef<boolean[][]>([]);
   const intervalRef = useRef<number>();
@@ -15,6 +12,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
   const activeCellsRef = useRef<Set<string>>(new Set());
   const mousePosRef = useRef<{ x: number; y: number } | null>(null);
 
+  const [logoExpanded, setLogoExpanded] = useState(false);
   const [gridInitialized, setGridInitialized] = useState(false);
 
   const rule = (neighbors: number, cell: boolean) =>
@@ -140,8 +138,8 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Set canvas height to 30vh
-    canvas.height = Math.floor(windowHeight * 0.3);
+    // Set canvas height to 70% of screen height
+    canvas.height = Math.floor(windowHeight * 0.7);
 
     const desiredCellCount = 200;
     let charWidth: number, charHeight: number;
@@ -160,9 +158,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
     if (charHeight < minCharHeight) charHeight = minCharHeight;
 
     const cols = Math.floor(windowWidth / charWidth);
-    const rows = Math.floor(canvas.height / charHeight);
+    const rows = Math.floor(windowHeight / charHeight);
 
     canvas.width = windowWidth;
+    canvas.height = Math.floor(windowHeight * 0.7);
 
     if (!gridInitialized) {
       gridRef.current = initializeGrid(rows, cols);
@@ -172,6 +171,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
     const drawGrid = (currentGrid: boolean[][]) => {
       const backgroundColor = "#111111";
       const textColor = "#ff4f00";
+      // const textColor = "white";
 
       ctx.fillStyle = backgroundColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -194,6 +194,15 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
     drawGrid(gridRef.current);
     intervalRef.current = window.setInterval(updateAndDraw, 33);
 
+    const observer = new MutationObserver(() => {
+      drawGrid(gridRef.current);
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
     const handleMouseMove = (event: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
       const x = Math.floor((event.clientX - rect.left) / charWidth);
@@ -205,6 +214,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
       mousePosRef.current = null;
     };
 
+    // Change these to use document instead of canvas
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseleave", handleMouseLeave);
 
@@ -212,22 +222,52 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+      observer.disconnect();
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseleave", handleMouseLeave);
     };
   }, [windowWidth, windowHeight, initializeGrid, updateGrid, gridInitialized]);
 
+  // Separate useEffect for logo expansion
+  useEffect(() => {
+    const timer = setTimeout(() => setLogoExpanded(true), 250);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const logoContainerStyle: React.CSSProperties = {
+    opacity: logoExpanded ? 1 : 0,
+    transition: "opacity 1s ease-in-out",
+  };
+
   return (
-    <div className="relative rounded-lg w-full h-[30vh] overflow-hidden mb-10">
+    <div className="relative rounded-lg w-full h-[70vh] overflow-hidden">
       <div className="absolute inset-0 backdrop-blur-[2px]"></div>
       <canvas ref={canvasRef} className="w-full h-full" />
-      <div className="absolute inset-0 flex flex-col items-center justify-center px-4">
-        <h1 className="text-5xl font-bold mb-4 tracking-tight text-gray-1">
-          {title}
+      <div className="absolute inset-0 flex flex-col items-center justify-center m-4">
+        <div
+          style={logoContainerStyle}
+          className="rounded-xl cursor-pointer transition-shadow duration-300 shadow-[0_0_12px_rgba(255,79,0,0.7)] hover:shadow-[0_0_24px_rgba(255,79,0,0.7)]"
+        >
+          <img
+            src={mainLogo}
+            alt="Main Logo"
+            className="w-[720px] h-[100px] rounded-lg"
+            onClick={() => {
+              setGridInitialized(false);
+            }}
+          />
+        </div>
+        <h1 className="hidden text-2xl sm:text-4xl md:text-6xl text-center">
+          K-Scale Labs
         </h1>
-        <p className="text-xl max-w-md text-center tracking-wide text-gray-1">
-          {subheading}
-        </p>
+        <h2 className="text-gray-1 text-lg sm:text-xl md:text-2xl text-center md:max-w-2xl mt-4 sm:mt-8">
+          Program robots with K-Lang, our language purpose-built for humanoid
+          robots.
+        </h2>
+        <Button className="mt-4 bg-[#ff4f00] hover:bg-[#ff6a00]">
+          Watch Demo
+          <span className="ml-2 text-sm">1 minute</span>
+        </Button>
       </div>
     </div>
   );
@@ -264,4 +304,4 @@ const getCharForPosition = (
   return " ";
 };
 
-export default PageHeader;
+export default HeroASCIIArt;

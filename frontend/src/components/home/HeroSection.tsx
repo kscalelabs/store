@@ -14,17 +14,17 @@ const HeroSection: React.FC = () => {
         <img
           src={KScaleASCII}
           alt="K Scale Labs Logo"
-          className="w-[720px] h-[80px]"
+          className="w-[720px] h-[100px]"
         />
       </div>
       <div className="md:hidden select-none text-center">
         <img
           src={KScaleASCIIMobile}
           alt="K Scale Labs Logo Mobile"
-          className="w-[300px] h-[120px]"
+          className="w-[300px] h-[140px]"
         />
       </div>
-      <p className="text-lg sm:text-xl md:text-2xl text-center md:max-w-2xl mt-6 sm:mt-10">
+      <p className="text-lg sm:text-xl md:text-2xl text-center md:max-w-2xl mt-4 sm:mt-8">
         Program robots with K-Lang, our language purpose-built for humanoid
         robots.
       </p>
