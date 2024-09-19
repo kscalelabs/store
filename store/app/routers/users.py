@@ -368,3 +368,18 @@ async def validate_api_key_endpoint(
 
 users_router.include_router(github_auth_router, prefix="/github")
 users_router.include_router(google_auth_router, prefix="/google")
+
+
+class SetModeratorRequest(BaseModel):
+    user_id: str
+    is_mod: bool
+
+
+@users_router.post("/set-moderator")
+async def set_moderator(
+    request: SetModeratorRequest,
+    admin_user: Annotated[User, Depends(get_session_user_with_admin_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> UserPublic:
+    updated_user = await crud.set_moderator(request.user_id, request.is_mod)
+    return UserPublic(**updated_user.model_dump())

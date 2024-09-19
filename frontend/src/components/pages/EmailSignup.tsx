@@ -62,8 +62,7 @@ const EmailSignup = () => {
             <div className="text-center">
               <p className="text-lg mb-8">Invalid Sign Up Link</p>
               <Button
-                variant="outline"
-                className="w-full text-white bg-blue-600 hover:bg-opacity-70"
+                variant="primary"
                 onClick={() => {
                   navigate("/login");
                 }}

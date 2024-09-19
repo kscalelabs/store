@@ -103,12 +103,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ signupTokenId }) => {
         .
       </div>
       {/* Signup Button */}
-      <Button
-        variant="outline"
-        className="w-full text-white bg-blue-600 hover:bg-opacity-70"
-      >
-        Sign up
-      </Button>
+      <Button variant="primary">Sign up</Button>
     </form>
   );
 };

@@ -101,7 +101,7 @@ const PasswordInput = <T extends FieldValues>({
       )}
       {showStrength && password.length > 0 && (
         <>
-          <div className="mt-4 h-2 w-full bg-gray-12 rounded">
+          <div className="mt-4 h-2 w-full bg-gray-4 rounded">
             <div
               className={`h-full bg-${getStrengthColor(passwordStrength)} rounded`}
               style={{ width: `${(passwordStrength + 1) * 20}%` }}

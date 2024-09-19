@@ -701,6 +701,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/set-moderator": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Moderator */
+        post: operations["set_moderator_users_set_moderator_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -945,7 +962,7 @@ export interface components {
             /** Google Id */
             google_id: string | null;
             /** Permissions */
-            permissions: "is_admin"[] | null;
+            permissions: ("is_admin" | "is_mod")[] | null;
             /** First Name */
             first_name: string | null;
             /** Last Name */
@@ -990,7 +1007,7 @@ export interface components {
             /** Email */
             email: string;
             /** Permissions */
-            permissions?: "is_admin"[] | null;
+            permissions?: ("is_admin" | "is_mod")[] | null;
             /** Created At */
             created_at?: number | null;
             /** Updated At */
@@ -1008,6 +1025,13 @@ export interface components {
         PublicUsersInfoResponse: {
             /** Users */
             users: components["schemas"]["PublicUserInfoResponseItem"][];
+        };
+        /** SetModeratorRequest */
+        SetModeratorRequest: {
+            /** User Id */
+            user_id: string;
+            /** Is Mod */
+            is_mod: boolean;
         };
         /** SetRequest */
         SetRequest: {
@@ -1097,7 +1121,7 @@ export interface components {
             /** Email */
             email: string;
             /** Permissions */
-            permissions?: "is_admin"[] | null;
+            permissions?: ("is_admin" | "is_mod")[] | null;
             /** Created At */
             created_at: number;
             /** Updated At */
@@ -2412,6 +2436,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuthResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_moderator_users_set_moderator_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetModeratorRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserPublic"];
                 };
             };
             /** @description Validation Error */

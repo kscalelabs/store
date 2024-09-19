@@ -19,11 +19,13 @@ interface RenderProfileProps {
   onUpdateProfile: (updatedUser: Partial<UserResponse>) => Promise<void>;
   canEdit: boolean;
   listingIds: string[] | null;
+  isAdmin: boolean;
 }
 
 const RenderProfile = (props: RenderProfileProps) => {
   const navigate = useNavigate();
-  const { user, onUpdateProfile, canEdit, listingIds } = props;
+  const auth = useAuthentication();
+  const { user, onUpdateProfile, canEdit, listingIds, isAdmin } = props;
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [firstName, setFirstName] = useState(user.first_name || "");
@@ -52,6 +54,20 @@ const RenderProfile = (props: RenderProfileProps) => {
     }
   };
 
+  const handleSetModerator = async () => {
+    try {
+      await auth.client.POST("/users/set-moderator", {
+        body: {
+          user_id: user.id,
+          is_mod: !user.permissions?.includes("is_mod"),
+        },
+      });
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to set moderator", error);
+    }
+  };
+
   return (
     <div className="space-y-8 mb-12">
       <Card className="w-full max-w-4xl mx-auto">
@@ -74,6 +90,13 @@ const RenderProfile = (props: RenderProfileProps) => {
                 Edit Profile
               </Button>
             </div>
+          )}
+          {isAdmin && (
+            <Button onClick={handleSetModerator} variant="outline">
+              {user.permissions?.includes("is_mod")
+                ? "Remove Moderator"
+                : "Set as Moderator"}
+            </Button>
           )}
         </CardHeader>
         <CardContent>
@@ -181,6 +204,7 @@ const Profile = () => {
   const [canEdit, setCanEdit] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [listingIds, setListingIds] = useState<string[] | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const pageNumber = parseInt("1", 10);
 
@@ -191,6 +215,9 @@ const Profile = () => {
         if (auth.currentUser) {
           setUser(auth.currentUser);
           setCanEdit(true);
+          setIsAdmin(
+            auth.currentUser.permissions?.includes("is_admin") || false,
+          );
           setIsLoading(false);
         } else if (!auth.isLoading) {
           const { data, error } = await auth.client.GET("/users/public/me");
@@ -199,6 +226,7 @@ const Profile = () => {
           } else {
             setUser(data);
             setCanEdit(true);
+            setIsAdmin(data.permissions?.includes("is_admin") || false);
           }
           setIsLoading(false);
         }
@@ -215,6 +243,9 @@ const Profile = () => {
           } else {
             setUser(data);
             setCanEdit(auth.currentUser?.id === data.id);
+            setIsAdmin(
+              auth.currentUser?.permissions?.includes("is_admin") || false,
+            );
           }
           setIsLoading(false);
         } catch (err) {
@@ -296,6 +327,7 @@ const Profile = () => {
       onUpdateProfile={handleUpdateProfile}
       canEdit={canEdit}
       listingIds={listingIds}
+      isAdmin={isAdmin}
     />
   ) : (
     <div className="flex justify-center items-center pt-8">

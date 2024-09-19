@@ -28,7 +28,7 @@ class StoreBaseModel(BaseModel):
     id: str
 
 
-UserPermission = Literal["is_admin"]
+UserPermission = Literal["is_admin", "is_mod"]
 
 
 class User(StoreBaseModel):
@@ -482,7 +482,7 @@ async def can_write_artifact(user: User, artifact: Artifact) -> bool:
 
 
 async def can_write_listing(user: User, listing: Listing) -> bool:
-    if user.permissions is not None and "is_admin" in user.permissions:
+    if user.permissions is not None and ("is_admin" in user.permissions or "is_mod" in user.permissions):
         return True
     if user.id == listing.user_id:
         return True

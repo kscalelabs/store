@@ -87,7 +87,7 @@ export default {
           foreground: "var(--gray12)",
         },
         destructive: {
-          DEFAULT: "#7F1D1D",
+          DEFAULT: "#DD4425",
           foreground: "var(--gray1)",
         },
         border: "var(--gray6)",
