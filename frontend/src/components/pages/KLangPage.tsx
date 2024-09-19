@@ -1,105 +1,65 @@
 import React from "react";
+import { FiArrowUpRight } from "react-icons/fi";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { ExampleContent, TextParallaxContent } from "@/components/TextParallax";
 import PageHeader from "@/components/ui/PageHeader";
 
 const KLangPage: React.FC = () => {
   return (
-    <div className="my-20">
+    <div>
       <PageHeader
         title="K-Lang"
         subheading="Our programming language for humanoid robots with neural network integration built in"
       />
       <section className="mb-12">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-3xl text-gray-12">
-              What is K-Lang?
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-gray-12">
-            <p>
-              K-Lang is a next-generation programming language designed
-              specifically for controlling and programming humanoid robots. With
-              its intuitive syntax and powerful features, K-Lang empowers both
-              beginners and experts to create sophisticated robot behaviors and
-              interactions.
-            </p>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="mb-12">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-3xl text-gray-12">
-              Key Features
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-gray-12">
-            <ul className="list-disc list-inside space-y-2">
-              <li>Simple and intuitive syntax for rapid development</li>
-              <li>
-                Built-in neural network functionality for advanced AI
-                capabilities
-              </li>
-              <li>
-                Robust error handling and safety features for reliable robot
-                control
-              </li>
-              <li>
-                Extensive library of pre-built functions for common robot tasks
-              </li>
-              <li>
-                Cross-platform compatibility for various humanoid robot models
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="mb-12">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-3xl text-gray-12">
-              Getting Started
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-gray-12">
-            <p className="mb-4">
-              Ready to start programming your humanoid robot with K-Lang? Follow
-              these steps:
-            </p>
-            <ol className="list-decimal list-inside space-y-2">
-              <li>Download the K-Lang development kit from our website</li>
-              <li>Install the K-Lang compiler and runtime environment</li>
-              <li>Set up your robot&apos;s connection parameters</li>
-              <li>
-                Write your first K-Lang program using our documentation and
-                tutorials
-              </li>
-              <li>Deploy and run your program on your humanoid robot</li>
-            </ol>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-3xl text-gray-12">Try K-Lang</CardTitle>
-          </CardHeader>
-          <CardContent className="text-gray-12">
-            <p className="mb-4">
-              Want to experiment with K-Lang before setting up your development
-              environment? Our interactive online code editor is coming soon!
-              Stay tuned for updates.
-            </p>
-          </CardContent>
-        </Card>
+        <TextParallaxContent
+          imgUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2671&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          subheading="Easy to learn"
+          heading="Built for beginners and experts."
+        >
+          <div className="mx-auto max-w-3xl text-gray-12"></div>
+        </TextParallaxContent>
+        <TextParallaxContent
+          imgUrl="https://images.unsplash.com/photo-1530893609608-32a9af3aa95c?q=80&w=2564&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          subheading="Program robots with positive and negative reinforcement learning models"
+          heading="Neural network integration."
+        >
+          <NeuralNetworkContent />
+        </TextParallaxContent>
+        <TextParallaxContent
+          imgUrl="https://images.unsplash.com/photo-1504610926078-a1611febcad3?q=80&w=2416&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          subheading="Know how your robot is running under the hood"
+          heading="K-Lang is fully open-source."
+        >
+          <ExampleContent />
+        </TextParallaxContent>
       </section>
     </div>
   );
 };
+
+const NeuralNetworkContent: React.FC = () => (
+  <div className="mx-auto grid max-w-5xl grid-cols-1 gap-8 px-4 pb-24 pt-12 md:grid-cols-12">
+    <h2 className="col-span-1 text-3xl font-bold md:col-span-4 text-gray-12">
+      Neural Network Integration
+    </h2>
+    <div className="col-span-1 md:col-span-8">
+      <p className="mb-4 text-xl text-gray-11 md:text-2xl">
+        When compiling a Klang program, we choose a frame rate which will match
+        the frame rate for the model that we will ultimately want to run (for
+        example 50 Hz). The “program supervisor” runs at this frequency, keeping
+        track of scoped values, running functions, and any control flow. The
+        equivalent of a program counter taking a step is the program supervisor
+        incrementing by one time step.
+      </p>
+      <p className="mb-8 text-xl text-gray-12 md:text-2xl">
+        K-Lang is a WIP programming language.
+      </p>
+      <button className="w-full rounded bg-primary-9 px-9 py-4 text-xl text-gray-1 transition-colors hover:bg-gray-12 md:w-fit">
+        Learn more <FiArrowUpRight className="inline" />
+      </button>
+    </div>
+  </div>
+);
 
 export default KLangPage;
