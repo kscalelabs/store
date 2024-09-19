@@ -185,6 +185,17 @@ class UserCrud(BaseCrud):
 
         return await self.get_user(user_id, throw_if_missing=True)
 
+    async def set_moderator(self, user_id: str, is_mod: bool) -> User:
+        user = await self.get_user(user_id, throw_if_missing=True)
+        if user.permissions is None:
+            user.permissions = set()
+        if is_mod:
+            user.permissions.add("is_mod")
+        else:
+            user.permissions.discard("is_mod")
+        await self._update_item(user_id, User, {"permissions": list(user.permissions)})
+        return user
+
 
 async def test_adhoc() -> None:
     async with UserCrud() as crud:
