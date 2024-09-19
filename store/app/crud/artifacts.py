@@ -175,7 +175,7 @@ class ArtifactsCrud(BaseCrud):
         name: str,
         file: UploadFile,
         listing: Listing,
-        artifact_type: Literal["tgz", "zip"],
+        artifact_type: Literal["tgz", "zip", "tar.gz"],
         description: str | None = None,
     ) -> Artifact:
         with tempfile.TemporaryDirectory() as temp_dir:

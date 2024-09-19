@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { UploadModal } from "@/components/modals/UploadModal";
 import {
   Card,
   CardContent,
@@ -14,7 +15,6 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { Download, Search, Upload } from "lucide-react";
 
-// Mock data for demonstration
 const resources = [
   {
     id: 1,
@@ -22,6 +22,7 @@ const resources = [
     type: "kernel",
     official: true,
     downloads: 1200,
+    label: "kernel",
   },
   {
     id: 2,
@@ -29,6 +30,7 @@ const resources = [
     type: "urdf",
     official: true,
     downloads: 850,
+    label: "urdf",
   },
   {
     id: 3,
@@ -36,6 +38,7 @@ const resources = [
     type: "ml",
     official: true,
     downloads: 2000,
+    label: "ml",
   },
   {
     id: 4,
@@ -57,12 +60,36 @@ const resources = [
 export default function DownloadsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   const filteredResources = resources.filter(
     (resource) =>
       resource.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (activeTab === "all" || resource.type === activeTab),
+      (activeTab === "all" || resource.label === activeTab),
   );
+
+  const handleUpload = async (
+    file: File,
+    label: string,
+    isOfficial: boolean,
+  ) => {
+    // Implement the upload logic here
+    console.log(
+      "Uploading file:",
+      file,
+      "Label:",
+      label,
+      "Is Official:",
+      isOfficial,
+    );
+    // You'll need to implement the API call to upload the file
+  };
+
+  const handleDownload = async (resourceId: number) => {
+    // Implement the download logic here
+    console.log("Downloading resource:", resourceId);
+    // You'll need to implement the API call to download the file and increment the download count
+  };
 
   return (
     <div className="px-4 py-8 rounded-lg">
@@ -82,7 +109,7 @@ export default function DownloadsPage() {
             className="pl-8"
           />
         </div>
-        <Button>
+        <Button onClick={() => setIsUploadModalOpen(true)}>
           <Upload className="mr-2 h-4 w-4" /> Upload Resource
         </Button>
       </div>
@@ -106,13 +133,16 @@ export default function DownloadsPage() {
                   <Badge
                     variant="outline"
                     className={cn(
-                      resource.type === "kernel" && "bg-blue-100 text-blue-800",
-                      resource.type === "urdf" && "bg-green-100 text-green-800",
-                      resource.type === "ml" && "bg-purple-100 text-purple-800",
-                      resource.type === "other" && "bg-gray-100 text-gray-800",
+                      resource.label === "kernel" &&
+                        "bg-blue-100 text-blue-800",
+                      resource.label === "urdf" &&
+                        "bg-green-100 text-green-800",
+                      resource.label === "ml" &&
+                        "bg-purple-100 text-purple-800",
+                      resource.label === "other" && "bg-gray-100 text-gray-800",
                     )}
                   >
-                    {resource.type}
+                    {resource.label}
                   </Badge>
                   {resource.official && (
                     <Badge variant="primary">Official</Badge>
@@ -126,7 +156,10 @@ export default function DownloadsPage() {
               </p>
             </CardContent>
             <CardFooter>
-              <Button className="w-full">
+              <Button
+                className="w-full"
+                onClick={() => handleDownload(resource.id)}
+              >
                 <Download className="mr-2 h-4 w-4" /> Download
               </Button>
             </CardFooter>
@@ -139,6 +172,12 @@ export default function DownloadsPage() {
           No resources found matching your search criteria.
         </p>
       )}
+
+      <UploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUpload={handleUpload}
+      />
     </div>
   );
 }

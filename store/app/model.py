@@ -302,6 +302,9 @@ def get_content_type(artifact_type: ArtifactType) -> str:
     return DOWNLOAD_CONTENT_TYPE[artifact_type]
 
 
+ArtifactLabel = Literal["kernel", "ml"]
+
+
 class Artifact(StoreBaseModel):
     """Defines an artifact that some user owns, like an image or uploaded file.
 
@@ -319,6 +322,9 @@ class Artifact(StoreBaseModel):
     description: str | None = None
     timestamp: int
     children: list[str] | None = None
+    downloads: int = 0
+    label: ArtifactLabel | None = None
+    is_official: bool = False
 
     @classmethod
     def create(
@@ -330,6 +336,8 @@ class Artifact(StoreBaseModel):
         sizes: list[ArtifactSize] | None = None,
         description: str | None = None,
         children: list[str] | None = None,
+        label: ArtifactLabel | None = None,
+        is_official: bool = False,
     ) -> Self:
         return cls(
             id=new_uuid(),
@@ -341,6 +349,9 @@ class Artifact(StoreBaseModel):
             description=description,
             timestamp=int(time.time()),
             children=children,
+            downloads=0,
+            label=label,
+            is_official=is_official,
         )
 
 
