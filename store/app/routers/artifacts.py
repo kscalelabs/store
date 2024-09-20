@@ -1,20 +1,21 @@
 """Defines the router endpoints for handling listing artifacts."""
 
-import asyncio
 import logging
 import os
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, Form, HTTPException, UploadFile, status
 from fastapi.responses import RedirectResponse
 from pydantic.main import BaseModel
 
 from store.app.db import Crud
 from store.app.model import (
     Artifact,
+    ArtifactLabel,
     ArtifactSize,
     ArtifactType,
     User,
+    can_read_artifact,
     can_write_artifact,
     can_write_listing,
     check_content_type,
@@ -169,53 +170,43 @@ class UploadArtifactResponse(BaseModel):
     artifacts: list[SingleArtifactResponse]
 
 
-@artifacts_router.post("/upload/{listing_id}", response_model=UploadArtifactResponse)
+@artifacts_router.post("/upload", response_model=UploadArtifactResponse)
 async def upload(
-    listing_id: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
-    files: list[UploadFile],
+    file: UploadFile,
+    name: str = Form(...),
+    artifact_type: ArtifactType = Form(...),
+    listing_id: str | None = Form(None),
+    description: str | None = Form(None),
+    label: ArtifactLabel | None = Form(None),
+    is_official: bool = Form(False),
 ) -> UploadArtifactResponse:
-    # Checks that the user is not uploading too many files at once.
-    if len(files) > settings.artifact.max_concurrent_file_uploads:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Too many files were uploaded concurrently",
-        )
-    filenames = [validate_file(file) for file in files]
+    filename, artifact_type = validate_file(file)
 
-    # Makes sure that filenames are unique.
-    if len(set(filename for filename, _ in filenames)) != len(filenames):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Duplicate filenames were provided",
-        )
-
-    # Checks that the listing is valid.
-    listing = await crud.get_listing(listing_id)
-
-    if listing is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Could not find listing associated with the given id",
-        )
-    if not await can_write_listing(user, listing):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User does not have permission to upload artifacts to this listing",
-        )
-
-    # Uploads the artifacts in chunks and adds them to the listing.
-    artifacts = await asyncio.gather(
-        *(
-            crud.upload_artifact(
-                name=filename,
-                file=file,
-                listing=listing,
-                artifact_type=artifact_type,
+    listing = None
+    if listing_id:
+        listing = await crud.get_listing(listing_id)
+        if listing is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Could not find listing associated with the given id",
             )
-            for file, (filename, artifact_type) in zip(files, filenames)
-        )
+        if not await can_write_listing(user, listing):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User does not have permission to upload artifacts to this listing",
+            )
+
+    artifact = await crud.upload_artifact(
+        name=name,
+        file=file,
+        user_id=user.id,
+        artifact_type=artifact_type,
+        listing=listing,
+        description=description,
+        label=label,
+        is_official=is_official,
     )
 
     return UploadArtifactResponse(
@@ -229,8 +220,40 @@ async def upload(
                 timestamp=artifact.timestamp,
                 urls=get_artifact_url_response(artifact=artifact),
             )
-            for artifact in artifacts
         ]
+    )
+
+
+@artifacts_router.get("/download/{artifact_id}")
+async def download_artifact(
+    artifact_id: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+    user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
+) -> RedirectResponse:
+    artifact = await crud.get_raw_artifact(artifact_id)
+    if artifact is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Could not find artifact associated with the given id",
+        )
+
+    if not await can_read_artifact(user, artifact):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User does not have permission to download this artifact",
+        )
+
+    # Increment download count
+    await crud.increment_artifact_downloads(artifact_id)
+
+    return RedirectResponse(
+        url=get_artifact_url(
+            artifact_type=artifact.artifact_type,
+            artifact_id=artifact.id,
+            listing_id=artifact.listing_id,
+            name=artifact.name,
+            size="large",
+        )
     )
 
 

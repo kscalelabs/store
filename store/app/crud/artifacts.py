@@ -20,6 +20,7 @@ from store.app.errors import BadArtifactError
 from store.app.model import (
     DOWNLOAD_CONTENT_TYPE,
     Artifact,
+    ArtifactLabel,
     ArtifactSize,
     ArtifactType,
     Listing,
@@ -260,21 +261,34 @@ class ArtifactsCrud(BaseCrud):
         self,
         name: str,
         file: UploadFile,
-        listing: Listing,
+        user_id: str,
         artifact_type: ArtifactType,
+        listing: Listing | None = None,
         description: str | None = None,
+        label: ArtifactLabel | None = None,
+        is_official: bool = False,
     ) -> Artifact:
-        match artifact_type:
-            case "image":
-                return await self._upload_image(name, file, listing, description)
-            case "stl" | "obj" | "ply" | "dae":
-                return await self._upload_mesh(name, file, listing, artifact_type, description)
-            case "urdf" | "mjcf":
-                return await self._upload_xml(name, file, listing, artifact_type, description)
-            case "tgz" | "zip":
-                return await self._upload_archive(name, file, listing, artifact_type, description)
-            case _:
-                raise BadArtifactError(f"Invalid artifact type: {artifact_type}")
+        artifact = Artifact.create(
+            user_id=user_id,
+            listing_id=listing.id if listing else None,
+            name=name,
+            artifact_type=artifact_type,
+            sizes=list(SizeMapping.keys()) if artifact_type == "image" else None,
+            description=description,
+            label=label,
+            is_official=is_official,
+        )
+
+        if artifact_type == "image":
+            image = Image.open(io.BytesIO(await file.read()))
+            await asyncio.gather(
+                *(self._upload_cropped_image(image=image, artifact=artifact, size=size) for size in SizeMapping.keys()),
+                self._add_item(artifact),
+            )
+        else:
+            await self._upload_and_store(name, file, artifact)
+
+        return artifact
 
     async def _remove_image(self, artifact: Artifact) -> None:
         await asyncio.gather(

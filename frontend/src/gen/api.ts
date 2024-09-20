@@ -72,7 +72,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/artifacts/upload/{listing_id}": {
+    "/artifacts/upload": {
         parameters: {
             query?: never;
             header?: never;
@@ -82,7 +82,24 @@ export interface paths {
         get?: never;
         put?: never;
         /** Upload */
-        post: operations["upload_artifacts_upload__listing_id__post"];
+        post: operations["upload_artifacts_upload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/artifacts/download/{artifact_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download Artifact */
+        get: operations["download_artifact_artifacts_download__artifact_id__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -745,10 +762,28 @@ export interface components {
                 [key: string]: number;
             } | null;
         };
-        /** Body_upload_artifacts_upload__listing_id__post */
-        Body_upload_artifacts_upload__listing_id__post: {
-            /** Files */
-            files: string[];
+        /** Body_upload_artifacts_upload_post */
+        Body_upload_artifacts_upload_post: {
+            /**
+             * File
+             * Format: binary
+             */
+            file: string;
+            /** Name */
+            name: string;
+            /** Artifact Type */
+            artifact_type: "image" | ("urdf" | "mjcf") | ("stl" | "obj" | "dae" | "ply") | ("tgz" | "zip");
+            /** Listing Id */
+            listing_id?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Label */
+            label?: ("kernel" | "ml") | null;
+            /**
+             * Is Official
+             * @default false
+             */
+            is_official: boolean;
         };
         /** ClientIdResponse */
         ClientIdResponse: {
@@ -1279,18 +1314,16 @@ export interface operations {
             };
         };
     };
-    upload_artifacts_upload__listing_id__post: {
+    upload_artifacts_upload_post: {
         parameters: {
             query?: never;
             header?: never;
-            path: {
-                listing_id: string;
-            };
+            path?: never;
             cookie?: never;
         };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["Body_upload_artifacts_upload__listing_id__post"];
+                "multipart/form-data": components["schemas"]["Body_upload_artifacts_upload_post"];
             };
         };
         responses: {
@@ -1301,6 +1334,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UploadArtifactResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    download_artifact_artifacts_download__artifact_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */

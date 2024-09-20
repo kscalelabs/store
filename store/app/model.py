@@ -315,9 +315,9 @@ class Artifact(StoreBaseModel):
     """
 
     user_id: str
-    listing_id: str
     name: str
     artifact_type: ArtifactType
+    listing_id: str | None = None
     sizes: list[ArtifactSize] | None = None
     description: str | None = None
     timestamp: int
@@ -330,9 +330,9 @@ class Artifact(StoreBaseModel):
     def create(
         cls,
         user_id: str,
-        listing_id: str,
         name: str,
         artifact_type: ArtifactType,
+        listing_id: str | None = None,
         sizes: list[ArtifactSize] | None = None,
         description: str | None = None,
         children: list[str] | None = None,
