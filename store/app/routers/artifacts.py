@@ -89,6 +89,8 @@ class SingleArtifactResponse(BaseModel):
     description: str | None
     timestamp: int
     urls: ArtifactUrls
+    artifact_label: ArtifactLabel | None
+    is_official: bool
 
 
 class ListArtifactsResponse(BaseModel):

@@ -781,7 +781,7 @@ export interface components {
             label?: ("kernel" | "ml") | null;
             /**
              * Is Official
-             * @default false
+             * @default true
              */
             is_official: boolean;
         };
@@ -1088,6 +1088,10 @@ export interface components {
             /** Timestamp */
             timestamp: number;
             urls: components["schemas"]["ArtifactUrls"];
+            /** Artifact Label */
+            artifact_label: ("kernel" | "ml") | null;
+            /** Is Official */
+            is_official: boolean;
         };
         /**
          * SortOption

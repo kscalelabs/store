@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { UploadModal } from "@/components/modals/UploadModal";
 import {
@@ -18,52 +18,39 @@ import { useAuthentication } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Download, Search, Upload } from "lucide-react";
 
-type ArtifactDownloadResponse =
-  paths["/artifacts/download/{artifact_id}"]["get"]["responses"]["200"]["content"]["application/json"];
-
-const resources = [
-  {
-    id: "1",
-    name: "K-Scale Core Kernel",
-    type: "kernel",
-    official: true,
-    downloads: 1200,
-    label: "kernel",
-  },
-  {
-    id: "3",
-    name: "Object Detection Model",
-    official: true,
-    downloads: 2000,
-    label: "ml",
-  },
-  {
-    id: "4",
-    name: "Custom Kernel by user123",
-    official: false,
-    downloads: 300,
-    label: "kernel",
-  },
-  {
-    id: "6",
-    name: "Sentiment Analysis Model",
-    label: "ml",
-    official: false,
-    downloads: 600,
-  },
-];
+type ArtifactInfo =
+  paths["/artifacts/list/{listing_id}"]["get"]["responses"]["200"]["content"]["application/json"]["artifacts"][number];
 
 export default function DownloadsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [artifacts, setArtifacts] = useState<ArtifactInfo[]>([]);
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
 
-  const filteredResources = resources.filter(
-    (resource) =>
-      resource.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (activeTab === "all" || resource.label === activeTab),
+  useEffect(() => {
+    fetchArtifacts();
+  }, []);
+
+  const fetchArtifacts = async () => {
+    try {
+      const response = await auth.client.GET("/artifacts/list/{listing_id}", {
+        params: { path: { listing_id: "all" } },
+      });
+      if (response.data) {
+        setArtifacts(response.data.artifacts);
+      }
+    } catch (error) {
+      console.error("Failed to fetch artifacts:", error);
+      addErrorAlert("Failed to fetch artifacts");
+    }
+  };
+
+  const filteredArtifacts = artifacts.filter(
+    (artifact) =>
+      artifact.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (activeTab === "all" || artifact.artifact_type === activeTab),
   );
 
   const handleUpload = async (
@@ -92,8 +79,7 @@ export default function DownloadsPage() {
         );
       } else {
         console.log("Upload successful:", response.data);
-        // Refresh the list of resources or add the new resource to the list
-        // Implement a function to fetch the updated list of resources
+        fetchArtifacts(); // Refresh the list of artifacts
       }
     } catch (error) {
       console.error("Upload failed:", error);
@@ -103,12 +89,12 @@ export default function DownloadsPage() {
     }
   };
 
-  const handleDownload = async (resourceId: string) => {
+  const handleDownload = async (artifactId: string) => {
     try {
-      const response = await auth.client.GET<ArtifactDownloadResponse>(
+      const response = await auth.client.GET(
         "/artifacts/download/{artifact_id}",
         {
-          params: { path: { artifact_id: resourceId } },
+          params: { path: { artifact_id: artifactId } },
         },
       );
 
@@ -159,45 +145,42 @@ export default function DownloadsPage() {
       <Tabs defaultValue="all" className="mb-6" onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="kernel">Kernel Images</TabsTrigger>
+          <TabsTrigger value="image">Kernel Images</TabsTrigger>
           <TabsTrigger value="ml">ML Models</TabsTrigger>
         </TabsList>
       </Tabs>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredResources.map((resource) => (
-          <Card key={resource.id}>
+        {filteredArtifacts.map((artifact) => (
+          <Card key={artifact.artifact_id}>
             <CardHeader>
               <CardTitle className="flex justify-between items-center">
-                {resource.name}
+                {artifact.name}
                 <div className="flex gap-2">
                   <Badge
                     variant="outline"
                     className={cn(
-                      resource.label === "kernel" &&
+                      artifact.artifact_label === "kernel" &&
                         "bg-blue-100 text-blue-800",
-                      resource.label === "ml" &&
+                      artifact.artifact_label === "ml" &&
                         "bg-purple-100 text-purple-800",
-                      resource.label === "other" && "bg-gray-100 text-gray-800",
                     )}
                   >
-                    {resource.label}
+                    {artifact.artifact_type}
                   </Badge>
-                  {resource.official && (
+                  {artifact.is_official && (
                     <Badge variant="primary">Official</Badge>
                   )}
                 </div>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
-                Downloads: {resource.downloads}
-              </p>
+              <p className="text-muted-foreground">{artifact.description}</p>
             </CardContent>
             <CardFooter>
               <Button
                 className="w-full"
-                onClick={() => handleDownload(resource.id)}
+                onClick={() => handleDownload(artifact.artifact_id)}
               >
                 <Download className="mr-2 h-4 w-4" /> Download
               </Button>
@@ -206,7 +189,7 @@ export default function DownloadsPage() {
         ))}
       </div>
 
-      {filteredResources.length === 0 && (
+      {filteredArtifacts.length === 0 && (
         <p className="text-center text-muted-foreground mt-8">
           No resources found matching your search criteria.
         </p>
