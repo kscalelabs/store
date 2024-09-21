@@ -11,6 +11,7 @@ import Footer from "@/components/footer/Footer";
 import Navbar from "@/components/nav/Navbar";
 import APIKeys from "@/components/pages/APIKeys";
 import About from "@/components/pages/About";
+import Account from "@/components/pages/Account";
 import Browse from "@/components/pages/Browse";
 import BuyPage from "@/components/pages/BuyPage";
 import Create from "@/components/pages/Create";
@@ -56,7 +57,7 @@ const App = () => {
                         path="/file/:artifactId"
                         element={<FileBrowser />}
                       />
-                      <Route path="/account" element={<Profile />} />
+                      <Route path="/account" element={<Account />} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/logout" element={<Logout />} />
                       <Route path="/signup/" element={<Signup />} />
