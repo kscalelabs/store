@@ -58,14 +58,14 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-gray-1 text-gray-12 border border-gray-2 rounded-lg shadow-lg">
+      <DialogContent className="sm:max-w-[425px] bg-gray-1 text-gray-12 border border-gray-3 rounded-lg shadow-lg">
         <DialogHeader>
           <DialogTitle>Upload Resource</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div
             {...getRootProps()}
-            className="border-2 border-dashed border-gray-3 rounded-md p-4 text-center cursor-pointer"
+            className="border-2 border-dashed border-gray-8 hover:border-gray-12 hover:bg-gray-3 rounded-md px-4 py-6 text-center cursor-pointer"
           >
             <input {...getInputProps()} />
             {file ? (
