@@ -231,13 +231,13 @@ class ArtifactsCrud(BaseCrud):
         self,
         name: str,
         file: IO[bytes],
-        listing: Listing,
+        user_id: str,
         artifact_type: ArtifactType,
         description: str | None = None,
     ) -> Artifact:
         artifact = Artifact.create(
-            user_id=listing.user_id,
-            listing_id=listing.id,
+            user_id=user_id,
+            listing_id=None,
             name=name,
             artifact_type=artifact_type,
             description=description,
@@ -266,7 +266,7 @@ class ArtifactsCrud(BaseCrud):
         listing: Listing | None = None,
         description: str | None = None,
         label: ArtifactLabel | None = None,
-        is_official: bool = False,
+        is_official: bool = True,
     ) -> Artifact:
         artifact = Artifact.create(
             user_id=user_id,
@@ -286,7 +286,48 @@ class ArtifactsCrud(BaseCrud):
                 self._add_item(artifact),
             )
         else:
-            await self._upload_and_store(name, file, artifact)
+            # Convert UploadFile to BytesIO
+            file_content = await file.read()
+            file_obj = io.BytesIO(file_content)
+            await self._upload_and_store(name, file_obj, user_id, artifact_type, description)
+
+        return artifact
+
+    async def _upload_and_store(
+        self,
+        name: str,
+        file: IO[bytes],
+        user_id: str,
+        artifact_type: ArtifactType,
+        description: str | None = None,
+    ) -> Artifact:
+        artifact = Artifact.create(
+            user_id=user_id,
+            listing_id=None,
+            name=name,
+            artifact_type=artifact_type,
+            description=description,
+        )
+
+        s3_filename = get_artifact_name(artifact=artifact, name=name, artifact_type=artifact_type)
+
+        try:
+            await asyncio.gather(
+                self._upload_to_s3(
+                    data=file,
+                    name=name,
+                    filename=s3_filename,
+                    content_type=DOWNLOAD_CONTENT_TYPE[artifact_type],
+                ),
+                self._add_item(artifact),
+            )
+        except Exception as e:
+            logger.error(f"Failed to upload artifact: {str(e)}")
+            try:
+                await self._delete_item(artifact)
+            except Exception as delete_error:
+                logger.error(f"Failed to delete artifact from DynamoDB after S3 upload failure: {str(delete_error)}")
+            raise
 
         return artifact
 

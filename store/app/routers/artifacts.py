@@ -83,7 +83,7 @@ def get_artifact_url_response(artifact: Artifact) -> ArtifactUrls:
 
 class SingleArtifactResponse(BaseModel):
     artifact_id: str
-    listing_id: str
+    listing_id: str | None
     name: str
     artifact_type: ArtifactType
     description: str | None
@@ -180,48 +180,60 @@ async def upload(
     listing_id: str | None = Form(None),
     description: str | None = Form(None),
     label: ArtifactLabel | None = Form(None),
-    is_official: bool = Form(False),
+    is_official: bool = Form(True),
 ) -> UploadArtifactResponse:
-    filename, artifact_type = validate_file(file)
+    logger.info(f"Starting upload process for file: {name}")
+    try:
+        filename, artifact_type = validate_file(file)
+        logger.info(f"File validated: {filename}, type: {artifact_type}")
 
-    listing = None
-    if listing_id:
-        listing = await crud.get_listing(listing_id)
-        if listing is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Could not find listing associated with the given id",
-            )
-        if not await can_write_listing(user, listing):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="User does not have permission to upload artifacts to this listing",
-            )
+        listing = None
+        if listing_id:
+            listing = await crud.get_listing(listing_id)
+            if listing is None:
+                logger.error(f"Listing not found: {listing_id}")
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Could not find listing associated with the given id",
+                )
+            if not await can_write_listing(user, listing):
+                logger.error(f"User {user.id} does not have permission to upload to listing {listing_id}")
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="User does not have permission to upload artifacts to this listing",
+                )
 
-    artifact = await crud.upload_artifact(
-        name=name,
-        file=file,
-        user_id=user.id,
-        artifact_type=artifact_type,
-        listing=listing,
-        description=description,
-        label=label,
-        is_official=is_official,
-    )
+        logger.info(f"Uploading artifact: {name}")
+        artifact = await crud.upload_artifact(
+            name=name,
+            file=file,
+            user_id=user.id,
+            artifact_type=artifact_type,
+            listing=listing,
+            description=description,
+            label=label,
+            is_official=is_official,
+        )
+        logger.info(f"Artifact uploaded successfully: {artifact.id}")
 
-    return UploadArtifactResponse(
-        artifacts=[
-            SingleArtifactResponse(
-                artifact_id=artifact.id,
-                listing_id=artifact.listing_id,
-                name=artifact.name,
-                artifact_type=artifact.artifact_type,
-                description=artifact.description,
-                timestamp=artifact.timestamp,
-                urls=get_artifact_url_response(artifact=artifact),
-            )
-        ]
-    )
+        response = UploadArtifactResponse(
+            artifacts=[
+                SingleArtifactResponse(
+                    artifact_id=artifact.id,
+                    listing_id=artifact.listing_id,
+                    name=artifact.name,
+                    artifact_type=artifact.artifact_type,
+                    description=artifact.description,
+                    timestamp=artifact.timestamp,
+                    urls=get_artifact_url_response(artifact=artifact),
+                )
+            ]
+        )
+        logger.info(f"Upload process completed successfully for file: {name}")
+        return response
+    except Exception as e:
+        logger.error(f"Error during upload process: {str(e)}")
+        raise
 
 
 @artifacts_router.get("/download/{artifact_id}")

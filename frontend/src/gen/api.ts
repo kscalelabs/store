@@ -1078,7 +1078,7 @@ export interface components {
             /** Artifact Id */
             artifact_id: string;
             /** Listing Id */
-            listing_id: string;
+            listing_id: string | null;
             /** Name */
             name: string;
             /** Artifact Type */

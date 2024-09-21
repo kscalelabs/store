@@ -17,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, X } from "lucide-react";
 
@@ -38,7 +37,6 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
   const [name, setName] = useState("");
   const [label, setLabel] = useState<string>("kernel");
   const [description, setDescription] = useState("");
-  const [isOfficial, setIsOfficial] = useState(true);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -49,12 +47,12 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
-  const handleUpload = () => {
+  const handleUpload = useCallback(() => {
     if (file) {
-      onUpload(file, name, label, description, isOfficial);
+      onUpload(file, name, label, description, true); // Always pass true for isOfficial
       onClose();
     }
-  };
+  }, [file, name, label, description, onUpload, onClose]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -125,20 +123,6 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
               onChange={(e) => setDescription(e.target.value)}
               className="bg-gray-2 border-gray-3 text-gray-12"
               rows={3}
-            />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label
-              htmlFor="official"
-              className="text-sm font-medium text-gray-12 cursor-pointer"
-            >
-              Official Resource
-            </Label>
-            <Switch
-              id="official"
-              checked={isOfficial}
-              onCheckedChange={setIsOfficial}
-              className=""
             />
           </div>
         </div>
