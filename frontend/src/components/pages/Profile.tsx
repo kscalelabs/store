@@ -22,7 +22,7 @@ interface RenderProfileProps {
   isAdmin: boolean;
 }
 
-const RenderProfile = (props: RenderProfileProps) => {
+export const RenderProfile = (props: RenderProfileProps) => {
   const navigate = useNavigate();
   const auth = useAuthentication();
   const { user, onUpdateProfile, canEdit, listingIds, isAdmin } = props;
@@ -219,16 +219,6 @@ const Profile = () => {
             auth.currentUser.permissions?.includes("is_admin") || false,
           );
           setIsLoading(false);
-        } else if (!auth.isLoading) {
-          const { data, error } = await auth.client.GET("/users/public/me");
-          if (error) {
-            addErrorAlert(error);
-          } else {
-            setUser(data);
-            setCanEdit(true);
-            setIsAdmin(data.permissions?.includes("is_admin") || false);
-          }
-          setIsLoading(false);
         }
       } else {
         try {
@@ -255,21 +245,7 @@ const Profile = () => {
       }
     };
     const fetchUserListing = async () => {
-      if (id === undefined) {
-        const { data, error } = await auth.client.GET("/listings/me", {
-          params: {
-            query: {
-              page: pageNumber,
-            },
-          },
-        });
-
-        if (error) {
-          addErrorAlert(error);
-        } else {
-          setListingIds(data.listing_ids);
-        }
-      } else {
+      if (id !== undefined) {
         try {
           const { data, error } = await auth.client.GET("/listings/user/{id}", {
             params: {
