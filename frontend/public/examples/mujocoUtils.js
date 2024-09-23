@@ -1,7 +1,6 @@
 import * as THREE from "three";
 
 import { MuJoCoDemo } from "./main.js";
-
 import { Reflector } from "./utils/Reflector.js";
 
 export async function reloadFunc() {
@@ -32,7 +31,6 @@ export function setupGUI(parentContext) {
   parentContext.allScenes = {
     Humanoid: "humanoid.xml",
   };
-
 
   // Add scene selection dropdown.
   let reload = reloadFunc.bind(parentContext);
@@ -192,7 +190,7 @@ export function setupGUI(parentContext) {
       document.body.removeChild(document.body.lastChild);
     }
   };
-  
+
   document.addEventListener("keydown", (event) => {
     if (event.key === "F1") {
       parentContext.params.help = !parentContext.params.help;
@@ -407,23 +405,25 @@ export function setupGUI(parentContext) {
   keyInnerHTML += "Ctrl A<br>";
 
   // Adjust the style of the GUI
-  const uiContainer = document.getElementById('mujoco-ui-container');
+  const uiContainer = document.getElementById("mujoco-ui-container");
   if (uiContainer) {
     uiContainer.appendChild(parentContext.gui.domElement);
-    parentContext.gui.domElement.style.position = 'relative';
-    parentContext.gui.domElement.style.top = '10px';
-    parentContext.gui.domElement.style.right = '10px';
+    parentContext.gui.domElement.style.position = "relative";
+    parentContext.gui.domElement.style.top = "10px";
+    parentContext.gui.domElement.style.right = "10px";
   } else {
-    console.warn("mujoco-ui-container not found. Falling back to fixed positioning.");
-    parentContext.gui.domElement.style.position = 'fixed';
-    parentContext.gui.domElement.style.top = '10px';
-    parentContext.gui.domElement.style.right = '10px';
+    console.warn(
+      "mujoco-ui-container not found. Falling back to fixed positioning.",
+    );
+    parentContext.gui.domElement.style.position = "fixed";
+    parentContext.gui.domElement.style.top = "10px";
+    parentContext.gui.domElement.style.right = "10px";
   }
 
   // Add this at the end of the setupGUI function
-  const appBody = document.getElementById('appbody');
+  const appBody = document.getElementById("appbody");
   if (appBody) {
-    const urdfUrl = appBody.getAttribute('data-urdf-url');
+    const urdfUrl = appBody.getAttribute("data-urdf-url");
     if (urdfUrl) {
       autoUploadURDFTar(parentContext, urdfUrl, reload);
     }
@@ -437,7 +437,7 @@ function updateSceneDropdown(dropdown, scenes) {
   let onChangeFunc = dropdown.__onChange;
 
   // Remove all options
-  if (dropdown.__select && dropdown.__select.options) {
+  if (dropdown.__elect && dropdown.__select.options) {
     dropdown.__select.options.length = 0;
   }
 
@@ -483,7 +483,7 @@ export async function loadSceneFromURL(mujoco, filename, parent) {
 
   // Load in the state from XML.
   try {
-    console.log('loading model from', '/working/' + filename);
+    console.log("loading model from", "/working/" + filename);
     parent.model = mujoco.Model.load_from_xml("/working/" + filename);
   } catch (error) {
     console.error("Failed to load model:", error);
@@ -802,10 +802,55 @@ export async function loadSceneFromURL(mujoco, filename, parent) {
 /** Downloads the scenes/examples folder to MuJoCo's virtual filesystem
  * @param {mujoco} mujoco */
 export async function downloadExampleScenesFolder(mujoco) {
-  let allFiles = [
-    "humanoid.xml",
-    "scene.xml"
+  let allFiles = ["humanoid.xml", "scene.xml", "dora2.xml", "stompypro.xml"];
+
+  const meshFilesListDora2 = [
+    "base_link.STL",
+    "l_arm_elbow_Link.STL",
+    "l_arm_shoulder_pitch_Link.STL",
+    "l_arm_shoulder_roll_Link.STL",
+    "l_arm_shoulder_yaw_Link.STL",
+    "l_leg_ankle_pitch_Link.STL",
+    "l_leg_ankle_roll_Link.STL",
+    "l_leg_hip_pitch_Link.STL",
+    "l_leg_hip_roll_Link.STL",
+    "l_leg_hip_yaw_Link.STL",
+    "l_leg_knee_Link.STL",
+    "r_arm_elbow_Link.STL",
+    "r_arm_shoulder_pitch_Link.STL",
+    "r_arm_shoulder_roll_Link.STL",
+    "r_arm_shoulder_yaw_Link.STL",
+    "r_leg_ankle_pitch_Link.STL",
+    "r_leg_ankle_roll_Link.STL",
+    "r_leg_hip_pitch_Link.STL",
+    "r_leg_hip_roll_Link.STL",
+    "r_leg_hip_yaw_Link.STL",
+    "r_leg_knee_Link.STL",
   ];
+
+  const meshFilesListStompyPro = [
+    "buttock.stl",
+    "calf.stl",
+    "clav.stl",
+    "farm.stl",
+    "foot.stl",
+    "leg.stl",
+    "mcalf.stl",
+    "mfoot.stl",
+    "mthigh.stl",
+    "scap.stl",
+    "thigh.stl",
+    "trunk.stl",
+    "uarm.stl",
+  ];
+
+  allFiles = allFiles.concat(
+    meshFilesListDora2.map((mesh) => "/dora_meshes/" + mesh),
+  );
+
+  allFiles = allFiles.concat(
+    meshFilesListStompyPro.map((mesh) => "/stompypro_meshes/" + mesh),
+  );
 
   let requests = allFiles.map((url) => fetch("/examples/scenes/" + url));
   let responses = await Promise.all(requests);
@@ -913,13 +958,19 @@ function untar(arrayBuffer) {
 
   while (offset < uint8Array.length - 512) {
     const header = uint8Array.slice(offset, offset + 512);
-    const fileName = new TextDecoder().decode(header.slice(0, 100)).replace(/\0/g, '').trim();
-    
+    const fileName = new TextDecoder()
+      .decode(header.slice(0, 100))
+      .replace(/\0/g, "")
+      .trim();
+
     if (fileName.length === 0) {
       break; // End of archive
     }
 
-    const fileSize = parseInt(new TextDecoder().decode(header.slice(124, 136)).trim(), 8);
+    const fileSize = parseInt(
+      new TextDecoder().decode(header.slice(124, 136)).trim(),
+      8,
+    );
     const contentStartIndex = offset + 512;
     const contentEndIndex = contentStartIndex + fileSize;
     const content = uint8Array.slice(contentStartIndex, contentEndIndex);
@@ -945,7 +996,7 @@ export async function autoUploadURDFTar(parentContext, urdfTarUrl, reload) {
 
     // Decompress the gzip data
     const inflatedData = pako.inflate(new Uint8Array(compressedData));
-    
+
     // Extract the tar data
     const files = untar(inflatedData.buffer);
 
@@ -955,21 +1006,28 @@ export async function autoUploadURDFTar(parentContext, urdfTarUrl, reload) {
 
     // Process extracted files
     for (const file of files) {
-      if (file.name.endsWith('.xml')) {
+      if (file.name.endsWith(".xml")) {
         console.log("Found XML file:", file.name);
         xmlFile = {
           name: file.name,
-          content: file.buffer
+          content: file.buffer,
         };
-        newSceneName = file.name.split('.')[0];
-        
+        newSceneName = file.name.split(".")[0];
+
         // Log the content of the XML file
-        const xmlContent = new TextDecoder().decode(new Uint8Array(file.buffer));
+        const xmlContent = new TextDecoder().decode(
+          new Uint8Array(file.buffer),
+        );
         console.log("XML file content:", xmlContent);
-      } else if (file.name.endsWith('.stl') || file.name.endsWith('.obj') || file.name.endsWith('.STL') || file.name.endsWith('.OBJ')) {
+      } else if (
+        file.name.endsWith(".stl") ||
+        file.name.endsWith(".obj") ||
+        file.name.endsWith(".STL") ||
+        file.name.endsWith(".OBJ")
+      ) {
         meshFiles.push({
           name: file.name,
-          content: file.buffer
+          content: file.buffer,
         });
       } else {
         console.log("Skipping file:", file.name);
@@ -1004,9 +1062,11 @@ export async function autoUploadURDFTar(parentContext, urdfTarUrl, reload) {
     parentContext.allScenes[newSceneName] = xmlFile.name;
     console.log(parentContext.allScenes);
     if (parentContext.updateSceneDropdown) {
-      parentContext.updateSceneDropdown(parentContext.sceneDropdown, parentContext.allScenes);
+      parentContext.updateSceneDropdown(
+        parentContext.sceneDropdown,
+        parentContext.allScenes,
+      );
     }
-
 
     parentContext.params.scene = xmlFile.name;
     reload();
@@ -1014,9 +1074,6 @@ export async function autoUploadURDFTar(parentContext, urdfTarUrl, reload) {
     console.log(
       `Uploaded ${xmlFile.name} and ${meshFiles.length} mesh file(s)`,
     );
-
-
-
   } catch (error) {
     console.error("Error auto-uploading URDF tar:", error);
   }

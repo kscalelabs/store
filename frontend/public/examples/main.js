@@ -18,7 +18,7 @@ import { DragStateManager } from "./utils/DragStateManager.js";
 const mujoco = await load_mujoco();
 
 // Set up Emscripten's Virtual File System
-var initialScene = "stompypro.xml";
+var initialScene = "dora2.xml";
 mujoco.FS.mkdir("/working");
 mujoco.FS.mount(mujoco.MEMFS, { root: "." }, "/working");
 mujoco.FS.writeFile(
@@ -29,7 +29,7 @@ mujoco.FS.writeFile(
 // Create meshes directory
 mujoco.FS.mkdir("/working/meshes");
 
-const meshFilesList = [
+const meshFilesListStompyPro = [
   "buttock.stl",
   "calf.stl",
   "clav.stl",
@@ -45,16 +45,41 @@ const meshFilesList = [
   "uarm.stl",
 ];
 
+const meshFilesListDora2 = [
+  "base_link.STL",
+  "l_arm_elbow_Link.STL",
+  "l_arm_shoulder_pitch_Link.STL",
+  "l_arm_shoulder_roll_Link.STL",
+  "l_arm_shoulder_yaw_Link.STL",
+  "l_leg_ankle_pitch_Link.STL",
+  "l_leg_ankle_roll_Link.STL",
+  "l_leg_hip_pitch_Link.STL",
+  "l_leg_hip_roll_Link.STL",
+  "l_leg_hip_yaw_Link.STL",
+  "l_leg_knee_Link.STL",
+  "r_arm_elbow_Link.STL",
+  "r_arm_shoulder_pitch_Link.STL",
+  "r_arm_shoulder_roll_Link.STL",
+  "r_arm_shoulder_yaw_Link.STL",
+  "r_leg_ankle_pitch_Link.STL",
+  "r_leg_ankle_roll_Link.STL",
+  "r_leg_hip_pitch_Link.STL",
+  "r_leg_hip_roll_Link.STL",
+  "r_leg_hip_yaw_Link.STL",
+  "r_leg_knee_Link.STL",
+];
+
+// const meshFilesList = meshFilesListStompyPro;
+const meshFilesList = meshFilesListDora2;
+
 for (const meshFile of meshFilesList) {
   const meshContent = await (
     await fetch(`./examples/meshes/${meshFile}`)
   ).arrayBuffer();
-  console.log(`Downloading ${meshFile}`);
   mujoco.FS.writeFile(
     `/working/meshes/${meshFile}`,
     new Uint8Array(meshContent),
   );
-  console.log(`Downloaded ${meshFile}`);
 }
 
 export class MuJoCoDemo {
@@ -63,7 +88,6 @@ export class MuJoCoDemo {
 
     // Load in the state from XML
     this.model = new mujoco.Model("/working/" + initialScene);
-    console.log(this.model);
     this.state = new mujoco.State(this.model);
     this.simulation = new mujoco.Simulation(this.model, this.state);
 
