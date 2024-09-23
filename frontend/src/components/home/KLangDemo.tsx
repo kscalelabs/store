@@ -47,7 +47,7 @@ speakPhrase("Hello, I am a robot.");`,
       </div>
       <div className="mt-6 px-4">
         <div className="flex flex-col gap-2 mb-6 text-center">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl text-gray-1">
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl text-gray-1">
             Watch <span className="font-black text-primary-9">K-Lang</span> In
             Action
           </h2>

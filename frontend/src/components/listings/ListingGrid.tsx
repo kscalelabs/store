@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-import Masonry from "react-masonry-css";
 import { Link } from "react-router-dom";
 
 import ListingGridCard from "@/components/listings/ListingGridCard";
-import { Card } from "@/components/ui/Card";
 import Spinner from "@/components/ui/Spinner";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
@@ -46,37 +44,22 @@ const ListingGrid = (props: ListingGridProps) => {
     }
   }, [listingIds]);
 
-  const breakpointColumnsObj = {
-    default: 4,
-    1536: 3,
-    1280: 3,
-    1024: 2,
-    768: 2,
-    640: 1,
-  };
-
   return listingIds === null ? (
     <div className="flex justify-center items-center h-64">
       <Spinner />
     </div>
   ) : (
-    <Masonry
-      breakpointCols={breakpointColumnsObj}
-      className="flex w-auto -ml-4 sm:-ml-6"
-      columnClassName="pl-4 sm:pl-6 bg-clip-padding"
-    >
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
       {listingIds.map((listingId) => (
-        <Card key={listingId} className="mb-4 sm:mb-6 overflow-hidden">
-          <Link to={`/item/${listingId}`}>
-            <ListingGridCard
-              listingId={listingId}
-              listing={listingInfo?.find((l) => l.id === listingId)}
-              showDescription={true}
-            />
-          </Link>
-        </Card>
+        <Link to={`/item/${listingId}`} key={listingId}>
+          <ListingGridCard
+            listingId={listingId}
+            listing={listingInfo?.find((l) => l.id === listingId)}
+            showDescription={true}
+          />
+        </Link>
       ))}
-    </Masonry>
+    </div>
   );
 };
 
