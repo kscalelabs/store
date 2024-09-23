@@ -18,7 +18,7 @@ import { DragStateManager } from "./utils/DragStateManager.js";
 const mujoco = await load_mujoco();
 
 // Set up Emscripten's Virtual File System
-var initialScene = "dora2.xml";
+var initialScene = "stompypro.xml";
 mujoco.FS.mkdir("/working");
 mujoco.FS.mount(mujoco.MEMFS, { root: "." }, "/working");
 mujoco.FS.writeFile(
@@ -119,13 +119,18 @@ export class MuJoCoDemo {
     this.scene = new THREE.Scene();
     this.scene.name = "scene";
 
+    // this.camera = new THREE.PerspectiveCamera(
+    //   75,
+    //   this.width / this.height,
+    //   0.1,
+    //   1000,
+    // );
     this.camera = new THREE.PerspectiveCamera(
-      75,
-      this.width / this.height,
-      0.1,
-      1000,
+      45,
+      window.innerWidth / window.innerHeight,
+      0.001,
+      100,
     );
-    // this.camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.001, 100 );
     this.camera.name = "PerspectiveCamera";
     this.camera.position.set(2.0, 1.7, 1.7);
     this.scene.add(this.camera);
