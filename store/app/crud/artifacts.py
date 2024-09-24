@@ -277,6 +277,7 @@ class ArtifactsCrud(BaseCrud):
             description=description,
             label=label,
             is_official=is_official,
+            downloads=0,
         )
 
         if artifact_type == "image":
@@ -290,6 +291,7 @@ class ArtifactsCrud(BaseCrud):
             file_content = await file.read()
             file_obj = io.BytesIO(file_content)
             await self._upload_and_store(name, file_obj, user_id, artifact_type, description)
+            await self._add_item(artifact)
 
         return artifact
 
@@ -307,6 +309,7 @@ class ArtifactsCrud(BaseCrud):
             name=name,
             artifact_type=artifact_type,
             description=description,
+            downloads=0,
         )
 
         s3_filename = get_artifact_name(artifact=artifact, name=name, artifact_type=artifact_type)
@@ -382,3 +385,11 @@ class ArtifactsCrud(BaseCrud):
             artifact_updates["description"] = description
         if artifact_updates:
             await self._update_item(artifact_id, Artifact, artifact_updates)
+
+    async def get_standalone_artifacts(self) -> list[Artifact]:
+        artifacts = await self._get_items_from_secondary_index(
+            "listing_id",
+            "none",
+            Artifact,
+        )
+        return sorted(artifacts, key=lambda a: a.timestamp, reverse=True)

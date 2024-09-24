@@ -1,31 +1,24 @@
 import { useEffect, useState } from "react";
 
+import DownloadArtifact from "@/components/listing/artifacts/DownloadArtifact";
+import LoadingArtifactCard from "@/components/listing/artifacts/LoadingArtifactCard";
 import { UploadModal } from "@/components/modals/UploadModal";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/Card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { paths } from "@/gen/api";
+import { components } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
-import { cn } from "@/lib/utils";
-import { Download, Search, Upload } from "lucide-react";
+import { Search, Upload } from "lucide-react";
 
-type ArtifactInfo =
-  paths["/artifacts/list/{listing_id}"]["get"]["responses"]["200"]["content"]["application/json"]["artifacts"][number];
+type ArtifactInfo = components["schemas"]["SingleArtifactResponse"];
+type UploadArtifactResponse = components["schemas"]["UploadArtifactResponse"];
 
 export default function DownloadsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [artifacts, setArtifacts] = useState<ArtifactInfo[]>([]);
+  const [artifacts, setArtifacts] = useState<ArtifactInfo[] | null>(null);
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
 
@@ -36,7 +29,7 @@ export default function DownloadsPage() {
   const fetchArtifacts = async () => {
     try {
       const response = await auth.client.GET("/artifacts/list/{listing_id}", {
-        params: { path: { listing_id: "all" } },
+        params: { path: { listing_id: "none" } },
       });
       if (response.data) {
         setArtifacts(response.data.artifacts);
@@ -47,10 +40,10 @@ export default function DownloadsPage() {
     }
   };
 
-  const filteredArtifacts = artifacts.filter(
+  const filteredArtifacts = artifacts?.filter(
     (artifact) =>
       artifact.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (activeTab === "all" || artifact.artifact_type === activeTab),
+      (activeTab === "all" || artifact.artifact_label === activeTab),
   );
 
   const handleUpload = async (
@@ -61,15 +54,14 @@ export default function DownloadsPage() {
     isOfficial: boolean,
   ) => {
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("name", name);
-      formData.append("artifact_type", label === "kernel" ? "image" : "ml");
-      formData.append("description", description);
-      formData.append("is_official", isOfficial.toString());
-
       const response = await auth.client.POST("/artifacts/upload", {
-        body: formData,
+        body: {
+          file: await fileToBase64(file),
+          name,
+          description,
+          label: label as "kernel" | "ml" | null,
+          is_official: isOfficial,
+        },
       });
 
       if (response.error) {
@@ -79,7 +71,13 @@ export default function DownloadsPage() {
         );
       } else {
         console.log("Upload successful:", response.data);
-        fetchArtifacts(); // Refresh the list of artifacts
+        const uploadResponse = response.data as UploadArtifactResponse;
+        if (uploadResponse.artifacts && uploadResponse.artifacts.length > 0) {
+          setArtifacts((prevArtifacts) => [
+            ...(prevArtifacts || []),
+            ...uploadResponse.artifacts,
+          ]);
+        }
       }
     } catch (error) {
       console.error("Upload failed:", error);
@@ -89,26 +87,13 @@ export default function DownloadsPage() {
     }
   };
 
-  const handleDownload = async (artifactId: string) => {
-    try {
-      const response = await auth.client.GET(
-        "/artifacts/download/{artifact_id}",
-        {
-          params: { path: { artifact_id: artifactId } },
-        },
-      );
-
-      if (response.data) {
-        window.location.href = response.data.url;
-      } else {
-        addErrorAlert("Download failed: No URL returned");
-      }
-    } catch (error) {
-      console.error("Download failed:", error);
-      addErrorAlert(
-        `Download failed: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
   };
 
   // Check if the user has admin or moderator permissions
@@ -118,7 +103,7 @@ export default function DownloadsPage() {
     ) || false;
 
   return (
-    <div className="px-4 py-8 rounded-lg">
+    <div className="max-w-6xl mx-auto px-4 py-8 rounded-lg">
       <h1 className="text-3xl font-bold mb-2">K-Scale Downloads</h1>
       <p className="text-muted-foreground mb-6">
         View and download official K-Scale and community uploaded kernel images,
@@ -137,7 +122,7 @@ export default function DownloadsPage() {
         </div>
         {canUpload && (
           <Button onClick={() => setIsUploadModalOpen(true)}>
-            <Upload className="mr-2 h-4 w-4" /> Upload Resource
+            <Upload className="mr-2 h-4 w-4" /> Upload
           </Button>
         )}
       </div>
@@ -151,49 +136,22 @@ export default function DownloadsPage() {
       </Tabs>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredArtifacts.map((artifact) => (
-          <Card key={artifact.artifact_id}>
-            <CardHeader>
-              <CardTitle className="flex justify-between items-center">
-                {artifact.name}
-                <div className="flex gap-2">
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      artifact.artifact_label === "kernel" &&
-                        "bg-blue-100 text-blue-800",
-                      artifact.artifact_label === "ml" &&
-                        "bg-purple-100 text-purple-800",
-                    )}
-                  >
-                    {artifact.artifact_type}
-                  </Badge>
-                  {artifact.is_official && (
-                    <Badge variant="primary">Official</Badge>
-                  )}
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">{artifact.description}</p>
-            </CardContent>
-            <CardFooter>
-              <Button
-                className="w-full"
-                onClick={() => handleDownload(artifact.artifact_id)}
-              >
-                <Download className="mr-2 h-4 w-4" /> Download
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
+        {artifacts === null ? (
+          <>
+            <LoadingArtifactCard />
+            <LoadingArtifactCard />
+            <LoadingArtifactCard />
+          </>
+        ) : filteredArtifacts && filteredArtifacts.length > 0 ? (
+          filteredArtifacts.map((artifact) => (
+            <DownloadArtifact key={artifact.artifact_id} artifact={artifact} />
+          ))
+        ) : (
+          <p className="col-span-3 text-center text-muted-foreground mt-8">
+            No resources found matching your search criteria.
+          </p>
+        )}
       </div>
-
-      {filteredArtifacts.length === 0 && (
-        <p className="text-center text-muted-foreground mt-8">
-          No resources found matching your search criteria.
-        </p>
-      )}
 
       {canUpload && (
         <UploadModal

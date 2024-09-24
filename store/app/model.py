@@ -338,6 +338,7 @@ class Artifact(StoreBaseModel):
         children: list[str] | None = None,
         label: ArtifactLabel | None = None,
         is_official: bool = False,
+        downloads: int = 0,
     ) -> Self:
         return cls(
             id=new_uuid(),

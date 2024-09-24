@@ -1,5 +1,6 @@
 """Defines the router endpoints for handling listing artifacts."""
 
+import asyncio
 import logging
 import os
 from typing import Annotated
@@ -89,6 +90,7 @@ class SingleArtifactResponse(BaseModel):
     description: str | None
     timestamp: int
     urls: ArtifactUrls
+    downloads: int = 0
     artifact_label: ArtifactLabel | None
     is_official: bool
 
@@ -117,12 +119,20 @@ async def get_artifact_info(
         artifact_type=artifact.artifact_type,
         description=artifact.description,
         timestamp=artifact.timestamp,
+        num_downloads=artifact.downloads,
+        artifact_label=artifact.label,
+        is_official=artifact.is_official,
         urls=get_artifact_url_response(artifact=artifact),
     )
 
 
 @artifacts_router.get("/list/{listing_id}", response_model=ListArtifactsResponse)
 async def list_artifacts(listing_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> ListArtifactsResponse:
+    if listing_id == "none":
+        artifacts = await crud.get_standalone_artifacts()
+    else:
+        artifacts = await crud.get_listing_artifacts(listing_id)
+
     return ListArtifactsResponse(
         artifacts=[
             SingleArtifactResponse(
@@ -133,8 +143,10 @@ async def list_artifacts(listing_id: str, crud: Annotated[Crud, Depends(Crud.get
                 description=artifact.description,
                 timestamp=artifact.timestamp,
                 urls=get_artifact_url_response(artifact=artifact),
+                artifact_label=artifact.label,
+                is_official=artifact.is_official,
             )
-            for artifact in await crud.get_listing_artifacts(listing_id)
+            for artifact in artifacts
         ],
     )
 
@@ -172,38 +184,89 @@ class UploadArtifactResponse(BaseModel):
     artifacts: list[SingleArtifactResponse]
 
 
+@artifacts_router.post("/listing-upload/{listing_id}", response_model=UploadArtifactResponse)
+async def listing_upload(
+    listing_id: str,
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+    files: list[UploadFile],
+) -> UploadArtifactResponse:
+    # Checks that the user is not uploading too many files at once.
+    if len(files) > settings.artifact.max_concurrent_file_uploads:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Too many files were uploaded concurrently",
+        )
+    filenames = [validate_file(file) for file in files]
+
+    # Makes sure that filenames are unique.
+    if len(set(filename for filename, _ in filenames)) != len(filenames):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Duplicate filenames were provided",
+        )
+
+    # Checks that the listing is valid.
+    listing = await crud.get_listing(listing_id)
+
+    if listing is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Could not find listing associated with the given id",
+        )
+    if not await can_write_listing(user, listing):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User does not have permission to upload artifacts to this listing",
+        )
+
+    # Uploads the artifacts in chunks and adds them to the listing.
+    artifacts = await asyncio.gather(
+        *(
+            crud.upload_artifact(
+                name=filename,
+                file=file,
+                user_id=user.id,
+                listing=listing,
+                artifact_type=artifact_type,
+            )
+            for file, (filename, artifact_type) in zip(files, filenames)
+        )
+    )
+
+    return UploadArtifactResponse(
+        artifacts=[
+            SingleArtifactResponse(
+                artifact_id=artifact.id,
+                listing_id=artifact.listing_id,
+                name=artifact.name,
+                artifact_type=artifact.artifact_type,
+                description=artifact.description,
+                timestamp=artifact.timestamp,
+                urls=get_artifact_url_response(artifact=artifact),
+                downloads=artifact.downloads,
+                artifact_label=artifact.label,
+                is_official=artifact.is_official,
+            )
+            for artifact in artifacts
+        ]
+    )
+
+
 @artifacts_router.post("/upload", response_model=UploadArtifactResponse)
 async def upload(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
     file: UploadFile,
     name: str = Form(...),
-    artifact_type: ArtifactType = Form(...),
-    listing_id: str | None = Form(None),
     description: str | None = Form(None),
     label: ArtifactLabel | None = Form(None),
     is_official: bool = Form(True),
 ) -> UploadArtifactResponse:
-    logger.info(f"Starting upload process for file: {name}")
+    logger.info(f"Starting non-listing upload process for file: {name}")
     try:
         filename, artifact_type = validate_file(file)
         logger.info(f"File validated: {filename}, type: {artifact_type}")
-
-        listing = None
-        if listing_id:
-            listing = await crud.get_listing(listing_id)
-            if listing is None:
-                logger.error(f"Listing not found: {listing_id}")
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Could not find listing associated with the given id",
-                )
-            if not await can_write_listing(user, listing):
-                logger.error(f"User {user.id} does not have permission to upload to listing {listing_id}")
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="User does not have permission to upload artifacts to this listing",
-                )
 
         logger.info(f"Uploading artifact: {name}")
         artifact = await crud.upload_artifact(
@@ -211,7 +274,7 @@ async def upload(
             file=file,
             user_id=user.id,
             artifact_type=artifact_type,
-            listing=listing,
+            listing=None,
             description=description,
             label=label,
             is_official=is_official,
@@ -222,12 +285,15 @@ async def upload(
             artifacts=[
                 SingleArtifactResponse(
                     artifact_id=artifact.id,
-                    listing_id=artifact.listing_id,
+                    listing_id=None,
                     name=artifact.name,
                     artifact_type=artifact.artifact_type,
                     description=artifact.description,
                     timestamp=artifact.timestamp,
                     urls=get_artifact_url_response(artifact=artifact),
+                    artifact_label=artifact.label,
+                    is_official=artifact.is_official,
+                    downloads=artifact.downloads,
                 )
             ]
         )

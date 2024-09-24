@@ -80,12 +80,11 @@ const ArtifactCard: React.FC<Props> = ({ artifact, onDelete, canEdit }) => {
         </div>
         <p className="text-sm text-gray-10 mb-2">{artifact.description}</p>
         <p className="text-xs text-gray-10 mb-4">Created on {formattedDate}</p>
-        {artifact.artifact_type === "tgz" && (
+        {artifact.artifact_type === "tgz" ? (
           <TgzArtifact artifact={artifact} />
-        )}
-        {artifact.artifact_type === "image" && (
+        ) : artifact.artifact_type === "image" ? (
           <ImageArtifact artifact={artifact} />
-        )}
+        ) : null}
       </div>
     </div>
   );
