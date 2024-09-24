@@ -802,31 +802,7 @@ export async function loadSceneFromURL(mujoco, filename, parent) {
 /** Downloads the scenes/examples folder to MuJoCo's virtual filesystem
  * @param {mujoco} mujoco */
 export async function downloadExampleScenesFolder(mujoco) {
-  let allFiles = ["humanoid.xml", "scene.xml", "dora2.xml", "stompypro.xml"];
-
-  const meshFilesListDora2 = [
-    "base_link.STL",
-    "l_arm_elbow_Link.STL",
-    "l_arm_shoulder_pitch_Link.STL",
-    "l_arm_shoulder_roll_Link.STL",
-    "l_arm_shoulder_yaw_Link.STL",
-    "l_leg_ankle_pitch_Link.STL",
-    "l_leg_ankle_roll_Link.STL",
-    "l_leg_hip_pitch_Link.STL",
-    "l_leg_hip_roll_Link.STL",
-    "l_leg_hip_yaw_Link.STL",
-    "l_leg_knee_Link.STL",
-    "r_arm_elbow_Link.STL",
-    "r_arm_shoulder_pitch_Link.STL",
-    "r_arm_shoulder_roll_Link.STL",
-    "r_arm_shoulder_yaw_Link.STL",
-    "r_leg_ankle_pitch_Link.STL",
-    "r_leg_ankle_roll_Link.STL",
-    "r_leg_hip_pitch_Link.STL",
-    "r_leg_hip_roll_Link.STL",
-    "r_leg_hip_yaw_Link.STL",
-    "r_leg_knee_Link.STL",
-  ];
+  let allFiles = ["humanoid.xml", "scene.xml", "stompypro.xml"];
 
   const meshFilesListStompyPro = [
     "buttock.stl",
@@ -843,10 +819,6 @@ export async function downloadExampleScenesFolder(mujoco) {
     "trunk.stl",
     "uarm.stl",
   ];
-
-  allFiles = allFiles.concat(
-    meshFilesListDora2.map((mesh) => "/dora_meshes/" + mesh),
-  );
 
   allFiles = allFiles.concat(
     meshFilesListStompyPro.map((mesh) => "/stompypro_meshes/" + mesh),

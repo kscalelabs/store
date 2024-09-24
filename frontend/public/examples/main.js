@@ -14,11 +14,20 @@ import {
 } from "./mujocoUtils.js";
 import { DragStateManager } from "./utils/DragStateManager.js";
 
+// START Constants
+
+const HUMANOID_MODELS = Object.freeze({
+  HUMANOID: "humanoid.xml",
+  STOMPY_PRO: "stompypro.xml",
+});
+
 // Load the MuJoCo Module
 const mujoco = await load_mujoco();
 
+// END Constants
+
 // Set up Emscripten's Virtual File System
-var initialScene = "stompypro.xml";
+var initialScene = HUMANOID_MODELS.STOMPY_PRO;
 mujoco.FS.mkdir("/working");
 mujoco.FS.mount(mujoco.MEMFS, { root: "." }, "/working");
 mujoco.FS.writeFile(
@@ -28,59 +37,6 @@ mujoco.FS.writeFile(
 
 // Create meshes directory
 mujoco.FS.mkdir("/working/meshes");
-
-const meshFilesListStompyPro = [
-  "buttock.stl",
-  "calf.stl",
-  "clav.stl",
-  "farm.stl",
-  "foot.stl",
-  "leg.stl",
-  "mcalf.stl",
-  "mfoot.stl",
-  "mthigh.stl",
-  "scap.stl",
-  "thigh.stl",
-  "trunk.stl",
-  "uarm.stl",
-];
-
-const meshFilesListDora2 = [
-  "base_link.STL",
-  "l_arm_elbow_Link.STL",
-  "l_arm_shoulder_pitch_Link.STL",
-  "l_arm_shoulder_roll_Link.STL",
-  "l_arm_shoulder_yaw_Link.STL",
-  "l_leg_ankle_pitch_Link.STL",
-  "l_leg_ankle_roll_Link.STL",
-  "l_leg_hip_pitch_Link.STL",
-  "l_leg_hip_roll_Link.STL",
-  "l_leg_hip_yaw_Link.STL",
-  "l_leg_knee_Link.STL",
-  "r_arm_elbow_Link.STL",
-  "r_arm_shoulder_pitch_Link.STL",
-  "r_arm_shoulder_roll_Link.STL",
-  "r_arm_shoulder_yaw_Link.STL",
-  "r_leg_ankle_pitch_Link.STL",
-  "r_leg_ankle_roll_Link.STL",
-  "r_leg_hip_pitch_Link.STL",
-  "r_leg_hip_roll_Link.STL",
-  "r_leg_hip_yaw_Link.STL",
-  "r_leg_knee_Link.STL",
-];
-
-// const meshFilesList = meshFilesListStompyPro;
-const meshFilesList = meshFilesListDora2;
-
-for (const meshFile of meshFilesList) {
-  const meshContent = await (
-    await fetch(`./examples/meshes/${meshFile}`)
-  ).arrayBuffer();
-  mujoco.FS.writeFile(
-    `/working/meshes/${meshFile}`,
-    new Uint8Array(meshContent),
-  );
-}
 
 export class MuJoCoDemo {
   constructor() {
@@ -213,34 +169,17 @@ export class MuJoCoDemo {
     }
   }
 
-  // should re-get pawel-diff
+  // TODO: load ONNX model
   async loadPPOModel() {
     this.ppo_model = null;
     this.getObservation = null;
 
-    // switch (this.params.scene) {
-    //   case 'humanoid.xml':
-    //     this.ppo_model = await tf.loadLayersModel('models/2_frame/model.json');
-    //     this.getObservation = () => this.getObservationSkeleton(2, 10, 6);
-    //     break;
-    //   case 'blank':
-    //     this.ppo_model = await tf.loadLayersModel('models/cvals+2_frames/model.json');
-    //     break;
-    //   case 'brax_humanoid.xml':
-    //     this.ppo_model = await tf.loadLayersModel('models/brax_humanoid_cvalless_just_stand/model.json');
-    //     this.getObservation = () => this.getObservationSkeleton(0, -1, -1);
-    //     break;
-    //   case 'brax_humanoidstandup.xml':
-    //     this.ppo_model = await tf.loadLayersModel('models/brax_humanoid_standup/model.json');
-    //     this.getObservation = () => this.getObservationSkeleton(0, 20, 12);
-    //     break;
-    //   case 'dora/dora2.xml':
-    //     this.ppo_model = await tf.loadLayersModel('models/dora/model.json');
-    //     this.getObservation = () => this.getObservationSkeleton(0, 100, 72); // 172 diff total
-    //     break;
-    //   default:
-    //     throw new Error(`Unknown Tensorflow.js model for XML path: ${this.params.scene}`);
-    // }
+    switch (this.params["scene"]) {
+      case HUMANOID_MODELS.STOMPY_PRO:
+        break;
+      default:
+        throw new Error(`Unsupported model: ${this.params["scene"]}`);
+    }
   }
 
   getObservationSkeleton(qpos_slice, cinert_slice, cvel_slice) {
@@ -349,6 +288,7 @@ export class MuJoCoDemo {
     this.controls.update();
 
     if (!this.params["paused"]) {
+      // TODO: overhaul with ONNX logic
       if (this.ppo_model && this.params["useModel"]) {
         const observationArray = this.getObservation();
         const inputTensor = tf.tensor2d([observationArray]);
@@ -476,36 +416,6 @@ export class MuJoCoDemo {
           pos[addr + 0] += offset.x;
           pos[addr + 1] += offset.y;
           pos[addr + 2] += offset.z;
-
-          //// Save the original root body position
-          //let x  = pos[addr + 0], y  = pos[addr + 1], z  = pos[addr + 2];
-          //let xq = pos[addr + 3], yq = pos[addr + 4], zq = pos[addr + 5], wq = pos[addr + 6];
-
-          //// Clear old perturbations, apply new ones.
-          //for (let i = 0; i < this.simulation.qfrc_applied().length; i++) { this.simulation.qfrc_applied()[i] = 0.0; }
-          //for (let bi = 0; bi < this.model.nbody(); bi++) {
-          //  if (this.bodies[b]) {
-          //    getPosition  (this.simulation.xpos (), bi, this.bodies[bi].position);
-          //    getQuaternion(this.simulation.xquat(), bi, this.bodies[bi].quaternion);
-          //    this.bodies[bi].updateWorldMatrix();
-          //  }
-          //}
-          ////dragStateManager.update(); // Update the world-space force origin
-          //let force = toMujocoPos(this.dragStateManager.currentWorld.clone()
-          //  .sub(this.dragStateManager.worldHit).multiplyScalar(this.model.body_mass()[b] * 0.01));
-          //let point = toMujocoPos(this.dragStateManager.worldHit.clone());
-          //// This force is dumped into xrfc_applied
-          //this.simulation.applyForce(force.x, force.y, force.z, 0, 0, 0, point.x, point.y, point.z, b);
-          //this.simulation.integratePos(this.simulation.qpos(), this.simulation.qfrc_applied(), 1);
-
-          //// Add extra drag to the root body
-          //pos[addr + 0] = x  + (pos[addr + 0] - x ) * 0.1;
-          //pos[addr + 1] = y  + (pos[addr + 1] - y ) * 0.1;
-          //pos[addr + 2] = z  + (pos[addr + 2] - z ) * 0.1;
-          //pos[addr + 3] = xq + (pos[addr + 3] - xq) * 0.1;
-          //pos[addr + 4] = yq + (pos[addr + 4] - yq) * 0.1;
-          //pos[addr + 5] = zq + (pos[addr + 5] - zq) * 0.1;
-          //pos[addr + 6] = wq + (pos[addr + 6] - wq) * 0.1;
         }
       }
 
