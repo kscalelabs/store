@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import ListingGrid from "@/components/listings/ListingGrid";
@@ -67,6 +66,7 @@ const Browse = () => {
 
   const prevButton = pageNumber > 1;
   const nextButton = moreListings;
+  const hasButton = prevButton || nextButton;
 
   const options: { value: SortOption; label: string }[] = [
     { value: "most_upvoted", label: "Most Upvoted" },
@@ -78,6 +78,29 @@ const Browse = () => {
     <>
       <div className="pb-8">
         <div className="flex flex-col md:flex-row justify-center items-center mt-4 gap-y-2 md:gap-x-2">
+          <div className="w-full md:w-auto">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  Sort By:{" "}
+                  {options.find((opt) => opt.value === sortOption)?.label}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuLabel>Sort Options</DropdownMenuLabel>
+                {options.map((option) => (
+                  <DropdownMenuCheckboxItem
+                    key={option.value}
+                    checked={sortOption === option.value}
+                    onCheckedChange={() => setSortOption(option.value)}
+                    className={`text-gray-11 cursor-pointer ${sortOption === option.value ? "text-gray-12 bg-gray-3" : ""}`}
+                  >
+                    {option.label}
+                  </DropdownMenuCheckboxItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           <div className="relative w-full md:w-auto">
             <Input
               onChange={(e) => {
@@ -104,61 +127,36 @@ const Browse = () => {
               </div>
             )}
           </div>
-          <div className="w-full md:w-auto flex flex-col md:flex-row gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="lg" className="w-full md:w-1/2">
-                  Sort By:{" "}
-                  {options.find((opt) => opt.value === sortOption)?.label}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-48">
-                <DropdownMenuLabel>Sort Options</DropdownMenuLabel>
-                {options.map((option) => (
-                  <DropdownMenuCheckboxItem
-                    key={option.value}
-                    checked={sortOption === option.value}
-                    onCheckedChange={() => setSortOption(option.value)}
-                    className={`text-gray-11 cursor-pointer ${sortOption === option.value ? "text-gray-12 bg-gray-3" : ""}`}
-                  >
-                    {option.label}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Button
-              onClick={() => navigate(`/create`)}
-              variant="primary"
-              size="lg"
-              className="w-full md:w-auto"
-            >
-              Create
-            </Button>
-          </div>
+          <Button
+            onClick={() => navigate(`/create`)}
+            variant="primary"
+            size="lg"
+            className="w-full md:w-auto"
+          >
+            Create
+          </Button>
         </div>
 
-        <div className="flex justify-between mt-2">
-          <Button
-            variant="default"
-            onClick={() => navigate(`/browse/?page=${pageNumber - 1}`)}
-            disabled={!prevButton}
-          >
-            <div className="flex items-center">
-              <FaChevronLeft className="text-xs mr-2" />
-              Previous
-            </div>
-          </Button>
-          <Button
-            variant="default"
-            onClick={() => navigate(`/browse/?page=${pageNumber + 1}`)}
-            disabled={!nextButton}
-          >
-            <div className="flex items-center">
-              Next
-              <FaChevronRight className="text-xs ml-2" />
-            </div>
-          </Button>
-        </div>
+        {hasButton && (
+          <div className="flex justify-center mt-4">
+            {prevButton && (
+              <button
+                className="bg-gray-3 hover:bg-gray-4 text-gray-12 font-bold py-2 px-4 rounded-l mr-auto"
+                onClick={() => navigate(`/browse/?page=${pageNumber - 1}`)}
+              >
+                Previous
+              </button>
+            )}
+            {nextButton && (
+              <button
+                className="bg-gray-3 hover:bg-gray-4 text-gray-12 font-bold py-2 px-4 rounded-r ml-auto"
+                onClick={() => navigate(`/browse/?page=${pageNumber + 1}`)}
+              >
+                Next
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <ListingGrid listingIds={listingIds} />

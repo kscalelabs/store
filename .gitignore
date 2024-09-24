@@ -33,5 +33,3 @@ out*/
 # mujoco wasm setup
 !/public/dist
 !/public/node_modules/three/build
-
-sim/third_party

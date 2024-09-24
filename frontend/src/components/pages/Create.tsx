@@ -67,7 +67,7 @@ const Create = () => {
               <div>
                 <label
                   htmlFor="name"
-                  className="block mb-2 text-sm font-medium text-gray-12"
+                  className="block mb-2 text-sm font-medium text-gray-11"
                 >
                   Name
                 </label>
@@ -86,7 +86,7 @@ const Create = () => {
               <div className="relative">
                 <label
                   htmlFor="description"
-                  className="block mb-2 text-sm font-medium text-gray-12"
+                  className="block mb-2 text-sm font-medium text-gray-11"
                 >
                   Description (supports Markdown formatting)
                 </label>
@@ -117,7 +117,7 @@ const Create = () => {
               {/* Submit */}
               <div className="flex justify-end">
                 <Button variant="primary" type="submit">
-                  Post build
+                  Submit
                 </Button>
               </div>
             </form>

@@ -68,17 +68,6 @@ export SMTP_SENDER_EMAIL=''
 export SMTP_PASSWORD=''
 export SMTP_SENDER_NAME=''
 export SMTP_USERNAME=''
-
-# For Github OAuth
-export GITHUB_CLIENT_ID=''
-export GITHUB_CLIENT_SECRET=''
-
-# For Google OAuth
-export VITE_GOOGLE_CLIENT_ID=''
-
-# For OnShape
-export ONSHAPE_ACCESS_KEY=''
-export ONSHAPE_SECRET_KEY=''
 ```
 
 ### Google OAuth Configuration

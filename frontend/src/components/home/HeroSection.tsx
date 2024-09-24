@@ -24,19 +24,17 @@ const HeroSection: React.FC = () => {
           className="w-[300px] h-[140px]"
         />
       </div>
-      <p className="text-lg sm:text-xl md:text-2xl text-center md:max-w-2xl mt-4">
+      <p className="text-lg sm:text-xl md:text-2xl text-center md:max-w-2xl mt-4 sm:mt-8">
         Program robots with K-Lang, our language purpose-built for humanoid
         robots.
       </p>
-      <Button
-        variant="primary"
-        className="mt-6 sm:mt-10 py-6 px-5 hover:bg-white hover:text-primary-9"
-      >
+      <Button variant="primary" className="mt-6 sm:mt-10 py-6 px-3">
         <div className="flex items-center">
-          <FaCirclePlay className="mr-3 h-5 w-5" />
-          <span className="text-base font-medium tracking-widest">
-            Watch Demo
-          </span>
+          <FaCirclePlay className="mr-2 h-5 w-5" />
+          <div className="flex flex-col items-start">
+            <span className="font-medium tracking-widest">Watch Demo</span>
+            <span className="text-gray-3 font-thin">1 minute</span>
+          </div>
         </div>
       </Button>
 
