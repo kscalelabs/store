@@ -29,3 +29,7 @@ out*/
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+
+# mujoco wasm setup
+!/public/dist
+!/public/node_modules/three/build
