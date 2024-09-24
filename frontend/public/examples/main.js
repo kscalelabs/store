@@ -361,8 +361,10 @@ export class MuJoCoDemo {
       if (torques) {
         // Apply torques to the simulation
         for (let i = 0; i < torques.length; i++) {
-          // this.simulation.ctrl[i] = torques[i];
-          this.params;
+          this.simulation.ctrl[i] = torques[i];
+          this.params[this.actuatorNames[i]] = torques[i];
+
+          // this.params;
         }
 
         // Step the simulation
