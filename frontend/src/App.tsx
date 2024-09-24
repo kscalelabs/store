@@ -11,6 +11,7 @@ import Footer from "@/components/footer/Footer";
 import Navbar from "@/components/nav/Navbar";
 import APIKeys from "@/components/pages/APIKeys";
 import About from "@/components/pages/About";
+import Account from "@/components/pages/Account";
 import Browse from "@/components/pages/Browse";
 import BuyPage from "@/components/pages/BuyPage";
 import Create from "@/components/pages/Create";
@@ -28,6 +29,7 @@ import { AlertQueue, AlertQueueProvider } from "@/hooks/useAlertQueue";
 import { AuthenticationProvider } from "@/hooks/useAuth";
 
 import DownloadsPage from "./components/pages/Download";
+import MuJoCoTestPage from "./components/pages/MuJoCoTest";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import TermsOfService from "./components/pages/TermsOfService";
 
@@ -47,6 +49,8 @@ const App = () => {
                     <Routes>
                       <Route path="/" element={<Home />} />
 
+                      <Route path="/mujoco-test" element={<MuJoCoTestPage />} />
+
                       <Route path="/about" element={<About />} />
                       <Route path="/buy" element={<BuyPage />} />
                       <Route path="/downloads" element={<DownloadsPage />} />
@@ -56,7 +60,7 @@ const App = () => {
                         path="/file/:artifactId"
                         element={<FileBrowser />}
                       />
-                      <Route path="/account" element={<Profile />} />
+                      <Route path="/account" element={<Account />} />
                       <Route path="/login" element={<Login />} />
                       <Route path="/logout" element={<Logout />} />
                       <Route path="/signup/" element={<Signup />} />
