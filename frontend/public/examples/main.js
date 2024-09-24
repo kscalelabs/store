@@ -178,6 +178,9 @@ export class MuJoCoDemo {
       this.controls,
     );
     document.addEventListener("keydown", this.handleKeyPress.bind(this));
+
+    // Initialize connection with sim2sim backend
+    this.initializeSim2Sim();
   }
 
   async init() {
@@ -340,7 +343,7 @@ export class MuJoCoDemo {
   }
 
   // render loop
-  render(timeMS) {
+  async render(timeMS) {
     if (!this.isSimulationReady) {
       console.log("Simulation not ready yet, skipping render");
       return;
@@ -349,101 +352,28 @@ export class MuJoCoDemo {
     this.controls.update();
 
     if (!this.params["paused"]) {
-      if (this.ppo_model && this.params["useModel"]) {
-        const observationArray = this.getObservation();
-        const inputTensor = tf.tensor2d([observationArray]);
-        const resultTensor = this.ppo_model.predict(inputTensor);
+      // Prepare the current observation
+      const observation = this.getCurrentObservation();
 
-        resultTensor.data().then((data) => {
-          // console.log('Model output:', data);
+      // Fetch torques from sim2sim backend
+      const torques = await this.fetchTorques(observation);
 
-          // Assuming the model output corresponds to actuator values
-          for (let i = 0; i < data.length; i++) {
-            // Ensure the actuator index is within bounds
-            if (i < this.simulation.ctrl.length) {
-              let clippedValue = Math.max(-1, Math.min(1, data[i]));
-
-              let [min, max] = this.actuatorRanges[i];
-
-              // Scale to fit between min and max
-              let newValue = min + ((clippedValue + 1) * (max - min)) / 2;
-
-              // Update the actuator value
-              this.simulation.ctrl[i] = newValue;
-
-              // Optionally, update the corresponding parameter
-              this.params[this.actuatorNames[i]] = newValue;
-            } else {
-              console.error("Model output index out of bounds:", i);
-            }
-          }
-        });
-      }
-
-      let timestep = this.model.getOptions().timestep;
-      if (timeMS - this.mujoco_time > 35.0) {
-        this.mujoco_time = timeMS;
-      }
-      while (this.mujoco_time < timeMS) {
-        // updates states from dragging
-        // Jitter the control state with gaussian random noise
-        if (this.params["ctrlnoisestd"] > 0.0) {
-          let rate = Math.exp(
-            -timestep / Math.max(1e-10, this.params["ctrlnoiserate"]),
-          );
-          let scale = this.params["ctrlnoisestd"] * Math.sqrt(1 - rate * rate);
-          let currentCtrl = this.simulation.ctrl;
-          for (let i = 0; i < currentCtrl.length; i++) {
-            currentCtrl[i] = rate * currentCtrl[i] + scale * standardNormal();
-            this.params[this.actuatorNames[i]] = currentCtrl[i];
-          }
+      if (torques) {
+        // Apply torques to the simulation
+        for (let i = 0; i < torques.length; i++) {
+          // this.simulation.ctrl[i] = torques[i];
+          this.params;
         }
 
-        // Clear old perturbations, apply new ones.
-        for (let i = 0; i < this.simulation.qfrc_applied.length; i++) {
-          this.simulation.qfrc_applied[i] = 0.0;
-        }
-        let dragged = this.dragStateManager.physicsObject;
-        if (dragged && dragged.bodyID) {
-          for (let b = 0; b < this.model.nbody; b++) {
-            if (this.bodies[b]) {
-              getPosition(this.simulation.xpos, b, this.bodies[b].position);
-              getQuaternion(
-                this.simulation.xquat,
-                b,
-                this.bodies[b].quaternion,
-              );
-              this.bodies[b].updateWorldMatrix();
-            }
-          }
-          let bodyID = dragged.bodyID;
-          this.dragStateManager.update(); // Update the world-space force origin
-          let force = toMujocoPos(
-            this.dragStateManager.currentWorld
-              .clone()
-              .sub(this.dragStateManager.worldHit)
-              .multiplyScalar(this.model.body_mass[bodyID] * 250),
-          );
-          let point = toMujocoPos(this.dragStateManager.worldHit.clone());
-          this.simulation.applyForce(
-            force.x,
-            force.y,
-            force.z,
-            0,
-            0,
-            0,
-            point.x,
-            point.y,
-            point.z,
-            bodyID,
-          );
-
-          // TODO: Apply pose perturbations (mocap bodies only).
-        }
-
+        // Step the simulation
         this.simulation.step();
+        console.log("Torques:", torques);
+        // console.log("Simulation step complete");
+        // console.log("Simulation qpos:", this.simulation.qpos);
+        // console.log("Simulation qvel:", this.simulation.qvel);
+        // console.log("Simulation ctrl:", this.simulation.ctrl);
 
-        this.mujoco_time += timestep * 1000.0;
+        this.mujoco_time += this.model.getOptions().timestep * 1000.0;
       }
     } else if (this.params["paused"]) {
       // updates states from dragging
@@ -481,7 +411,7 @@ export class MuJoCoDemo {
           //let x  = pos[addr + 0], y  = pos[addr + 1], z  = pos[addr + 2];
           //let xq = pos[addr + 3], yq = pos[addr + 4], zq = pos[addr + 5], wq = pos[addr + 6];
 
-          //// Clear old perturbations, apply new ones.
+          //// Clear old perturbations, apply new.
           //for (let i = 0; i < this.simulation.qfrc_applied().length; i++) { this.simulation.qfrc_applied()[i] = 0.0; }
           //for (let bi = 0; bi < this.model.nbody(); bi++) {
           //  if (this.bodies[b]) {
@@ -601,6 +531,74 @@ export class MuJoCoDemo {
 
     // Render!
     this.renderer.render(this.scene, this.camera);
+  }
+
+  quatToEuler(quat) {
+    let euler = new THREE.Euler();
+    let three_quat = new THREE.Quaternion(quat[0], quat[1], quat[2], quat[3]);
+    euler.setFromQuaternion(three_quat);
+    return euler;
+  }
+
+  getCurrentObservation() {
+    // Prepare the current observation to send to the backend
+    let omega = Array.from(this.simulation.sensordata.slice(-3));
+    let quat = Array.from(this.simulation.sensordata.slice(-7, -3));
+
+    // Convert quat to euler angles
+    let euler = this.quatToEuler(quat);
+
+    console.log("Euler: ", euler);
+    console.log("Omega: ", omega);
+    return {
+      q: Array.from(this.simulation.qpos.slice(-10)),
+      dq: Array.from(this.simulation.qvel.slice(-10)),
+      quat: quat,
+      omega: omega,
+      // Add any other relevant observation data
+    };
+  }
+
+  async fetchTorques(observation) {
+    try {
+      const response = await fetch("http://localhost:8000/step", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(observation),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      return data.tau;
+    } catch (error) {
+      console.error("Error fetching torques:", error);
+      return null;
+    }
+  }
+
+  async initializeSim2Sim() {
+    try {
+      // Perform any necessary initialization with the sim2sim backend
+      // For example, you might want to send initial state information
+      const response = await fetch("http://localhost:8000/initialize", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          // Add any initialization data you need to send
+        }),
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      console.log("Sim2Sim backend initialized successfully");
+    } catch (error) {
+      console.error("Error initializing Sim2Sim backend:", error);
+    }
   }
 }
 

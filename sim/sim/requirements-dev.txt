@@ -1,0 +1,8 @@
+# requirements-dev.txt
+
+black
+darglint
+mypy==1.10.0
+pytest
+ruff
+isort
