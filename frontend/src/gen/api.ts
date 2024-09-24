@@ -38,6 +38,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/artifacts/info/{artifact_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Artifact Info */
+        get: operations["get_artifact_info_artifacts_info__artifact_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/artifacts/list/{listing_id}": {
         parameters: {
             query?: never;
@@ -262,6 +279,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/listings/user/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List User Listings */
+        get: operations["list_user_listings_listings_user__id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/listings/me": {
         parameters: {
             query?: never;
@@ -347,24 +381,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/urdf/info/{listing_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Urdf */
-        get: operations["get_urdf_urdf_info__listing_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/urdf/upload/{listing_id}": {
+    "/listings/{id}/view": {
         parameters: {
             query?: never;
             header?: never;
@@ -373,15 +390,15 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Set Urdf */
-        post: operations["set_urdf_urdf_upload__listing_id__post"];
+        /** Increment View Count */
+        post: operations["increment_view_count_listings__id__view_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/urdf/delete/{listing_id}": {
+    "/listings/{id}/vote": {
         parameters: {
             query?: never;
             header?: never;
@@ -390,9 +407,44 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** Vote Listing */
+        post: operations["vote_listing_listings__id__vote_post"];
+        /** Remove Vote */
+        delete: operations["remove_vote_listings__id__vote_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/onshape/set/{listing_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Onshape Document */
+        post: operations["set_onshape_document_onshape_set__listing_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/onshape/pull/{listing_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Pull Onshape Document */
+        get: operations["pull_onshape_document_onshape_pull__listing_id__get"];
+        put?: never;
         post?: never;
-        /** Delete Urdf */
-        delete: operations["delete_urdf_urdf_delete__listing_id__delete"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -407,7 +459,8 @@ export interface paths {
         };
         /** Get User Info Endpoint */
         get: operations["get_user_info_endpoint_users_me_get"];
-        put?: never;
+        /** Update Profile */
+        put: operations["update_profile_users_me_put"];
         post?: never;
         /** Delete User Endpoint */
         delete: operations["delete_user_endpoint_users_me_delete"];
@@ -552,6 +605,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/validate-api-key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Validate Api Key Endpoint */
+        get: operations["validate_api_key_endpoint_users_validate_api_key_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/github/client-id": {
         parameters: {
             query?: never;
@@ -631,6 +701,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/set-moderator": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Set Moderator */
+        post: operations["set_moderator_users_set_moderator_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -647,13 +734,16 @@ export interface components {
             /** Api Key */
             api_key: string;
         };
-        /** Body_set_urdf_urdf_upload__listing_id__post */
-        Body_set_urdf_urdf_upload__listing_id__post: {
-            /**
-             * File
-             * Format: binary
-             */
-            file: string;
+        /** Body_pull_onshape_document_onshape_pull__listing_id__get */
+        Body_pull_onshape_document_onshape_pull__listing_id__get: {
+            /** Suffix To Joint Effort */
+            suffix_to_joint_effort?: {
+                [key: string]: number;
+            } | null;
+            /** Suffix To Joint Velocity */
+            suffix_to_joint_velocity?: {
+                [key: string]: number;
+            } | null;
         };
         /** Body_upload_artifacts_upload__listing_id__post */
         Body_upload_artifacts_upload__listing_id__post: {
@@ -705,8 +795,22 @@ export interface components {
             child_ids: string[];
             /** Tags */
             tags: string[];
+            /** Onshape Url */
+            onshape_url: string | null;
             /** Can Edit */
             can_edit: boolean;
+            /** Created At */
+            created_at: number;
+            /** Views */
+            views: number;
+            /** Score */
+            score: number;
+            /** User Vote */
+            user_vote: boolean | null;
+            /** Creator Id */
+            creator_id: string;
+            /** Creator Name */
+            creator_name: string | null;
         };
         /** GetTokenResponse */
         GetTokenResponse: {
@@ -742,28 +846,10 @@ export interface components {
             /** Permissions */
             permissions: ("read" | "write" | "admin")[] | null;
         };
-        /** ListArtifactsItem */
-        ListArtifactsItem: {
-            /** Artifact Id */
-            artifact_id: string;
-            /** Listing Id */
-            listing_id: string;
-            /** Name */
-            name: string;
-            /** Artifact Type */
-            artifact_type: "image" | ("urdf" | "mjcf") | ("stl" | "obj" | "dae" | "ply") | ("tgz" | "zip");
-            /** Description */
-            description: string | null;
-            /** Timestamp */
-            timestamp: number;
-            urls: components["schemas"]["ArtifactUrls"];
-            /** Is New */
-            is_new?: boolean | null;
-        };
         /** ListArtifactsResponse */
         ListArtifactsResponse: {
             /** Artifacts */
-            artifacts: components["schemas"]["ListArtifactsItem"][];
+            artifacts: components["schemas"]["SingleArtifactResponse"][];
         };
         /** ListKeysResponse */
         ListKeysResponse: {
@@ -792,12 +878,38 @@ export interface components {
             id: string;
             /** User Id */
             user_id: string;
+            /** Created At */
+            created_at: number;
+            /** Updated At */
+            updated_at: number;
             /** Name */
             name: string;
             /** Child Ids */
             child_ids: string[];
             /** Description */
-            description: string | null;
+            description?: string | null;
+            /** Onshape Url */
+            onshape_url?: string | null;
+            /**
+             * Views
+             * @default 0
+             */
+            views: number;
+            /**
+             * Upvotes
+             * @default 0
+             */
+            upvotes: number;
+            /**
+             * Downvotes
+             * @default 0
+             */
+            downvotes: number;
+            /**
+             * Score
+             * @default 0
+             */
+            score: number;
         };
         /** ListingInfoResponse */
         ListingInfoResponse: {
@@ -811,6 +923,16 @@ export interface components {
             child_ids: string[];
             /** Image Url */
             image_url: string | null;
+            /** Onshape Url */
+            onshape_url: string | null;
+            /** Created At */
+            created_at: number;
+            /** Views */
+            views: number;
+            /** Score */
+            score: number;
+            /** User Vote */
+            user_vote: boolean | null;
         };
         /** LoginRequest */
         LoginRequest: {
@@ -840,7 +962,15 @@ export interface components {
             /** Google Id */
             google_id: string | null;
             /** Permissions */
-            permissions: "is_admin"[] | null;
+            permissions: ("is_admin" | "is_mod")[] | null;
+            /** First Name */
+            first_name: string | null;
+            /** Last Name */
+            last_name: string | null;
+            /** Name */
+            name: string | null;
+            /** Bio */
+            bio: string | null;
         };
         /** NewKeyRequest */
         NewKeyRequest: {
@@ -877,7 +1007,7 @@ export interface components {
             /** Email */
             email: string;
             /** Permissions */
-            permissions?: "is_admin"[] | null;
+            permissions?: ("is_admin" | "is_mod")[] | null;
             /** Created At */
             created_at?: number | null;
             /** Updated At */
@@ -896,6 +1026,39 @@ export interface components {
             /** Users */
             users: components["schemas"]["PublicUserInfoResponseItem"][];
         };
+        /** SetModeratorRequest */
+        SetModeratorRequest: {
+            /** User Id */
+            user_id: string;
+            /** Is Mod */
+            is_mod: boolean;
+        };
+        /** SetRequest */
+        SetRequest: {
+            /** Onshape Url */
+            onshape_url: string | null;
+        };
+        /** SingleArtifactResponse */
+        SingleArtifactResponse: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Listing Id */
+            listing_id: string;
+            /** Name */
+            name: string;
+            /** Artifact Type */
+            artifact_type: "image" | ("urdf" | "mjcf") | ("stl" | "obj" | "dae" | "ply") | ("tgz" | "zip");
+            /** Description */
+            description: string | null;
+            /** Timestamp */
+            timestamp: number;
+            urls: components["schemas"]["ArtifactUrls"];
+        };
+        /**
+         * SortOption
+         * @enum {string}
+         */
+        SortOption: "newest" | "most_viewed" | "most_upvoted";
         /** UpdateArtifactRequest */
         UpdateArtifactRequest: {
             /** Name */
@@ -914,23 +1077,29 @@ export interface components {
             /** Tags */
             tags?: string[] | null;
         };
+        /** UpdateUserRequest */
+        UpdateUserRequest: {
+            /** Email */
+            email?: string | null;
+            /** Password */
+            password?: string | null;
+            /** Github Id */
+            github_id?: string | null;
+            /** Google Id */
+            google_id?: string | null;
+            /** First Name */
+            first_name?: string | null;
+            /** Last Name */
+            last_name?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Bio */
+            bio?: string | null;
+        };
         /** UploadArtifactResponse */
         UploadArtifactResponse: {
             /** Artifacts */
-            artifacts: components["schemas"]["ListArtifactsItem"][];
-        };
-        /** UrdfInfo */
-        UrdfInfo: {
-            /** Artifact Id */
-            artifact_id: string;
-            /** Url */
-            url: string;
-        };
-        /** UrdfResponse */
-        UrdfResponse: {
-            urdf: components["schemas"]["UrdfInfo"] | null;
-            /** Listing Id */
-            listing_id: string;
+            artifacts: components["schemas"]["SingleArtifactResponse"][];
         };
         /** UserInfoResponseItem */
         UserInfoResponseItem: {
@@ -952,9 +1121,9 @@ export interface components {
             /** Email */
             email: string;
             /** Permissions */
-            permissions?: "is_admin"[] | null;
+            permissions?: ("is_admin" | "is_mod")[] | null;
             /** Created At */
-            created_at?: number | null;
+            created_at: number;
             /** Updated At */
             updated_at?: number | null;
             /** First Name */
@@ -1035,6 +1204,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_artifact_info_artifacts_info__artifact_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SingleArtifactResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1361,11 +1561,13 @@ export interface operations {
     };
     list_listings_listings_search_get: {
         parameters: {
-            query: {
+            query?: {
                 /** @description Page number for pagination */
-                page: number;
+                page?: number;
                 /** @description Search query string */
                 search_query?: string;
+                /** @description Sort option for listings */
+                sort_by?: components["schemas"]["SortOption"];
             };
             header?: never;
             path?: never;
@@ -1441,6 +1643,42 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DumpListingsResponse"];
+                };
+            };
+        };
+    };
+    list_user_listings_listings_user__id__get: {
+        parameters: {
+            query: {
+                /** @description Page number for pagination */
+                page: number;
+                /** @description Search query string */
+                search_query?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListListingsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1609,12 +1847,12 @@ export interface operations {
             };
         };
     };
-    get_urdf_urdf_info__listing_id__get: {
+    increment_view_count_listings__id__view_post: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                listing_id: string;
+                id: string;
             };
             cookie?: never;
         };
@@ -1626,7 +1864,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UrdfResponse"];
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -1640,7 +1878,72 @@ export interface operations {
             };
         };
     };
-    set_urdf_urdf_upload__listing_id__post: {
+    vote_listing_listings__id__vote_post: {
+        parameters: {
+            query: {
+                /** @description True for upvote, False for downvote */
+                upvote: boolean;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_vote_listings__id__vote_delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_onshape_document_onshape_set__listing_id__post: {
         parameters: {
             query?: never;
             header?: never;
@@ -1651,7 +1954,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["Body_set_urdf_urdf_upload__listing_id__post"];
+                "application/json": components["schemas"]["SetRequest"];
             };
         };
         responses: {
@@ -1661,7 +1964,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UrdfResponse"];
+                    "application/json": unknown;
                 };
             };
             /** @description Validation Error */
@@ -1675,25 +1978,36 @@ export interface operations {
             };
         };
     };
-    delete_urdf_urdf_delete__listing_id__delete: {
+    pull_onshape_document_onshape_pull__listing_id__get: {
         parameters: {
-            query?: never;
+            query?: {
+                token?: string | null;
+                default_prismatic_joint_effort?: number;
+                default_prismatic_joint_velocity?: number;
+                default_revolute_joint_effort?: number;
+                default_revolute_joint_velocity?: number;
+                voxel_size?: number;
+                convex_collision_meshes?: boolean;
+                add_mjcf?: boolean;
+            };
             header?: never;
             path: {
                 listing_id: string;
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["Body_pull_onshape_document_onshape_pull__listing_id__get"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": components["schemas"]["UrdfResponse"];
-                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {
@@ -1722,6 +2036,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MyUserInfoResponse"];
+                };
+            };
+        };
+    };
+    update_profile_users_me_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateUserRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserPublic"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -1976,6 +2323,26 @@ export interface operations {
             };
         };
     };
+    validate_api_key_endpoint_users_validate_api_key_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": boolean;
+                };
+            };
+        };
+    };
     github_client_id_endpoint_users_github_client_id_get: {
         parameters: {
             query?: never;
@@ -2069,6 +2436,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuthResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_moderator_users_set_moderator_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetModeratorRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserPublic"];
                 };
             };
             /** @description Validation Error */
