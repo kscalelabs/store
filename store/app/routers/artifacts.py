@@ -119,7 +119,7 @@ async def get_artifact_info(
         artifact_type=artifact.artifact_type,
         description=artifact.description,
         timestamp=artifact.timestamp,
-        num_downloads=artifact.downloads,
+        downloads=artifact.downloads,
         artifact_label=artifact.label,
         is_official=artifact.is_official,
         urls=get_artifact_url_response(artifact=artifact),
@@ -317,7 +317,7 @@ async def download_artifact(
             detail="Could not find artifact associated with the given id",
         )
 
-    if not await can_read_artifact(user, artifact):
+    if user is None or not await can_read_artifact(user, artifact):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User does not have permission to download this artifact",
