@@ -12,6 +12,7 @@ import {
   standardNormal,
   toMujocoPos,
 } from "./mujocoUtils.js";
+import PPOModel from "./ppo.js";
 import { DragStateManager } from "./utils/DragStateManager.js";
 
 // Load the MuJoCo Module
@@ -164,7 +165,43 @@ export class MuJoCoDemo {
 
     this.actuatorNames = [];
     this.actuatorRanges = [];
+    this.ppoModel = new PPOModel();
     this.loadPPOModel();
+
+    this.cfg = {
+      num_actions: 10, // Adjust this based on your robot
+      env: {
+        num_single_obs: 11 + 10 * 3, // Adjust based on your observation space
+        frame_stack: 15,
+      },
+      normalization: {
+        obs_scales: {
+          lin_vel: 2.0,
+          ang_vel: 1.0,
+          dof_pos: 1.0,
+          dof_vel: 0.05,
+        },
+        clip_observations: 18.0,
+        clip_actions: 18.0,
+      },
+      control: {
+        action_scale: 0.25,
+      },
+      sim_config: {
+        dt: 0.001,
+        decimation: 10,
+      },
+    };
+
+    this.cmd = { vx: 0, vy: 0, dyaw: 0 };
+    this.defaultPos = new Array(this.cfg.num_actions).fill(0); // You might want to set this to actual default positions
+    this.lastAction = new Array(this.cfg.num_actions).fill(0);
+
+    // Initialize the observation buffer with zeros
+    this.obsBuffer = new Array(this.cfg.env.frame_stack)
+      .fill()
+      .map(() => new Array(this.cfg.env.num_single_obs).fill(0));
+
     this.isSimulationReady = false;
 
     window.addEventListener("resize", this.onWindowResize.bind(this));
@@ -181,6 +218,73 @@ export class MuJoCoDemo {
 
     // Initialize connection with sim2sim backend
     this.initializeSim2Sim();
+
+    // Define stiffness and damping values
+    this.stiffness = {
+      hip_y: 120,
+      hip_x: 60,
+      hip_z: 60,
+      knee: 120,
+      ankle_y: 17,
+    };
+
+    this.damping = {
+      hip_y: 10,
+      hip_x: 10,
+      hip_z: 10,
+      knee: 10,
+      ankle_y: 5,
+    };
+
+    // Calculate kps and kds
+    const tau_factor = 0.85;
+    this.kps = Object.values(this.stiffness)
+      .flatMap((v) => [v, v])
+      .map((v) => v * tau_factor);
+    this.kds = Object.values(this.damping).flatMap((v) => [v, v]);
+
+    // Calculate tau_limit
+    this.tauLimit = this.kps.map((kp) => kp);
+
+    // Define default standing position
+    this.defaultStanding = {
+      left_hip_pitch: -0.157,
+      left_hip_yaw: 0.0394,
+      left_hip_roll: 0.0628,
+      left_knee_pitch: 0.441,
+      left_ankle_pitch: -0.258,
+      right_hip_pitch: -0.22,
+      right_hip_yaw: 0.026,
+      right_hip_roll: 0.0314,
+      right_knee_pitch: 0.441,
+      right_ankle_pitch: -0.223,
+    };
+
+    // Convert defaultStanding to an array matching the order of joints in the simulation
+    this.defaultPos = [
+      this.defaultStanding.left_hip_pitch,
+      this.defaultStanding.left_hip_yaw,
+      this.defaultStanding.left_hip_roll,
+      this.defaultStanding.left_knee_pitch,
+      this.defaultStanding.left_ankle_pitch,
+      this.defaultStanding.right_hip_pitch,
+      this.defaultStanding.right_hip_yaw,
+      this.defaultStanding.right_hip_roll,
+      this.defaultStanding.right_knee_pitch,
+      this.defaultStanding.right_ankle_pitch,
+    ];
+
+    // Ensure defaultPos has the correct length
+    if (this.defaultPos.length !== this.cfg.num_actions) {
+      console.error(
+        `Default position length (${this.defaultPos.length}) does not match num_actions (${this.cfg.num_actions}). Padding with zeros.`,
+      );
+    }
+
+    this.targetQ = new Array(this.cfg.num_actions).fill(0); // Initialize target position to 0
+    this.targetDQ = new Array(this.cfg.num_actions).fill(0); // Target velocity
+
+    this.count_lowlevel = 0;
   }
 
   async init() {
@@ -216,34 +320,9 @@ export class MuJoCoDemo {
     }
   }
 
-  // should re-get pawel-diff
+  // Add logic for different models
   async loadPPOModel() {
-    this.ppo_model = null;
-    this.getObservation = null;
-
-    // switch (this.params.scene) {
-    //   case 'humanoid.xml':
-    //     this.ppo_model = await tf.loadLayersModel('models/2_frame/model.json');
-    //     this.getObservation = () => this.getObservationSkeleton(2, 10, 6);
-    //     break;
-    //   case 'blank':
-    //     this.ppo_model = await tf.loadLayersModel('models/cvals+2_frames/model.json');
-    //     break;
-    //   case 'brax_humanoid.xml':
-    //     this.ppo_model = await tf.loadLayersModel('models/brax_humanoid_cvalless_just_stand/model.json');
-    //     this.getObservation = () => this.getObservationSkeleton(0, -1, -1);
-    //     break;
-    //   case 'brax_humanoidstandup.xml':
-    //     this.ppo_model = await tf.loadLayersModel('models/brax_humanoid_standup/model.json');
-    //     this.getObservation = () => this.getObservationSkeleton(0, 20, 12);
-    //     break;
-    //   case 'dora/dora2.xml':
-    //     this.ppo_model = await tf.loadLayersModel('models/dora/model.json');
-    //     this.getObservation = () => this.getObservationSkeleton(0, 100, 72); // 172 diff total
-    //     break;
-    //   default:
-    //     throw new Error(`Unknown Tensorflow.js model for XML path: ${this.params.scene}`);
-    // }
+    await this.ppoModel.loadModel("/examples/models/policy_1.onnx");
   }
 
   getObservationSkeleton(qpos_slice, cinert_slice, cvel_slice) {
@@ -352,31 +431,51 @@ export class MuJoCoDemo {
     this.controls.update();
 
     if (!this.params["paused"]) {
-      // Prepare the current observation
-      const observation = this.getCurrentObservation();
+      // 1000hz -> 100hz
+      if (this.count_lowlevel % this.cfg.sim_config.decimation === 0) {
+        // Prepare the current observation
+        const observation = this.getCurrentObservation();
 
-      // Fetch torques from sim2sim backend
-      const torques = await this.fetchTorques(observation);
+        // Update the observation buffer
+        this.updateObservationBuffer(observation);
 
-      if (torques) {
-        // Apply torques to the simulation
-        for (let i = 0; i < torques.length; i++) {
-          this.simulation.ctrl[i] = torques[i];
-          this.params[this.actuatorNames[i]] = torques[i];
+        // Use PPO model to get actions
+        const flattenedObservation = this.obsBuffer.flat();
+        const actions = await this.ppoModel.predict(flattenedObservation);
 
-          // this.params;
+        if (actions) {
+          // Apply actions to the simulation
+          for (let i = 0; i < actions.length; i++) {
+            this.targetQ[i] = actions[i] * this.cfg.control.action_scale;
+          }
+          this.lastAction = actions;
         }
-
-        // Step the simulation
-        this.simulation.step();
-        console.log("Torques:", torques);
-        // console.log("Simulation step complete");
-        // console.log("Simulation qpos:", this.simulation.qpos);
-        // console.log("Simulation qvel:", this.simulation.qvel);
-        // console.log("Simulation ctrl:", this.simulation.ctrl);
-
-        this.mujoco_time += this.model.getOptions().timestep * 1000.0;
       }
+
+      // Get current joint positions and velocities
+      const q = Array.from(this.simulation.qpos.slice(-this.cfg.num_actions));
+      const dq = Array.from(this.simulation.qvel.slice(-this.cfg.num_actions));
+
+      // Calculate PD control
+      const tau = this.pdControl(
+        this.targetQ,
+        q,
+        this.kps,
+        this.targetDQ,
+        dq,
+        this.kds,
+        this.defaultPos,
+      );
+
+      // Apply torques to the simulation
+      for (let i = 0; i < tau.length; i++) {
+        this.simulation.ctrl[i] = tau[i];
+      }
+
+      // Step the simulation
+      this.simulation.step();
+      this.mujoco_time += this.model.getOptions().timestep * 1000.0;
+      this.count_lowlevel++;
     } else if (this.params["paused"]) {
       // updates states from dragging
       this.dragStateManager.update(); // Update the world-space force origin
@@ -542,43 +641,93 @@ export class MuJoCoDemo {
     return euler;
   }
 
+  quaternionToEuler(quat) {
+    const euler = new THREE.Euler();
+    const threeQuat = new THREE.Quaternion(quat[1], quat[2], quat[3], quat[0]);
+    euler.setFromQuaternion(threeQuat);
+    return [euler.x, euler.y, euler.z];
+  }
+
   getCurrentObservation() {
-    // Prepare the current observation to send to the backend
-    let omega = Array.from(this.simulation.sensordata.slice(-3));
-    let quat = Array.from(this.simulation.sensordata.slice(-7, -3));
+    const q = Array.from(this.simulation.qpos.slice(-this.cfg.num_actions));
+    const dq = Array.from(this.simulation.qvel.slice(-this.cfg.num_actions));
+    const quat = Array.from(this.simulation.sensordata.slice(-7, -3));
+    const omega = Array.from(this.simulation.sensordata.slice(-3));
 
-    // Convert quat to euler angles
-    let euler = this.quatToEuler(quat);
+    // Convert quaternion to Euler angles
+    const eulerAngles = this.quaternionToEuler(quat);
 
-    console.log("Euler: ", euler);
-    console.log("Omega: ", omega);
+    // Get gravity vector in base frame
+    const r = new THREE.Quaternion(quat[1], quat[2], quat[3], quat[0]);
+    const gvec = new THREE.Vector3(0, 0, -1).applyQuaternion(r.invert());
+
+    // Get velocity in base frame
+    const v = new THREE.Vector3(
+      ...this.simulation.qvel.slice(0, 3),
+    ).applyQuaternion(r.invert());
+
+    const obs = new Array(this.cfg.env.num_single_obs);
+    let index = 0;
+
+    // Add sinusoidal time component
+    obs[index++] = Math.sin((2 * Math.PI * this.mujoco_time) / 640);
+    obs[index++] = Math.cos((2 * Math.PI * this.mujoco_time) / 640);
+
+    // Add command velocities (assuming you have these)
+    obs[index++] = this.cmd.vx * this.cfg.normalization.obs_scales.lin_vel;
+    obs[index++] = this.cmd.vy * this.cfg.normalization.obs_scales.lin_vel;
+    obs[index++] = this.cmd.dyaw * this.cfg.normalization.obs_scales.ang_vel;
+
+    // Add scaled joint positions
+    for (let i = 0; i < this.cfg.num_actions; i++) {
+      obs[index++] =
+        (q[i] - this.defaultPos[i]) * this.cfg.normalization.obs_scales.dof_pos;
+    }
+
+    // Add scaled joint velocities
+    for (let i = 0; i < this.cfg.num_actions; i++) {
+      obs[index++] = dq[i] * this.cfg.normalization.obs_scales.dof_vel;
+    }
+
+    // Add last actions
+    for (let i = 0; i < this.cfg.num_actions; i++) {
+      obs[index++] = this.lastAction[i];
+    }
+
+    // Add angular velocity
+    obs[index++] = omega[0];
+    obs[index++] = omega[1];
+    obs[index++] = omega[2];
+
+    // Add Euler angles
+    obs[index++] = eulerAngles[0];
+    obs[index++] = eulerAngles[1];
+    obs[index++] = eulerAngles[2];
+
+    // Clip observations
+    for (let i = 0; i < obs.length; i++) {
+      obs[i] = Math.max(
+        Math.min(obs[i], this.cfg.normalization.clip_observations),
+        -this.cfg.normalization.clip_observations,
+      );
+    }
+
+    return obs;
+  }
+
+  createZeroObservation() {
     return {
-      q: Array.from(this.simulation.qpos.slice(-10)),
-      dq: Array.from(this.simulation.qvel.slice(-10)),
-      quat: quat,
-      omega: omega,
-      // Add any other relevant observation data
+      q: Array(10).fill(0),
+      dq: Array(10).fill(0),
+      quat: Array(4).fill(0),
+      omega: Array(3).fill(0),
     };
   }
 
-  async fetchTorques(observation) {
-    try {
-      const response = await fetch("http://localhost:8000/step", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(observation),
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      return data.tau;
-    } catch (error) {
-      console.error("Error fetching torques:", error);
-      return null;
-    }
+  updateObservationBuffer(observation) {
+    // shift the buffer and add the new observation
+    this.obsBuffer.shift();
+    this.obsBuffer.push(observation);
   }
 
   async initializeSim2Sim() {
@@ -601,6 +750,16 @@ export class MuJoCoDemo {
     } catch (error) {
       console.error("Error initializing Sim2Sim backend:", error);
     }
+  }
+
+  pdControl(targetQ, q, kps, targetDQ, dq, kds, defaultPos) {
+    const tau = new Array(this.cfg.num_actions);
+    for (let i = 0; i < this.cfg.num_actions; i++) {
+      tau[i] = kps[i] * (targetQ[i] + defaultPos[i] - q[i]) - kds[i] * dq[i];
+      // Clamp torques
+      tau[i] = Math.max(-this.tauLimit[i], Math.min(this.tauLimit[i], tau[i]));
+    }
+    return tau;
   }
 }
 
