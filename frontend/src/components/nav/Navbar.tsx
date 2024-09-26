@@ -36,7 +36,7 @@ const Navbar = () => {
       path: "https://discord.gg/kscale",
       icon: <FaDiscord className="h-5 w-5" />,
       description:
-        "Connect with robot developers, researchers, and enthusiasts.",
+        "Connect with other robot developers, researchers, and enthusiasts.",
     },
     {
       name: "Twitter",
