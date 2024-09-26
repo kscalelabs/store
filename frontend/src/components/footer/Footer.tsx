@@ -3,11 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 
 import Logo from "@/components/Logo";
 import SocialLink from "@/components/footer/SocialLink";
-import {
-  DiscordPrimaryColor,
-  GithubPrimaryColor,
-  LinkedinPrimaryColor,
-} from "@/lib/types/colors";
 
 const Footer = () => {
   const location = useLocation();
@@ -27,7 +22,7 @@ const Footer = () => {
   }
 
   return (
-    <footer className="bg-gray-12 text-gray-1 py-10 mx-4 sm:mx-6 md:mx-12 lg:mx-20 rounded-lg mb-6">
+    <footer className="bg-gray-12 text-gray-1 py-10 mx-4 sm:mx-6 md:mx-10 xl:mx-16 rounded-lg mb-6">
       <div className="flex flex-col gap-4 mx-8 sm:mx-12">
         {/* Logo and Social Links */}
         <div className="flex flex-col sm:flex-row items-start justify-between sm:items-center mb-8">
@@ -36,7 +31,6 @@ const Footer = () => {
             <SocialLink
               href="https://www.linkedin.com/company/kscale"
               ariaLabel="Visit K-Scale's LinkedIn Page"
-              bgColor={LinkedinPrimaryColor}
               ringColor="focus:ring-sky-500"
             >
               <FaLinkedinIn />
@@ -44,7 +38,6 @@ const Footer = () => {
             <SocialLink
               href="https://github.com/kscalelabs"
               ariaLabel="Visit K-Scale's Github Page"
-              bgColor={GithubPrimaryColor}
               ringColor="focus:ring-black"
             >
               <FaGithub />
@@ -52,7 +45,6 @@ const Footer = () => {
             <SocialLink
               href="https://discord.gg/kscale"
               ariaLabel="Join K-Scale's Discord"
-              bgColor={DiscordPrimaryColor}
               ringColor="focus:ring-black"
             >
               <FaDiscord />
