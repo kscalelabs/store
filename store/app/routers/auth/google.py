@@ -19,7 +19,7 @@ class GoogleLogin(BaseModel):
     token: str
 
 
-async def get_google_user_email(token: str) -> str:
+async def get_google_user_data(token: str) -> dict[str, str]:
     async with AsyncClient() as session:
         response = await session.get(
             "https://www.googleapis.com/oauth2/v3/userinfo",
@@ -28,7 +28,7 @@ async def get_google_user_email(token: str) -> str:
         if response.status_code != 200:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid Google token")
         data = response.json()
-        return data["email"]
+        return data
 
 
 class ClientIdResponse(BaseModel):
@@ -49,8 +49,11 @@ async def google_login_endpoint(
     data: GoogleLogin,
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> AuthResponse:
-    email = await get_google_user_email(data.token)
-    user = await crud.get_user_from_google_token(email)
+    user_data = await get_google_user_data(data.token)
+    email = user_data["email"]
+    first_name = user_data.get("given_name", None)
+    last_name = user_data.get("family_name", None)
+    user = await crud.get_user_from_google_token(email, first_name, last_name)
 
     api_key = await crud.add_api_key(
         user_id=user.id,

@@ -2,7 +2,7 @@
 
 import asyncio
 import warnings
-from typing import Any, Literal, overload
+from typing import Any, Literal, Optional, overload
 
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
@@ -58,10 +58,17 @@ class UserCrud(BaseCrud):
         await self._add_item(user, unique_fields=["email"])
         return user
 
-    async def _create_user_from_oauth(self, email: str, provider: str, user_token: str) -> User:
+    async def _create_user_from_oauth(
+        self,
+        email: str,
+        provider: str,
+        user_token: str,
+        first_name: Optional[str] = None,
+        last_name: Optional[str] = None,
+    ) -> User:
         user = await self.get_user_from_email(email)
         if user is None:
-            user = User.create(email=email, password=None)
+            user = User.create(email=email, first_name=first_name, last_name=last_name, password=None)
             if provider == "github":
                 user.github_id = user_token
             elif provider == "google":
@@ -103,12 +110,14 @@ class UserCrud(BaseCrud):
     async def delete_github_token(self, github_id: str) -> None:
         await self._delete_item(await self._get_oauth_key(github_auth_key(github_id), throw_if_missing=True))
 
-    async def get_user_from_google_token(self, email: str) -> User:
+    async def get_user_from_google_token(
+        self, email: str, first_name: Optional[str] = None, last_name: Optional[str] = None
+    ) -> User:
         auth_key = google_auth_key(email)
         user = await self._get_user_from_auth_key(auth_key)
         if user is not None:
             return user
-        return await self._create_user_from_oauth(email, "google", auth_key)
+        return await self._create_user_from_oauth(email, "google", auth_key, first_name, last_name)
 
     async def delete_google_token(self, google_id: str) -> None:
         await self._delete_item(await self._get_oauth_key(google_auth_key(google_id), throw_if_missing=True))
