@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from "react";
 
 const MUJOCO = ({ url }: { url: string }) => {
   const appBodyRef = useRef<HTMLDivElement>(null);
@@ -27,12 +27,10 @@ const MUJOCO = ({ url }: { url: string }) => {
           </div>
         `;
         appBodyRef.current.innerHTML = htmlContent;
-
         scriptRef.current = document.createElement('script');
         scriptRef.current.type = 'module';
         scriptRef.current.src = '/examples/main.js';
         appBodyRef.current?.querySelector('#appbody')?.appendChild(scriptRef.current);
-
       }
     };
 
@@ -44,21 +42,23 @@ const MUJOCO = ({ url }: { url: string }) => {
         scriptRef.current.parentNode.removeChild(scriptRef.current);
       }
       if (appBodyRef.current) {
-        appBodyRef.current.innerHTML = '';
+        appBodyRef.current.innerHTML = "";
       }
       // Add any additional cleanup here, e.g., stopping WebAssembly instances
     };
   }, []);
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100vh',
-      margin: '0',
-      backgroundColor: 'rgb(255, 255, 255)',
-    }}>
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        margin: "0",
+        backgroundColor: "rgb(255, 255, 255)",
+      }}
+    >
       <div ref={appBodyRef}></div>
     </div>
   );

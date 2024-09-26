@@ -802,6 +802,7 @@ export async function loadSceneFromURL(mujoco, filename, parent) {
 /** Downloads the scenes/examples folder to MuJoCo's virtual filesystem
  * @param {mujoco} mujoco */
 export async function downloadExampleScenesFolder(mujoco) {
+
   let allFiles = ["humanoid.xml", "scene.xml", "dora2.xml", "stompypro.xml"];
 
   const meshFilesListDora2 = [
@@ -845,10 +846,12 @@ export async function downloadExampleScenesFolder(mujoco) {
   ];
 
   allFiles = allFiles.concat(
+
     meshFilesListDora2.map((mesh) => "/dora_meshes/" + mesh),
   );
 
   allFiles = allFiles.concat(
+
     meshFilesListStompyPro.map((mesh) => "/stompypro_meshes/" + mesh),
   );
 

@@ -12,6 +12,7 @@ import {
   standardNormal,
   toMujocoPos,
 } from "./mujocoUtils.js";
+
 import PPOModel from "./ppo.js";
 import { DragStateManager } from "./utils/DragStateManager.js";
 
@@ -20,6 +21,7 @@ const mujoco = await load_mujoco();
 
 // Set up Emscripten's Virtual File System
 var initialScene = "stompypro.xml";
+
 mujoco.FS.mkdir("/working");
 mujoco.FS.mount(mujoco.MEMFS, { root: "." }, "/working");
 mujoco.FS.writeFile(
@@ -165,6 +167,7 @@ export class MuJoCoDemo {
 
     this.actuatorNames = [];
     this.actuatorRanges = [];
+
     this.ppoModel = new PPOModel();
     this.loadPPOModel();
 
@@ -201,7 +204,6 @@ export class MuJoCoDemo {
     this.obsBuffer = new Array(this.cfg.env.frame_stack)
       .fill()
       .map(() => new Array(this.cfg.env.num_single_obs).fill(0));
-
     this.isSimulationReady = false;
 
     window.addEventListener("resize", this.onWindowResize.bind(this));

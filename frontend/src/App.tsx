@@ -29,6 +29,7 @@ import { AlertQueue, AlertQueueProvider } from "@/hooks/useAlertQueue";
 import { AuthenticationProvider } from "@/hooks/useAuth";
 
 import DownloadsPage from "./components/pages/Download";
+import MuJoCoTestPage from "./components/pages/MuJoCoTest";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import TermsOfService from "./components/pages/TermsOfService";
 import TestPage from "./components/pages/TestPage";
@@ -49,7 +50,7 @@ const App = () => {
                     <Routes>
                       <Route path="/" element={<Home />} />
 
-                      <Route path="/test" element={<TestPage />} />
+                      <Route path="/mujoco-test" element={<MuJoCoTestPage />} />
 
                       <Route path="/about" element={<About />} />
                       <Route path="/buy" element={<BuyPage />} />
