@@ -76,8 +76,8 @@ const Browse = () => {
 
   return (
     <>
-      <div className="pb-8">
-        <div className="flex flex-col md:flex-row justify-center items-center mt-4 gap-y-2 md:gap-x-2">
+      <div className="py-8">
+        <div className="flex flex-col md:flex-row justify-center items-center gap-2">
           <div className="relative w-full md:w-auto">
             <Input
               onChange={(e) => {
@@ -137,7 +137,7 @@ const Browse = () => {
           </div>
         </div>
 
-        <div className="flex justify-between mt-2">
+        <div className="flex justify-between">
           <Button
             variant="default"
             onClick={() => navigate(`/browse/?page=${pageNumber - 1}`)}
@@ -162,6 +162,31 @@ const Browse = () => {
       </div>
 
       <ListingGrid listingIds={listingIds} />
+
+      {listingIds && (
+        <div className="flex justify-between mt-2">
+          <Button
+            variant="default"
+            onClick={() => navigate(`/browse/?page=${pageNumber - 1}`)}
+            disabled={!prevButton}
+          >
+            <div className="flex items-center">
+              <FaChevronLeft className="text-xs mr-2" />
+              Previous
+            </div>
+          </Button>
+          <Button
+            variant="default"
+            onClick={() => navigate(`/browse/?page=${pageNumber + 1}`)}
+            disabled={!nextButton}
+          >
+            <div className="flex items-center">
+              Next
+              <FaChevronRight className="text-xs ml-2" />
+            </div>
+          </Button>
+        </div>
+      )}
     </>
   );
 };

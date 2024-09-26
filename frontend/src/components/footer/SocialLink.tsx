@@ -3,7 +3,7 @@ import { FC, ReactNode } from "react";
 interface SocialLinkProps {
   href: string;
   ariaLabel: string;
-  bgColor: string;
+  bgColor?: string;
   ringColor: string;
   children: ReactNode; // social link icon
   className?: string;
@@ -23,13 +23,16 @@ const SocialLink: FC<SocialLinkProps> = ({
       target="_blank"
       rel="noopener noreferrer"
       className={`
-        hover:bg-opacity-80
         rounded-full
-        text-white
+        text-gray-1
+        bg-gray-12
+        hover:text-gray-12
+        hover:bg-gray-1
         cursor-pointer
         focus:outline-none
         focus:ring-2 focus:ring-offset-2 ${ringColor}
         ${className}
+
       `}
       style={{ backgroundColor: bgColor }}
     >
