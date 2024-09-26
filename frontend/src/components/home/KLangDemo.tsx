@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { VideoDemo } from "@/components/VideoDemo";
+import TextRevealByWord from "@/components/ui/TextReveal";
 import { Button } from "@/components/ui/button";
 
 export default function KLangDemo() {
+  const navigate = useNavigate();
   const [activeAction, setActiveAction] =
     useState<keyof typeof codeSnippets>("manipulate");
 
@@ -53,33 +56,53 @@ speakPhrase("Hello, I am a robot.");`,
           </h2>
         </div>
         <div className="grid gap-6 sm:grid-cols-4">
-          <div className="flex flex-row gap-2 sm:gap-4 sm:flex-col sm:col-span-1">
+          <div className="flex flex-row gap-2 sm:gap-4 sm:flex-col sm:col-span-1 w-full font-medium tracking-wide">
             <Button
               variant={activeAction === "manipulate" ? "selected" : "secondary"}
               onClick={() => setActiveAction("manipulate")}
-              className="w-full font-medium tracking-wide"
+              className="w-full font-semibold tracking-wide"
             >
               Manipulation
             </Button>
             <Button
-              variant={activeAction === "turn" ? "selected" : "secondary"}
-              onClick={() => setActiveAction("turn")}
-              className="w-full font-medium tracking-wide"
-            >
-              Turning
-            </Button>
-            <Button
               variant={activeAction === "talk" ? "selected" : "secondary"}
               onClick={() => setActiveAction("talk")}
-              className="w-full font-medium tracking-wide"
+              className="w-full font-semibold tracking-wide"
             >
               Talking
+            </Button>
+            <Button
+              variant={activeAction === "turn" ? "selected" : "secondary"}
+              onClick={() => setActiveAction("turn")}
+              className="w-full font-semibold tracking-wide"
+            >
+              Turning
             </Button>
           </div>
           <div className="rounded-lg border shadow-sm sm:col-span-3 overflow-hidden">
             <pre className="text-xs sm:text-sm text-gray-12 bg-gray-3 p-4 rounded-md overflow-x-auto whitespace-pre-wrap break-words">
               <code>{codeSnippets[activeAction]}</code>
             </pre>
+          </div>
+        </div>
+        <div className="flex flex-col justify-center text-center mt-16 max-w-2xl mx-auto">
+          <TextRevealByWord
+            text="K-Lang allows you to program robots with positive and negative
+            reinforcement learning models."
+          />
+          <span className="text-xl font-semibold tracking-tight sm:text-2xl text-gray-2">
+            Programming robots used to be difficult, but with K-Lang anyone can
+            program robots to do complex tasks. And your robot will continue to
+            learn and improve over time.
+          </span>
+          <div>
+            <Button
+              variant="primary"
+              onClick={() => navigate("/k-lang")}
+              className="px-12 py-6 mt-6 font-medium tracking-wide text-lg"
+            >
+              Learn More
+            </Button>
           </div>
         </div>
       </div>

@@ -48,9 +48,9 @@ export default function BuySection() {
               Stompy Pro
             </h2>
             <p className="max-w-[700px] text-gray-1 md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed mt-3">
-              Exceptional build quality and all the capabilities of other
-              humanoid robot platforms, with full customizability at a fraction
-              of the price.
+              While K-Lang is compatible with other humanoid robot platforms,
+              Stompy Pro comes with our K-Scale OS and other software that makes
+              it the fastest learning robot on the market.
             </p>
           </div>
         </motion.div>
@@ -83,9 +83,10 @@ export default function BuySection() {
               </li>
               <li>
                 <div className="grid gap-1">
-                  <h3 className="text-xl font-bold">Precision Control</h3>
+                  <h3 className="text-xl font-bold">Build Quality</h3>
                   <p className="text-gray-8">
-                    Unparalleled accuracy in movement and manipulation.
+                    Built with a high-quality aluminum frame, and the best
+                    motors, actuators, and sensors available.
                   </p>
                 </div>
               </li>

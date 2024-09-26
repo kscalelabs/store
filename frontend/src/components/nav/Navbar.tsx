@@ -78,9 +78,7 @@ const Navbar = () => {
               <span className="mr-2">{icon}</span>
               <span>{title}</span>
             </div>
-            <p className="line-clamp-2 text-sm leading-snug text-gray-3 group-hover:text-gray-12">
-              {children}
-            </p>
+            <p className="line-clamp-2 text-sm leading-snug">{children}</p>
           </a>
         </NavigationMenuLink>
       </li>
