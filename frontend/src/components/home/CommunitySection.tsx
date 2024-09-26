@@ -5,7 +5,7 @@ import { ChevronRightIcon } from "@radix-ui/react-icons";
 
 export default function CommunitySection() {
   return (
-    <section className="w-full py-12 md:py-24 bg-gray-12 rounded-lg">
+    <section className="w-full py-12 md:py-24 lg:py-32 bg-gray-12 rounded-lg">
       <div className="md:w-[90%] mx-auto px-4 md:px-6">
         <div className="grid md:grid-cols-2 gap-16">
           <div className="flex flex-col justify-between">

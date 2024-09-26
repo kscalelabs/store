@@ -60,9 +60,12 @@ const FeaturesSection: React.FC = () => {
       style={{ y }}
     >
       <div className="text-center max-w-2xl">
-        <h2 className="text-4xl font-bold mb-4">Unparalleled Performance</h2>
+        <h2 className="text-4xl font-bold mb-4">
+          The best and most affordable humanoid robot on the market
+        </h2>
         <p className="text-xl text-gray-11">
-          Stompy Pro brings cutting-edge technology to your home or business.
+          Exceptional build quality and all the capabilities of other humanoid
+          robot platforms, with full customizability at a fraction of the price.
         </p>
       </div>
       <div className="absolute inset-0 -z-10 bg-gray-3" />{" "}
