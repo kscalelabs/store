@@ -31,5 +31,5 @@ out*/
 !.elasticbeanstalk/*.global.yml
 
 # mujoco wasm setup
-!frontend/public/dist
-!/frontend/public/node_modules/three/build
+!/public/dist
+!/public/node_modules/three/build
