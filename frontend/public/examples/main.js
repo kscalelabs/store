@@ -12,7 +12,6 @@ import {
   standardNormal,
   toMujocoPos,
 } from "./mujocoUtils.js";
-
 import PPOModel from "./ppo.js";
 import { DragStateManager } from "./utils/DragStateManager.js";
 
@@ -28,62 +27,6 @@ mujoco.FS.writeFile(
   "/working/" + initialScene,
   await (await fetch("./examples/scenes/" + initialScene)).text(),
 );
-
-// Create meshes directory
-mujoco.FS.mkdir("/working/meshes");
-
-const meshFilesListStompyPro = [
-  "buttock.stl",
-  "calf.stl",
-  "clav.stl",
-  "farm.stl",
-  "foot.stl",
-  "leg.stl",
-  "mcalf.stl",
-  "mfoot.stl",
-  "mthigh.stl",
-  "scap.stl",
-  "thigh.stl",
-  "trunk.stl",
-  "uarm.stl",
-];
-
-const meshFilesListDora2 = [
-  "base_link.STL",
-  "l_arm_elbow_Link.STL",
-  "l_arm_shoulder_pitch_Link.STL",
-  "l_arm_shoulder_roll_Link.STL",
-  "l_arm_shoulder_yaw_Link.STL",
-  "l_leg_ankle_pitch_Link.STL",
-  "l_leg_ankle_roll_Link.STL",
-  "l_leg_hip_pitch_Link.STL",
-  "l_leg_hip_roll_Link.STL",
-  "l_leg_hip_yaw_Link.STL",
-  "l_leg_knee_Link.STL",
-  "r_arm_elbow_Link.STL",
-  "r_arm_shoulder_pitch_Link.STL",
-  "r_arm_shoulder_roll_Link.STL",
-  "r_arm_shoulder_yaw_Link.STL",
-  "r_leg_ankle_pitch_Link.STL",
-  "r_leg_ankle_roll_Link.STL",
-  "r_leg_hip_pitch_Link.STL",
-  "r_leg_hip_roll_Link.STL",
-  "r_leg_hip_yaw_Link.STL",
-  "r_leg_knee_Link.STL",
-];
-
-// const meshFilesList = meshFilesListStompyPro;
-const meshFilesList = meshFilesListDora2;
-
-for (const meshFile of meshFilesList) {
-  const meshContent = await (
-    await fetch(`./examples/meshes/${meshFile}`)
-  ).arrayBuffer();
-  mujoco.FS.writeFile(
-    `/working/meshes/${meshFile}`,
-    new Uint8Array(meshContent),
-  );
-}
 
 export class MuJoCoDemo {
   constructor() {
@@ -216,10 +159,6 @@ export class MuJoCoDemo {
       this.container.parentElement,
       this.controls,
     );
-    document.addEventListener("keydown", this.handleKeyPress.bind(this));
-
-    // Initialize connection with sim2sim backend
-    this.initializeSim2Sim();
 
     // Define stiffness and damping values
     this.stiffness = {
@@ -238,12 +177,24 @@ export class MuJoCoDemo {
       ankle_y: 5,
     };
 
+    const jointOrder = [
+      "hip_y",
+      "hip_x",
+      "hip_z",
+      "knee",
+      "ankle_y",
+      "hip_y",
+      "hip_x",
+      "hip_z",
+      "knee",
+      "ankle_y",
+    ];
+
     // Calculate kps and kds
     const tau_factor = 0.85;
-    this.kps = Object.values(this.stiffness)
-      .flatMap((v) => [v, v])
-      .map((v) => v * tau_factor);
-    this.kds = Object.values(this.damping).flatMap((v) => [v, v]);
+
+    this.kds = jointOrder.map((joint) => this.damping[joint]);
+    this.kps = jointOrder.map((joint) => this.stiffness[joint] * tau_factor);
 
     // Calculate tau_limit
     this.tauLimit = this.kps.map((kp) => kp);
@@ -353,70 +304,6 @@ export class MuJoCoDemo {
     return obsComponents;
   }
 
-  handleKeyPress(event) {
-    const key = event.key.toLowerCase();
-    const stepSize = 0.1;
-
-    switch (key) {
-      case "q":
-        this.moveActuator("hip_y", stepSize);
-        break;
-      case "a":
-        this.moveActuator("hip_y_", -stepSize);
-        break;
-      case "w":
-        this.moveActuator("hip_", stepSize);
-        break;
-      case "s":
-        this.moveActuator("hip_", -stepSize);
-        break;
-      case "e":
-        this.moveActuator("knee_", stepSize);
-        break;
-      case "d":
-        this.moveActuator("knee_", -stepSize);
-        break;
-      case "r":
-        this.moveActuator("abdomen_y", stepSize);
-        break;
-      case "f":
-        this.moveActuator("abdomen_y", -stepSize);
-        break;
-      case "t":
-        this.moveActuator("ankle_", stepSize);
-        break;
-      case "g":
-        this.moveActuator("ankle_", -stepSize);
-        break;
-      case "y":
-        this.moveActuator("shoulder1_", stepSize);
-        this.moveActuator("shoulder2_", stepSize);
-        break;
-      case "h":
-        this.moveActuator("shoulder1_", -stepSize);
-        this.moveActuator("shoulder2_", -stepSize);
-        break;
-      case "u":
-        this.moveActuator("elbow_", stepSize);
-        break;
-      case "j":
-        this.moveActuator("elbow_", -stepSize);
-        break;
-    }
-  }
-
-  moveActuator(prefix, amount) {
-    for (let i = 0; i < this.actuatorNames.length; i++) {
-      if (this.actuatorNames[i].startsWith(prefix)) {
-        let currentValue = this.simulation.ctrl[i];
-        let [min, max] = this.actuatorRanges[i];
-        let newValue = Math.max(min, Math.min(max, currentValue + amount));
-        this.simulation.ctrl[i] = newValue;
-        this.params[this.actuatorNames[i]] = newValue;
-      }
-    }
-  }
-
   onWindowResize() {
     this.camera.aspect = window.innerWidth / window.innerHeight;
     this.camera.updateProjectionMatrix();
@@ -478,71 +365,6 @@ export class MuJoCoDemo {
       this.simulation.step();
       this.mujoco_time += this.model.getOptions().timestep * 1000.0;
       this.count_lowlevel++;
-    } else if (this.params["paused"]) {
-      // updates states from dragging
-      this.dragStateManager.update(); // Update the world-space force origin
-      let dragged = this.dragStateManager.physicsObject;
-      if (dragged && dragged.bodyID) {
-        let b = dragged.bodyID;
-        getPosition(this.simulation.xpos, b, this.tmpVec, false); // Get raw coordinate from MuJoCo
-        getQuaternion(this.simulation.xquat, b, this.tmpQuat, false); // Get raw coordinate from MuJoCo
-
-        let offset = toMujocoPos(
-          this.dragStateManager.currentWorld
-            .clone()
-            .sub(this.dragStateManager.worldHit)
-            .multiplyScalar(0.3),
-        );
-        if (this.model.body_mocapid[b] >= 0) {
-          // Set the root body's mocap position...
-          console.log("Trying to move mocap body", b);
-          let addr = this.model.body_mocapid[b] * 3;
-          let pos = this.simulation.mocap_pos;
-          pos[addr + 0] += offset.x;
-          pos[addr + 1] += offset.y;
-          pos[addr + 2] += offset.z;
-        } else {
-          // Set the root body's position directly...
-          let root = this.model.body_rootid[b];
-          let addr = this.model.jnt_qposadr[this.model.body_jntadr[root]];
-          let pos = this.simulation.qpos;
-          pos[addr + 0] += offset.x;
-          pos[addr + 1] += offset.y;
-          pos[addr + 2] += offset.z;
-
-          //// Save the original root body position
-          //let x  = pos[addr + 0], y  = pos[addr + 1], z  = pos[addr + 2];
-          //let xq = pos[addr + 3], yq = pos[addr + 4], zq = pos[addr + 5], wq = pos[addr + 6];
-
-          //// Clear old perturbations, apply new.
-          //for (let i = 0; i < this.simulation.qfrc_applied().length; i++) { this.simulation.qfrc_applied()[i] = 0.0; }
-          //for (let bi = 0; bi < this.model.nbody(); bi++) {
-          //  if (this.bodies[b]) {
-          //    getPosition  (this.simulation.xpos (), bi, this.bodies[bi].position);
-          //    getQuaternion(this.simulation.xquat(), bi, this.bodies[bi].quaternion);
-          //    this.bodies[bi].updateWorldMatrix();
-          //  }
-          //}
-          ////dragStateManager.update(); // Update the world-space force origin
-          //let force = toMujocoPos(this.dragStateManager.currentWorld.clone()
-          //  .sub(this.dragStateManager.worldHit).multiplyScalar(this.model.body_mass()[b] * 0.01));
-          //let point = toMujocoPos(this.dragStateManager.worldHit.clone());
-          //// This force is dumped into xrfc_applied
-          //this.simulation.applyForce(force.x, force.y, force.z, 0, 0, 0, point.x, point.y, point.z, b);
-          //this.simulation.integratePos(this.simulation.qpos(), this.simulation.qfrc_applied(), 1);
-
-          //// Add extra drag to the root body
-          //pos[addr + 0] = x  + (pos[addr + 0] - x ) * 0.1;
-          //pos[addr + 1] = y  + (pos[addr + 1] - y ) * 0.1;
-          //pos[addr + 2] = z  + (pos[addr + 2] - z ) * 0.1;
-          //pos[addr + 3] = xq + (pos[addr + 3] - xq) * 0.1;
-          //pos[addr + 4] = yq + (pos[addr + 4] - yq) * 0.1;
-          //pos[addr + 5] = zq + (pos[addr + 5] - zq) * 0.1;
-          //pos[addr + 6] = wq + (pos[addr + 6] - wq) * 0.1;
-        }
-      }
-
-      this.simulation.forward();
     }
 
     // Update body transforms.
@@ -672,8 +494,12 @@ export class MuJoCoDemo {
     let index = 0;
 
     // Add sinusoidal time component
-    obs[index++] = Math.sin((2 * Math.PI * this.mujoco_time) / 640);
-    obs[index++] = Math.cos((2 * Math.PI * this.mujoco_time) / 640);
+    obs[index++] = Math.sin(
+      (2 * Math.PI * this.mujoco_time * this.cfg.sim_config.dt) / 0.64,
+    );
+    obs[index++] = Math.cos(
+      (2 * Math.PI * this.mujoco_time * this.cfg.sim_config.dt) / 0.64,
+    );
 
     // Add command velocities (assuming you have these)
     obs[index++] = this.cmd.vx * this.cfg.normalization.obs_scales.lin_vel;
@@ -730,28 +556,6 @@ export class MuJoCoDemo {
     // shift the buffer and add the new observation
     this.obsBuffer.shift();
     this.obsBuffer.push(observation);
-  }
-
-  async initializeSim2Sim() {
-    try {
-      // Perform any necessary initialization with the sim2sim backend
-      // For example, you might want to send initial state information
-      const response = await fetch("http://localhost:8000/initialize", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          // Add any initialization data you need to send
-        }),
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      console.log("Sim2Sim backend initialized successfully");
-    } catch (error) {
-      console.error("Error initializing Sim2Sim backend:", error);
-    }
   }
 
   pdControl(targetQ, q, kps, targetDQ, dq, kds, defaultPos) {
