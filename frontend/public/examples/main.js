@@ -192,7 +192,7 @@ export class MuJoCoDemo {
       },
       sim_config: {
         dt: 0.001,
-        decimation: 10,
+        decimation: 20,
       },
     };
 
@@ -216,10 +216,6 @@ export class MuJoCoDemo {
       this.container.parentElement,
       this.controls,
     );
-    document.addEventListener("keydown", this.handleKeyPress.bind(this));
-
-    // Initialize connection with sim2sim backend
-    this.initializeSim2Sim();
 
     // Define stiffness and damping values
     this.stiffness = {
@@ -247,7 +243,7 @@ export class MuJoCoDemo {
 
     // Calculate tau_limit
     this.tauLimit = this.kps.map((kp) => kp);
-
+    console.log("tauLimit", this.tauLimit);
     // Define default standing position
     this.defaultStanding = {
       left_hip_pitch: -0.157,
@@ -353,69 +349,6 @@ export class MuJoCoDemo {
     return obsComponents;
   }
 
-  handleKeyPress(event) {
-    const key = event.key.toLowerCase();
-    const stepSize = 0.1;
-
-    switch (key) {
-      case "q":
-        this.moveActuator("hip_y", stepSize);
-        break;
-      case "a":
-        this.moveActuator("hip_y_", -stepSize);
-        break;
-      case "w":
-        this.moveActuator("hip_", stepSize);
-        break;
-      case "s":
-        this.moveActuator("hip_", -stepSize);
-        break;
-      case "e":
-        this.moveActuator("knee_", stepSize);
-        break;
-      case "d":
-        this.moveActuator("knee_", -stepSize);
-        break;
-      case "r":
-        this.moveActuator("abdomen_y", stepSize);
-        break;
-      case "f":
-        this.moveActuator("abdomen_y", -stepSize);
-        break;
-      case "t":
-        this.moveActuator("ankle_", stepSize);
-        break;
-      case "g":
-        this.moveActuator("ankle_", -stepSize);
-        break;
-      case "y":
-        this.moveActuator("shoulder1_", stepSize);
-        this.moveActuator("shoulder2_", stepSize);
-        break;
-      case "h":
-        this.moveActuator("shoulder1_", -stepSize);
-        this.moveActuator("shoulder2_", -stepSize);
-        break;
-      case "u":
-        this.moveActuator("elbow_", stepSize);
-        break;
-      case "j":
-        this.moveActuator("elbow_", -stepSize);
-        break;
-    }
-  }
-
-  moveActuator(prefix, amount) {
-    for (let i = 0; i < this.actuatorNames.length; i++) {
-      if (this.actuatorNames[i].startsWith(prefix)) {
-        let currentValue = this.simulation.ctrl[i];
-        let [min, max] = this.actuatorRanges[i];
-        let newValue = Math.max(min, Math.min(max, currentValue + amount));
-        this.simulation.ctrl[i] = newValue;
-        this.params[this.actuatorNames[i]] = newValue;
-      }
-    }
-  }
 
   onWindowResize() {
     this.camera.aspect = window.innerWidth / window.innerHeight;
@@ -732,27 +665,6 @@ export class MuJoCoDemo {
     this.obsBuffer.push(observation);
   }
 
-  async initializeSim2Sim() {
-    try {
-      // Perform any necessary initialization with the sim2sim backend
-      // For example, you might want to send initial state information
-      const response = await fetch("http://localhost:8000/initialize", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          // Add any initialization data you need to send
-        }),
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      console.log("Sim2Sim backend initialized successfully");
-    } catch (error) {
-      console.error("Error initializing Sim2Sim backend:", error);
-    }
-  }
 
   pdControl(targetQ, q, kps, targetDQ, dq, kds, defaultPos) {
     const tau = new Array(this.cfg.num_actions);
