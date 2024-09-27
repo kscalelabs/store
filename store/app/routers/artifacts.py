@@ -5,18 +5,16 @@ import logging
 import os
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.responses import RedirectResponse
 from pydantic.main import BaseModel
 
 from store.app.db import Crud
 from store.app.model import (
     Artifact,
-    ArtifactLabel,
     ArtifactSize,
     ArtifactType,
     User,
-    can_read_artifact,
     can_write_artifact,
     can_write_listing,
     check_content_type,
@@ -84,15 +82,12 @@ def get_artifact_url_response(artifact: Artifact) -> ArtifactUrls:
 
 class SingleArtifactResponse(BaseModel):
     artifact_id: str
-    listing_id: str | None
+    listing_id: str
     name: str
     artifact_type: ArtifactType
     description: str | None
     timestamp: int
     urls: ArtifactUrls
-    downloads: int = 0
-    artifact_label: ArtifactLabel | None
-    is_official: bool
 
 
 class ListArtifactsResponse(BaseModel):
@@ -119,20 +114,12 @@ async def get_artifact_info(
         artifact_type=artifact.artifact_type,
         description=artifact.description,
         timestamp=artifact.timestamp,
-        downloads=artifact.downloads,
-        artifact_label=artifact.label,
-        is_official=artifact.is_official,
         urls=get_artifact_url_response(artifact=artifact),
     )
 
 
 @artifacts_router.get("/list/{listing_id}", response_model=ListArtifactsResponse)
 async def list_artifacts(listing_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> ListArtifactsResponse:
-    if listing_id == "none":
-        artifacts = await crud.get_standalone_artifacts()
-    else:
-        artifacts = await crud.get_listing_artifacts(listing_id)
-
     return ListArtifactsResponse(
         artifacts=[
             SingleArtifactResponse(
@@ -143,10 +130,8 @@ async def list_artifacts(listing_id: str, crud: Annotated[Crud, Depends(Crud.get
                 description=artifact.description,
                 timestamp=artifact.timestamp,
                 urls=get_artifact_url_response(artifact=artifact),
-                artifact_label=artifact.label,
-                is_official=artifact.is_official,
             )
-            for artifact in artifacts
+            for artifact in await crud.get_listing_artifacts(listing_id)
         ],
     )
 
@@ -184,8 +169,8 @@ class UploadArtifactResponse(BaseModel):
     artifacts: list[SingleArtifactResponse]
 
 
-@artifacts_router.post("/listing-upload/{listing_id}", response_model=UploadArtifactResponse)
-async def listing_upload(
+@artifacts_router.post("/upload/{listing_id}", response_model=UploadArtifactResponse)
+async def upload(
     listing_id: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -226,7 +211,6 @@ async def listing_upload(
             crud.upload_artifact(
                 name=filename,
                 file=file,
-                user_id=user.id,
                 listing=listing,
                 artifact_type=artifact_type,
             )
@@ -244,96 +228,9 @@ async def listing_upload(
                 description=artifact.description,
                 timestamp=artifact.timestamp,
                 urls=get_artifact_url_response(artifact=artifact),
-                downloads=artifact.downloads,
-                artifact_label=artifact.label,
-                is_official=artifact.is_official,
             )
             for artifact in artifacts
         ]
-    )
-
-
-@artifacts_router.post("/upload", response_model=UploadArtifactResponse)
-async def upload(
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
-    crud: Annotated[Crud, Depends(Crud.get)],
-    file: UploadFile,
-    name: str = Form(...),
-    description: str | None = Form(None),
-    label: ArtifactLabel | None = Form(None),
-    is_official: bool = Form(True),
-) -> UploadArtifactResponse:
-    logger.info(f"Starting non-listing upload process for file: {name}")
-    try:
-        filename, artifact_type = validate_file(file)
-        logger.info(f"File validated: {filename}, type: {artifact_type}")
-
-        logger.info(f"Uploading artifact: {name}")
-        artifact = await crud.upload_artifact(
-            name=name,
-            file=file,
-            user_id=user.id,
-            artifact_type=artifact_type,
-            listing=None,
-            description=description,
-            label=label,
-            is_official=is_official,
-        )
-        logger.info(f"Artifact uploaded successfully: {artifact.id}")
-
-        response = UploadArtifactResponse(
-            artifacts=[
-                SingleArtifactResponse(
-                    artifact_id=artifact.id,
-                    listing_id=None,
-                    name=artifact.name,
-                    artifact_type=artifact.artifact_type,
-                    description=artifact.description,
-                    timestamp=artifact.timestamp,
-                    urls=get_artifact_url_response(artifact=artifact),
-                    artifact_label=artifact.label,
-                    is_official=artifact.is_official,
-                    downloads=artifact.downloads,
-                )
-            ]
-        )
-        logger.info(f"Upload process completed successfully for file: {name}")
-        return response
-    except Exception as e:
-        logger.error(f"Error during upload process: {str(e)}")
-        raise
-
-
-@artifacts_router.get("/download/{artifact_id}")
-async def download_artifact(
-    artifact_id: str,
-    crud: Annotated[Crud, Depends(Crud.get)],
-    user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
-) -> RedirectResponse:
-    artifact = await crud.get_raw_artifact(artifact_id)
-    if artifact is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Could not find artifact associated with the given id",
-        )
-
-    if user is None or not await can_read_artifact(user, artifact):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User does not have permission to download this artifact",
-        )
-
-    # Increment download count
-    await crud.increment_artifact_downloads(artifact_id)
-
-    return RedirectResponse(
-        url=get_artifact_url(
-            artifact_type=artifact.artifact_type,
-            artifact_id=artifact.id,
-            listing_id=artifact.listing_id,
-            name=artifact.name,
-            size="large",
-        )
     )
 
 

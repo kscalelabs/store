@@ -145,7 +145,7 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
                 new_artifact = await self._upload_and_store(
                     name=tar_path.name,
                     file=buffer,
-                    listing_id=listing.id,
+                    listing=listing,
                     artifact_type="tgz",
                     description=f"Generated from {onshape_url}",
                 )

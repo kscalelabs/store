@@ -34,7 +34,7 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     image_path = Path(tmpdir) / "test.png"
     image.save(image_path)
     response = test_client.post(
-        f"/artifacts/listing-upload/{listing_id}",
+        f"/artifacts/upload/{listing_id}",
         headers=auth_headers,
         files={"files": ("test.png", open(image_path, "rb"), "image/png")},
     )
@@ -45,7 +45,7 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     # Uploads a URDF.
     urdf_path = Path(__file__).parent / "assets" / "sample.urdf"
     response = test_client.post(
-        f"/artifacts/listing-upload/{listing_id}",
+        f"/artifacts/upload/{listing_id}",
         headers=auth_headers,
         files={"files": ("sample.urdf", open(urdf_path, "rb"), "application/xml")},
     )
@@ -66,7 +66,7 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     # Uploads an STL.
     stl_path = Path(__file__).parent / "assets" / "teapot.stl"
     response = test_client.post(
-        f"/artifacts/listing-upload/{listing_id}",
+        f"/artifacts/upload/{listing_id}",
         headers=auth_headers,
         files={
             "files": ("teapot.stl", open(stl_path, "rb"), "application/octet-stream"),
@@ -100,7 +100,7 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     # Uploads a zipfile.
     archive_path = Path(__file__).parent / "assets" / "compressed.zip"
     response = test_client.post(
-        f"/artifacts/listing-upload/{listing_id}",
+        f"/artifacts/upload/{listing_id}",
         headers=auth_headers,
         files={"files": ("compressed.zip", open(archive_path, "rb"), "application/zip")},
     )
@@ -111,7 +111,7 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     # Uploads a tgz file.
     archive_path = Path(__file__).parent / "assets" / "compressed.tgz"
     response = test_client.post(
-        f"/artifacts/listing-upload/{listing_id}",
+        f"/artifacts/upload/{listing_id}",
         headers=auth_headers,
         files={"files": ("compressed.tgz", open(archive_path, "rb"), "application/gzip")},
     )

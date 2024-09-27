@@ -20,7 +20,6 @@ from store.app.errors import BadArtifactError
 from store.app.model import (
     DOWNLOAD_CONTENT_TYPE,
     Artifact,
-    ArtifactLabel,
     ArtifactSize,
     ArtifactType,
     Listing,
@@ -176,7 +175,7 @@ class ArtifactsCrud(BaseCrud):
         name: str,
         file: UploadFile,
         listing: Listing,
-        artifact_type: Literal["tgz", "zip", "tar.gz"],
+        artifact_type: Literal["tgz", "zip"],
         description: str | None = None,
     ) -> Artifact:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -231,13 +230,13 @@ class ArtifactsCrud(BaseCrud):
         self,
         name: str,
         file: IO[bytes],
-        user_id: str,
+        listing: Listing,
         artifact_type: ArtifactType,
         description: str | None = None,
     ) -> Artifact:
         artifact = Artifact.create(
-            user_id=user_id,
-            listing_id=None,
+            user_id=listing.user_id,
+            listing_id=listing.id,
             name=name,
             artifact_type=artifact_type,
             description=description,
@@ -261,78 +260,21 @@ class ArtifactsCrud(BaseCrud):
         self,
         name: str,
         file: UploadFile,
-        user_id: str,
-        artifact_type: ArtifactType,
-        listing: Listing | None = None,
-        description: str | None = None,
-        label: ArtifactLabel | None = None,
-        is_official: bool = True,
-    ) -> Artifact:
-        artifact = Artifact.create(
-            user_id=user_id,
-            listing_id=listing.id if listing else None,
-            name=name,
-            artifact_type=artifact_type,
-            sizes=list(SizeMapping.keys()) if artifact_type == "image" else None,
-            description=description,
-            label=label,
-            is_official=is_official,
-            downloads=0,
-        )
-
-        if artifact_type == "image":
-            image = Image.open(io.BytesIO(await file.read()))
-            await asyncio.gather(
-                *(self._upload_cropped_image(image=image, artifact=artifact, size=size) for size in SizeMapping.keys()),
-                self._add_item(artifact),
-            )
-        else:
-            # Convert UploadFile to BytesIO
-            file_content = await file.read()
-            file_obj = io.BytesIO(file_content)
-            await self._upload_and_store(name, file_obj, user_id, artifact_type, description)
-            await self._add_item(artifact)
-
-        return artifact
-
-    async def _upload_and_store(
-        self,
-        name: str,
-        file: IO[bytes],
-        user_id: str,
+        listing: Listing,
         artifact_type: ArtifactType,
         description: str | None = None,
     ) -> Artifact:
-        artifact = Artifact.create(
-            user_id=user_id,
-            listing_id=None,
-            name=name,
-            artifact_type=artifact_type,
-            description=description,
-            downloads=0,
-        )
-
-        s3_filename = get_artifact_name(artifact=artifact, name=name, artifact_type=artifact_type)
-
-        try:
-            await asyncio.gather(
-                self._upload_to_s3(
-                    data=file,
-                    name=name,
-                    filename=s3_filename,
-                    content_type=DOWNLOAD_CONTENT_TYPE[artifact_type],
-                ),
-                self._add_item(artifact),
-            )
-        except Exception as e:
-            logger.error(f"Failed to upload artifact: {str(e)}")
-            try:
-                await self._delete_item(artifact)
-            except Exception as delete_error:
-                logger.error(f"Failed to delete artifact from DynamoDB after S3 upload failure: {str(delete_error)}")
-            raise
-
-        return artifact
+        match artifact_type:
+            case "image":
+                return await self._upload_image(name, file, listing, description)
+            case "stl" | "obj" | "ply" | "dae":
+                return await self._upload_mesh(name, file, listing, artifact_type, description)
+            case "urdf" | "mjcf":
+                return await self._upload_xml(name, file, listing, artifact_type, description)
+            case "tgz" | "zip":
+                return await self._upload_archive(name, file, listing, artifact_type, description)
+            case _:
+                raise BadArtifactError(f"Invalid artifact type: {artifact_type}")
 
     async def _remove_image(self, artifact: Artifact) -> None:
         await asyncio.gather(
@@ -385,11 +327,3 @@ class ArtifactsCrud(BaseCrud):
             artifact_updates["description"] = description
         if artifact_updates:
             await self._update_item(artifact_id, Artifact, artifact_updates)
-
-    async def get_standalone_artifacts(self) -> list[Artifact]:
-        artifacts = await self._get_items_from_secondary_index(
-            "listing_id",
-            "none",
-            Artifact,
-        )
-        return sorted(artifacts, key=lambda a: a.timestamp, reverse=True)

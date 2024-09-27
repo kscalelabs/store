@@ -32,7 +32,7 @@ def test_user_auth_functions(test_client: TestClient, tmpdir: Path) -> None:
     image_path = Path(tmpdir) / "test.png"
     image.save(image_path)
     response = test_client.post(
-        f"/artifacts/listing-upload/{listing_id}",
+        f"/artifacts/upload/{listing_id}",
         files={"files": ("test.png", open(image_path, "rb"), "image/png")},
         headers=auth_headers,
     )
