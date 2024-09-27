@@ -32,7 +32,6 @@ import DownloadsPage from "./components/pages/Download";
 import MuJoCoTestPage from "./components/pages/MuJoCoTest";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import TermsOfService from "./components/pages/TermsOfService";
-import TestPage from "./components/pages/TestPage";
 
 const App = () => {
   return (

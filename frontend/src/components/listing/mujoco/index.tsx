@@ -27,10 +27,12 @@ const MUJOCO = ({ url }: { url: string }) => {
           </div>
         `;
         appBodyRef.current.innerHTML = htmlContent;
-        scriptRef.current = document.createElement('script');
-        scriptRef.current.type = 'module';
-        scriptRef.current.src = '/examples/main.js';
-        appBodyRef.current?.querySelector('#appbody')?.appendChild(scriptRef.current);
+        scriptRef.current = document.createElement("script");
+        scriptRef.current.type = "module";
+        scriptRef.current.src = "/examples/main.js";
+        appBodyRef.current
+          ?.querySelector("#appbody")
+          ?.appendChild(scriptRef.current);
       }
     };
 
