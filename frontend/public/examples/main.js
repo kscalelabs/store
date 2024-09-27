@@ -12,22 +12,16 @@ import {
   standardNormal,
   toMujocoPos,
 } from "./mujocoUtils.js";
+
+import PPOModel from "./ppo.js";
 import { DragStateManager } from "./utils/DragStateManager.js";
-
-// START Constants
-
-const HUMANOID_MODELS = Object.freeze({
-  HUMANOID: "humanoid.xml",
-  STOMPY_PRO: "stompypro.xml",
-});
 
 // Load the MuJoCo Module
 const mujoco = await load_mujoco();
 
-// END Constants
-
 // Set up Emscripten's Virtual File System
-var initialScene = HUMANOID_MODELS.STOMPY_PRO;
+var initialScene = "stompypro.xml";
+
 mujoco.FS.mkdir("/working");
 mujoco.FS.mount(mujoco.MEMFS, { root: "." }, "/working");
 mujoco.FS.writeFile(
@@ -37,6 +31,59 @@ mujoco.FS.writeFile(
 
 // Create meshes directory
 mujoco.FS.mkdir("/working/meshes");
+
+const meshFilesListStompyPro = [
+  "buttock.stl",
+  "calf.stl",
+  "clav.stl",
+  "farm.stl",
+  "foot.stl",
+  "leg.stl",
+  "mcalf.stl",
+  "mfoot.stl",
+  "mthigh.stl",
+  "scap.stl",
+  "thigh.stl",
+  "trunk.stl",
+  "uarm.stl",
+];
+
+const meshFilesListDora2 = [
+  "base_link.STL",
+  "l_arm_elbow_Link.STL",
+  "l_arm_shoulder_pitch_Link.STL",
+  "l_arm_shoulder_roll_Link.STL",
+  "l_arm_shoulder_yaw_Link.STL",
+  "l_leg_ankle_pitch_Link.STL",
+  "l_leg_ankle_roll_Link.STL",
+  "l_leg_hip_pitch_Link.STL",
+  "l_leg_hip_roll_Link.STL",
+  "l_leg_hip_yaw_Link.STL",
+  "l_leg_knee_Link.STL",
+  "r_arm_elbow_Link.STL",
+  "r_arm_shoulder_pitch_Link.STL",
+  "r_arm_shoulder_roll_Link.STL",
+  "r_arm_shoulder_yaw_Link.STL",
+  "r_leg_ankle_pitch_Link.STL",
+  "r_leg_ankle_roll_Link.STL",
+  "r_leg_hip_pitch_Link.STL",
+  "r_leg_hip_roll_Link.STL",
+  "r_leg_hip_yaw_Link.STL",
+  "r_leg_knee_Link.STL",
+];
+
+// const meshFilesList = meshFilesListStompyPro;
+const meshFilesList = meshFilesListDora2;
+
+for (const meshFile of meshFilesList) {
+  const meshContent = await (
+    await fetch(`./examples/meshes/${meshFile}`)
+  ).arrayBuffer();
+  mujoco.FS.writeFile(
+    `/working/meshes/${meshFile}`,
+    new Uint8Array(meshContent),
+  );
+}
 
 export class MuJoCoDemo {
   constructor() {
@@ -120,7 +167,43 @@ export class MuJoCoDemo {
 
     this.actuatorNames = [];
     this.actuatorRanges = [];
+
+    this.ppoModel = new PPOModel();
     this.loadPPOModel();
+
+    this.cfg = {
+      num_actions: 10, // Adjust this based on your robot
+      env: {
+        num_single_obs: 11 + 10 * 3, // Adjust based on your observation space
+        frame_stack: 15,
+      },
+      normalization: {
+        obs_scales: {
+          lin_vel: 2.0,
+          ang_vel: 1.0,
+          dof_pos: 1.0,
+          dof_vel: 0.05,
+        },
+        clip_observations: 18.0,
+        clip_actions: 18.0,
+      },
+      control: {
+        action_scale: 0.25,
+      },
+      sim_config: {
+        dt: 0.001,
+        decimation: 20,
+      },
+    };
+
+    this.cmd = { vx: 0, vy: 0, dyaw: 0 };
+    this.defaultPos = new Array(this.cfg.num_actions).fill(0); // You might want to set this to actual default positions
+    this.lastAction = new Array(this.cfg.num_actions).fill(0);
+
+    // Initialize the observation buffer with zeros
+    this.obsBuffer = new Array(this.cfg.env.frame_stack)
+      .fill()
+      .map(() => new Array(this.cfg.env.num_single_obs).fill(0));
     this.isSimulationReady = false;
 
     window.addEventListener("resize", this.onWindowResize.bind(this));
@@ -133,7 +216,74 @@ export class MuJoCoDemo {
       this.container.parentElement,
       this.controls,
     );
-    document.addEventListener("keydown", this.handleKeyPress.bind(this));
+
+    // Define stiffness and damping values
+    this.stiffness = {
+      hip_y: 120,
+      hip_x: 60,
+      hip_z: 60,
+      knee: 120,
+      ankle_y: 17,
+    };
+
+    this.damping = {
+      hip_y: 10,
+      hip_x: 10,
+      hip_z: 10,
+      knee: 10,
+      ankle_y: 5,
+    };
+
+    const jointOrder = [
+      "hip_y", "hip_x", "hip_z", "knee", "ankle_y", 
+      "hip_y", "hip_x", "hip_z", "knee", "ankle_y"
+    ];
+    // Calculate kps and kds
+    const tau_factor = 0.85;
+    this.kds = jointOrder.map(joint => this.damping[joint]);
+    this.kps = jointOrder.map(joint => this.stiffness[joint] * tau_factor);
+    this.tauLimit = this.kps.map((kp) => kp);
+
+    // this is wrong
+    // Define default standing position
+    this.defaultStanding = {
+      left_hip_pitch: -0.157,
+      left_hip_yaw: 0.0394,
+      left_hip_roll: 0.0628,
+      left_knee_pitch: 0.441,
+      left_ankle_pitch: -0.258,
+      right_hip_pitch: -0.22,
+      right_hip_yaw: 0.026,
+      right_hip_roll: 0.0314,
+      right_knee_pitch: 0.441,
+      right_ankle_pitch: -0.223,
+    };
+
+    // Convert defaultStanding to an array matching the order of joints in the simulation
+    this.defaultPos = [
+      this.defaultStanding.left_hip_pitch,
+      this.defaultStanding.left_hip_yaw,
+      this.defaultStanding.left_hip_roll,
+      this.defaultStanding.left_knee_pitch,
+      this.defaultStanding.left_ankle_pitch,
+      this.defaultStanding.right_hip_pitch,
+      this.defaultStanding.right_hip_yaw,
+      this.defaultStanding.right_hip_roll,
+      this.defaultStanding.right_knee_pitch,
+      this.defaultStanding.right_ankle_pitch,
+    ];
+
+    // Ensure defaultPos has the correct length
+    if (this.defaultPos.length !== this.cfg.num_actions) {
+      console.error(
+        `Default position length (${this.defaultPos.length}) does not match num_actions (${this.cfg.num_actions}). Padding with zeros.`,
+      );
+    }
+
+    this.targetQ = new Array(this.cfg.num_actions).fill(0); // Initialize target position to 0
+    this.targetDQ = new Array(this.cfg.num_actions).fill(0); // Target velocity
+
+    this.count_lowlevel = 0;
   }
 
   async init() {
@@ -169,17 +319,9 @@ export class MuJoCoDemo {
     }
   }
 
-  // TODO: load ONNX model
+  // Add logic for different models
   async loadPPOModel() {
-    this.ppo_model = null;
-    this.getObservation = null;
-
-    switch (this.params["scene"]) {
-      case HUMANOID_MODELS.STOMPY_PRO:
-        break;
-      default:
-        throw new Error(`Unsupported model: ${this.params["scene"]}`);
-    }
+    await this.ppoModel.loadModel("/examples/models/policy_1.onnx");
   }
 
   getObservationSkeleton(qpos_slice, cinert_slice, cvel_slice) {
@@ -208,69 +350,6 @@ export class MuJoCoDemo {
     return obsComponents;
   }
 
-  handleKeyPress(event) {
-    const key = event.key.toLowerCase();
-    const stepSize = 0.1;
-
-    switch (key) {
-      case "q":
-        this.moveActuator("hip_y", stepSize);
-        break;
-      case "a":
-        this.moveActuator("hip_y_", -stepSize);
-        break;
-      case "w":
-        this.moveActuator("hip_", stepSize);
-        break;
-      case "s":
-        this.moveActuator("hip_", -stepSize);
-        break;
-      case "e":
-        this.moveActuator("knee_", stepSize);
-        break;
-      case "d":
-        this.moveActuator("knee_", -stepSize);
-        break;
-      case "r":
-        this.moveActuator("abdomen_y", stepSize);
-        break;
-      case "f":
-        this.moveActuator("abdomen_y", -stepSize);
-        break;
-      case "t":
-        this.moveActuator("ankle_", stepSize);
-        break;
-      case "g":
-        this.moveActuator("ankle_", -stepSize);
-        break;
-      case "y":
-        this.moveActuator("shoulder1_", stepSize);
-        this.moveActuator("shoulder2_", stepSize);
-        break;
-      case "h":
-        this.moveActuator("shoulder1_", -stepSize);
-        this.moveActuator("shoulder2_", -stepSize);
-        break;
-      case "u":
-        this.moveActuator("elbow_", stepSize);
-        break;
-      case "j":
-        this.moveActuator("elbow_", -stepSize);
-        break;
-    }
-  }
-
-  moveActuator(prefix, amount) {
-    for (let i = 0; i < this.actuatorNames.length; i++) {
-      if (this.actuatorNames[i].startsWith(prefix)) {
-        let currentValue = this.simulation.ctrl[i];
-        let [min, max] = this.actuatorRanges[i];
-        let newValue = Math.max(min, Math.min(max, currentValue + amount));
-        this.simulation.ctrl[i] = newValue;
-        this.params[this.actuatorNames[i]] = newValue;
-      }
-    }
-  }
 
   onWindowResize() {
     this.camera.aspect = window.innerWidth / window.innerHeight;
@@ -279,7 +358,7 @@ export class MuJoCoDemo {
   }
 
   // render loop
-  render(timeMS) {
+  async render(timeMS) {
     if (!this.isSimulationReady) {
       console.log("Simulation not ready yet, skipping render");
       return;
@@ -288,139 +367,52 @@ export class MuJoCoDemo {
     this.controls.update();
 
     if (!this.params["paused"]) {
-      // TODO: overhaul with ONNX logic
-      if (this.ppo_model && this.params["useModel"]) {
-        const observationArray = this.getObservation();
-        const inputTensor = tf.tensor2d([observationArray]);
-        const resultTensor = this.ppo_model.predict(inputTensor);
+      // 1000hz -> 100hz
+      if (this.count_lowlevel % this.cfg.sim_config.decimation === 0) {
+        // Prepare the current observation
+        const observation = this.getCurrentObservation();
 
-        resultTensor.data().then((data) => {
-          // console.log('Model output:', data);
+        // Update the observation buffer
+        this.updateObservationBuffer(observation);
 
-          // Assuming the model output corresponds to actuator values
-          for (let i = 0; i < data.length; i++) {
-            // Ensure the actuator index is within bounds
-            if (i < this.simulation.ctrl.length) {
-              let clippedValue = Math.max(-1, Math.min(1, data[i]));
+        // Use PPO model to get actions
+        const flattenedObservation = this.obsBuffer.flat();
+        const actions = await this.ppoModel.predict(flattenedObservation);
 
-              let [min, max] = this.actuatorRanges[i];
-
-              // Scale to fit between min and max
-              let newValue = min + ((clippedValue + 1) * (max - min)) / 2;
-
-              // Update the actuator value
-              this.simulation.ctrl[i] = newValue;
-
-              // Optionally, update the corresponding parameter
-              this.params[this.actuatorNames[i]] = newValue;
-            } else {
-              console.error("Model output index out of bounds:", i);
-            }
+        if (actions) {
+          // Apply actions to the simulation
+          for (let i = 0; i < actions.length; i++) {
+            this.targetQ[i] = actions[i] * this.cfg.control.action_scale;
           }
-        });
-      }
-
-      let timestep = this.model.getOptions().timestep;
-      if (timeMS - this.mujoco_time > 35.0) {
-        this.mujoco_time = timeMS;
-      }
-      while (this.mujoco_time < timeMS) {
-        // updates states from dragging
-        // Jitter the control state with gaussian random noise
-        if (this.params["ctrlnoisestd"] > 0.0) {
-          let rate = Math.exp(
-            -timestep / Math.max(1e-10, this.params["ctrlnoiserate"]),
-          );
-          let scale = this.params["ctrlnoisestd"] * Math.sqrt(1 - rate * rate);
-          let currentCtrl = this.simulation.ctrl;
-          for (let i = 0; i < currentCtrl.length; i++) {
-            currentCtrl[i] = rate * currentCtrl[i] + scale * standardNormal();
-            this.params[this.actuatorNames[i]] = currentCtrl[i];
-          }
-        }
-
-        // Clear old perturbations, apply new ones.
-        for (let i = 0; i < this.simulation.qfrc_applied.length; i++) {
-          this.simulation.qfrc_applied[i] = 0.0;
-        }
-        let dragged = this.dragStateManager.physicsObject;
-        if (dragged && dragged.bodyID) {
-          for (let b = 0; b < this.model.nbody; b++) {
-            if (this.bodies[b]) {
-              getPosition(this.simulation.xpos, b, this.bodies[b].position);
-              getQuaternion(
-                this.simulation.xquat,
-                b,
-                this.bodies[b].quaternion,
-              );
-              this.bodies[b].updateWorldMatrix();
-            }
-          }
-          let bodyID = dragged.bodyID;
-          this.dragStateManager.update(); // Update the world-space force origin
-          let force = toMujocoPos(
-            this.dragStateManager.currentWorld
-              .clone()
-              .sub(this.dragStateManager.worldHit)
-              .multiplyScalar(this.model.body_mass[bodyID] * 250),
-          );
-          let point = toMujocoPos(this.dragStateManager.worldHit.clone());
-          this.simulation.applyForce(
-            force.x,
-            force.y,
-            force.z,
-            0,
-            0,
-            0,
-            point.x,
-            point.y,
-            point.z,
-            bodyID,
-          );
-
-          // TODO: Apply pose perturbations (mocap bodies only).
-        }
-
-        this.simulation.step();
-
-        this.mujoco_time += timestep * 1000.0;
-      }
-    } else if (this.params["paused"]) {
-      // updates states from dragging
-      this.dragStateManager.update(); // Update the world-space force origin
-      let dragged = this.dragStateManager.physicsObject;
-      if (dragged && dragged.bodyID) {
-        let b = dragged.bodyID;
-        getPosition(this.simulation.xpos, b, this.tmpVec, false); // Get raw coordinate from MuJoCo
-        getQuaternion(this.simulation.xquat, b, this.tmpQuat, false); // Get raw coordinate from MuJoCo
-
-        let offset = toMujocoPos(
-          this.dragStateManager.currentWorld
-            .clone()
-            .sub(this.dragStateManager.worldHit)
-            .multiplyScalar(0.3),
-        );
-        if (this.model.body_mocapid[b] >= 0) {
-          // Set the root body's mocap position...
-          console.log("Trying to move mocap body", b);
-          let addr = this.model.body_mocapid[b] * 3;
-          let pos = this.simulation.mocap_pos;
-          pos[addr + 0] += offset.x;
-          pos[addr + 1] += offset.y;
-          pos[addr + 2] += offset.z;
-        } else {
-          // Set the root body's position directly...
-          let root = this.model.body_rootid[b];
-          let addr = this.model.jnt_qposadr[this.model.body_jntadr[root]];
-          let pos = this.simulation.qpos;
-          pos[addr + 0] += offset.x;
-          pos[addr + 1] += offset.y;
-          pos[addr + 2] += offset.z;
+          this.lastAction = actions;
         }
       }
 
-      this.simulation.forward();
-    }
+      // Get current joint positions and velocities
+      const q = Array.from(this.simulation.qpos.slice(-this.cfg.num_actions));
+      const dq = Array.from(this.simulation.qvel.slice(-this.cfg.num_actions));
+
+      // Calculate PD control
+      const tau = this.pdControl(
+        this.targetQ,
+        q,
+        this.kps,
+        this.targetDQ,
+        dq,
+        this.kds,
+        this.defaultPos,
+      );
+
+      // Apply torques to the simulation
+      for (let i = 0; i < tau.length; i++) {
+        this.simulation.ctrl[i] = tau[i];
+      }
+
+      // Step the simulation
+      this.simulation.step();
+      this.mujoco_time += this.model.getOptions().timestep * 1000.0;
+      this.count_lowlevel++;
+    } 
 
     // Update body transforms.
     for (let b = 0; b < this.model.nbody; b++) {
@@ -511,6 +503,113 @@ export class MuJoCoDemo {
 
     // Render!
     this.renderer.render(this.scene, this.camera);
+  }
+
+  quatToEuler(quat) {
+    let euler = new THREE.Euler();
+    let three_quat = new THREE.Quaternion(quat[0], quat[1], quat[2], quat[3]);
+    euler.setFromQuaternion(three_quat);
+    return euler;
+  }
+
+  quaternionToEuler(quat) {
+    const euler = new THREE.Euler();
+    const threeQuat = new THREE.Quaternion(quat[1], quat[2], quat[3], quat[0]);
+    euler.setFromQuaternion(threeQuat);
+    return [euler.x, euler.y, euler.z];
+  }
+
+  getCurrentObservation() {
+    const q = Array.from(this.simulation.qpos.slice(-this.cfg.num_actions));
+    const dq = Array.from(this.simulation.qvel.slice(-this.cfg.num_actions));
+    const quat = Array.from(this.simulation.sensordata.slice(-7, -3));
+    const omega = Array.from(this.simulation.sensordata.slice(-3));
+
+    // Convert quaternion to Euler angles
+    const eulerAngles = this.quaternionToEuler(quat);
+
+    // Get gravity vector in base frame
+    const r = new THREE.Quaternion(quat[1], quat[2], quat[3], quat[0]);
+    const gvec = new THREE.Vector3(0, 0, -1).applyQuaternion(r.invert());
+
+    // Get velocity in base frame
+    const v = new THREE.Vector3(
+      ...this.simulation.qvel.slice(0, 3),
+    ).applyQuaternion(r.invert());
+
+    const obs = new Array(this.cfg.env.num_single_obs);
+    let index = 0;
+    console.log(this.mujoco_time);
+    // Add sinusoidal time component
+    obs[index++] = Math.sin((2 * Math.PI * this.mujoco_time * this.cfg.sim_config.dt) / 0.64);
+    obs[index++] = Math.cos((2 * Math.PI * this.mujoco_time * this.cfg.sim_config.dt) / 0.64);
+
+    // Add command velocities (assuming you have these)
+    obs[index++] = this.cmd.vx * this.cfg.normalization.obs_scales.lin_vel;
+    obs[index++] = this.cmd.vy * this.cfg.normalization.obs_scales.lin_vel;
+    obs[index++] = this.cmd.dyaw * this.cfg.normalization.obs_scales.ang_vel;
+
+    // Add scaled joint positions
+    for (let i = 0; i < this.cfg.num_actions; i++) {
+      obs[index++] =
+        (q[i] - this.defaultPos[i]) * this.cfg.normalization.obs_scales.dof_pos;
+    }
+
+    // Add scaled joint velocities
+    for (let i = 0; i < this.cfg.num_actions; i++) {
+      obs[index++] = dq[i] * this.cfg.normalization.obs_scales.dof_vel;
+    }
+
+    // Add last actions
+    for (let i = 0; i < this.cfg.num_actions; i++) {
+      obs[index++] = this.lastAction[i];
+    }
+
+    // Add angular velocity
+    obs[index++] = omega[0];
+    obs[index++] = omega[1];
+    obs[index++] = omega[2];
+
+    // Add Euler angles
+    obs[index++] = eulerAngles[0];
+    obs[index++] = eulerAngles[1];
+    obs[index++] = eulerAngles[2];
+
+    // Clip observations
+    for (let i = 0; i < obs.length; i++) {
+      obs[i] = Math.max(
+        Math.min(obs[i], this.cfg.normalization.clip_observations),
+        -this.cfg.normalization.clip_observations,
+      );
+    }
+
+    return obs;
+  }
+
+  createZeroObservation() {
+    return {
+      q: Array(10).fill(0),
+      dq: Array(10).fill(0),
+      quat: Array(4).fill(0),
+      omega: Array(3).fill(0),
+    };
+  }
+
+  updateObservationBuffer(observation) {
+    // shift the buffer and add the new observation
+    this.obsBuffer.shift();
+    this.obsBuffer.push(observation);
+  }
+
+
+  pdControl(targetQ, q, kps, targetDQ, dq, kds, defaultPos) {
+    const tau = new Array(this.cfg.num_actions);
+    for (let i = 0; i < this.cfg.num_actions; i++) {
+      tau[i] = kps[i] * (targetQ[i] + defaultPos[i] - q[i]) - kds[i] * dq[i];
+      // Clamp torques
+      tau[i] = Math.max(-this.tauLimit[i], Math.min(this.tauLimit[i], tau[i]));
+    }
+    return tau;
   }
 }
 
