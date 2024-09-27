@@ -234,16 +234,17 @@ export class MuJoCoDemo {
       ankle_y: 5,
     };
 
+    const jointOrder = [
+      "hip_y", "hip_x", "hip_z", "knee", "ankle_y", 
+      "hip_y", "hip_x", "hip_z", "knee", "ankle_y"
+    ];
     // Calculate kps and kds
     const tau_factor = 0.85;
-    this.kps = Object.values(this.stiffness)
-      .flatMap((v) => [v, v])
-      .map((v) => v * tau_factor);
-    this.kds = Object.values(this.damping).flatMap((v) => [v, v]);
-
-    // Calculate tau_limit
+    this.kds = jointOrder.map(joint => this.damping[joint]);
+    this.kps = jointOrder.map(joint => this.stiffness[joint] * tau_factor);
     this.tauLimit = this.kps.map((kp) => kp);
-    console.log("tauLimit", this.tauLimit);
+
+    // this is wrong
     // Define default standing position
     this.defaultStanding = {
       left_hip_pitch: -0.157,
@@ -411,72 +412,7 @@ export class MuJoCoDemo {
       this.simulation.step();
       this.mujoco_time += this.model.getOptions().timestep * 1000.0;
       this.count_lowlevel++;
-    } else if (this.params["paused"]) {
-      // updates states from dragging
-      this.dragStateManager.update(); // Update the world-space force origin
-      let dragged = this.dragStateManager.physicsObject;
-      if (dragged && dragged.bodyID) {
-        let b = dragged.bodyID;
-        getPosition(this.simulation.xpos, b, this.tmpVec, false); // Get raw coordinate from MuJoCo
-        getQuaternion(this.simulation.xquat, b, this.tmpQuat, false); // Get raw coordinate from MuJoCo
-
-        let offset = toMujocoPos(
-          this.dragStateManager.currentWorld
-            .clone()
-            .sub(this.dragStateManager.worldHit)
-            .multiplyScalar(0.3),
-        );
-        if (this.model.body_mocapid[b] >= 0) {
-          // Set the root body's mocap position...
-          console.log("Trying to move mocap body", b);
-          let addr = this.model.body_mocapid[b] * 3;
-          let pos = this.simulation.mocap_pos;
-          pos[addr + 0] += offset.x;
-          pos[addr + 1] += offset.y;
-          pos[addr + 2] += offset.z;
-        } else {
-          // Set the root body's position directly...
-          let root = this.model.body_rootid[b];
-          let addr = this.model.jnt_qposadr[this.model.body_jntadr[root]];
-          let pos = this.simulation.qpos;
-          pos[addr + 0] += offset.x;
-          pos[addr + 1] += offset.y;
-          pos[addr + 2] += offset.z;
-
-          //// Save the original root body position
-          //let x  = pos[addr + 0], y  = pos[addr + 1], z  = pos[addr + 2];
-          //let xq = pos[addr + 3], yq = pos[addr + 4], zq = pos[addr + 5], wq = pos[addr + 6];
-
-          //// Clear old perturbations, apply new.
-          //for (let i = 0; i < this.simulation.qfrc_applied().length; i++) { this.simulation.qfrc_applied()[i] = 0.0; }
-          //for (let bi = 0; bi < this.model.nbody(); bi++) {
-          //  if (this.bodies[b]) {
-          //    getPosition  (this.simulation.xpos (), bi, this.bodies[bi].position);
-          //    getQuaternion(this.simulation.xquat(), bi, this.bodies[bi].quaternion);
-          //    this.bodies[bi].updateWorldMatrix();
-          //  }
-          //}
-          ////dragStateManager.update(); // Update the world-space force origin
-          //let force = toMujocoPos(this.dragStateManager.currentWorld.clone()
-          //  .sub(this.dragStateManager.worldHit).multiplyScalar(this.model.body_mass()[b] * 0.01));
-          //let point = toMujocoPos(this.dragStateManager.worldHit.clone());
-          //// This force is dumped into xrfc_applied
-          //this.simulation.applyForce(force.x, force.y, force.z, 0, 0, 0, point.x, point.y, point.z, b);
-          //this.simulation.integratePos(this.simulation.qpos(), this.simulation.qfrc_applied(), 1);
-
-          //// Add extra drag to the root body
-          //pos[addr + 0] = x  + (pos[addr + 0] - x ) * 0.1;
-          //pos[addr + 1] = y  + (pos[addr + 1] - y ) * 0.1;
-          //pos[addr + 2] = z  + (pos[addr + 2] - z ) * 0.1;
-          //pos[addr + 3] = xq + (pos[addr + 3] - xq) * 0.1;
-          //pos[addr + 4] = yq + (pos[addr + 4] - yq) * 0.1;
-          //pos[addr + 5] = zq + (pos[addr + 5] - zq) * 0.1;
-          //pos[addr + 6] = wq + (pos[addr + 6] - wq) * 0.1;
-        }
-      }
-
-      this.simulation.forward();
-    }
+    } 
 
     // Update body transforms.
     for (let b = 0; b < this.model.nbody; b++) {
@@ -603,10 +539,10 @@ export class MuJoCoDemo {
 
     const obs = new Array(this.cfg.env.num_single_obs);
     let index = 0;
-
+    console.log(this.mujoco_time);
     // Add sinusoidal time component
-    obs[index++] = Math.sin((2 * Math.PI * this.mujoco_time) / 640);
-    obs[index++] = Math.cos((2 * Math.PI * this.mujoco_time) / 640);
+    obs[index++] = Math.sin((2 * Math.PI * this.mujoco_time * this.cfg.sim_config.dt) / 0.64);
+    obs[index++] = Math.cos((2 * Math.PI * this.mujoco_time * this.cfg.sim_config.dt) / 0.64);
 
     // Add command velocities (assuming you have these)
     obs[index++] = this.cmd.vx * this.cfg.normalization.obs_scales.lin_vel;
