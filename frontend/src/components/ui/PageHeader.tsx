@@ -218,7 +218,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
   }, [windowWidth, windowHeight, initializeGrid, updateGrid, gridInitialized]);
 
   return (
-    <div className="relative rounded-lg w-full h-[30vh] overflow-hidden mb-10">
+    <div className="relative rounded-lg w-full h-[30vh] overflow-hidden mb-4">
       <div className="absolute inset-0 backdrop-blur-[2px]"></div>
       <canvas ref={canvasRef} className="w-full h-full" />
       <div className="absolute inset-0 flex flex-col items-center justify-center px-4">

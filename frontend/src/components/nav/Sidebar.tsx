@@ -1,17 +1,8 @@
-import {
-  FaBookOpen,
-  FaDoorClosed,
-  FaDoorOpen,
-  FaHome,
-  FaKey,
-  FaPen,
-  FaTimes,
-  FaUserCircle,
-} from "react-icons/fa";
+import { FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
+import Logo from "@/components/Logo";
 import { useAuthentication } from "@/hooks/useAuth";
-import clsx from "clsx";
 
 interface SidebarItemProps {
   title: string;
@@ -25,36 +16,28 @@ const SidebarItem = ({
   icon,
   title,
   onClick,
-  size,
-  align,
+  size = "md",
+  align = "left",
 }: SidebarItemProps) => {
   return (
     <li>
       <button onClick={onClick} className="w-full focus:outline-none">
-        <span className="flex items-center py-2 px-4 text-gray-12 rounded-lg hover:bg-gray-3 group">
+        <span className="flex items-center py-2 px-4 text-gray-1 rounded-md hover:bg-gray-1 hover:text-primary-9 group">
           {align === "right" ? (
             <>
               <span className="flex-grow" />
               <span
-                className={clsx(
-                  icon && "mr-4",
-                  size === "sm" && "text-sm",
-                  size === "lg" && "text-lg",
-                )}
+                className={`${size === "sm" ? "text-xs" : size === "lg" ? "text-sm" : "text-xs"} mr-1`}
               >
                 {title}
               </span>
-              {icon}
+              {icon && <span className="text-xs">{icon}</span>}
             </>
           ) : (
             <>
-              {icon}
+              {icon && <span className="text-xs mr-1">{icon}</span>}
               <span
-                className={clsx(
-                  icon && "ml-4",
-                  size === "sm" && "text-sm",
-                  size === "lg" && "text-lg",
-                )}
+                className={`${size === "sm" ? "text-xs" : size === "lg" ? "text-sm" : "text-xs"}`}
               >
                 {title}
               </span>
@@ -67,11 +50,7 @@ const SidebarItem = ({
 };
 
 const SidebarSeparator = () => {
-  return (
-    <li className="py-1">
-      <div className="border-t border-gray-12" />
-    </li>
-  );
+  return <li className="my-0.5 border-t border-gray-11" />;
 };
 
 interface Props {
@@ -83,107 +62,99 @@ const Sidebar = ({ show, onClose }: Props) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthentication();
 
+  const navItems = [
+    { name: "K-Lang", path: "/k-lang" },
+    { name: "Buy", path: "/buy" },
+    { name: "Browse", path: "/browse" },
+    { name: "Downloads", path: "/downloads" },
+    { name: "Docs", path: "https://docs.kscale.dev/", isExternal: true },
+  ];
+
+  const communityItems = [
+    { name: "Discord", path: "https://discord.gg/kscale" },
+    { name: "Twitter", path: "https://x.com/kscalelabs" },
+    { name: "GitHub", path: "https://github.com/kscalelabs" },
+  ];
+
   return (
     <div>
-      {show ? (
-        <div
-          className="fixed top-0 right-0 z-40 w-full h-full p-4 overflow-y-auto transition-transform bg-gray-1"
-          tabIndex={-1}
-        >
-          <div className="flex justify-between items-center">
-            <h5
-              id="drawer-navigation-label"
-              className="text-base font-semibold text-gray-8 uppercase"
-            >
-              {/* SETTINGS */}
-            </h5>
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="text-gray-8 bg-transparent hover:bg-gray-3 hover:text-gray-12 rounded-lg text-sm p-1.5 inline-flex items-center"
-            >
-              <FaTimes />
-              <span className="sr-only">Close menu</span>
-            </button>
-          </div>
-          <div className="py-4 overflow-y-auto">
-            <ul className="space-y-1">
-              <SidebarItem
-                title="Home"
-                icon={<FaHome />}
-                onClick={() => {
-                  navigate("/");
-                  onClose();
-                }}
-                size="md"
-              />
-              <SidebarItem
-                title="Browse"
-                icon={<FaBookOpen />}
-                onClick={() => {
-                  navigate("/browse");
-                  onClose();
-                }}
-                size="md"
-              />
-              <SidebarItem
-                title="Create"
-                icon={<FaPen />}
-                onClick={() => {
-                  navigate("/create");
-                  onClose();
-                }}
-                size="md"
-              />
+      {show && (
+        <div className="fixed inset-0 z-50 bg-gray-1/20 backdrop-blur-sm">
+          <div className="fixed top-0 right-0 z-40 w-full sm:w-96 md:w-80 lg:w-64 h-full overflow-y-auto transition-transform bg-gray-12">
+            <div className="flex justify-between items-center p-2 border-b border-gray-11">
+              <Logo />
+              <button
+                onClick={onClose}
+                className="text-gray-1 hover:text-primary-9 rounded-lg p-2"
+              >
+                <FaTimes size={18} />
+                <span className="sr-only">Close menu</span>
+              </button>
+            </div>
+            <nav className="p-2">
+              {navItems.map((item) => (
+                <SidebarItem
+                  key={item.name}
+                  title={item.name}
+                  onClick={() => {
+                    if (item.isExternal) {
+                      window.open(item.path, "_blank");
+                    } else {
+                      navigate(item.path);
+                      onClose();
+                    }
+                  }}
+                />
+              ))}
               <SidebarSeparator />
-              {isAuthenticated && (
+              {communityItems.map((item) => (
                 <SidebarItem
-                  title="Profile"
-                  icon={<FaUserCircle />}
-                  onClick={() => {
-                    navigate("/profile");
-                    onClose();
-                  }}
-                  size="md"
+                  key={item.name}
+                  title={item.name}
+                  onClick={() => window.open(item.path, "_blank")}
+                  size="sm"
                 />
-              )}
-              {isAuthenticated && (
-                <SidebarItem
-                  title="API Keys"
-                  icon={<FaKey />}
-                  onClick={() => {
-                    navigate("/keys");
-                    onClose();
-                  }}
-                  size="md"
-                />
-              )}
+              ))}
+              <SidebarSeparator />
               {isAuthenticated ? (
-                <SidebarItem
-                  title="Logout"
-                  icon={<FaDoorClosed />}
-                  onClick={() => {
-                    navigate("/logout");
-                    onClose();
-                  }}
-                  size="md"
-                />
+                <>
+                  <SidebarItem
+                    title="Account"
+                    onClick={() => {
+                      navigate("/account");
+                      onClose();
+                    }}
+                  />
+                  <SidebarItem
+                    title="Logout"
+                    onClick={() => {
+                      navigate("/logout");
+                      onClose();
+                    }}
+                  />
+                </>
               ) : (
-                <SidebarItem
-                  title="Login / Sign Up"
-                  icon={<FaDoorOpen />}
-                  onClick={() => {
-                    navigate("/login");
-                    onClose();
-                  }}
-                  size="md"
-                />
+                <>
+                  <SidebarItem
+                    title="Sign In"
+                    onClick={() => {
+                      navigate("/login");
+                      onClose();
+                    }}
+                  />
+                  <SidebarItem
+                    title="Sign Up"
+                    onClick={() => {
+                      navigate("/signup");
+                      onClose();
+                    }}
+                  />
+                </>
               )}
-            </ul>
+            </nav>
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 };
