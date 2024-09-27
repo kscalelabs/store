@@ -275,7 +275,7 @@ export class MuJoCoDemo {
 
   // Add logic for different models
   async loadPPOModel() {
-    await this.ppoModel.loadModel("/examples/models/policy_1.onnx");
+    await this.ppoModel.loadModel("/examples/models/standing.onnx");
   }
 
   getObservationSkeleton(qpos_slice, cinert_slice, cvel_slice) {
