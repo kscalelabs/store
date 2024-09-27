@@ -1,8 +1,8 @@
+import load_mujoco from "https://cdn.jsdelivr.net/gh/kscalelabs/store-deps@master/dist/mujoco_wasm.js";
+import { OrbitControls } from "https://cdn.jsdelivr.net/gh/kscalelabs/store-deps@master/dist/three/examples/jsm/controls/OrbitControls.js";
+import { GUI } from "https://cdn.jsdelivr.net/gh/kscalelabs/store-deps@master/dist/three/examples/jsm/libs/lil-gui.module.min.js";
 import * as THREE from "three";
 
-import load_mujoco from "../dist/mujoco_wasm.js";
-import { OrbitControls } from "../node_modules/three/examples/jsm/controls/OrbitControls.js";
-import { GUI } from "../node_modules/three/examples/jsm/libs/lil-gui.module.min.js";
 import {
   downloadExampleScenesFolder,
   getPosition,
