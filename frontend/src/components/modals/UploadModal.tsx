@@ -26,17 +26,18 @@ interface UploadModalProps {
   onUpload: (
     file: File,
     name: string,
-    label: string,
+    imageType: string,
     description: string,
-    isOfficial: boolean,
+    isPublic: boolean,
   ) => void;
 }
 
 export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState("");
-  const [label, setLabel] = useState<string>("kernel");
+  const [imageType, setImageType] = useState<string>("dockerfile");
   const [description, setDescription] = useState("");
+  const [isPublic, setIsPublic] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -49,16 +50,16 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
 
   const handleUpload = useCallback(() => {
     if (file) {
-      onUpload(file, name, label, description, true); // Always pass true for isOfficial
+      onUpload(file, name, imageType, description, isPublic);
       onClose();
     }
-  }, [file, name, label, description, onUpload, onClose]);
+  }, [file, name, imageType, description, isPublic, onUpload, onClose]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] bg-gray-1 text-gray-12 border border-gray-3 rounded-lg shadow-lg">
         <DialogHeader>
-          <DialogTitle>Upload Resource</DialogTitle>
+          <DialogTitle>Upload Kernel Image</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div
@@ -83,7 +84,7 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
           </div>
           <div className="grid gap-2">
             <Label htmlFor="name" className="text-sm font-medium text-gray-12">
-              Resource Name
+              Kernel Image Name
             </Label>
             <Input
               id="name"
@@ -93,19 +94,22 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="label" className="text-sm font-medium text-gray-12">
-              Resource Type
+            <Label
+              htmlFor="imageType"
+              className="text-sm font-medium text-gray-12"
+            >
+              Image Type
             </Label>
-            <Select value={label} onValueChange={setLabel}>
+            <Select value={imageType} onValueChange={setImageType}>
               <SelectTrigger className="bg-gray-2 border-gray-3 text-gray-12">
-                <SelectValue placeholder="Select a resource type" />
+                <SelectValue placeholder="Select an image type" />
               </SelectTrigger>
               <SelectContent className="bg-gray-2 border-gray-3">
-                <SelectItem value="kernel" className="text-gray-12">
-                  Kernel Image
+                <SelectItem value="dockerfile" className="text-gray-12">
+                  Dockerfile
                 </SelectItem>
-                <SelectItem value="ml" className="text-gray-12">
-                  ML Model
+                <SelectItem value="singularity" className="text-gray-12">
+                  Singularity
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -125,6 +129,21 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
               rows={3}
             />
           </div>
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="isPublic"
+              checked={isPublic}
+              onChange={(e) => setIsPublic(e.target.checked)}
+              className="mr-2"
+            />
+            <Label
+              htmlFor="isPublic"
+              className="text-sm font-medium text-gray-12"
+            >
+              Make this kernel image public
+            </Label>
+          </div>
         </div>
         <div className="flex justify-end">
           <Button
@@ -132,7 +151,7 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
             disabled={!file}
             className="w-full sm:w-auto bg-primary-9 text-gray-1 hover:bg-gray-12"
           >
-            <Upload className="mr-2 h-4 w-4" /> Upload Resource
+            <Upload className="mr-2 h-4 w-4" /> Upload Kernel Image
           </Button>
         </div>
       </DialogContent>

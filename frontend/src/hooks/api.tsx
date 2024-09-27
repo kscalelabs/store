@@ -9,7 +9,7 @@ export default class api {
   }
 
   public async upload(files: File[], listing_id: string) {
-    return await this.client.POST("/artifacts/listing-upload/{listing_id}", {
+    return await this.client.POST("/artifacts/upload/{listing_id}", {
       body: {
         files: [],
       },

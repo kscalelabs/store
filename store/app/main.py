@@ -19,6 +19,7 @@ from store.app.errors import (
 )
 from store.app.routers.artifacts import artifacts_router
 from store.app.routers.email import email_router
+from store.app.routers.kernel_images import kernel_images_router
 from store.app.routers.keys import keys_router
 from store.app.routers.listings import listings_router
 from store.app.routers.onshape import onshape_router
@@ -108,6 +109,7 @@ app.include_router(keys_router, prefix="/keys", tags=["keys"])
 app.include_router(listings_router, prefix="/listings", tags=["listings"])
 app.include_router(onshape_router, prefix="/onshape", tags=["onshape"])
 app.include_router(users_router, prefix="/users", tags=["users"])
+app.include_router(kernel_images_router, prefix="/kernel-images", tags=["kernel-images"])
 
 # For running with debugger
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import { useInView } from "react-intersection-observer";
 
-import DownloadArtifact from "@/components/listing/artifacts/DownloadArtifact";
+import DownloadKernelImage from "@/components/DownloadKernelImage";
 import LoadingArtifactCard from "@/components/listing/artifacts/LoadingArtifactCard";
 import { UploadModal } from "@/components/modals/UploadModal";
 import { Button } from "@/components/ui/button";
@@ -11,56 +12,72 @@ import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { Search, Upload } from "lucide-react";
 
-type ArtifactInfo = components["schemas"]["SingleArtifactResponse"];
-type UploadArtifactResponse = components["schemas"]["UploadArtifactResponse"];
+type KernelImageResponse = components["schemas"]["KernelImageResponse"];
 
 export default function DownloadsPage() {
+  const [kernelImages, setKernelImages] = useState<KernelImageResponse[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [artifacts, setArtifacts] = useState<ArtifactInfo[] | null>(null);
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
 
-  useEffect(() => {
-    fetchArtifacts();
-  }, []);
+  const { ref, inView } = useInView({
+    threshold: 0,
+  });
 
-  const fetchArtifacts = async () => {
+  const fetchKernelImages = async (cursor: string | null = null) => {
+    if (isLoading) return;
+    setIsLoading(true);
     try {
-      const response = await auth.client.GET("/artifacts/list/{listing_id}", {
-        params: { path: { listing_id: "none" } },
+      const response = await auth.client.GET("/kernel-images/public", {
+        params: { query: { cursor, limit: 20 } },
       });
       if (response.data) {
-        setArtifacts(response.data.artifacts);
+        setKernelImages((prev) => [...prev, ...response.data.kernel_images]);
+        setNextCursor(response.data.next_cursor ?? null);
       }
     } catch (error) {
-      console.error("Failed to fetch artifacts:", error);
-      addErrorAlert("Failed to fetch artifacts");
+      console.error("Failed to fetch kernel images:", error);
+      addErrorAlert("Failed to fetch kernel images");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const filteredArtifacts = artifacts?.filter(
-    (artifact) =>
-      artifact.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (activeTab === "all" || artifact.artifact_label === activeTab),
+  useEffect(() => {
+    fetchKernelImages();
+  }, []);
+
+  useEffect(() => {
+    if (inView && nextCursor) {
+      fetchKernelImages(nextCursor);
+    }
+  }, [inView, nextCursor]);
+
+  const filteredKernelImages = kernelImages.filter(
+    (ki) =>
+      ki.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (activeTab === "all" || ki.image_type === activeTab),
   );
 
   const handleUpload = async (
     file: File,
     name: string,
-    label: string,
+    imageType: string,
     description: string,
-    isOfficial: boolean,
+    isPublic: boolean,
   ) => {
     try {
-      const response = await auth.client.POST("/artifacts/upload", {
+      const response = await auth.client.POST("/kernel-images/upload", {
         body: {
-          file: await fileToBase64(file),
           name,
+          image_type: imageType as "dockerfile" | "singularity",
+          file: await fileToBase64(file),
           description,
-          label: label as "kernel" | "ml" | null,
-          is_official: isOfficial,
+          is_public: isPublic,
         },
       });
 
@@ -71,13 +88,10 @@ export default function DownloadsPage() {
         );
       } else {
         console.log("Upload successful:", response.data);
-        const uploadResponse = response.data as UploadArtifactResponse;
-        if (uploadResponse.artifacts && uploadResponse.artifacts.length > 0) {
-          setArtifacts((prevArtifacts) => [
-            ...(prevArtifacts || []),
-            ...uploadResponse.artifacts,
-          ]);
-        }
+        setKernelImages((prevKernelImages) => [
+          response.data as KernelImageResponse,
+          ...prevKernelImages,
+        ]);
       }
     } catch (error) {
       console.error("Upload failed:", error);
@@ -106,15 +120,14 @@ export default function DownloadsPage() {
     <div className="max-w-6xl mx-auto px-4 py-8 rounded-lg">
       <h1 className="text-3xl font-bold mb-2">K-Scale Downloads</h1>
       <p className="text-muted-foreground mb-6">
-        View and download official K-Scale and community uploaded kernel images,
-        URDFs, ML models, and more
+        View and download official K-Scale and community uploaded kernel images
       </p>
 
       <div className="flex justify-between items-center mb-6">
         <div className="relative w-64">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search resources"
+            placeholder="Search kernel images"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-8"
@@ -130,28 +143,25 @@ export default function DownloadsPage() {
       <Tabs defaultValue="all" className="mb-6" onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="image">Kernel Images</TabsTrigger>
-          <TabsTrigger value="ml">ML Models</TabsTrigger>
+          <TabsTrigger value="dockerfile">Dockerfile</TabsTrigger>
+          <TabsTrigger value="singularity">Singularity</TabsTrigger>
         </TabsList>
       </Tabs>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {artifacts === null ? (
+        {filteredKernelImages.map((kernelImage) => (
+          <DownloadKernelImage key={kernelImage.id} kernelImage={kernelImage} />
+        ))}
+        {isLoading && (
           <>
             <LoadingArtifactCard />
             <LoadingArtifactCard />
             <LoadingArtifactCard />
           </>
-        ) : filteredArtifacts && filteredArtifacts.length > 0 ? (
-          filteredArtifacts.map((artifact) => (
-            <DownloadArtifact key={artifact.artifact_id} artifact={artifact} />
-          ))
-        ) : (
-          <p className="col-span-3 text-center text-muted-foreground mt-8">
-            No resources found matching your search criteria.
-          </p>
         )}
       </div>
+
+      {nextCursor && <div ref={ref} style={{ height: "20px" }} />}
 
       {canUpload && (
         <UploadModal
