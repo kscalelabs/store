@@ -821,7 +821,7 @@ export async function downloadExampleScenesFolder(mujoco) {
   ];
 
   allFiles = allFiles.concat(
-    meshFilesListStompyPro.map((mesh) => "/stompypro_meshes/" + mesh),
+    meshFilesListStompyPro.map((mesh) => "stompypro_meshes/" + mesh),
   );
 
   let requests = allFiles.map((url) => fetch("/examples/scenes/" + url));
