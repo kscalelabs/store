@@ -30,6 +30,5 @@ out*/
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
 
-# mujoco wasm setup
-!frontend/public/dist
-!/frontend/public/node_modules/three/build
+# .DS_Store
+.DS_Store
