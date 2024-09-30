@@ -10,13 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, X } from "lucide-react";
 
@@ -26,18 +19,18 @@ interface UploadModalProps {
   onUpload: (
     file: File,
     name: string,
-    imageType: string,
     description: string,
     isPublic: boolean,
-  ) => void;
+    isOfficial: boolean,
+  ) => Promise<void>;
 }
 
 export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState("");
-  const [imageType, setImageType] = useState<string>("dockerfile");
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(false);
+  const [isOfficial, setIsOfficial] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -46,14 +39,20 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
     }
   }, []);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+  });
 
-  const handleUpload = useCallback(() => {
+  const handleUpload = useCallback(async () => {
     if (file) {
-      onUpload(file, name, imageType, description, isPublic);
-      onClose();
+      try {
+        await onUpload(file, name, description, isPublic, isOfficial);
+        onClose();
+      } catch (error) {
+        console.error("Error uploading kernel image:", error);
+      }
     }
-  }, [file, name, imageType, description, isPublic, onUpload, onClose]);
+  }, [file, name, description, isPublic, isOfficial, onUpload, onClose]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -78,13 +77,13 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
               <p>
                 {isDragActive
                   ? "Drop the file here"
-                  : "Click to select a file or drag and drop it here"}
+                  : "Click to select file or drag and drop it here"}
               </p>
             )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="name" className="text-sm font-medium text-gray-12">
-              Kernel Image Name
+              Name
             </Label>
             <Input
               id="name"
@@ -92,27 +91,6 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
               onChange={(e) => setName(e.target.value)}
               className="bg-gray-2 border-gray-3 text-gray-12"
             />
-          </div>
-          <div className="grid gap-2">
-            <Label
-              htmlFor="imageType"
-              className="text-sm font-medium text-gray-12"
-            >
-              Image Type
-            </Label>
-            <Select value={imageType} onValueChange={setImageType}>
-              <SelectTrigger className="bg-gray-2 border-gray-3 text-gray-12">
-                <SelectValue placeholder="Select an image type" />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-2 border-gray-3">
-                <SelectItem value="dockerfile" className="text-gray-12">
-                  Dockerfile
-                </SelectItem>
-                <SelectItem value="singularity" className="text-gray-12">
-                  Singularity
-                </SelectItem>
-              </SelectContent>
-            </Select>
           </div>
           <div className="grid gap-2">
             <Label
@@ -142,6 +120,21 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
               className="text-sm font-medium text-gray-12"
             >
               Make this kernel image public
+            </Label>
+          </div>
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="isOfficial"
+              checked={isOfficial}
+              onChange={(e) => setIsOfficial(e.target.checked)}
+              className="mr-2"
+            />
+            <Label
+              htmlFor="isOfficial"
+              className="text-sm font-medium text-gray-12"
+            >
+              Mark as official kernel image
             </Label>
           </div>
         </div>

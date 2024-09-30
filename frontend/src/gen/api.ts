@@ -718,40 +718,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/kernel-images/info/{kernel_image_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Kernel Image Info */
-        get: operations["get_kernel_image_info_kernel_images_info__kernel_image_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/kernel-images/list/{user_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Kernel Images */
-        get: operations["list_kernel_images_kernel_images_list__user_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/kernel-images/upload": {
         parameters: {
             query?: never;
@@ -763,6 +729,23 @@ export interface paths {
         put?: never;
         /** Upload Kernel Image */
         post: operations["upload_kernel_image_kernel_images_upload_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/kernel-images/info/{kernel_image_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Kernel Image Info */
+        get: operations["get_kernel_image_info_kernel_images_info__kernel_image_id__get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -820,17 +803,17 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/kernel-images/batch": {
+    "/kernel-images/download/{kernel_image_id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Download Kernel Image */
+        get: operations["download_kernel_image_kernel_images_download__kernel_image_id__get"];
         put?: never;
-        /** Batch Get Kernel Images */
-        post: operations["batch_get_kernel_images_kernel_images_batch_post"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -853,6 +836,17 @@ export interface components {
             /** Api Key */
             api_key: string;
         };
+        /** Body_edit_kernel_image_kernel_images_edit__kernel_image_id__put */
+        Body_edit_kernel_image_kernel_images_edit__kernel_image_id__put: {
+            /** Name */
+            name?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Is Public */
+            is_public?: boolean | null;
+            /** Is Official */
+            is_official?: boolean | null;
+        };
         /** Body_pull_onshape_document_onshape_pull__listing_id__get */
         Body_pull_onshape_document_onshape_pull__listing_id__get: {
             /** Suffix To Joint Effort */
@@ -871,11 +865,25 @@ export interface components {
         };
         /** Body_upload_kernel_image_kernel_images_upload_post */
         Body_upload_kernel_image_kernel_images_upload_post: {
+            /** Name */
+            name: string;
             /**
              * File
              * Format: binary
              */
             file: string;
+            /**
+             * Is Public
+             * @default false
+             */
+            is_public: boolean;
+            /**
+             * Is Official
+             * @default false
+             */
+            is_official: boolean;
+            /** Description */
+            description?: string | null;
         };
         /** ClientIdResponse */
         ClientIdResponse: {
@@ -976,19 +984,16 @@ export interface components {
             name: string;
             /** Description */
             description: string | null;
-            /**
-             * Image Type
-             * @enum {string}
-             */
-            image_type: "dockerfile" | "singularity";
             /** Size */
             size: number;
-            /** Sha256 */
-            sha256: string;
             /** Timestamp */
             timestamp: number;
             /** Is Public */
             is_public: boolean;
+            /** Is Official */
+            is_official: boolean;
+            /** Downloads */
+            downloads: number;
         };
         /** KeysResponseItem */
         KeysResponseItem: {
@@ -1001,13 +1006,6 @@ export interface components {
         ListArtifactsResponse: {
             /** Artifacts */
             artifacts: components["schemas"]["SingleArtifactResponse"][];
-        };
-        /** ListKernelImagesResponse */
-        ListKernelImagesResponse: {
-            /** Kernel Images */
-            kernel_images: components["schemas"]["KernelImageResponse"][];
-            /** Next Cursor */
-            next_cursor?: string | null;
         };
         /** ListKeysResponse */
         ListKeysResponse: {
@@ -1223,15 +1221,6 @@ export interface components {
             name?: string | null;
             /** Description */
             description?: string | null;
-        };
-        /** UpdateKernelImageRequest */
-        UpdateKernelImageRequest: {
-            /** Name */
-            name?: string | null;
-            /** Description */
-            description?: string | null;
-            /** Is Public */
-            is_public?: boolean | null;
         };
         /** UpdateListingRequest */
         UpdateListingRequest: {
@@ -2649,6 +2638,39 @@ export interface operations {
             };
         };
     };
+    upload_kernel_image_kernel_images_upload_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_kernel_image_kernel_images_upload_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KernelImageResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_kernel_image_info_kernel_images_info__kernel_image_id__get: {
         parameters: {
             query?: never;
@@ -2680,75 +2702,6 @@ export interface operations {
             };
         };
     };
-    list_kernel_images_kernel_images_list__user_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                user_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ListKernelImagesResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    upload_kernel_image_kernel_images_upload_post: {
-        parameters: {
-            query: {
-                name: string;
-                image_type: "dockerfile" | "singularity";
-                description?: string | null;
-                is_public?: boolean;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "multipart/form-data": components["schemas"]["Body_upload_kernel_image_kernel_images_upload_post"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["KernelImageResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     edit_kernel_image_kernel_images_edit__kernel_image_id__put: {
         parameters: {
             query?: never;
@@ -2758,9 +2711,9 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody: {
+        requestBody?: {
             content: {
-                "application/json": components["schemas"]["UpdateKernelImageRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["Body_edit_kernel_image_kernel_images_edit__kernel_image_id__put"];
             };
         };
         responses: {
@@ -2817,10 +2770,7 @@ export interface operations {
     };
     list_public_kernel_images_kernel_images_public_get: {
         parameters: {
-            query?: {
-                cursor?: string | null;
-                limit?: number;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -2833,32 +2783,21 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ListKernelImagesResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["KernelImageResponse"][];
                 };
             };
         };
     };
-    batch_get_kernel_images_kernel_images_batch_post: {
+    download_kernel_image_kernel_images_download__kernel_image_id__get: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                kernel_image_id: string;
+            };
             cookie?: never;
         };
-        requestBody: {
-            content: {
-                "application/json": string[];
-            };
-        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {
@@ -2866,7 +2805,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["KernelImageResponse"][];
+                    "application/json": string;
                 };
             };
             /** @description Validation Error */

@@ -354,34 +354,34 @@ class KernelImage(StoreBaseModel):
     user_id: str
     name: str
     description: str | None = None
-    image_type: Literal["dockerfile", "singularity"]
     size: int
-    sha256: str
-    timestamp: int
     is_public: bool = False
+    is_official: bool = False
+    timestamp: int
+    downloads: int = 0
 
     @classmethod
     def create(
         cls,
         user_id: str,
         name: str,
-        image_type: Literal["dockerfile", "singularity"],
         size: int,
-        sha256: str,
         description: str | None = None,
         is_public: bool = False,
+        is_official: bool = False,
     ) -> Self:
-        return cls(
-            id=new_uuid(),
-            user_id=user_id,
-            name=name,
-            image_type=image_type,
-            size=size,
-            sha256=sha256,
-            description=description,
-            timestamp=int(time.time()),
-            is_public=is_public,
-        )
+        kwargs = {
+            "id": new_uuid(),
+            "user_id": user_id,
+            "name": name,
+            "size": size,
+            "description": description,
+            "is_public": is_public,
+            "is_official": is_official,
+            "timestamp": int(time.time()),
+            "downloads": 0,
+        }
+        return cls(**kwargs)
 
 
 class Listing(StoreBaseModel):

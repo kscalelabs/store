@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useInView } from "react-intersection-observer";
 
 import DownloadKernelImage from "@/components/DownloadKernelImage";
 import LoadingArtifactCard from "@/components/listing/artifacts/LoadingArtifactCard";
@@ -15,29 +14,21 @@ import { Search, Upload } from "lucide-react";
 type KernelImageResponse = components["schemas"]["KernelImageResponse"];
 
 export default function DownloadsPage() {
+  const auth = useAuthentication();
+  const { addErrorAlert, addAlert } = useAlertQueue();
   const [kernelImages, setKernelImages] = useState<KernelImageResponse[]>([]);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("kernel");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const auth = useAuthentication();
-  const { addErrorAlert } = useAlertQueue();
 
-  const { ref, inView } = useInView({
-    threshold: 0,
-  });
-
-  const fetchKernelImages = async (cursor: string | null = null) => {
+  const fetchKernelImages = async () => {
     if (isLoading) return;
     setIsLoading(true);
     try {
-      const response = await auth.client.GET("/kernel-images/public", {
-        params: { query: { cursor, limit: 20 } },
-      });
+      const response = await auth.client.GET("/kernel-images/public", {});
       if (response.data) {
-        setKernelImages((prev) => [...prev, ...response.data.kernel_images]);
-        setNextCursor(response.data.next_cursor ?? null);
+        setKernelImages(response.data);
       }
     } catch (error) {
       console.error("Failed to fetch kernel images:", error);
@@ -51,33 +42,25 @@ export default function DownloadsPage() {
     fetchKernelImages();
   }, []);
 
-  useEffect(() => {
-    if (inView && nextCursor) {
-      fetchKernelImages(nextCursor);
-    }
-  }, [inView, nextCursor]);
-
-  const filteredKernelImages = kernelImages.filter(
-    (ki) =>
-      ki.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (activeTab === "all" || ki.image_type === activeTab),
-  );
-
   const handleUpload = async (
     file: File,
     name: string,
-    imageType: string,
     description: string,
     isPublic: boolean,
+    isOfficial: boolean,
   ) => {
     try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("name", name);
+      formData.append("description", description);
+      formData.append("is_public", isPublic.toString());
+      formData.append("is_official", isOfficial.toString());
+
       const response = await auth.client.POST("/kernel-images/upload", {
-        body: {
-          name,
-          image_type: imageType as "dockerfile" | "singularity",
-          file: await fileToBase64(file),
-          description,
-          is_public: isPublic,
+        body: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
         },
       });
 
@@ -88,27 +71,24 @@ export default function DownloadsPage() {
         );
       } else {
         console.log("Upload successful:", response.data);
+        addAlert("Kernel image uploaded successfully", "success");
         setKernelImages((prevKernelImages) => [
           response.data as KernelImageResponse,
           ...prevKernelImages,
         ]);
+        setIsUploadModalOpen(false);
       }
     } catch (error) {
       console.error("Upload failed:", error);
-      addErrorAlert(
-        `Upload failed: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      addErrorAlert("Upload failed");
     }
   };
 
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-  };
+  const filteredKernelImages = kernelImages.filter(
+    (ki) =>
+      ki.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      activeTab === "kernel",
+  );
 
   // Check if the user has admin or moderator permissions
   const canUpload =
@@ -127,7 +107,7 @@ export default function DownloadsPage() {
         <div className="relative w-64">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search kernel images"
+            placeholder="Search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-8"
@@ -140,11 +120,11 @@ export default function DownloadsPage() {
         )}
       </div>
 
-      <Tabs defaultValue="all" className="mb-6" onValueChange={setActiveTab}>
+      <Tabs defaultValue="kernel" className="mb-6" onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="dockerfile">Dockerfile</TabsTrigger>
-          <TabsTrigger value="singularity">Singularity</TabsTrigger>
+          <TabsTrigger value="kernel">Kernel Images</TabsTrigger>
+          <TabsTrigger value="ml">ML</TabsTrigger>
+          <TabsTrigger value="other">Other</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -160,8 +140,6 @@ export default function DownloadsPage() {
           </>
         )}
       </div>
-
-      {nextCursor && <div ref={ref} style={{ height: "20px" }} />}
 
       {canUpload && (
         <UploadModal
