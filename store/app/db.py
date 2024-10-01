@@ -8,6 +8,7 @@ from typing import AsyncGenerator, Literal, Self
 from store.app.crud.artifacts import ArtifactsCrud
 from store.app.crud.base import TABLE_NAME, BaseCrud
 from store.app.crud.email import EmailCrud
+from store.app.crud.kernel_images import KernelImagesCrud
 from store.app.crud.listings import ListingsCrud
 from store.app.crud.onshape import OnshapeCrud
 from store.app.crud.users import UserCrud
@@ -19,6 +20,7 @@ class Crud(
     UserCrud,
     ListingsCrud,
     ArtifactsCrud,
+    KernelImagesCrud,
     BaseCrud,
 ):
     """Composes the various CRUD classes into a single class."""

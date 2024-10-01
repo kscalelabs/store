@@ -1,144 +1,171 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/Card";
-import { Badge } from "@/components/ui/badge";
+import DownloadKernelImage from "@/components/DownloadKernelImage";
+import LoadingArtifactCard from "@/components/listing/artifacts/LoadingArtifactCard";
+import { UploadModal } from "@/components/modals/UploadModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
-import { Download, Search, Upload } from "lucide-react";
+import { components } from "@/gen/api";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
+import { Search, Upload } from "lucide-react";
 
-// Mock data for demonstration
-const resources = [
-  {
-    id: 1,
-    name: "K-Scale Core Kernel",
-    type: "kernel",
-    official: true,
-    downloads: 1200,
-  },
-  {
-    id: 2,
-    name: "Robotic Arm URDF",
-    type: "urdf",
-    official: true,
-    downloads: 850,
-  },
-  {
-    id: 3,
-    name: "Object Detection Model",
-    type: "ml",
-    official: true,
-    downloads: 2000,
-  },
-  {
-    id: 4,
-    name: "Custom Kernel by user123",
-    type: "kernel",
-    official: false,
-    downloads: 300,
-  },
-  { id: 5, name: "Drone URDF", type: "urdf", official: false, downloads: 450 },
-  {
-    id: 6,
-    name: "Sentiment Analysis Model",
-    type: "ml",
-    official: false,
-    downloads: 600,
-  },
-];
+type KernelImageResponse = components["schemas"]["KernelImageResponse"];
 
 export default function DownloadsPage() {
+  const auth = useAuthentication();
+  const { addErrorAlert, addAlert } = useAlertQueue();
+  const [kernelImages, setKernelImages] = useState<KernelImageResponse[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("kernel");
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
-  const filteredResources = resources.filter(
-    (resource) =>
-      resource.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (activeTab === "all" || resource.type === activeTab),
+  const fetchKernelImages = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    try {
+      const response = await auth.client.GET("/kernel-images/public", {});
+      if (response.data) {
+        setKernelImages(response.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch kernel images:", error);
+      addErrorAlert("Failed to fetch kernel images");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchKernelImages();
+  }, []);
+
+  const handleUpload = async (
+    file: File,
+    name: string,
+    description: string,
+    isPublic: boolean,
+    isOfficial: boolean,
+  ) => {
+    try {
+      // Convert File to base64 string
+      const fileBase64 = await fileToBase64(file);
+
+      // Remove the data URL prefix if present
+      const base64Content = fileBase64.split(",")[1] || fileBase64;
+
+      // Create the request body object with the correct types
+      const requestBody = {
+        name,
+        file: base64Content,
+        is_public: isPublic,
+        is_official: isOfficial,
+        description: description || null, // Handle empty description
+      };
+
+      const response = await auth.client.POST("/kernel-images/upload", {
+        body: requestBody,
+        headers: {
+          "Content-Type": "application/json", // Changed to JSON
+        },
+      });
+
+      if (response.error) {
+        console.error("Upload failed:", response.error);
+        addErrorAlert(
+          `Upload failed: ${response.error instanceof Error ? response.error.message : String(response.error)}`,
+        );
+      } else {
+        console.log("Upload successful:", response.data);
+        addAlert("Kernel image uploaded successfully", "success");
+        setKernelImages((prevKernelImages) => [
+          response.data as KernelImageResponse,
+          ...prevKernelImages,
+        ]);
+        setIsUploadModalOpen(false);
+      }
+    } catch (error) {
+      console.error("Upload failed:", error);
+      addErrorAlert("Upload failed");
+    }
+  };
+
+  const filteredKernelImages = kernelImages.filter(
+    (ki) =>
+      ki.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      activeTab === "kernel",
   );
 
+  // Check if the user has admin or moderator permissions
+  const canUpload =
+    auth.currentUser?.permissions?.some(
+      (permission) => permission === "is_admin" || permission === "is_mod",
+    ) || false;
+
   return (
-    <div className="px-4 py-8 rounded-lg">
+    <div className="max-w-6xl mx-auto px-4 py-8 rounded-lg">
       <h1 className="text-3xl font-bold mb-2">K-Scale Downloads</h1>
       <p className="text-muted-foreground mb-6">
-        View and download official K-Scale and community uploaded kernel images,
-        URDFs, ML models, and more
+        View and download official K-Scale and community uploaded kernel images
       </p>
 
       <div className="flex justify-between items-center mb-6">
         <div className="relative w-64">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search resources"
+            placeholder="Search"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-8"
           />
         </div>
-        <Button>
-          <Upload className="mr-2 h-4 w-4" /> Upload Resource
-        </Button>
+        {canUpload && (
+          <Button onClick={() => setIsUploadModalOpen(true)}>
+            <Upload className="mr-2 h-4 w-4" /> Upload
+          </Button>
+        )}
       </div>
 
-      <Tabs defaultValue="all" className="mb-6" onValueChange={setActiveTab}>
+      <Tabs defaultValue="kernel" className="mb-6" onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
           <TabsTrigger value="kernel">Kernel Images</TabsTrigger>
-          <TabsTrigger value="urdf">URDFs</TabsTrigger>
-          <TabsTrigger value="ml">ML Models</TabsTrigger>
+          <TabsTrigger value="ml">ML</TabsTrigger>
+          <TabsTrigger value="other">Other</TabsTrigger>
         </TabsList>
       </Tabs>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredResources.map((resource) => (
-          <Card key={resource.id}>
-            <CardHeader>
-              <CardTitle className="flex justify-between items-center">
-                {resource.name}
-                <div className="flex gap-2">
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      resource.type === "kernel" && "bg-blue-100 text-blue-800",
-                      resource.type === "urdf" && "bg-green-100 text-green-800",
-                      resource.type === "ml" && "bg-purple-100 text-purple-800",
-                      resource.type === "other" && "bg-gray-100 text-gray-800",
-                    )}
-                  >
-                    {resource.type}
-                  </Badge>
-                  {resource.official && (
-                    <Badge variant="primary">Official</Badge>
-                  )}
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Downloads: {resource.downloads}
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Button className="w-full">
-                <Download className="mr-2 h-4 w-4" /> Download
-              </Button>
-            </CardFooter>
-          </Card>
+        {filteredKernelImages.map((kernelImage) => (
+          <DownloadKernelImage key={kernelImage.id} kernelImage={kernelImage} />
         ))}
+        {isLoading && (
+          <>
+            <LoadingArtifactCard />
+            <LoadingArtifactCard />
+            <LoadingArtifactCard />
+          </>
+        )}
       </div>
 
-      {filteredResources.length === 0 && (
-        <p className="text-center text-muted-foreground mt-8">
-          No resources found matching your search criteria.
-        </p>
+      {canUpload && (
+        <UploadModal
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+          onUpload={handleUpload}
+        />
       )}
     </div>
   );
 }
+
+// Helper function to convert File to base64
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
