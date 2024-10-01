@@ -214,6 +214,10 @@ npm run format
 
 To run tests, use the following commands:
 
+1. Run autoformatting: `make format`
+2. Run static checks: `make static-checks`
+3. Run unit tests: `make test`
+
 ```bash
 make test
 make test-frontend  # Run only the frontend tests

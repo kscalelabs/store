@@ -2,6 +2,7 @@
 
 import io
 import logging
+from typing import Any
 
 from fastapi import UploadFile
 
@@ -62,7 +63,7 @@ class KernelImagesCrud(BaseCrud):
         if not user.permissions or not ({"is_mod", "is_admin"} & user.permissions):
             raise ValueError("Only moderators or admins can update kernel images")
 
-        updates = {}
+        updates: dict[str, Any] = {}
         if name is not None:
             updates["name"] = name
         if description is not None:
@@ -71,6 +72,7 @@ class KernelImagesCrud(BaseCrud):
             updates["is_public"] = is_public
         if is_official is not None:
             updates["is_official"] = is_official
+
         if updates:
             await self._update_item(kernel_image_id, KernelImage, updates)
 
@@ -86,7 +88,7 @@ class KernelImagesCrud(BaseCrud):
         response = await table.scan(
             FilterExpression="is_public = :is_public", ExpressionAttributeValues={":is_public": True}
         )
-        return [KernelImage(**item) for item in response.get("Items", [])]
+        return [KernelImage.model_validate(item) for item in response.get("Items", [])]
 
     async def increment_downloads(self, kernel_image_id: str) -> None:
         kernel_image = await self.get_kernel_image(kernel_image_id)
