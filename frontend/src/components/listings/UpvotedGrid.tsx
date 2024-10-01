@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import ListingGridCard from "@/components/listings/ListingGridCard";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import Spinner from "@/components/ui/Spinner";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
@@ -43,7 +44,6 @@ const UpvotedGrid = () => {
         },
       },
     });
-
     if (error) {
       addErrorAlert(error);
     } else {
@@ -105,7 +105,7 @@ const UpvotedGrid = () => {
               </div>
               <div className="flex justify-between mt-6">
                 <button
-                  className={`px-4 py-2 rounded ${prevButton ? "bg-gray-600 text-white" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
+                  className={`px-4 py-2 rounded flex items-center justify-center ${prevButton ? "bg-gray-12 text-white" : "bg-gray-7 text-gray-12 cursor-not-allowed"}`}
                   onClick={() => {
                     if (prevButton) {
                       setSearchParams({ page: (pageNumber - 1).toString() });
@@ -113,10 +113,11 @@ const UpvotedGrid = () => {
                   }}
                   disabled={!prevButton}
                 >
-                  Previous
+                  <FaChevronLeft className="text-xs mr-2" />
+                  <span>Previous</span>
                 </button>
                 <button
-                  className={`px-4 py-2 rounded ${nextButton ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
+                  className={`px-4 py-2 rounded flex items-center justify-center ${nextButton ? "bg-gray-12 text-white" : "bg-gray-7 text-gray-12 cursor-not-allowed"}`}
                   onClick={() => {
                     if (nextButton) {
                       setSearchParams({ page: (pageNumber + 1).toString() });
@@ -124,7 +125,8 @@ const UpvotedGrid = () => {
                   }}
                   disabled={!nextButton}
                 >
-                  Next
+                  <span>Next</span>
+                  <FaChevronRight className="text-xs ml-2" />
                 </button>
               </div>
             </div>
