@@ -6,25 +6,15 @@ import os
 from tempfile import NamedTemporaryFile
 from typing import Annotated, List, Optional
 
-from fastapi import (
-    APIRouter,
-    Depends,
-    File,
-    Form,
-    HTTPException,
-    Query,
-    UploadFile,
-    status,
-)
+from fastapi import APIRouter, Depends, Form, HTTPException, UploadFile, status
 from pydantic import BaseModel
 
 from store.app.db import Crud
-from store.app.model import KernelImage, User
+from store.app.model import User
 from store.app.routers.users import (
     get_session_user_with_write_permission,
     maybe_get_user_from_api_key,
 )
-from store.settings import settings
 
 kernel_images_router = APIRouter()
 
@@ -57,6 +47,11 @@ async def upload_kernel_image(
     crud: Annotated[Crud, Depends(Crud.get)],
     request: KernelImageUploadRequest,
 ) -> KernelImageResponse:
+    if not user.is_mod and not user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Only moderators or admins can upload kernel images"
+        )
+
     try:
         # Add padding to the base64 string if necessary
         padded_file = request.file + "=" * (-len(request.file) % 4)
@@ -122,6 +117,11 @@ async def edit_kernel_image(
     is_public: bool | None = Form(None),
     is_official: bool | None = Form(None),
 ) -> bool:
+    if not user.is_mod and not user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Only moderators or admins can edit kernel images"
+        )
+
     kernel_image = await crud.get_kernel_image(kernel_image_id)
     if kernel_image is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Kernel image not found")
@@ -139,6 +139,11 @@ async def delete_kernel_image(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
+    if not user.is_mod and not user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Only moderators or admins can delete kernel images"
+        )
+
     kernel_image = await crud.get_kernel_image(kernel_image_id)
     if kernel_image is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Kernel image not found")

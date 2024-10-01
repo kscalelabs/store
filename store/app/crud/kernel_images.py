@@ -21,6 +21,9 @@ class KernelImagesCrud(BaseCrud):
         is_public: bool = False,
         is_official: bool = False,
     ) -> KernelImage:
+        if not user.is_mod and not user.is_admin:
+            raise ValueError("Only moderators or admins can upload kernel images")
+
         file_data = await file.read()
         size = len(file_data)
 
@@ -50,11 +53,15 @@ class KernelImagesCrud(BaseCrud):
     async def update_kernel_image(
         self,
         kernel_image_id: str,
+        user: User,
         name: str | None = None,
         description: str | None = None,
         is_public: bool | None = None,
         is_official: bool | None = None,
     ) -> None:
+        if not user.is_mod and not user.is_admin:
+            raise ValueError("Only moderators or admins can update kernel images")
+
         updates = {}
         if name is not None:
             updates["name"] = name
@@ -67,7 +74,10 @@ class KernelImagesCrud(BaseCrud):
         if updates:
             await self._update_item(kernel_image_id, KernelImage, updates)
 
-    async def delete_kernel_image(self, kernel_image: KernelImage) -> None:
+    async def delete_kernel_image(self, kernel_image: KernelImage, user: User) -> None:
+        if not user.is_mod and not user.is_admin:
+            raise ValueError("Only moderators or admins can delete kernel images")
+
         await self._delete_from_s3(f"{kernel_image.id}/{kernel_image.name}")
         await self._delete_item(kernel_image)
 
@@ -79,7 +89,9 @@ class KernelImagesCrud(BaseCrud):
         return [KernelImage(**item) for item in response.get("Items", [])]
 
     async def increment_downloads(self, kernel_image_id: str) -> None:
-        await self._update_item(kernel_image_id, KernelImage, {"downloads": KernelImage.downloads + 1})
+        kernel_image = await self.get_kernel_image(kernel_image_id)
+        if kernel_image:
+            await self._update_item(kernel_image_id, KernelImage, {"downloads": kernel_image.downloads + 1})
 
     async def get_kernel_image_download_url(self, kernel_image: KernelImage) -> str:
         s3_filename = f"{kernel_image.id}/{kernel_image.name}"
