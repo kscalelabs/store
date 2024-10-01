@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+
 import ListingGridCard from "@/components/listings/ListingGridCard";
 import Spinner from "@/components/ui/Spinner";
 import { paths } from "@/gen/api";
@@ -103,7 +104,7 @@ const UpvotedGrid = () => {
                 ))}
               </div>
               <div className="flex justify-between mt-6">
-              <button
+                <button
                   className={`px-4 py-2 rounded ${prevButton ? "bg-gray-600 text-white" : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
                   onClick={() => {
                     if (prevButton) {
