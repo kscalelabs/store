@@ -46,6 +46,7 @@ export class MuJoCoDemo {
       ctrlnoiserate: 0.0,
       ctrlnoisestd: 0.0,
       keyframeNumber: 0,
+      dragStrength: 50.0, // Add dragStrength parameter
     };
     this.mujoco_time = 0.0;
     (this.bodies = {}), (this.lights = {});
@@ -134,7 +135,7 @@ export class MuJoCoDemo {
         action_scale: 0.25,
       },
       sim_config: {
-        dt: 0.001,
+        dt: 0.002,
         decimation: 10,
       },
     };
@@ -359,6 +360,39 @@ export class MuJoCoDemo {
       // Apply torques to the simulation
       for (let i = 0; i < tau.length; i++) {
         this.simulation.ctrl[i] = tau[i];
+      }
+
+      // Clear old perturbations, apply new ones.
+      for (let i = 0; i < this.simulation.qfrc_applied.length; i++) {
+        this.simulation.qfrc_applied[i] = 0.0;
+      }
+
+      // Handle dragging logic
+      let dragged = this.dragStateManager.physicsObject;
+      if (dragged && dragged.bodyID !== undefined) {
+        let bodyID = dragged.bodyID;
+        this.dragStateManager.update(); // Update the world-space force origin
+        let force = toMujocoPos(
+          this.dragStateManager.currentWorld
+            .clone()
+            .sub(this.dragStateManager.worldHit)
+            .multiplyScalar(
+              this.model.body_mass[bodyID] * this.params.dragStrength,
+            ),
+        );
+        let point = toMujocoPos(this.dragStateManager.worldHit.clone());
+        this.simulation.applyForce(
+          force.x,
+          force.y,
+          force.z,
+          0,
+          0,
+          0,
+          point.x,
+          point.y,
+          point.z,
+          bodyID,
+        );
       }
 
       // Step the simulation
