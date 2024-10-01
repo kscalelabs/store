@@ -7,58 +7,27 @@ import { useAuthentication } from "@/hooks/useAuth";
 interface SidebarItemProps {
   title: string;
   icon?: JSX.Element;
-  onClick?: () => void;
-  size?: "sm" | "md" | "lg";
-  align?: "left" | "right";
+  onClick: () => void;
 }
 
-const SidebarItem = ({
-  icon,
-  title,
-  onClick,
-  size = "md",
-  align = "left",
-}: SidebarItemProps) => {
-  return (
-    <li>
-      <button onClick={onClick} className="w-full focus:outline-none">
-        <span className="flex items-center py-2 px-4 text-gray-1 rounded-md hover:bg-gray-1 hover:text-primary-9 group">
-          {align === "right" ? (
-            <>
-              <span className="flex-grow" />
-              <span
-                className={`${size === "sm" ? "text-xs" : size === "lg" ? "text-sm" : "text-xs"} mr-1`}
-              >
-                {title}
-              </span>
-              {icon && <span className="text-xs">{icon}</span>}
-            </>
-          ) : (
-            <>
-              {icon && <span className="text-xs mr-1">{icon}</span>}
-              <span
-                className={`${size === "sm" ? "text-xs" : size === "lg" ? "text-sm" : "text-xs"}`}
-              >
-                {title}
-              </span>
-            </>
-          )}
-        </span>
-      </button>
-    </li>
-  );
-};
-
-const SidebarSeparator = () => {
-  return <li className="my-0.5 border-t border-gray-11" />;
-};
-
-interface Props {
+interface SidebarProps {
   show: boolean;
   onClose: () => void;
 }
 
-const Sidebar = ({ show, onClose }: Props) => {
+const SidebarItem = ({ icon, title, onClick }: SidebarItemProps) => (
+  <li>
+    <button
+      onClick={onClick}
+      className="w-full flex items-center py-2 px-3 text-xl text-gray-1 hover:bg-gray-1 hover:text-primary-9 rounded-md"
+    >
+      {icon && <span className="mr-2">{icon}</span>}
+      {title}
+    </button>
+  </li>
+);
+
+const Sidebar = ({ show, onClose }: SidebarProps) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthentication();
 
@@ -76,86 +45,78 @@ const Sidebar = ({ show, onClose }: Props) => {
     { name: "GitHub", path: "https://github.com/kscalelabs" },
   ];
 
+  const handleItemClick = (path: string, isExternal?: boolean) => {
+    if (isExternal) {
+      window.open(path, "_blank");
+    } else {
+      navigate(path);
+      onClose();
+    }
+  };
+
   return (
-    <div>
+    <>
       {show && (
         <div className="fixed inset-0 z-50 bg-gray-1/20 backdrop-blur-sm">
-          <div className="fixed top-0 right-0 z-40 w-full sm:w-96 md:w-80 lg:w-64 h-full overflow-y-auto transition-transform bg-gray-12">
-            <div className="flex justify-between items-center p-2 border-b border-gray-11">
+          <aside className="fixed top-0 right-0 z-40 w-64 h-full overflow-y-auto transition-transform bg-gray-12 p-4">
+            <div className="flex justify-between items-center mb-4">
               <Logo />
               <button
                 onClick={onClose}
-                className="text-gray-1 hover:text-primary-9 rounded-lg p-2"
+                className="text-gray-1 hover:text-primary-9 p-1"
               >
                 <FaTimes size={18} />
                 <span className="sr-only">Close menu</span>
               </button>
             </div>
-            <nav className="p-2">
-              {navItems.map((item) => (
-                <SidebarItem
-                  key={item.name}
-                  title={item.name}
-                  onClick={() => {
-                    if (item.isExternal) {
-                      window.open(item.path, "_blank");
-                    } else {
-                      navigate(item.path);
-                      onClose();
-                    }
-                  }}
-                />
-              ))}
-              <SidebarSeparator />
-              {communityItems.map((item) => (
-                <SidebarItem
-                  key={item.name}
-                  title={item.name}
-                  onClick={() => window.open(item.path, "_blank")}
-                  size="sm"
-                />
-              ))}
-              <SidebarSeparator />
-              {isAuthenticated ? (
-                <>
+            <div className="border-t border-gray-1 my-2"></div>
+            <nav>
+              <ul className="space-y-1l">
+                {navItems.map((item) => (
                   <SidebarItem
-                    title="Account"
-                    onClick={() => {
-                      navigate("/account");
-                      onClose();
-                    }}
+                    key={item.name}
+                    title={item.name}
+                    onClick={() => handleItemClick(item.path, item.isExternal)}
                   />
+                ))}
+                <div className="border-t border-gray-1 my-2"></div>
+                {communityItems.map((item) => (
                   <SidebarItem
-                    title="Logout"
-                    onClick={() => {
-                      navigate("/logout");
-                      onClose();
-                    }}
+                    key={item.name}
+                    title={item.name}
+                    onClick={() => handleItemClick(item.path, true)}
                   />
-                </>
-              ) : (
-                <>
-                  <SidebarItem
-                    title="Sign In"
-                    onClick={() => {
-                      navigate("/login");
-                      onClose();
-                    }}
-                  />
-                  <SidebarItem
-                    title="Sign Up"
-                    onClick={() => {
-                      navigate("/signup");
-                      onClose();
-                    }}
-                  />
-                </>
-              )}
+                ))}
+                <div className="border-t border-gray-1 my-2"></div>
+                {isAuthenticated ? (
+                  <>
+                    <SidebarItem
+                      title="Account"
+                      onClick={() => handleItemClick("/account")}
+                    />
+                    <SidebarItem
+                      title="Logout"
+                      onClick={() => handleItemClick("/logout")}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <SidebarItem
+                      title="Sign In"
+                      onClick={() => handleItemClick("/login")}
+                    />
+                    <SidebarItem
+                      title="Sign Up"
+                      onClick={() => handleItemClick("/signup")}
+                    />
+                  </>
+                )}
+              </ul>
             </nav>
-          </div>
+          </aside>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
