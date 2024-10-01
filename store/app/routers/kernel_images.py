@@ -1,7 +1,10 @@
 """Defines the router endpoints for handling kernel images."""
 
+import base64
 import logging
-from typing import Annotated, List, Literal, Optional
+import os
+from tempfile import NamedTemporaryFile
+from typing import Annotated, List, Optional
 
 from fastapi import (
     APIRouter,
@@ -40,25 +43,57 @@ class KernelImageResponse(BaseModel):
     downloads: int
 
 
+class KernelImageUploadRequest(BaseModel):
+    name: str
+    file: str  # Base64 encoded file content
+    is_public: bool
+    is_official: bool
+    description: Optional[str] = None
+
+
 @kernel_images_router.post("/upload", response_model=KernelImageResponse)
 async def upload_kernel_image(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
-    name: str = Form(...),
-    file: UploadFile = File(...),
-    is_public: bool = Form(False),
-    is_official: bool = Form(False),
-    description: str | None = Form(None),
+    request: KernelImageUploadRequest,
 ) -> KernelImageResponse:
-    kernel_image = await crud.upload_kernel_image(
-        name=name,
-        file=file,
-        user=user,
-        description=description,
-        is_public=is_public,
-        is_official=is_official,
-    )
-    return KernelImageResponse(**kernel_image.dict())
+    try:
+        # Add padding to the base64 string if necessary
+        padded_file = request.file + "=" * (-len(request.file) % 4)
+
+        # Decode the base64 string
+        try:
+            file_content = base64.b64decode(padded_file)
+        except Exception as e:
+            logger.error(f"Base64 decoding error: {str(e)}")
+            raise HTTPException(status_code=400, detail=f"Invalid file encoding: {str(e)}")
+
+        # Create a temporary file
+        with NamedTemporaryFile(delete=False) as temp_file:
+            temp_file.write(file_content)
+            temp_file_path = temp_file.name
+
+        # Create an UploadFile object
+        file = UploadFile(filename=request.name, file=open(temp_file_path, "rb"))
+
+        try:
+            kernel_image = await crud.upload_kernel_image(
+                name=request.name,
+                file=file,
+                user=user,
+                description=request.description,
+                is_public=request.is_public,
+                is_official=request.is_official,
+            )
+        finally:
+            file.file.close()
+            os.unlink(temp_file_path)  # Remove the temporary file
+
+        return KernelImageResponse(**kernel_image.dict())
+
+    except Exception as e:
+        logger.error(f"Unexpected error in upload_kernel_image: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
 
 @kernel_images_router.get("/info/{kernel_image_id}", response_model=KernelImageResponse)
@@ -120,7 +155,7 @@ async def list_public_kernel_images(
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> List[KernelImageResponse]:
     kernel_images = await crud.get_public_kernel_images()
-    return [KernelImageResponse(**ki.dict()) for ki in kernel_images]
+    return [KernelImageResponse(**ki.model_dump()) for ki in kernel_images]
 
 
 @kernel_images_router.get("/download/{kernel_image_id}", response_model=str)

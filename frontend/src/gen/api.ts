@@ -863,28 +863,6 @@ export interface components {
             /** Files */
             files: string[];
         };
-        /** Body_upload_kernel_image_kernel_images_upload_post */
-        Body_upload_kernel_image_kernel_images_upload_post: {
-            /** Name */
-            name: string;
-            /**
-             * File
-             * Format: binary
-             */
-            file: string;
-            /**
-             * Is Public
-             * @default false
-             */
-            is_public: boolean;
-            /**
-             * Is Official
-             * @default false
-             */
-            is_official: boolean;
-            /** Description */
-            description?: string | null;
-        };
         /** ClientIdResponse */
         ClientIdResponse: {
             /** Client Id */
@@ -994,6 +972,19 @@ export interface components {
             is_official: boolean;
             /** Downloads */
             downloads: number;
+        };
+        /** KernelImageUploadRequest */
+        KernelImageUploadRequest: {
+            /** Name */
+            name: string;
+            /** File */
+            file: string;
+            /** Is Public */
+            is_public: boolean;
+            /** Is Official */
+            is_official: boolean;
+            /** Description */
+            description?: string | null;
         };
         /** KeysResponseItem */
         KeysResponseItem: {
@@ -2647,7 +2638,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "multipart/form-data": components["schemas"]["Body_upload_kernel_image_kernel_images_upload_post"];
+                "application/json": components["schemas"]["KernelImageUploadRequest"];
             };
         };
         responses: {

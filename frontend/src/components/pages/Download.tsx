@@ -50,17 +50,25 @@ export default function DownloadsPage() {
     isOfficial: boolean,
   ) => {
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("name", name);
-      formData.append("description", description);
-      formData.append("is_public", isPublic.toString());
-      formData.append("is_official", isOfficial.toString());
+      // Convert File to base64 string
+      const fileBase64 = await fileToBase64(file);
+
+      // Remove the data URL prefix if present
+      const base64Content = fileBase64.split(",")[1] || fileBase64;
+
+      // Create the request body object with the correct types
+      const requestBody = {
+        name,
+        file: base64Content,
+        is_public: isPublic,
+        is_official: isOfficial,
+        description: description || null, // Handle empty description
+      };
 
       const response = await auth.client.POST("/kernel-images/upload", {
-        body: formData,
+        body: requestBody,
         headers: {
-          "Content-Type": "multipart/form-data",
+          "Content-Type": "application/json", // Changed to JSON
         },
       });
 
@@ -151,3 +159,13 @@ export default function DownloadsPage() {
     </div>
   );
 }
+
+// Helper function to convert File to base64
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};

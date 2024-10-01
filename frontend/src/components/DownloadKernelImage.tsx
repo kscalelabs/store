@@ -42,7 +42,7 @@ const DownloadKernelImage = ({ kernelImage }: Props) => {
 
   return (
     <Card key={kernelImage.id}>
-      <CardHeader>
+      <CardHeader className="space-y-2">
         <CardTitle className="flex justify-between items-center">
           {kernelImage.name}
           <div className="flex gap-1">
@@ -54,10 +54,12 @@ const DownloadKernelImage = ({ kernelImage }: Props) => {
             )}
           </div>
         </CardTitle>
-        {kernelImage.description && (
+        {kernelImage.description ? (
           <p className="text-sm text-muted-foreground">
             {kernelImage.description}
           </p>
+        ) : (
+          <div className="h-5" /> // Placeholder to maintain spacing
         )}
       </CardHeader>
       <CardContent>
