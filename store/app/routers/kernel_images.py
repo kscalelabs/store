@@ -47,7 +47,7 @@ async def upload_kernel_image(
     crud: Annotated[Crud, Depends(Crud.get)],
     request: KernelImageUploadRequest,
 ) -> KernelImageResponse:
-    if not user.is_mod and not user.is_admin:
+    if not user.permissions or not ({"is_mod", "is_admin"} & user.permissions):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Only moderators or admins can upload kernel images"
         )
@@ -117,7 +117,7 @@ async def edit_kernel_image(
     is_public: bool | None = Form(None),
     is_official: bool | None = Form(None),
 ) -> bool:
-    if not user.is_mod and not user.is_admin:
+    if not user.permissions or not ({"is_mod", "is_admin"} & user.permissions):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Only moderators or admins can edit kernel images"
         )
@@ -125,11 +125,11 @@ async def edit_kernel_image(
     kernel_image = await crud.get_kernel_image(kernel_image_id)
     if kernel_image is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Kernel image not found")
-    if user.id != kernel_image.user_id and "is_admin" not in (user.permissions or []):
+    if user.id != kernel_image.user_id and "is_admin" not in (user.permissions or set()):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to edit this kernel image"
         )
-    await crud.update_kernel_image(kernel_image_id, name, description, is_public, is_official)
+    await crud.update_kernel_image(kernel_image_id, user, name, description, is_public, is_official)
     return True
 
 
@@ -139,7 +139,7 @@ async def delete_kernel_image(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
-    if not user.is_mod and not user.is_admin:
+    if not user.permissions or not ({"is_mod", "is_admin"} & user.permissions):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Only moderators or admins can delete kernel images"
         )
@@ -147,11 +147,11 @@ async def delete_kernel_image(
     kernel_image = await crud.get_kernel_image(kernel_image_id)
     if kernel_image is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Kernel image not found")
-    if user.id != kernel_image.user_id:
+    if user.id != kernel_image.user_id and "is_admin" not in (user.permissions or set()):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to delete this kernel image"
         )
-    await crud.delete_kernel_image(kernel_image)
+    await crud.delete_kernel_image(kernel_image, user)
     return True
 
 

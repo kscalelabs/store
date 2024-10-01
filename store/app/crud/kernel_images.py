@@ -21,7 +21,7 @@ class KernelImagesCrud(BaseCrud):
         is_public: bool = False,
         is_official: bool = False,
     ) -> KernelImage:
-        if not user.is_mod and not user.is_admin:
+        if not user.permissions or not ({"is_mod", "is_admin"} & user.permissions):
             raise ValueError("Only moderators or admins can upload kernel images")
 
         file_data = await file.read()
@@ -59,7 +59,7 @@ class KernelImagesCrud(BaseCrud):
         is_public: bool | None = None,
         is_official: bool | None = None,
     ) -> None:
-        if not user.is_mod and not user.is_admin:
+        if not user.permissions or not ({"is_mod", "is_admin"} & user.permissions):
             raise ValueError("Only moderators or admins can update kernel images")
 
         updates = {}
@@ -75,7 +75,7 @@ class KernelImagesCrud(BaseCrud):
             await self._update_item(kernel_image_id, KernelImage, updates)
 
     async def delete_kernel_image(self, kernel_image: KernelImage, user: User) -> None:
-        if not user.is_mod and not user.is_admin:
+        if not user.permissions or not ({"is_mod", "is_admin"} & user.permissions):
             raise ValueError("Only moderators or admins can delete kernel images")
 
         await self._delete_from_s3(f"{kernel_image.id}/{kernel_image.name}")
@@ -96,3 +96,8 @@ class KernelImagesCrud(BaseCrud):
     async def get_kernel_image_download_url(self, kernel_image: KernelImage) -> str:
         s3_filename = f"{kernel_image.id}/{kernel_image.name}"
         return await self._get_presigned_url(s3_filename)
+
+    async def _get_presigned_url(self, s3_filename: str) -> str:
+        # Implement the logic to get a presigned URL from S3
+        # This is a placeholder implementation
+        return f"https://example.com/presigned/{s3_filename}"

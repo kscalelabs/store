@@ -370,18 +370,17 @@ class KernelImage(StoreBaseModel):
         is_public: bool = False,
         is_official: bool = False,
     ) -> Self:
-        kwargs = {
-            "id": new_uuid(),
-            "user_id": user_id,
-            "name": name,
-            "size": size,
-            "description": description,
-            "is_public": is_public,
-            "is_official": is_official,
-            "timestamp": int(time.time()),
-            "downloads": 0,
-        }
-        return cls(**kwargs)
+        return cls(
+            id=new_uuid(),
+            user_id=user_id,
+            name=name,
+            size=size,
+            description=description,
+            is_public=is_public,
+            is_official=is_official,
+            timestamp=int(time.time()),
+            downloads=0,
+        )
 
 
 class Listing(StoreBaseModel):
