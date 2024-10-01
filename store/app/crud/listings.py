@@ -287,3 +287,27 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
     async def get_user_votes(self, user_id: str, listing_ids: list[str]) -> list[ListingVote]:
         votes = await self._get_items_from_secondary_index("user_id", user_id, ListingVote)
         return [vote for vote in votes if vote.listing_id in listing_ids]
+
+    async def get_upvoted_listings(self, user_id: str, page: int = 1) -> tuple[list[Listing], bool]:
+        user_votes = await self._get_items_from_secondary_index(
+            secondary_index_name="user_id", secondary_index_value=user_id, item_class=ListingVote
+        )
+
+        upvoted_listing_ids = [vote.listing_id for vote in user_votes if vote.is_upvote]
+
+        if not upvoted_listing_ids:
+            return [], False
+
+        listings = await asyncio.gather(*(self.get_listing(listing_id) for listing_id in upvoted_listing_ids))
+
+        listings = [listing for listing in listings if listing is not None]
+
+        listings.sort(key=lambda x: x.created_at, reverse=True)
+
+        start = (page - 1) * self.PAGE_SIZE
+        end = start + self.PAGE_SIZE
+        paginated_listings = listings[start:end]
+
+        has_more = len(upvoted_listing_ids) > end
+
+        return paginated_listings, has_more

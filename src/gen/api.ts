@@ -364,23 +364,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/listings/upvotes": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Upvoted Listings */
-        get: operations["get_upvoted_listings_listings_upvotes_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/listings/{id}": {
         parameters: {
             query?: never;
@@ -428,6 +411,23 @@ export interface paths {
         post: operations["vote_listing_listings__id__vote_post"];
         /** Remove Vote */
         delete: operations["remove_vote_listings__id__vote_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/listings/upvotes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Upvoted Listings */
+        get: operations["get_upvoted_listings_listings_upvotes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -735,108 +735,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/kernel-images/upload": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Upload Kernel Image */
-        post: operations["upload_kernel_image_kernel_images_upload_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/kernel-images/info/{kernel_image_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Kernel Image Info */
-        get: operations["get_kernel_image_info_kernel_images_info__kernel_image_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/kernel-images/edit/{kernel_image_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Edit Kernel Image */
-        put: operations["edit_kernel_image_kernel_images_edit__kernel_image_id__put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/kernel-images/delete/{kernel_image_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        /** Delete Kernel Image */
-        delete: operations["delete_kernel_image_kernel_images_delete__kernel_image_id__delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/kernel-images/public": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** List Public Kernel Images */
-        get: operations["list_public_kernel_images_kernel_images_public_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/kernel-images/download/{kernel_image_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Download Kernel Image */
-        get: operations["download_kernel_image_kernel_images_download__kernel_image_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -852,17 +750,6 @@ export interface components {
         AuthResponse: {
             /** Api Key */
             api_key: string;
-        };
-        /** Body_edit_kernel_image_kernel_images_edit__kernel_image_id__put */
-        Body_edit_kernel_image_kernel_images_edit__kernel_image_id__put: {
-            /** Name */
-            name?: string | null;
-            /** Description */
-            description?: string | null;
-            /** Is Public */
-            is_public?: boolean | null;
-            /** Is Official */
-            is_official?: boolean | null;
         };
         /** Body_pull_onshape_document_onshape_pull__listing_id__get */
         Body_pull_onshape_document_onshape_pull__listing_id__get: {
@@ -968,40 +855,6 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
-        };
-        /** KernelImageResponse */
-        KernelImageResponse: {
-            /** Id */
-            id: string;
-            /** User Id */
-            user_id: string;
-            /** Name */
-            name: string;
-            /** Description */
-            description: string | null;
-            /** Size */
-            size: number;
-            /** Timestamp */
-            timestamp: number;
-            /** Is Public */
-            is_public: boolean;
-            /** Is Official */
-            is_official: boolean;
-            /** Downloads */
-            downloads: number;
-        };
-        /** KernelImageUploadRequest */
-        KernelImageUploadRequest: {
-            /** Name */
-            name: string;
-            /** File */
-            file: string;
-            /** Is Public */
-            is_public: boolean;
-            /** Is Official */
-            is_official: boolean;
-            /** Description */
-            description?: string | null;
         };
         /** KeysResponseItem */
         KeysResponseItem: {
@@ -1264,13 +1117,6 @@ export interface components {
         UploadArtifactResponse: {
             /** Artifacts */
             artifacts: components["schemas"]["SingleArtifactResponse"][];
-        };
-        /** UpvotedListingsResponse */
-        UpvotedListingsResponse: {
-            /** Upvoted Listing Ids */
-            upvoted_listing_ids: string[];
-            /** Has More */
-            has_more: boolean;
         };
         /** UserInfoResponseItem */
         UserInfoResponseItem: {
@@ -1987,38 +1833,6 @@ export interface operations {
             };
         };
     };
-    get_upvoted_listings_listings_upvotes_get: {
-        parameters: {
-            query?: {
-                /** @description Page number for pagination */
-                page?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UpvotedListingsResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     get_listing_listings__id__get: {
         parameters: {
             query?: never;
@@ -2133,6 +1947,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_upvoted_listings_listings_upvotes_get: {
+        parameters: {
+            query?: {
+                /** @description Page number for pagination */
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListListingsResponse"];
                 };
             };
             /** @description Validation Error */
@@ -2672,187 +2518,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UserPublic"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    upload_kernel_image_kernel_images_upload_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["KernelImageUploadRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["KernelImageResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_kernel_image_info_kernel_images_info__kernel_image_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                kernel_image_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["KernelImageResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    edit_kernel_image_kernel_images_edit__kernel_image_id__put: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                kernel_image_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: {
-            content: {
-                "application/x-www-form-urlencoded": components["schemas"]["Body_edit_kernel_image_kernel_images_edit__kernel_image_id__put"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": boolean;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    delete_kernel_image_kernel_images_delete__kernel_image_id__delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                kernel_image_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": boolean;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_public_kernel_images_kernel_images_public_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["KernelImageResponse"][];
-                };
-            };
-        };
-    };
-    download_kernel_image_kernel_images_download__kernel_image_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                kernel_image_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": string;
                 };
             };
             /** @description Validation Error */

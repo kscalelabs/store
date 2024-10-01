@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import ListingGrid from "@/components/listings/ListingGrid";
+import UpvotedGrid from "@/components/listings/UpvotedGrid";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Input, TextArea } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import { format } from "date-fns";
 
 type UserResponse =
@@ -183,13 +185,35 @@ export const RenderProfile = (props: RenderProfileProps) => {
           )}
         </CardContent>
       </Card>
-
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader>
           <h2 className="text-2xl font-bold">Listings</h2>
         </CardHeader>
         <CardContent>
-          {listingIds && <ListingGrid listingIds={listingIds} />}
+          <div className="flex flex-col items-center space-y-4">
+            <Tabs defaultValue="own" className="w-full">
+              <TabsList className="flex justify-center space-x-4 mb-4">
+                <TabsTrigger
+                  value="own"
+                  className="px-4 py-2 rounded-full transition-colors duration-300 hover:bg-gray-8 data-[state=active]:bg-primary-9 data-[state=active]:text-white"
+                >
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger
+                  value="upvoted"
+                  className="px-4 py-2 rounded-full transition-colors duration-300 hover:bg-gray-8 data-[state=active]:bg-primary-9 data-[state=active]:text-white"
+                >
+                  Upvoted
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="own">
+                {listingIds && <ListingGrid listingIds={listingIds} />}
+              </TabsContent>
+              <TabsContent value="upvoted">
+                <UpvotedGrid />
+              </TabsContent>
+            </Tabs>
+          </div>
         </CardContent>
       </Card>
     </div>
