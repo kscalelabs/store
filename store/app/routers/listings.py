@@ -218,6 +218,24 @@ async def edit_listing(
     return True
 
 
+class UpvotedListingsResponse(BaseModel):
+    upvoted_listing_ids: list[str]
+    has_more: bool
+
+
+@listings_router.get("/upvotes", response_model=UpvotedListingsResponse)
+async def get_upvoted_listings(
+    crud: Annotated[Crud, Depends(Crud.get)],
+    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+    page: int = Query(1, description="Page number for pagination"),
+) -> UpvotedListingsResponse:
+    listings, has_more = await crud.get_upvoted_listings(user.id, page)
+
+    upvoted_listing_ids = [listing.id for listing in listings]
+
+    return UpvotedListingsResponse(upvoted_listing_ids=upvoted_listing_ids, has_more=has_more)
+
+
 class GetListingResponse(BaseModel):
     id: str
     name: str

@@ -364,23 +364,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/listings/upvotes": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Upvoted Listings */
-        get: operations["get_upvoted_listings_listings_upvotes_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/listings/{id}": {
         parameters: {
             query?: never;
@@ -428,6 +411,23 @@ export interface paths {
         post: operations["vote_listing_listings__id__vote_post"];
         /** Remove Vote */
         delete: operations["remove_vote_listings__id__vote_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/listings/upvotes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Upvoted Listings */
+        get: operations["get_upvoted_listings_listings_upvotes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -1117,13 +1117,6 @@ export interface components {
         UploadArtifactResponse: {
             /** Artifacts */
             artifacts: components["schemas"]["SingleArtifactResponse"][];
-        };
-        /** UpvotedListingsResponse */
-        UpvotedListingsResponse: {
-            /** Upvoted Listing Ids */
-            upvoted_listing_ids: string[];
-            /** Has More */
-            has_more: boolean;
         };
         /** UserInfoResponseItem */
         UserInfoResponseItem: {
@@ -1840,38 +1833,6 @@ export interface operations {
             };
         };
     };
-    get_upvoted_listings_listings_upvotes_get: {
-        parameters: {
-            query?: {
-                /** @description Page number for pagination */
-                page?: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["UpvotedListingsResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     get_listing_listings__id__get: {
         parameters: {
             query?: never;
@@ -1986,6 +1947,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_upvoted_listings_listings_upvotes_get: {
+        parameters: {
+            query?: {
+                /** @description Page number for pagination */
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ListListingsResponse"];
                 };
             };
             /** @description Validation Error */
