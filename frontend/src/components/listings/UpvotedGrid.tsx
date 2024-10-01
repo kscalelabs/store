@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import ListingGridCard from "@/components/listings/ListingGridCard";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import Spinner from "@/components/ui/Spinner";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
