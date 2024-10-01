@@ -69,6 +69,7 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
                 <span className="sr-only">Close menu</span>
               </button>
             </div>
+            <div className="border-t border-gray-1 my-2"></div>
             <nav>
               <ul className="space-y-1l">
                 {navItems.map((item) => (
