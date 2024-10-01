@@ -46,7 +46,7 @@ export class MuJoCoDemo {
       ctrlnoiserate: 0.0,
       ctrlnoisestd: 0.0,
       keyframeNumber: 0,
-      dragStrength: 50.0, // Add dragStrength parameter
+      dragStrength: 50.0,
     };
     this.mujoco_time = 0.0;
     (this.bodies = {}), (this.lights = {});
