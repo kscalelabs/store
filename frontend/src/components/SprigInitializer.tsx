@@ -12,9 +12,10 @@ const SprigInitializer = () => {
       if (window.Sprig && typeof window.Sprig === "function") {
         console.log("Sprig initialized");
 
-        // Set user ID if authenticated
+        // Set user ID and email in Sprig if user is authenticated
         if (isAuthenticated && currentUser) {
           window.Sprig("setUserId", currentUser.id);
+          window.Sprig("setUserEmail", currentUser.email);
         }
 
         // Track page view
