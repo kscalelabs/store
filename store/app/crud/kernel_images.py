@@ -54,30 +54,15 @@ class KernelImagesCrud(BaseCrud):
     async def get_kernel_image(self, kernel_image_id: str) -> KernelImage | None:
         return await self._get_item(kernel_image_id, KernelImage)
 
-    async def update_kernel_image(
-        self,
-        kernel_image_id: str,
-        user: User,
-        name: str | None = None,
-        description: str | None = None,
-        is_public: bool | None = None,
-        is_official: bool | None = None,
-    ) -> None:
+    async def update_kernel_image(self, kernel_image_id: str, user: User, **updates: Any) -> None:
         if not user.permissions or not ({"is_mod", "is_admin"} & user.permissions):
             raise ValueError("Only moderators or admins can update kernel images")
 
-        updates: dict[str, Any] = {}
-        if name is not None:
-            updates["name"] = name
-        if description is not None:
-            updates["description"] = description
-        if is_public is not None:
-            updates["is_public"] = is_public
-        if is_official is not None:
-            updates["is_official"] = is_official
+        valid_fields = {"name", "description", "is_public", "is_official"}
+        valid_updates = {k: v for k, v in updates.items() if k in valid_fields}
 
-        if updates:
-            await self._update_item(kernel_image_id, KernelImage, updates)
+        if valid_updates:
+            await self._update_item(kernel_image_id, KernelImage, valid_updates)
 
     async def delete_kernel_image(self, kernel_image: KernelImage, user: User) -> None:
         if not user.permissions or not ({"is_mod", "is_admin"} & user.permissions):
