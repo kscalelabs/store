@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import ListingGrid from "@/components/listings/ListingGrid";
 import UpvotedGrid from "@/components/listings/UpvotedGrid";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Input, TextArea } from "@/components/ui/Input/Input";
@@ -12,6 +11,8 @@ import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import { format } from "date-fns";
+
+import MyListingGrid from "../listings/MyListingGrid";
 
 type UserResponse =
   paths["/users/public/{id}"]["get"]["responses"][200]["content"]["application/json"];
@@ -27,12 +28,14 @@ interface RenderProfileProps {
 export const RenderProfile = (props: RenderProfileProps) => {
   const navigate = useNavigate();
   const auth = useAuthentication();
-  const { user, onUpdateProfile, canEdit, listingIds, isAdmin } = props;
+  const { user, onUpdateProfile, canEdit, isAdmin } = props;
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [firstName, setFirstName] = useState(user.first_name || "");
   const [lastName, setLastName] = useState(user.last_name || "");
   const [bio, setBio] = useState(user.bio || "");
+  const [myListingsPage, setMyListingsPage] = useState(1);
+  const [upvotedPage, setUpvotedPage] = useState(1);
 
   const formatJoinDate = (timestamp: number) => {
     const date = new Date(timestamp * 1000); // Convert seconds to milliseconds
@@ -67,6 +70,14 @@ export const RenderProfile = (props: RenderProfileProps) => {
       window.location.reload();
     } catch (error) {
       console.error("Failed to set moderator", error);
+    }
+  };
+
+  const handleTabChange = (tab: string) => {
+    if (tab === "own") {
+      setUpvotedPage(1);
+    } else {
+      setMyListingsPage(1);
     }
   };
 
@@ -191,7 +202,11 @@ export const RenderProfile = (props: RenderProfileProps) => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center space-y-4">
-            <Tabs defaultValue="own" className="w-full">
+            <Tabs
+              defaultValue="own"
+              className="w-full"
+              onValueChange={handleTabChange}
+            >
               <TabsList className="flex justify-center space-x-4 mb-4">
                 <TabsTrigger
                   value="own"
@@ -207,10 +222,13 @@ export const RenderProfile = (props: RenderProfileProps) => {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="own">
-                {listingIds && <ListingGrid listingIds={listingIds} />}
+                <MyListingGrid
+                  page={myListingsPage}
+                  setPage={setMyListingsPage}
+                />
               </TabsContent>
               <TabsContent value="upvoted">
-                <UpvotedGrid />
+                <UpvotedGrid page={upvotedPage} setPage={setUpvotedPage} />
               </TabsContent>
             </Tabs>
           </div>
