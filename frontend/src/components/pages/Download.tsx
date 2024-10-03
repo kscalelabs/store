@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import DownloadKernelImage from "@/components/DownloadKernelImage";
 import LoadingArtifactCard from "@/components/listing/artifacts/LoadingArtifactCard";
@@ -92,6 +92,66 @@ export default function DownloadsPage() {
     }
   };
 
+  const handleEdit = useCallback(
+    async (
+      kernelImageId: string,
+      updatedData: Partial<KernelImageResponse>,
+    ) => {
+      try {
+        const response = await auth.client.PUT(
+          "/kernel-images/edit/{kernel_image_id}",
+          {
+            params: {
+              path: { kernel_image_id: kernelImageId },
+            },
+            body: updatedData as Record<string, never>,
+          },
+        );
+        if (response.error) {
+          addErrorAlert(`Failed to update kernel image: ${response.error}`);
+        } else {
+          addAlert("Kernel image updated successfully", "success");
+          setKernelImages((prevImages) =>
+            prevImages.map((img) =>
+              img.id === kernelImageId ? { ...img, ...updatedData } : img,
+            ),
+          );
+        }
+      } catch (error) {
+        console.error("Error updating kernel image:", error);
+        addErrorAlert("Error updating kernel image");
+      }
+    },
+    [auth.client, addErrorAlert, addAlert],
+  );
+
+  const handleDelete = useCallback(
+    async (kernelImageId: string) => {
+      try {
+        const response = await auth.client.DELETE(
+          "/kernel-images/delete/{kernel_image_id}",
+          {
+            params: {
+              path: { kernel_image_id: kernelImageId },
+            },
+          },
+        );
+        if (response.error) {
+          addErrorAlert(`Failed to delete kernel image: ${response.error}`);
+        } else {
+          addAlert("Kernel image deleted successfully", "success");
+          setKernelImages((prevImages) =>
+            prevImages.filter((img) => img.id !== kernelImageId),
+          );
+        }
+      } catch (error) {
+        console.error("Error deleting kernel image:", error);
+        addErrorAlert("Error deleting kernel image");
+      }
+    },
+    [auth.client, addErrorAlert, addAlert],
+  );
+
   const filteredKernelImages = kernelImages.filter(
     (ki) =>
       ki.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -138,7 +198,12 @@ export default function DownloadsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredKernelImages.map((kernelImage) => (
-          <DownloadKernelImage key={kernelImage.id} kernelImage={kernelImage} />
+          <DownloadKernelImage
+            key={kernelImage.id}
+            kernelImage={kernelImage}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         ))}
         {isLoading && (
           <>

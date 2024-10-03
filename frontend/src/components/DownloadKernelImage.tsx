@@ -29,10 +29,15 @@ type KernelImageResponse = components["schemas"]["KernelImageResponse"];
 
 interface Props {
   kernelImage: KernelImageResponse;
+  onEdit: (
+    kernelImageId: string,
+    updatedData: Partial<KernelImageResponse>,
+  ) => Promise<void>;
+  onDelete: (kernelImageId: string) => Promise<void>;
 }
 
-const DownloadKernelImage = ({ kernelImage }: Props) => {
-  const { addErrorAlert, addAlert } = useAlertQueue();
+const DownloadKernelImage = ({ kernelImage, onEdit, onDelete }: Props) => {
+  const { addErrorAlert } = useAlertQueue();
   const auth = useAuthentication();
   const [isDownloading, setIsDownloading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -66,49 +71,12 @@ const DownloadKernelImage = ({ kernelImage }: Props) => {
   );
 
   const handleEdit = async (updatedData: Partial<KernelImageResponse>) => {
-    try {
-      const response = await auth.client.PUT(
-        "/kernel-images/edit/{kernel_image_id}",
-        {
-          params: {
-            path: { kernel_image_id: kernelImage.id },
-          },
-          body: updatedData,
-        },
-      );
-      if (response.error) {
-        addErrorAlert(`Failed to update kernel image: ${response.error}`);
-      } else {
-        addAlert("Kernel image updated successfully", "success");
-        // Update the kernelImage state or refetch the data
-      }
-    } catch (error) {
-      console.error("Error updating kernel image:", error);
-      addErrorAlert("Error updating kernel image");
-    }
+    await onEdit(kernelImage.id, updatedData);
     setIsEditModalOpen(false);
   };
 
   const handleDelete = async () => {
-    try {
-      const response = await auth.client.DELETE(
-        "/kernel-images/delete/{kernel_image_id}",
-        {
-          params: {
-            path: { kernel_image_id: kernelImage.id },
-          },
-        },
-      );
-      if (response.error) {
-        addErrorAlert(`Failed to delete kernel image: ${response.error}`);
-      } else {
-        addAlert("Kernel image deleted successfully", "success");
-        // Remove the kernelImage from the list or refetch the data
-      }
-    } catch (error) {
-      console.error("Error deleting kernel image:", error);
-      addErrorAlert("Error deleting kernel image");
-    }
+    await onDelete(kernelImage.id);
     setIsDeleteModalOpen(false);
   };
 

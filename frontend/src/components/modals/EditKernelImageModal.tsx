@@ -33,9 +33,14 @@ export const EditKernelImageModal = ({
   const [isPublic, setIsPublic] = useState(kernelImage.is_public);
   const [isOfficial, setIsOfficial] = useState(kernelImage.is_official);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onEdit({ name, description, is_public: isPublic, is_official: isOfficial });
+    await onEdit({
+      name,
+      description,
+      is_public: isPublic,
+      is_official: isOfficial,
+    });
     onClose();
   };
 
