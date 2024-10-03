@@ -30,8 +30,10 @@ const DownloadKernelImage = ({ kernelImage }: Props) => {
       const response = await axios.get(
         `/api/kernel-images/download/${kernelImage.id}`,
       );
-      const downloadUrl = response.data;
-      window.location.href = downloadUrl;
+
+      const presignedUrl = response.data;
+
+      window.location.href = presignedUrl;
     } catch (error) {
       console.error("Error downloading kernel image:", error);
       addErrorAlert("Error downloading kernel image");
