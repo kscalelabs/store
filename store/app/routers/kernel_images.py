@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from store.app.db import Crud
 from store.app.model import User
 from store.app.routers.users import (
+    get_session_user_with_read_permission,
     get_session_user_with_write_permission,
     maybe_get_user_from_api_key,
 )
@@ -167,12 +168,12 @@ async def list_public_kernel_images(
 async def download_kernel_image(
     kernel_image_id: str,
     crud: Annotated[Crud, Depends(Crud.get)],
-    user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
+    user: Annotated[User, Depends(get_session_user_with_read_permission)],
 ) -> str:
     kernel_image = await crud.get_kernel_image(kernel_image_id)
     if kernel_image is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Kernel image not found")
-    if not kernel_image.is_public and (user is None or user.id != kernel_image.user_id):
+    if not kernel_image.is_public and user.id != kernel_image.user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to download this kernel image"
         )

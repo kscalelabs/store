@@ -4,10 +4,13 @@ import io
 import logging
 from typing import Any
 
+import boto3
+from botocore.exceptions import ClientError
 from fastapi import UploadFile
 
 from store.app.crud.base import TABLE_NAME, BaseCrud
 from store.app.model import KernelImage, User
+from store.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +103,14 @@ class KernelImagesCrud(BaseCrud):
         return await self._get_presigned_url(s3_filename)
 
     async def _get_presigned_url(self, s3_filename: str) -> str:
-        # Implement the logic to get a presigned URL from S3
-        # This is a placeholder implementation
-        return f"https://example.com/presigned/{s3_filename}"
+        s3_client = boto3.client("s3")
+        try:
+            presigned_url = s3_client.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": settings.s3.bucket, "Key": f"{settings.s3.prefix}{s3_filename}"},
+                ExpiresIn=3600,
+            )  # URL expires in 1 hour
+        except ClientError as e:
+            logger.error(f"Error generating presigned URL: {e}")
+            raise
+        return presigned_url
