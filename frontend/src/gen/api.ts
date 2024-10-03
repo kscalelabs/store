@@ -853,17 +853,6 @@ export interface components {
             /** Api Key */
             api_key: string;
         };
-        /** Body_edit_kernel_image_kernel_images_edit__kernel_image_id__put */
-        Body_edit_kernel_image_kernel_images_edit__kernel_image_id__put: {
-            /** Name */
-            name?: string | null;
-            /** Description */
-            description?: string | null;
-            /** Is Public */
-            is_public?: boolean | null;
-            /** Is Official */
-            is_official?: boolean | null;
-        };
         /** Body_pull_onshape_document_onshape_pull__listing_id__get */
         Body_pull_onshape_document_onshape_pull__listing_id__get: {
             /** Suffix To Joint Effort */
@@ -2758,9 +2747,9 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: {
+        requestBody: {
             content: {
-                "application/x-www-form-urlencoded": components["schemas"]["Body_edit_kernel_image_kernel_images_edit__kernel_image_id__put"];
+                "application/json": Record<string, never>;
             };
         };
         responses: {
@@ -2770,7 +2759,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": boolean;
+                    "application/json": components["schemas"]["KernelImageResponse"];
                 };
             };
             /** @description Validation Error */

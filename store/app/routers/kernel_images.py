@@ -6,7 +6,7 @@ import os
 from tempfile import NamedTemporaryFile
 from typing import Annotated, List, Optional
 
-from fastapi import APIRouter, Depends, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Body, Depends, HTTPException, UploadFile, status
 from pydantic import BaseModel
 
 from store.app.db import Crud
@@ -108,16 +108,13 @@ async def get_kernel_image_info(
     return KernelImageResponse(**kernel_image.dict())
 
 
-@kernel_images_router.put("/edit/{kernel_image_id}", response_model=bool)
+@kernel_images_router.put("/edit/{kernel_image_id}", response_model=KernelImageResponse)
 async def edit_kernel_image(
     kernel_image_id: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
-    name: str | None = Form(None),
-    description: str | None = Form(None),
-    is_public: bool | None = Form(None),
-    is_official: bool | None = Form(None),
-) -> bool:
+    updates: dict = Body(...),
+) -> KernelImageResponse:
     if not user.permissions or not ({"is_mod", "is_admin"} & user.permissions):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Only moderators or admins can edit kernel images"
@@ -130,8 +127,19 @@ async def edit_kernel_image(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to edit this kernel image"
         )
-    await crud.update_kernel_image(kernel_image_id, user, name, description, is_public, is_official)
-    return True
+
+    # Update the kernel image
+    valid_updates = {k: v for k, v in updates.items() if k in ["name", "description", "is_public", "is_official"]}
+
+    if valid_updates:
+        await crud.update_kernel_image(kernel_image_id, user, **valid_updates)
+
+    # Fetch the updated kernel image
+    updated_kernel_image = await crud.get_kernel_image(kernel_image_id)
+    if updated_kernel_image is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Updated kernel image not found")
+
+    return KernelImageResponse(**updated_kernel_image.dict())
 
 
 @kernel_images_router.delete("/delete/{kernel_image_id}", response_model=bool)
