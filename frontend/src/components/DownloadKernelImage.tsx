@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { redirect } from "react-router-dom";
 
 import { DeleteKernelImageModal } from "@/components/modals/DeleteKernelImageModal";
 import { EditKernelImageModal } from "@/components/modals/EditKernelImageModal";
@@ -22,8 +21,7 @@ import { components } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import axios from "axios";
-import { Download } from "lucide-react";
-import { Edit, MoreVertical, Trash2 } from "lucide-react";
+import { Download, Edit, MoreVertical, Trash2 } from "lucide-react";
 
 type KernelImageResponse = components["schemas"]["KernelImageResponse"];
 
@@ -57,7 +55,7 @@ const DownloadKernelImage = ({ kernelImage, onEdit, onDelete }: Props) => {
 
       const presignedUrl = response.data;
 
-      redirect(presignedUrl);
+      window.open(presignedUrl, "_blank");
     } catch (error) {
       console.error("Error downloading kernel image:", error);
       addErrorAlert("Error downloading kernel image");
@@ -71,13 +69,23 @@ const DownloadKernelImage = ({ kernelImage, onEdit, onDelete }: Props) => {
   );
 
   const handleEdit = async (updatedData: Partial<KernelImageResponse>) => {
-    await onEdit(kernelImage.id, updatedData);
-    setIsEditModalOpen(false);
+    try {
+      await onEdit(kernelImage.id, updatedData);
+    } catch (error) {
+      console.error("Error editing kernel image:", error);
+      addErrorAlert("Error editing kernel image");
+    }
   };
 
   const handleDelete = async () => {
-    await onDelete(kernelImage.id);
-    setIsDeleteModalOpen(false);
+    try {
+      await onDelete(kernelImage.id);
+    } catch (error) {
+      console.error("Error deleting kernel image:", error);
+      addErrorAlert("Error deleting kernel image");
+    } finally {
+      setIsDeleteModalOpen(false);
+    }
   };
 
   return (
@@ -99,12 +107,18 @@ const DownloadKernelImage = ({ kernelImage, onEdit, onDelete }: Props) => {
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setIsEditModalOpen(true)}>
+                <DropdownMenuContent className="flex flex-col gap-1 bg-gray-1">
+                  <DropdownMenuItem
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="cursor-pointer"
+                  >
                     <Edit className="mr-2 h-4 w-4" />
                     Edit
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setIsDeleteModalOpen(true)}>
+                  <DropdownMenuItem
+                    onClick={() => setIsDeleteModalOpen(true)}
+                    className="cursor-pointer bg-red-500 text-gray-1"
+                  >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete
                   </DropdownMenuItem>
@@ -144,13 +158,13 @@ const DownloadKernelImage = ({ kernelImage, onEdit, onDelete }: Props) => {
 
       <EditKernelImageModal
         isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
+        onOpenChange={setIsEditModalOpen}
         onEdit={handleEdit}
         kernelImage={kernelImage}
       />
       <DeleteKernelImageModal
         isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
+        onOpenChange={setIsDeleteModalOpen}
         onDelete={handleDelete}
         kernelImageName={kernelImage.name}
       />

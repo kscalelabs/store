@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -17,14 +19,14 @@ type KernelImageResponse = components["schemas"]["KernelImageResponse"];
 
 interface Props {
   isOpen: boolean;
-  onClose: () => void;
-  onEdit: (updatedData: Partial<KernelImageResponse>) => void;
+  onOpenChange: (open: boolean) => void;
+  onEdit: (updatedData: Partial<KernelImageResponse>) => Promise<void>;
   kernelImage: KernelImageResponse;
 }
 
 export const EditKernelImageModal = ({
   isOpen,
-  onClose,
+  onOpenChange,
   onEdit,
   kernelImage,
 }: Props) => {
@@ -41,14 +43,18 @@ export const EditKernelImageModal = ({
       is_public: isPublic,
       is_official: isOfficial,
     });
-    onClose();
+    onOpenChange(false);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] bg-gray-1 text-gray-12 border border-gray-3 rounded-lg shadow-lg">
         <DialogHeader>
           <DialogTitle>Edit Kernel Image</DialogTitle>
+          <DialogDescription className="text-gray-11">
+            You can not edit the kernel image file itself (only the below
+            details). Delete and re-upload to change file.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
@@ -112,8 +118,12 @@ export const EditKernelImageModal = ({
               </Label>
             </div>
           </div>
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={onClose}>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button
@@ -122,7 +132,7 @@ export const EditKernelImageModal = ({
             >
               <Save className="mr-2 h-4 w-4" /> Save Changes
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

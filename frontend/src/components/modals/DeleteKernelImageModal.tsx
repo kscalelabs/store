@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -9,46 +11,40 @@ import { Trash2 } from "lucide-react";
 
 interface Props {
   isOpen: boolean;
-  onClose: () => void;
-  onDelete: () => void;
+  onOpenChange: (open: boolean) => void;
+  onDelete: () => Promise<void>;
   kernelImageName: string;
 }
 
 export const DeleteKernelImageModal = ({
   isOpen,
-  onClose,
+  onOpenChange,
   onDelete,
   kernelImageName,
 }: Props) => {
-  const handleDelete = () => {
-    onDelete();
-    onClose();
+  const handleDelete = async () => {
+    await onDelete();
+    onOpenChange(false);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[425px] bg-gray-1 text-gray-12 border border-gray-3 rounded-lg shadow-lg">
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px] bg-gray-1 text-gray-12 border bodrder-gray-3 rounded-lg shadow-lg">
         <DialogHeader>
           <DialogTitle>Delete Kernel Image</DialogTitle>
-        </DialogHeader>
-        <div className="py-4">
-          <p className="text-sm text-gray-11">
+          <DialogDescription>
             Are you sure you want to delete the kernel image &quot;
             {kernelImageName}&quot;? This action cannot be undone.
-          </p>
-        </div>
-        <div className="flex justify-end space-x-2">
-          <Button variant="outline" onClick={onClose}>
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            className="bg-red-9 text-gray-1 hover:bg-red-10"
-          >
+          <Button variant="destructive" onClick={handleDelete}>
             <Trash2 className="mr-2 h-4 w-4" /> Delete
           </Button>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
