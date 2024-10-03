@@ -2,7 +2,7 @@
 
 import io
 import logging
-from typing import Any
+from typing import TypedDict
 
 import boto3
 from botocore.exceptions import ClientError
@@ -13,6 +13,13 @@ from store.app.model import KernelImage, User
 from store.settings import settings
 
 logger = logging.getLogger(__name__)
+
+
+class KernelImageUpdates(TypedDict, total=False):
+    name: str
+    description: str | None
+    is_public: bool
+    is_official: bool
 
 
 class KernelImagesCrud(BaseCrud):
@@ -54,7 +61,7 @@ class KernelImagesCrud(BaseCrud):
     async def get_kernel_image(self, kernel_image_id: str) -> KernelImage | None:
         return await self._get_item(kernel_image_id, KernelImage)
 
-    async def update_kernel_image(self, kernel_image_id: str, user: User, **updates: Any) -> None:
+    async def update_kernel_image(self, kernel_image_id: str, user: User, **updates: KernelImageUpdates) -> None:
         if not user.permissions or not ({"is_mod", "is_admin"} & user.permissions):
             raise ValueError("Only moderators or admins can update kernel images")
 
