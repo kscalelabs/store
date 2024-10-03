@@ -73,7 +73,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
     }
   };
 
-  const handleTabChange = (tab) => {
+  const handleTabChange = (tab: string) => {
     if (tab === "own") {
       setUpvotedPage(1);
     } else {
