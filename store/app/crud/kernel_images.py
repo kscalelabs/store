@@ -75,7 +75,11 @@ class KernelImagesCrud(BaseCrud):
         if not user.permissions or not ({"is_mod", "is_admin"} & user.permissions):
             raise ValueError("Only moderators or admins can delete kernel images")
 
-        await self._delete_from_s3(f"{kernel_image.id}/{kernel_image.name}")
+        # Delete the file from S3
+        s3_filename = f"{kernel_image.id}/{kernel_image.name}"
+        await self._delete_from_s3(s3_filename)
+
+        # Delete the item from the database
         await self._delete_item(kernel_image)
 
     async def get_public_kernel_images(self) -> list[KernelImage]:
@@ -106,3 +110,11 @@ class KernelImagesCrud(BaseCrud):
             logger.error(f"Error generating presigned URL: {e}")
             raise
         return presigned_url
+
+    async def _delete_from_s3(self, s3_filename: str) -> None:
+        s3_client = boto3.client("s3")
+        try:
+            s3_client.delete_object(Bucket=settings.s3.bucket, Key=f"{settings.s3.prefix}{s3_filename}")
+        except ClientError as e:
+            logger.error(f"Error deleting object from S3: {e}")
+            raise
