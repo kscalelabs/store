@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { components } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
 import axios from "axios";
 import { Download } from "lucide-react";
 
@@ -23,8 +24,14 @@ interface Props {
 const DownloadKernelImage = ({ kernelImage }: Props) => {
   const { addErrorAlert } = useAlertQueue();
   const [isDownloading, setIsDownloading] = useState(false);
+  const auth = useAuthentication();
 
   const handleDownload = async () => {
+    if (!auth.isAuthenticated) {
+      addErrorAlert("Please log in to download kernel images");
+      return;
+    }
+
     setIsDownloading(true);
     try {
       const response = await axios.get(
@@ -74,10 +81,14 @@ const DownloadKernelImage = ({ kernelImage }: Props) => {
         <Button
           className="w-full"
           onClick={handleDownload}
-          disabled={isDownloading}
+          disabled={isDownloading || !auth.isAuthenticated}
         >
           <Download className="mr-2 h-4 w-4" />
-          {isDownloading ? "Downloading..." : "Download"}
+          {isDownloading
+            ? "Downloading..."
+            : auth.isAuthenticated
+              ? "Download"
+              : "Login to Download"}
         </Button>
       </CardFooter>
     </Card>
