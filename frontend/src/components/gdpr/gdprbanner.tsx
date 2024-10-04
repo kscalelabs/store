@@ -49,16 +49,15 @@ const GDPRBanner: React.FC = () => {
       {isVisible && !showOptOutForm && (
         <div className="bg-gray-12 p-4 fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-lg flex flex-col items-center z-50 shadow-md rounded-lg">
           <div className="text-gray-1 text-xs sm:text-sm text-center mb-2 max-w-full">
-            This website uses third-party cookies to serve you relevant features
-            on our website. You can accept or opt out of these third-party
-            cookies. For more information on our use of cookies, please see our
+          We value your privacy 🔒
+          we use cookies to make it easier to interact with our website and to improve it. We want to better understand how our website is used. You can find out more about our use of cookies in our
             <a
               href="https://kscale.store/privacy"
               target="_blank"
               rel="noopener noreferrer"
               className="text-primary-9 underline ml-1"
             >
-              Website Privacy Policy
+              Privacy Policy
             </a>
             .
           </div>
@@ -86,34 +85,34 @@ const GDPRBanner: React.FC = () => {
           </div>
 
           <div className="flex justify-between w-full px-4 py-2">
-            <label className="text-gray-1 text-sm">Google Analytics</label>
+            <label className="text-gray-1 text-sm">Necessary</label>
             <input
               type="checkbox"
-              checked={!googleAnalyticsConsent}
-              onChange={() =>
-                setGoogleAnalyticsConsent(!googleAnalyticsConsent)
-              }
+              checked={true}
+              disabled
               className="toggle-checkbox"
             />
           </div>
 
           <div className="flex justify-between w-full px-4 py-2">
-            <label className="text-gray-1 text-sm">Sprig</label>
+            <label className="text-gray-1 text-sm">Analytics</label>
             <input
               type="checkbox"
-              checked={!sprigConsent}
-              onChange={() => setSprigConsent(!sprigConsent)}
+              checked={googleAnalyticsConsent}
+              onChange={() => setGoogleAnalyticsConsent(!googleAnalyticsConsent)}
               className="toggle-checkbox"
             />
           </div>
 
           <div className="flex justify-between w-full px-4 py-2">
-            <label className="text-gray-1 text-sm">Pendo</label>{" "}
-            {/* Pendo consent */}
+            <label className="text-gray-1 text-sm">User Experience</label>
             <input
               type="checkbox"
-              checked={!pendoConsent}
-              onChange={() => setPendoConsent(!pendoConsent)}
+              checked={sprigConsent && pendoConsent}
+              onChange={() => {
+                setSprigConsent(!sprigConsent);
+                setPendoConsent(!pendoConsent);
+              }}
               className="toggle-checkbox"
             />
           </div>
