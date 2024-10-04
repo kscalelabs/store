@@ -5,6 +5,7 @@ import logging
 from typing import TypedDict
 
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 from fastapi import UploadFile
 
@@ -69,7 +70,32 @@ class KernelImagesCrud(BaseCrud):
         valid_updates = {k: v for k, v in updates.items() if k in valid_fields}
 
         if valid_updates:
+            kernel_image = await self.get_kernel_image(kernel_image_id)
+            if kernel_image is None:
+                raise ValueError("Kernel image not found")
+
+            # If the name is being updated, we need to rename the S3 object
+            if "name" in valid_updates and valid_updates["name"] != kernel_image.name:
+                old_s3_filename = f"{kernel_image.id}/{kernel_image.name}"
+                new_s3_filename = f"{kernel_image.id}/{valid_updates['name']}"
+                await self._rename_s3_object(old_s3_filename, new_s3_filename)
+
             await self._update_item(kernel_image_id, KernelImage, valid_updates)
+
+    async def _rename_s3_object(self, old_filename: str, new_filename: str) -> None:
+        s3_client = boto3.client("s3")
+        try:
+            # Copy the object to a new key
+            s3_client.copy_object(
+                Bucket=settings.s3.bucket,
+                CopySource=f"{settings.s3.bucket}/{settings.s3.prefix}{old_filename}",
+                Key=f"{settings.s3.prefix}{new_filename}",
+            )
+            # Delete the old object
+            s3_client.delete_object(Bucket=settings.s3.bucket, Key=f"{settings.s3.prefix}{old_filename}")
+        except ClientError as e:
+            logger.error(f"Error renaming object in S3: {e}")
+            raise
 
     async def delete_kernel_image(self, kernel_image: KernelImage, user: User) -> None:
         if not user.permissions or not ({"is_mod", "is_admin"} & user.permissions):
@@ -99,13 +125,20 @@ class KernelImagesCrud(BaseCrud):
         return await self._get_presigned_url(s3_filename)
 
     async def _get_presigned_url(self, s3_filename: str) -> str:
-        s3_client = boto3.client("s3")
+        s3_client = boto3.client(
+            "s3",
+            config=Config(signature_version="s3v4"),
+            region_name=settings.s3.region,
+        )
         try:
             presigned_url = s3_client.generate_presigned_url(
                 "get_object",
-                Params={"Bucket": settings.s3.bucket, "Key": f"{settings.s3.prefix}{s3_filename}"},
-                ExpiresIn=3600,
-            )  # URL expires in 1 hour
+                Params={
+                    "Bucket": settings.s3.bucket,
+                    "Key": f"{settings.s3.prefix}{s3_filename}",
+                },
+                ExpiresIn=3600,  # URL expires in 1 hour
+            )
         except ClientError as e:
             logger.error(f"Error generating presigned URL: {e}")
             raise
