@@ -28,6 +28,7 @@ import Signup from "@/components/pages/Signup";
 import { AlertQueue, AlertQueueProvider } from "@/hooks/useAlertQueue";
 import { AuthenticationProvider } from "@/hooks/useAuth";
 
+import GDPRBanner from "./components/gdpr/gdprbanner";
 import DownloadsPage from "./components/pages/Download";
 import MuJoCoTestPage from "./components/pages/MuJoCoTest";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
@@ -42,6 +43,7 @@ const App = () => {
             <ScrollToTop>
               <div className="flex flex-col bg-gray-1 text-gray-12 min-h-screen">
                 <Navbar />
+                <GDPRBanner />
                 <PendoInitializer />
                 <SprigInitializer />
                 <div className="flex-grow">
