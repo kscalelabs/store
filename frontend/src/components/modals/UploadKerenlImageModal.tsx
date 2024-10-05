@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Upload, X } from "lucide-react";
 
-interface UploadModalProps {
+interface UploadKernelImageModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpload: (
@@ -25,12 +25,25 @@ interface UploadModalProps {
   ) => Promise<void>;
 }
 
-export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
+export function UploadKernelImageModal({
+  isOpen,
+  onClose,
+  onUpload,
+}: UploadKernelImageModalProps) {
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(false);
   const [isOfficial, setIsOfficial] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const resetModalData = useCallback(() => {
+    setFile(null);
+    setName("");
+    setDescription("");
+    setIsPublic(false);
+    setIsOfficial(false);
+  }, []);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
@@ -45,17 +58,38 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
 
   const handleUpload = useCallback(async () => {
     if (file) {
+      setIsLoading(true);
       try {
         await onUpload(file, name, description, isPublic, isOfficial);
+        resetModalData();
         onClose();
       } catch (error) {
         console.error("Error uploading kernel image:", error);
+      } finally {
+        setIsLoading(false);
       }
     }
-  }, [file, name, description, isPublic, isOfficial, onUpload, onClose]);
+  }, [
+    file,
+    name,
+    description,
+    isPublic,
+    isOfficial,
+    onUpload,
+    onClose,
+    resetModalData,
+  ]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          resetModalData();
+        }
+        onClose();
+      }}
+    >
       <DialogContent className="sm:max-w-[425px] bg-gray-1 text-gray-12 border border-gray-3 rounded-lg shadow-lg">
         <DialogHeader>
           <DialogTitle>Upload Kernel Image</DialogTitle>
@@ -141,10 +175,11 @@ export function UploadModal({ isOpen, onClose, onUpload }: UploadModalProps) {
         <div className="flex justify-end">
           <Button
             onClick={handleUpload}
-            disabled={!file}
+            disabled={!file || isLoading}
             className="w-full sm:w-auto bg-primary-9 text-gray-1 hover:bg-gray-12"
           >
-            <Upload className="mr-2 h-4 w-4" /> Upload Kernel Image
+            <Upload className="mr-2 h-4 w-4" />
+            {isLoading ? "Uploading..." : "Upload Kernel Image"}
           </Button>
         </div>
       </DialogContent>

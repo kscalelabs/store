@@ -178,10 +178,15 @@ async def download_kernel_image(
     crud: Annotated[Crud, Depends(Crud.get)],
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
 ) -> str:
+    logger.info(f"Received download request for kernel image ID: {kernel_image_id}")
+
     kernel_image = await crud.get_kernel_image(kernel_image_id)
     if kernel_image is None:
+        logger.error(f"Kernel image not found: {kernel_image_id}")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Kernel image not found")
+
     if not kernel_image.is_public and user.id != kernel_image.user_id:
+        logger.error(f"Permission denied for user {user.id} to download kernel image {kernel_image_id}")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="You do not have permission to download this kernel image"
         )
@@ -190,5 +195,10 @@ async def download_kernel_image(
     await crud.increment_downloads(kernel_image_id)
 
     # Get the download URL
-    download_url = await crud.get_kernel_image_download_url(kernel_image)
-    return download_url
+    try:
+        download_url = await crud.get_kernel_image_download_url(kernel_image)
+        logger.info(f"Generated presigned URL for kernel image {kernel_image_id}: {download_url}")
+        return download_url
+    except Exception as e:
+        logger.error(f"Error generating presigned URL for kernel image {kernel_image_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail="Error generating download URL")
