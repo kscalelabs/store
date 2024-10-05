@@ -386,6 +386,27 @@ export function setupGUI(parentContext) {
     }
   }
 
+  // Add policy selection dropdown.
+  parentContext.params.policyType = "standing"; // Default policy
+  const policyOptions = {
+    Standing: "standing.onnx",
+    Walking: "walking.onnx",
+    // Add more policies as needed
+  };
+
+  const reloadPolicy = async () => {
+    const policyFile = policyOptions[parentContext.params.policyType];
+    await parentContext.ppoModel.loadModel(`/examples/models/${policyFile}`);
+    console.log(`Loaded policy: ${policyFile}`);
+  };
+
+  let policyDropdown = parentContext.gui
+    .add(parentContext.params, "policyType", Object.keys(policyOptions))
+    .name("Policy Type")
+    .onChange(async () => {
+      await reloadPolicy();
+    });
+
   parentContext.gui.open();
 }
 

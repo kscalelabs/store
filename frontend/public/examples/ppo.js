@@ -33,7 +33,7 @@ class PPOModel {
 
       const outputMap = await this.session.run(feeds);
       const output = outputMap[this.outputName];
-
+      console.log(output.data);
       return Array.from(output.data);
     } catch (error) {
       console.error("Error during prediction:", error);
