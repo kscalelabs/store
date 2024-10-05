@@ -37,12 +37,13 @@ export const EditKernelImageModal = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onEdit({
+    const updatedData: Partial<KernelImageResponse> = {
       name,
       description,
       is_public: isPublic,
       is_official: isOfficial,
-    });
+    };
+    await onEdit(updatedData);
     onOpenChange(false);
   };
 

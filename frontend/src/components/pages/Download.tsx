@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import DownloadKernelImage from "@/components/DownloadKernelImage";
 import LoadingArtifactCard from "@/components/listing/artifacts/LoadingArtifactCard";
-import { UploadModal } from "@/components/modals/UploadModal";
+import { UploadKernelImageModal } from "@/components/modals/UploadKerenlImageModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -215,7 +215,7 @@ export default function DownloadsPage() {
       </div>
 
       {canUpload && (
-        <UploadModal
+        <UploadKernelImageModal
           isOpen={isUploadModalOpen}
           onClose={() => setIsUploadModalOpen(false)}
           onUpload={handleUpload}
