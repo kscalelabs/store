@@ -4,16 +4,6 @@
 <head>
   <meta charset="UTF-8" />
 
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-QG3C4SS5YY"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag() { dataLayer.push(arguments); }
-    gtag('js', new Date());
-
-    gtag('config', 'G-QG3C4SS5YY');
-  </script>
-
   <!-- SEO -->
   <meta name="description" content="Buy, sell and build androids online" />
   <meta name="keywords" content="K-Scale Labs, Robot, Robots, Humanoid Robots, Droids, Androids, " />
@@ -50,30 +40,54 @@
 
   <!-- Onnx Runtime -->
   <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@latest/dist/ort.min.js"></script>
+
+
   <script>
-    (function (apiKey) {
-      (function (p, e, n, d, o) {
-        var v, w, x, y, z; o = p[d] = p[d] || {}; o._q = o._q || [];
-        v = ['initialize', 'identify', 'updateOptions', 'pageLoad', 'track']; for (w = 0, x = v.length; w < x; ++w)(function (m) {
-          o[m] = o[m] || function () { o._q[m === v[0] ? 'unshift' : 'push']([m].concat([].slice.call(arguments, 0))); };
-        })(v[w]);
-        y = e.createElement(n); y.async = !0; y.src = 'https://cdn.pendo.io/agent/static/' + apiKey + '/pendo.js';
-        z = e.getElementsByTagName(n)[0]; z.parentNode.insertBefore(y, z);
-      })(window, document, 'script', 'pendo');
-    })('7664f162-0994-4d9f-7c5c-fd6e279743b9');
-  </script>
+    const sprigConsent = localStorage.getItem('sprig-consent') === 'true';
+    const googleAnalyticsConsent = localStorage.getItem('google-analytics-consent') === 'true';
+    const pendoConsent = localStorage.getItem('pendo-consent') === 'true';
 
+    if (googleAnalyticsConsent) {
+      (function () {
+        var gtagScript = document.createElement('script');
+        gtagScript.async = true;
+        gtagScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-QG3C4SS5YY';
+        document.head.appendChild(gtagScript);
 
-  <script type="text/javascript">
-    (function (l, e, a, p) {
-      if (window.Sprig) return;
-      window.Sprig = function () { S._queue.push(arguments) }
-      var S = window.Sprig; S.appId = a; S._queue = []; window.UserLeap = S;
-      a = l.createElement('script');
-      a.async = 1; a.src = e + '?id=' + S.appId;
-      p = l.getElementsByTagName('script')[0];
-      p.parentNode.insertBefore(a, p);
-    })(document, 'https://cdn.sprig.com/shim.js', 'bHT8PZvMNWLZ');
+        gtagScript.onload = function () {
+          window.dataLayer = window.dataLayer || [];
+          function gtag() { dataLayer.push(arguments); }
+          gtag('js', new Date());
+          gtag('config', 'G-QG3C4SS5YY');
+        };
+      })();
+    }
+
+    if (sprigConsent) {
+      (function (l, e, a, p) {
+        if (window.Sprig) return;
+        window.Sprig = function () { S._queue.push(arguments) }
+        var S = window.Sprig; S.appId = 'bHT8PZvMNWLZ'; S._queue = [];
+        window.UserLeap = S;
+        a = l.createElement('script');
+        a.async = 1; a.src = e + '?id=' + S.appId;
+        p = l.getElementsByTagName('script')[0];
+        p.parentNode.insertBefore(a, p);
+      })(document, 'https://cdn.sprig.com/shim.js');
+    }
+
+    if (pendoConsent) {
+      (function (apiKey) {
+        (function (p, e, n, d, o) {
+          var v, w, x, y, z; o = p[d] = p[d] || {}; o._q = o._q || [];
+          v = ['initialize', 'identify', 'updateOptions', 'pageLoad', 'track']; for (w = 0, x = v.length; w < x; ++w)(function (m) {
+            o[m] = o[m] || function () { o._q[m === v[0] ? 'unshift' : 'push']([m].concat([].slice.call(arguments, 0))); };
+          })(v[w]);
+          y = e.createElement(n); y.async = !0; y.src = 'https://cdn.pendo.io/agent/static/' + apiKey + '/pendo.js';
+          z = e.getElementsByTagName(n)[0]; z.parentNode.insertBefore(y, z);
+        })(window, document, 'script', 'pendo');
+      })('7664f162-0994-4d9f-7c5c-fd6e279743b9');
+    }
   </script>
 
 
