@@ -86,13 +86,13 @@ async def create_checkout_session(request: Request) -> Dict[str, Any]:
                     "price_data": {
                         "currency": "usd",
                         "product": product_id,
-                        "unit_amount": 1000,  # $10.00
+                        "unit_amount": 1600000,  # $16000.00
                     },
                     "quantity": 1,
                 }
             ],
             mode="payment",
-            success_url=f"{settings.site.homepage}/success",
+            success_url=f"{settings.site.homepage}/success?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{settings.site.homepage}/cancel",
         )
 

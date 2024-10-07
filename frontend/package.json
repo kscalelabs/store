@@ -37,6 +37,7 @@
     "@react-oauth/google": "^0.12.1",
     "@react-three/drei": "^9.109.2",
     "@react-three/fiber": "^8.16.8",
+    "@stripe/stripe-js": "^1.54.2",
     "@types/three": "^0.168.0",
     "@uidotdev/usehooks": "^2.4.1",
     "axios": "^1.7.7",
