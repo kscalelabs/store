@@ -65,6 +65,13 @@ class SiteSettings:
 
 
 @dataclass
+class StripeSettings:
+    publishable_key: str = field(default=II("oc.env:STRIPE_PUBLISHABLE_KEY"))
+    secret_key: str = field(default=II("oc.env:STRIPE_SECRET_KEY"))
+    webhook_secret: str = field(default=II("oc.env:STRIPE_WEBHOOK_SECRET"))
+
+
+@dataclass
 class EnvironmentSettings:
     oauth: OauthSettings = field(default_factory=OauthSettings)
     user: UserSettings = field(default_factory=UserSettings)
@@ -75,3 +82,4 @@ class EnvironmentSettings:
     dynamo: DynamoSettings = field(default_factory=DynamoSettings)
     site: SiteSettings = field(default_factory=SiteSettings)
     debug: bool = field(default=False)
+    stripe: StripeSettings = field(default_factory=StripeSettings)
