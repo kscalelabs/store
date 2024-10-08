@@ -18,6 +18,11 @@ class EmailCrud(BaseCrud):
     async def delete_email_signup_token(self, id: str) -> None:
         await self._delete_item(id)
 
+    async def remove_existing_token_for_email(self, email: str) -> None:
+        if user_tokens := await self._get_items_from_secondary_index("email", email, EmailSignUpToken):
+            for token in user_tokens:
+                await self.delete_email_signup_token(token)
+
 
 async def test_adhoc() -> None:
     async with EmailCrud() as crud:

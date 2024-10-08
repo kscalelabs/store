@@ -12,11 +12,11 @@ from pydantic.networks import EmailStr
 from store.app.crud.users import UserCrud
 from store.app.db import Crud
 from store.app.errors import ItemNotFoundError, NotAuthenticatedError
-from store.app.model import APIKeySource, User, UserPermission, UserPublic
+from store.app.model import APIKeySource, User, UserPermission, UserPublic, EmailSignUpToken
 from store.app.routers.auth.github import github_auth_router
 from store.app.routers.auth.google import google_auth_router
-from store.app.utils.email import send_delete_email
-from store.app.utils.password import verify_password
+from store.app.utils.email import send_delete_email, send_reset_password_email
+from store.app.utils.password import verify_password, hash_password
 
 logger = logging.getLogger(__name__)
 
@@ -383,3 +383,50 @@ async def set_moderator(
 ) -> UserPublic:
     updated_user = await crud.set_moderator(request.user_id, request.is_mod)
     return UserPublic(**updated_user.model_dump())
+
+
+class ForgotRequest(BaseModel):
+    email: EmailStr
+
+
+class ForgotResponse(BaseModel):
+    message: str
+
+
+@users_router.post("/forgot-password", response_model=ForgotResponse)
+async def generate_password_reset_token(
+    data: ForgotRequest, crud: Annotated[Crud, Depends(Crud.get)]
+) -> ForgotResponse:
+
+    if user := await crud.get_user_from_email(data.email):
+        await crud.remove_existing_token_for_email(user.email)
+        reset_token = await crud.create_email_signup_token(email=user.email)
+
+        await send_reset_password_email(email=user.email, token=reset_token.id)
+
+    return ForgotResponse(message="A password reset email has been sent to your registered email address.")
+
+
+class ResetRequest(BaseModel):
+    token: str
+    newPassword: str
+
+
+class ResetPasswordResponse(BaseModel):
+    message: str
+    email: str
+
+
+@users_router.post("/reset-password", response_model=ResetPasswordResponse)
+async def validate_password_reset_token(
+    data: ResetRequest, crud: Annotated[Crud, Depends(Crud.get)]
+) -> ResetPasswordResponse:
+    reset_token = await crud.get_email_signup_token(data.token)
+    if not reset_token:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid or expired reset token")
+
+    user = await crud.get_user_from_email(reset_token.email)
+    updated_user = await crud.update_user(user_id=user.id, updates={"hashed_password": hash_password(data.newPassword)})
+    await crud.remove_existing_token_for_email(data.token)
+
+    return ResetPasswordResponse(message="Password updated successful", email=updated_user.email)
