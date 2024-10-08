@@ -1,4 +1,5 @@
 import { SubmitHandler, useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
 
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import { Input } from "@/components/ui/Input/Input";
@@ -39,25 +40,34 @@ const LoginForm = () => {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="grid grid-cols-1 space-y-6"
-    >
-      {/* Email Input */}
-      <div className="relative">
-        <Input placeholder="Email" type="text" {...register("email")} />
-        {errors?.email && <ErrorMessage>{errors?.email?.message}</ErrorMessage>}
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div>
+        {/* Email Input */}
+        <div className="relative">
+          <Input placeholder="Email" type="text" {...register("email")} />
+          {errors?.email && (
+            <ErrorMessage>{errors?.email?.message}</ErrorMessage>
+          )}
+        </div>
+        {/* Password Input */}
+        <div className="mt-5">
+          <PasswordInput<LoginType>
+            placeholder="Password"
+            register={register}
+            errors={errors}
+            name="password"
+            showStrength={false} // Hide password strength bar
+          />
+        </div>
       </div>
-      {/* Password Input */}
-      <PasswordInput<LoginType>
-        placeholder="Password"
-        register={register}
-        errors={errors}
-        name="password"
-        showStrength={false} // Hide password strength bar
-      />
+      {/* Forgot Link */}
+      <Button variant="link" className="justify-start px-1 py-6">
+        <Link to="/forgot-password">Forgot Password?</Link>
+      </Button>
       {/* Submit Button */}
-      <Button variant="primary">Login</Button>
+      <div className="mt-2">
+        <Button variant="primary">Login</Button>
+      </div>
     </form>
   );
 };
