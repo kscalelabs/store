@@ -5,8 +5,10 @@ from typing import Any, Dict
 import stripe
 from fastapi import APIRouter, HTTPException, Request
 
+from store.app.crud.orders import OrdersCrud
 from store.settings import settings
 
+orders_crud = OrdersCrud()
 stripe_router = APIRouter()
 
 # Initialize Stripe with your secret key
@@ -42,29 +44,38 @@ async def stripe_webhook(request: Request) -> Dict[str, str]:
         event = stripe.Webhook.construct_event(payload, sig_header, settings.stripe.webhook_secret)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid payload")
-    except stripe.error.SignatureVerificationError:
-        raise HTTPException(status_code=400, detail="Invalid signature")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Unexpected error: {str(e)}")
 
     # Handle the event
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
-        # Fulfill the purchase...
         await fulfill_order(session)
     elif event["type"] == "checkout.session.async_payment_succeeded":
         session = event["data"]["object"]
-        # Fulfill the purchase...
         await fulfill_order(session)
     elif event["type"] == "checkout.session.async_payment_failed":
         session = event["data"]["object"]
-        # Notify the customer that their order was not fulfilled
         await notify_payment_failed(session)
 
     return {"status": "success"}
 
 
 async def fulfill_order(session: Dict[str, Any]) -> None:
-    # Implement order fulfillment logic
-    print(f"Fulfilling order for session: {session['id']}")
+    order_data = {
+        "user_id": session["client_reference_id"],
+        "stripe_product_id": session["display_items"][0]["custom"]["product"],
+        "stripe_price_id": session["display_items"][0]["custom"]["price"],
+        "stripe_customer_id": session["customer"],
+        "stripe_subscription_id": session.get("subscription"),
+        "stripe_checkout_session_id": session["id"],
+        "stripe_payment_intent_id": session["payment_intent"],
+        "stripe_payment_method_id": session["payment_method"],
+        "amount": session["amount_total"],
+        "status": "fulfilled",
+    }
+    await orders_crud.create_order(order_data)
+    print(f"Order fulfilled for session: {session['id']}")
 
 
 async def notify_payment_failed(session: Dict[str, Any]) -> None:

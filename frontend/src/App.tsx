@@ -33,6 +33,7 @@ import DownloadsPage from "./components/pages/Download";
 import MuJoCoTestPage from "./components/pages/MuJoCoTest";
 import OrderCancel from "./components/pages/OrderCancel";
 import OrderSuccess from "./components/pages/OrderSuccess";
+import Orders from "./components/pages/Orders";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import TermsOfService from "./components/pages/TermsOfService";
 
@@ -80,6 +81,7 @@ const App = () => {
                       <Route path="/buy" element={<BuyPage />} />
                       <Route path="/success" element={<OrderSuccess />} />
                       <Route path="/cancel" element={<OrderCancel />} />
+                      <Route path="/orders" element={<Orders />} />
 
                       <Route path="/404" element={<NotFound />} />
                       <Route path="*" element={<NotFoundRedirect />} />

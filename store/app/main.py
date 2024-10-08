@@ -23,6 +23,7 @@ from store.app.routers.kernel_images import kernel_images_router
 from store.app.routers.keys import keys_router
 from store.app.routers.listings import listings_router
 from store.app.routers.onshape import onshape_router
+from store.app.routers.orders import orders_router
 from store.app.routers.stripe import stripe_router
 from store.app.routers.users import users_router
 from store.utils import get_cors_origins
@@ -112,6 +113,7 @@ app.include_router(onshape_router, prefix="/onshape", tags=["onshape"])
 app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(kernel_images_router, prefix="/kernel-images", tags=["kernel-images"])
 app.include_router(stripe_router, prefix="/stripe", tags=["stripe"])
+app.include_router(orders_router, prefix="/orders", tags=["orders"])
 
 # For running with debugger
 if __name__ == "__main__":

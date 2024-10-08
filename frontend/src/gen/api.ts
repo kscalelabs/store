@@ -888,6 +888,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/orders/get_user_orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get User Orders */
+        get: operations["get_user_orders_orders_get_user_orders_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/get_order/{order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Order */
+        get: operations["get_order_orders_get_order__order_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1203,6 +1237,41 @@ export interface components {
         NewListingResponse: {
             /** Listing Id */
             listing_id: string;
+        };
+        /**
+         * Order
+         * @description Tracks completed user orders through Stripe.
+         */
+        Order: {
+            /** Id */
+            id: string;
+            /** User Id */
+            user_id: string;
+            /** Stripe Product Id */
+            stripe_product_id: string;
+            /** Stripe Price Id */
+            stripe_price_id: string;
+            /** Stripe Customer Id */
+            stripe_customer_id: string;
+            /** Stripe Subscription Id */
+            stripe_subscription_id: string;
+            /** Stripe Checkout Session Id */
+            stripe_checkout_session_id: string;
+            /** Stripe Payment Intent Id */
+            stripe_payment_intent_id: string;
+            /** Stripe Payment Method Id */
+            stripe_payment_method_id: string;
+            /** Created At */
+            created_at: number;
+            /** Updated At */
+            updated_at: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pending" | "fulfilled" | "failed";
+            /** Amount */
+            amount: number;
         };
         /** PublicUserInfoResponseItem */
         PublicUserInfoResponseItem: {
@@ -2964,6 +3033,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    get_user_orders_orders_get_user_orders_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Order"][];
+                };
+            };
+        };
+    };
+    get_order_orders_get_order__order_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Order"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
