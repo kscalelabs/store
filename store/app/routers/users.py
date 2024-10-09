@@ -12,11 +12,11 @@ from pydantic.networks import EmailStr
 from store.app.crud.users import UserCrud
 from store.app.db import Crud
 from store.app.errors import ItemNotFoundError, NotAuthenticatedError
-from store.app.model import APIKeySource, User, UserPermission, UserPublic, EmailSignUpToken
+from store.app.model import APIKeySource, User, UserPermission, UserPublic
 from store.app.routers.auth.github import github_auth_router
 from store.app.routers.auth.google import google_auth_router
 from store.app.utils.email import send_delete_email, send_reset_password_email
-from store.app.utils.password import verify_password, hash_password
+from store.app.utils.password import hash_password, verify_password
 
 logger = logging.getLogger(__name__)
 
@@ -409,7 +409,7 @@ async def generate_password_reset_token(
 
 class ResetRequest(BaseModel):
     token: str
-    newPassword: str
+    new_password: str
 
 
 class ResetPasswordResponse(BaseModel):
@@ -425,8 +425,10 @@ async def validate_password_reset_token(
     if not reset_token:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid or expired reset token")
 
-    user = await crud.get_user_from_email(reset_token.email)
-    updated_user = await crud.update_user(user_id=user.id, updates={"hashed_password": hash_password(data.newPassword)})
-    await crud.remove_existing_token_for_email(data.token)
+    if user := await crud.get_user_from_email(reset_token.email):
+        updated_user = await crud.update_user(
+            user_id=user.id, updates={"hashed_password": hash_password(data.new_password)}
+        )
+        await crud.remove_existing_token_for_email(data.token)
 
     return ResetPasswordResponse(message="Password updated successful", email=updated_user.email)

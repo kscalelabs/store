@@ -1237,8 +1237,8 @@ export interface components {
         ResetRequest: {
             /** Token */
             token: string;
-            /** Newpassword */
-            newPassword: string;
+            /** New Password */
+            new_password: string;
         };
         /** SetModeratorRequest */
         SetModeratorRequest: {
