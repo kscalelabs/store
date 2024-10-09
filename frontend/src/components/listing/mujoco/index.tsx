@@ -116,7 +116,7 @@ const MUJOCO = ({ url }: { url: string }) => {
   useEffect(() => {
     const loadWasm = async () => {
       try {
-        const wasm = await import("../../../wasm/pkg/klang_parser.js");
+        const wasm = await import("../../../klang_parser/pkg/klang_parser.js");
         await wasm.default();
         console.log("Wasm module loaded:", wasm);
         setWasmParser(wasm);
