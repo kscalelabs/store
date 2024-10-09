@@ -1,0 +1,5 @@
+# .gitignore
+
+# Rust
+/target
+Cargo.lock
