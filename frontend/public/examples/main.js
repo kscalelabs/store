@@ -140,7 +140,11 @@ export class MuJoCoDemo {
       },
     };
 
-    this.cmd = { vx: 0, vy: 0, dyaw: 0 };
+    this.cmd = {
+      vx: 1,
+      vy: 0,
+      dyaw: 0,
+    };
     this.defaultPos = new Array(this.cfg.num_actions).fill(0); // You might want to set this to actual default positions
     this.lastAction = new Array(this.cfg.num_actions).fill(0);
 
@@ -162,7 +166,7 @@ export class MuJoCoDemo {
     );
 
     // Define stiffness and damping values
-    this.stiffness = {
+    this.stiffness_old = {
       hip_y: 120,
       hip_x: 60,
       hip_z: 60,
@@ -170,12 +174,35 @@ export class MuJoCoDemo {
       ankle_y: 17,
     };
 
-    this.damping = {
+    this.damping_old = {
       hip_y: 10,
       hip_x: 10,
       hip_z: 10,
       knee: 10,
       ankle_y: 5,
+    };
+
+    this.stiffness = {
+      hip_y: 150,
+      hip_x: 150,
+      hip_z: 100,
+      knee: 150,
+      ankle_y: 75,
+    };
+    this.damping = {
+      hip_y: 7,
+      hip_x: 7,
+      hip_z: 7,
+      knee: 7,
+      ankle_y: 5,
+    };
+
+    this.urdf_limits = {
+      hip_y: 120,
+      hip_x: 60,
+      hip_z: 60,
+      knee: 120,
+      ankle_y: 17,
     };
 
     const jointOrder = [
@@ -191,14 +218,16 @@ export class MuJoCoDemo {
       "ankle_y",
     ];
 
-    // Calculate kps and kds
+    // Calculate tau limits
     const tau_factor = 0.85;
 
-    this.kds = jointOrder.map((joint) => this.damping[joint]);
-    this.kps = jointOrder.map((joint) => this.stiffness[joint] * tau_factor);
+    this.tauLimit = jointOrder.map(
+      (joint) => this.urdf_limits[joint] * tau_factor,
+    );
 
-    // Calculate tau_limit
-    this.tauLimit = this.kps.map((kp) => kp);
+    // Calculate kps and kds
+    this.kds = jointOrder.map((joint) => this.damping[joint]);
+    this.kps = jointOrder.map((joint) => this.stiffness[joint]);
 
     // Define default standing position
     this.defaultStanding = {
@@ -529,13 +558,13 @@ export class MuJoCoDemo {
 
     // Add sinusoidal time component
     obs[index++] = Math.sin(
-      (2 * Math.PI * this.mujoco_time * this.cfg.sim_config.dt) / 0.64,
+      (2 * Math.PI * this.mujoco_time * this.cfg.sim_config.dt) / 0.4,
     );
     obs[index++] = Math.cos(
-      (2 * Math.PI * this.mujoco_time * this.cfg.sim_config.dt) / 0.64,
+      (2 * Math.PI * this.mujoco_time * this.cfg.sim_config.dt) / 0.4,
     );
 
-    // Add command velocities (assuming you have these)
+    // Add command velocities
     obs[index++] = this.cmd.vx * this.cfg.normalization.obs_scales.lin_vel;
     obs[index++] = this.cmd.vy * this.cfg.normalization.obs_scales.lin_vel;
     obs[index++] = this.cmd.dyaw * this.cfg.normalization.obs_scales.ang_vel;
