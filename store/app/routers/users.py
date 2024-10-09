@@ -385,18 +385,18 @@ async def set_moderator(
     return UserPublic(**updated_user.model_dump())
 
 
-class ForgotRequest(BaseModel):
+class ForgotPasswordRequest(BaseModel):
     email: EmailStr
 
 
-class ForgotResponse(BaseModel):
+class ForgotPasswordResponse(BaseModel):
     message: str
 
 
-@users_router.post("/forgot-password", response_model=ForgotResponse)
+@users_router.post("/forgot-password", response_model=ForgotPasswordResponse)
 async def generate_password_reset_token(
-    data: ForgotRequest, crud: Annotated[Crud, Depends(Crud.get)]
-) -> ForgotResponse:
+    data: ForgotPasswordRequest, crud: Annotated[Crud, Depends(Crud.get)]
+) -> ForgotPasswordResponse:
 
     if user := await crud.get_user_from_email(data.email):
         await crud.remove_existing_token_for_email(user.email)
@@ -404,7 +404,7 @@ async def generate_password_reset_token(
 
         await send_reset_password_email(email=user.email, token=reset_token.id)
 
-    return ForgotResponse(message="A password reset email has been sent to your registered email address.")
+    return ForgotPasswordResponse(message="A password reset email has been sent to your registered email address.")
 
 
 class ResetRequest(BaseModel):
