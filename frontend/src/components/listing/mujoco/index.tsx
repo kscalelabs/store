@@ -183,7 +183,11 @@ const MUJOCO = ({ url }: { url: string }) => {
         const formattedOutput = formatParsedOutput(parsed);
         setConsoleOutput(`Parsed output:\n${formattedOutput}`);
       } catch (err) {
-        setConsoleOutput(`Error parsing code: ${err.message}`);
+        if (err instanceof Error) {
+          setConsoleOutput(`Error parsing code: ${err.message}`);
+        } else {
+          setConsoleOutput(`Error parsing code: ${String(err)}`);
+        }
       }
     } else {
       setConsoleOutput("Wasm module not loaded or parse_code not found.");
