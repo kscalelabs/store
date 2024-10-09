@@ -49,7 +49,8 @@ const GDPRBanner: React.FC = () => {
       {isVisible && !showOptOutForm && (
         <div className="bg-gray-12 p-4 fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-lg flex flex-col items-center z-50 shadow-md rounded-lg">
           <div className="text-gray-1 text-xs sm:text-sm text-center mb-2 max-w-full">
-            We value your privacy 🔒 we use cookies to make it easier to
+            We value your privacy 🔒 <br />
+            We use cookies to make it easier to
             interact with our website and to improve it. We want to better
             understand how our website is used. You can find out more about our
             use of cookies in our
