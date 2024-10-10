@@ -27,7 +27,7 @@ const Navbar = () => {
     { name: "Browse", path: "/browse", isExternal: false },
     { name: "Downloads", path: "/downloads", isExternal: false },
     { name: "Docs", path: "https://docs.kscale.dev/", isExternal: true },
-    // { name: "Blog", path: "https://blog.kscale.dev/", isExternal: true },
+    { name: "Research", path: "/research", isExternal: false },
   ];
 
   const communityItems = [
