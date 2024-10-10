@@ -557,3 +557,52 @@ class ListingVote(StoreBaseModel):
             is_upvote=is_upvote,
             created_at=int(time.time()),
         )
+
+
+OrderStatus = Literal["pending", "fulfilled", "failed"]
+
+
+class Order(StoreBaseModel):
+    """Tracks completed user orders through Stripe."""
+
+    user_id: str
+    stripe_product_id: str
+    stripe_price_id: str
+    stripe_customer_id: str
+    stripe_subscription_id: str
+    stripe_checkout_session_id: str
+    stripe_payment_intent_id: str
+    stripe_payment_method_id: str
+    created_at: int
+    updated_at: int
+    status: OrderStatus
+    amount: int
+
+    @classmethod
+    def create(
+        cls,
+        user_id: str,
+        stripe_product_id: str,
+        stripe_price_id: str,
+        stripe_customer_id: str,
+        stripe_subscription_id: str,
+        stripe_checkout_session_id: str,
+        stripe_payment_intent_id: str,
+        stripe_payment_method_id: str,
+        amount: int,
+    ) -> Self:
+        return cls(
+            id=new_uuid(),
+            user_id=user_id,
+            stripe_product_id=stripe_product_id,
+            stripe_price_id=stripe_price_id,
+            stripe_customer_id=stripe_customer_id,
+            stripe_subscription_id=stripe_subscription_id,
+            stripe_checkout_session_id=stripe_checkout_session_id,
+            stripe_payment_intent_id=stripe_payment_intent_id,
+            stripe_payment_method_id=stripe_payment_method_id,
+            created_at=int(time.time()),
+            updated_at=int(time.time()),
+            status="pending",
+            amount=amount,
+        )
