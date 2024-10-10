@@ -28,6 +28,15 @@ mujoco.FS.writeFile(
   await (await fetch("./examples/scenes/" + initialScene)).text(),
 );
 
+window.addEventListener("customCommand", (event) => {
+  const command = event.detail;
+
+  if (command === "right_leg,up") {
+    demo.customActions = [0, 0, 0, 0, 0, 0, 0, 0, -1000, 2000];
+    demo.customCommandActive = true;
+  }
+});
+
 export class MuJoCoDemo {
   constructor() {
     this.mujoco = mujoco;
@@ -36,6 +45,8 @@ export class MuJoCoDemo {
     this.model = new mujoco.Model("/working/" + initialScene);
     this.state = new mujoco.State(this.model);
     this.simulation = new mujoco.Simulation(this.model, this.state);
+    this.customCommandActive = false;
+    this.customActions = [];
 
     // Define Random State Variables
     this.params = {
@@ -322,24 +333,32 @@ export class MuJoCoDemo {
 
     if (!this.params["paused"]) {
       // 1000hz -> 100hz
-      if (this.count_lowlevel % this.cfg.sim_config.decimation === 0) {
+      if (
+        this.count_lowlevel % this.cfg.sim_config.decimation === 0 &&
+        !this.customCommandActive
+      ) {
         // Prepare the current observation
         const observation = this.getCurrentObservation();
 
         // Update the observation buffer
         this.updateObservationBuffer(observation);
 
-        // Use PPO model to get actions
+        // Use PPO model to get actions for initial stand-up
         const flattenedObservation = this.obsBuffer.flat();
         const actions = await this.ppoModel.predict(flattenedObservation);
 
         if (actions) {
-          // Apply actions to the simulation
+          // Apply actions to the simulation for standing up straight
           for (let i = 0; i < actions.length; i++) {
             this.targetQ[i] = actions[i] * this.cfg.control.action_scale;
           }
           this.lastAction = actions;
         }
+      }
+
+      if (this.customCommandActive) {
+        this.targetQ = this.customActions;
+        this.customCommandActive = false;
       }
 
       // Get current joint positions and velocities
