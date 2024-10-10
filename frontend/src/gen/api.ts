@@ -1226,19 +1226,19 @@ export interface components {
             /** Users */
             users: components["schemas"]["PublicUserInfoResponseItem"][];
         };
+        /** ResetPasswordRequest */
+        ResetPasswordRequest: {
+            /** Token */
+            token: string;
+            /** New Password */
+            new_password: string;
+        };
         /** ResetPasswordResponse */
         ResetPasswordResponse: {
             /** Message */
             message: string;
             /** Email */
             email: string;
-        };
-        /** ResetRequest */
-        ResetRequest: {
-            /** Token */
-            token: string;
-            /** New Password */
-            new_password: string;
         };
         /** SetModeratorRequest */
         SetModeratorRequest: {
@@ -2777,7 +2777,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ResetRequest"];
+                "application/json": components["schemas"]["ResetPasswordRequest"];
             };
         };
         responses: {

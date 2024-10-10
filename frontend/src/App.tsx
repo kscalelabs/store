@@ -17,6 +17,7 @@ import BuyPage from "@/components/pages/BuyPage";
 import Create from "@/components/pages/Create";
 import EmailSignup from "@/components/pages/EmailSignup";
 import FileBrowser from "@/components/pages/FileBrowser";
+import ForgotPassword from "@/components/pages/ForgotPassword";
 import Home from "@/components/pages/Home";
 import KLangPage from "@/components/pages/KLangPage";
 import ListingDetails from "@/components/pages/ListingDetails";
@@ -24,6 +25,7 @@ import Login from "@/components/pages/Login";
 import Logout from "@/components/pages/Logout";
 import NotFound from "@/components/pages/NotFound";
 import Profile from "@/components/pages/Profile";
+import ResetPassword from "@/components/pages/ResetPassword";
 import Signup from "@/components/pages/Signup";
 import { AlertQueue, AlertQueueProvider } from "@/hooks/useAlertQueue";
 import { AuthenticationProvider } from "@/hooks/useAuth";
@@ -67,6 +69,14 @@ const App = () => {
                       <Route path="/logout" element={<Logout />} />
                       <Route path="/signup/" element={<Signup />} />
                       <Route path="/signup/:id" element={<EmailSignup />} />
+                      <Route
+                        path="/forgot-password"
+                        element={<ForgotPassword />}
+                      />
+                      <Route
+                        path="reset-password/:token"
+                        element={<ResetPassword />}
+                      />
 
                       <Route path="/create" element={<Create />} />
                       <Route path="/item/:id" element={<ListingDetails />} />

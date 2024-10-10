@@ -1,66 +1,99 @@
-import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useState } from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { useNavigate, useParams } from "react-router-dom";
 
+import { Card, CardContent, CardHeader } from "@/components/ui/Card";
+import Header from "@/components/ui/Header";
+import PasswordInput from "@/components/ui/Input/PasswordInput";
+import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import { ResetPasswordSchema, ResetPasswordType } from "@/lib/types";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Spinner from "@/components/ui/Spinner";
 
 const ResetPassword = () => {
-  const { token } = useParams<{ token: string }>();
-  const [newPass, setNewPass] = useState<string>("");
-  const [reNewPass, setReNewPass] = useState<string>("");
+  const { token } = useParams<{ token: string | undefined }>();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const auth = useAuthentication();
-  const { addErrorAlert } = useAlertQueue();
+  const { addAlert, addErrorAlert } = useAlertQueue();
+  const navigate = useNavigate();
 
-  const onSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ResetPasswordType>({
+    resolver: zodResolver(ResetPasswordSchema),
+  });
 
-    if (!token || newPass !== reNewPass) return;
+  const onSubmit: SubmitHandler<ResetPasswordType> = async (
+    data: ResetPasswordType,
+  ) => {
+    setLoading(true);
+    if (!token) {
+      addErrorAlert("Token is missing. Please try again.");
+      return;
+    }
 
     try {
-      const { data: response, error } = await auth.client.POST(
-        "/users/reset-password",
-        {
-          body: {
-            token: token,
-            new_password: newPass,
-            re_enter_password: reNewPass,
-          },
+      const { error } = await auth.client.POST("/users/reset-password", {
+        body: {
+          token: token,
+          new_password: data.new_password,
         },
-      );
+      });
 
       if (error) {
         addErrorAlert(error);
       } else {
-        console.log("response: ", response);
+        addAlert("Your password has been successfully updated.", "success");
+        navigate("/login");
       }
-    } catch {
-      addErrorAlert("An unexpected error occurred during login.");
+    } catch (err) {
+      addErrorAlert(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="border">
-      <form onSubmit={onSubmit}>
-        <p>New password</p>
-        <input
-          type="password"
-          value={newPass}
-          onChange={(e) => setNewPass(e.target.value)}
-          className="border"
-        />
-
-        <p>Re-enter New password</p>
-        <input
-          type="password"
-          value={reNewPass}
-          onChange={(e) => setReNewPass(e.target.value)}
-          className="border"
-        />
-        <div className="border">
-          <button type="submit">Reset Password</button>
-        </div>
-      </form>
+    <div className="flex justify-center items-center">
+      <Card className="w-[400px] shadow-md bg-gray-2 text-gray-12 rounded-lg">
+        <CardHeader className="pb-2">
+          <Header title="Reset your Password" />
+        </CardHeader>
+        <CardContent className="text-center">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="grid grid-cols-1 space-y-6"
+          >
+            <p className="text-sm text-gray-11 mx-2">
+              Enter a new password below to change your password.
+            </p>
+            {/* Password Input */}
+            <PasswordInput
+              placeholder="Password"
+              register={register}
+              errors={errors}
+              name="new_password"
+              showStrength={true}
+            />
+            {/* Confirm Password Input */}
+            <PasswordInput
+              placeholder="Confirm Password"
+              register={register}
+              errors={errors}
+              name="confirmPassword"
+              showStrength={false}
+            />
+            <Button variant="primary" disabled={loading}>
+              {loading ? <Spinner /> : "Reset Password"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };

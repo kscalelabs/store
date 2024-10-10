@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 
@@ -15,6 +16,7 @@ import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { EmailSignupSchema, EmailSignupType } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Spinner from "@/components/ui/Spinner";
 
 interface ForgotPasswordResponse {
   message: string;
@@ -22,6 +24,7 @@ interface ForgotPasswordResponse {
 
 const ForgotPassword = () => {
   const { addAlert, addErrorAlert } = useAlertQueue();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const auth = useAuthentication();
 
@@ -32,10 +35,12 @@ const ForgotPassword = () => {
   } = useForm<EmailSignupType>({ resolver: zodResolver(EmailSignupSchema) });
 
   const onSubmit = async ({ email }: EmailSignupType) => {
+    setLoading(true);
+
     try {
       const { data, error } = await auth.client.POST("/users/forgot-password", {
         body: {
-          email: email,
+          email,
         },
       });
 
@@ -45,11 +50,13 @@ const ForgotPassword = () => {
         const responseData = data as ForgotPasswordResponse;
         const successMessage =
           responseData?.message ||
-          "A password reset email has been sent to your registered email address.";
+          "If the email is registered, a password reset link will be sent.";
         addAlert(successMessage, "success");
       }
     } catch {
-      addErrorAlert("An unexpected error occurred during login.");
+      addErrorAlert("An unexpected error occurred.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -72,7 +79,9 @@ const ForgotPassword = () => {
             {errors?.email && (
               <ErrorMessage>{errors?.email?.message}</ErrorMessage>
             )}
-            <Button variant="primary">Continue</Button>
+            <Button variant="primary" disabled={loading}>
+              {loading ? <Spinner /> : "Reset Password"}
+            </Button>
           </form>
         </CardContent>
         <CardFooter>

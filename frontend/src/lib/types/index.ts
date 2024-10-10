@@ -74,8 +74,8 @@ export const ResetPasswordSchema = z
       })
       .min(8, { message: "Password must be at least 8 characters long." })
       .refine(
-        (newPassword) => {
-          const result = zxcvbn(newPassword);
+        (new_password) => {
+          const result = zxcvbn(new_password);
           return result.score >= 2;
         },
         {
@@ -96,7 +96,6 @@ export const ResetPasswordSchema = z
   });
 
 export type ResetPasswordType = z.infer<typeof ResetPasswordSchema>;
-
 
 export const NewListingSchema = z.object({
   name: z
