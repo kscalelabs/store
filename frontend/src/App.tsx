@@ -32,6 +32,7 @@ import GDPRBanner from "./components/gdpr/gdprbanner";
 import DownloadsPage from "./components/pages/Download";
 import MuJoCoTestPage from "./components/pages/MuJoCoTest";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
+import ResearchPage from "./components/pages/ResearchPage";
 import TermsOfService from "./components/pages/TermsOfService";
 
 const App = () => {
@@ -56,6 +57,7 @@ const App = () => {
                       <Route path="/about" element={<About />} />
                       <Route path="/buy" element={<BuyPage />} />
                       <Route path="/downloads" element={<DownloadsPage />} />
+                      <Route path="/research" element={<ResearchPage />} />
                       <Route path="/k-lang" element={<KLangPage />} />
                       <Route path="/browse/:page?" element={<Browse />} />
                       <Route
