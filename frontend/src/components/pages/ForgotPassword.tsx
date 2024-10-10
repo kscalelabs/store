@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -15,7 +15,7 @@ import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
-import { EmailSignupSchema, EmailSignupType } from "@/lib/types";
+import { ForgotPasswordSchema, ForgotPasswordType } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 interface ForgotPasswordResponse {
@@ -33,9 +33,13 @@ const ForgotPassword = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<EmailSignupType>({ resolver: zodResolver(EmailSignupSchema) });
+  } = useForm<ForgotPasswordType>({
+    resolver: zodResolver(ForgotPasswordSchema),
+  });
 
-  const onSubmit = async ({ email }: EmailSignupType) => {
+  const onSubmit: SubmitHandler<ForgotPasswordType> = async ({
+    email,
+  }: ForgotPasswordType) => {
     setLoading(true);
 
     try {

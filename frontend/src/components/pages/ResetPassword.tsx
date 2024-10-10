@@ -13,7 +13,7 @@ import { ResetPasswordSchema, ResetPasswordType } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const ResetPassword = () => {
-  const { token } = useParams<{ token: string | undefined }>();
+  const { token } = useParams();
   const [loading, setLoading] = useState<boolean>(false);
 
   const auth = useAuthentication();

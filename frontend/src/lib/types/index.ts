@@ -66,6 +66,17 @@ export const SignUpSchema = z
 
 export type SignupType = z.infer<typeof SignUpSchema>;
 
+export const ForgotPasswordSchema = z.object({
+  email: z
+    .string({
+      required_error: "Email required.",
+    })
+    .min(3, { message: "Email required." })
+    .email("Invalid email."),
+});
+
+export type ForgotPasswordType = z.infer<typeof EmailSignupSchema>;
+
 export const ResetPasswordSchema = z
   .object({
     new_password: z

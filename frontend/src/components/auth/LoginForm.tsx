@@ -1,5 +1,5 @@
 import { SubmitHandler, useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import { Input } from "@/components/ui/Input/Input";
@@ -21,6 +21,7 @@ const LoginForm = () => {
 
   const { addAlert, addErrorAlert } = useAlertQueue();
   const auth = useAuthentication();
+  const navigate = useNavigate();
 
   const onSubmit: SubmitHandler<LoginType> = async (data: LoginType) => {
     try {
@@ -59,8 +60,12 @@ const LoginForm = () => {
         />
       </div>
       {/* Forgot Link */}
-      <Button variant="link" className="justify-start px-1 mt-2">
-        <Link to="/forgot-password">Forgot Password?</Link>
+      <Button
+        onClick={() => navigate("/forgot-password")}
+        variant="link"
+        className="justify-start px-1 mt-2"
+      >
+        Forgot Password?
       </Button>
       {/* Submit Button */}
       <Button variant="primary" className="mt-2">
