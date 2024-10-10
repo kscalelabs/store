@@ -1,1 +1,0 @@
-/Users/casper/projects/store/my_pest_parser/target/wasm32-unknown-unknown/release/libmy_pest_parser.rlib: /Users/casper/projects/store/my_pest_parser/src/klang.pest /Users/casper/projects/store/my_pest_parser/src/lib.rs
