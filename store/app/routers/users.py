@@ -397,17 +397,20 @@ class ForgotPasswordResponse(BaseModel):
 async def generate_password_reset_token(
     data: ForgotPasswordRequest, crud: Annotated[Crud, Depends(Crud.get)]
 ) -> ForgotPasswordResponse:
+    try:
+        if user := await crud.get_user_from_email(data.email):
+            await crud.remove_existing_token_for_email(user.email)
+            reset_token = await crud.create_email_signup_token(email=user.email)
 
-    if user := await crud.get_user_from_email(data.email):
-        await crud.remove_existing_token_for_email(user.email)
-        reset_token = await crud.create_email_signup_token(email=user.email)
+            await send_reset_password_email(email=user.email, token=reset_token.id)
+            logger.info(f"Password reset email sent to {user.email}")
 
-        await send_reset_password_email(email=user.email, token=reset_token.id)
+        return ForgotPasswordResponse(message="If the email is registered, a password reset link will be sent.")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
-    return ForgotPasswordResponse(message="A password reset email has been sent to your registered email address.")
 
-
-class ResetRequest(BaseModel):
+class ResetPasswordRequest(BaseModel):
     token: str
     new_password: str
 
@@ -419,16 +422,30 @@ class ResetPasswordResponse(BaseModel):
 
 @users_router.post("/reset-password", response_model=ResetPasswordResponse)
 async def validate_password_reset_token(
-    data: ResetRequest, crud: Annotated[Crud, Depends(Crud.get)]
+    data: ResetPasswordRequest, crud: Annotated[Crud, Depends(Crud.get)]
 ) -> ResetPasswordResponse:
-    reset_token = await crud.get_email_signup_token(data.token)
-    if not reset_token:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid or expired reset token")
+    try:
+        reset_token = await crud.get_email_signup_token(data.token)
+        if not reset_token:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid or expired reset token")
 
-    if user := await crud.get_user_from_email(reset_token.email):
+        user = await crud.get_user_from_email(reset_token.email)
+
+        if not user:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not Found")
+
+        # Update user password
         updated_user = await crud.update_user(
             user_id=user.id, updates={"hashed_password": hash_password(data.new_password)}
         )
-        await crud.remove_existing_token_for_email(data.token)
 
-    return ResetPasswordResponse(message="Password updated successful", email=updated_user.email)
+        # Remove reset token
+        await crud.delete_email_signup_token(data.token)
+
+        return ResetPasswordResponse(message="Password updated successful", email=updated_user.email)
+    except Exception as e:
+        logger.error(f"Error updating Password: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while updating the password.",
+        )

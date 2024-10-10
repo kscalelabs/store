@@ -1,7 +1,7 @@
 """This module provides CRUD operations for email sign-up tokens."""
 
 import asyncio
-
+from typing import List
 from store.app.crud.base import BaseCrud
 from store.app.model import EmailSignUpToken
 
@@ -19,9 +19,15 @@ class EmailCrud(BaseCrud):
         await self._delete_item(id)
 
     async def remove_existing_token_for_email(self, email: str) -> None:
-        if user_tokens := await self._get_items_from_secondary_index("email", email, EmailSignUpToken):
-            for token in user_tokens:
-                await self.delete_email_signup_token(token.id)
+        user_tokens: List[EmailSignUpToken] = await self._get_items_from_secondary_index(
+            "email", email, EmailSignUpToken
+        )
+
+        if not user_tokens:
+            return
+
+        delete_tasks = [self.delete_email_signup_token(token.id) for token in user_tokens]
+        await asyncio.gather(*delete_tasks)
 
 
 async def test_adhoc() -> None:
