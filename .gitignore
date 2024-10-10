@@ -33,7 +33,3 @@ out*/
 
 # .DS_Store
 .DS_Store
-
-# Rust
-klang_parser/target
-klang_parser/Cargo.lock
