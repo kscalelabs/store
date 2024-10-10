@@ -1,2 +1,3 @@
 # Ignore codegen files
 src/gen/
+src/klang_parser/pkg/klang_parser_bg.wasm.d.ts
