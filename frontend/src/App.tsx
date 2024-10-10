@@ -35,6 +35,7 @@ import OrderCancel from "./components/pages/OrderCancel";
 import OrderSuccess from "./components/pages/OrderSuccess";
 import Orders from "./components/pages/Orders";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
+import ResearchPage from "./components/pages/ResearchPage";
 import TermsOfService from "./components/pages/TermsOfService";
 
 const App = () => {
@@ -58,6 +59,7 @@ const App = () => {
 
                       <Route path="/about" element={<About />} />
                       <Route path="/downloads" element={<DownloadsPage />} />
+                      <Route path="/research" element={<ResearchPage />} />
                       <Route path="/k-lang" element={<KLangPage />} />
                       <Route path="/browse/:page?" element={<Browse />} />
                       <Route
