@@ -41,7 +41,7 @@ const LoginForm = () => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <div>
+      <div className="grid grid-cols-1 space-y-6">
         {/* Email Input */}
         <div className="relative">
           <Input placeholder="Email" type="text" {...register("email")} />
@@ -50,24 +50,22 @@ const LoginForm = () => {
           )}
         </div>
         {/* Password Input */}
-        <div className="mt-5">
-          <PasswordInput<LoginType>
-            placeholder="Password"
-            register={register}
-            errors={errors}
-            name="password"
-            showStrength={false} // Hide password strength bar
-          />
-        </div>
+        <PasswordInput<LoginType>
+          placeholder="Password"
+          register={register}
+          errors={errors}
+          name="password"
+          showStrength={false} // Hide password strength bar
+        />
       </div>
       {/* Forgot Link */}
-      <Button variant="link" className="justify-start px-1 py-6">
+      <Button variant="link" className="justify-start px-1 mt-2">
         <Link to="/forgot-password">Forgot Password?</Link>
       </Button>
       {/* Submit Button */}
-      <div className="mt-2">
-        <Button variant="primary">Login</Button>
-      </div>
+      <Button variant="primary" className="mt-2">
+        Login
+      </Button>
     </form>
   );
 };

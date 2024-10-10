@@ -5,12 +5,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import Header from "@/components/ui/Header";
 import PasswordInput from "@/components/ui/Input/PasswordInput";
+import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { ResetPasswordSchema, ResetPasswordType } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Spinner from "@/components/ui/Spinner";
 
 const ResetPassword = () => {
   const { token } = useParams<{ token: string | undefined }>();
@@ -70,10 +70,10 @@ const ResetPassword = () => {
             className="grid grid-cols-1 space-y-6"
           >
             <p className="text-sm text-gray-11 mx-2">
-              Enter a new password below to change your password.
+              Enter a new password below to reset your password.{" "}
             </p>
             {/* Password Input */}
-            <PasswordInput
+            <PasswordInput<ResetPasswordType>
               placeholder="Password"
               register={register}
               errors={errors}
@@ -81,7 +81,7 @@ const ResetPassword = () => {
               showStrength={true}
             />
             {/* Confirm Password Input */}
-            <PasswordInput
+            <PasswordInput<ResetPasswordType>
               placeholder="Confirm Password"
               register={register}
               errors={errors}
