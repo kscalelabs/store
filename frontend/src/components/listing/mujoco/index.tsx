@@ -105,7 +105,8 @@ const MUJOCO = ({ url }: { url: string }) => {
 
   const [selectedProgram, setSelectedProgram] = useState("program_1.k");
   const [selectedRobot, setSelectedRobot] = useState("robot_1.xml");
-  const [selectedEmbodiment, setSelectedEmbodiment] = useState("environment_1.xml");
+  const [selectedEmbodiment, setSelectedEmbodiment] =
+    useState("environment_1.xml");
 
   const [showNotification] = useState(false);
   const [customCommand, setCustomCommand] = useState<string | null>(null);
@@ -175,7 +176,9 @@ const MUJOCO = ({ url }: { url: string }) => {
 
   useEffect(() => {
     if (customCommand) {
-      window.dispatchEvent(new CustomEvent('customCommand', { detail: customCommand }));
+      window.dispatchEvent(
+        new CustomEvent("customCommand", { detail: customCommand }),
+      );
       setCustomCommand(null);
     }
   }, [customCommand]);
@@ -187,8 +190,11 @@ const MUJOCO = ({ url }: { url: string }) => {
         const formattedOutput = formatParsedOutput(parsed);
         setConsoleOutput(`Parsed output:\n${formattedOutput}`);
 
-        const commandMatch = code.match(/fn move_leg\(\) {\s*\*move\(leg="(\w+)", pos="(\w+)"\);\s*}/);
+        const commandMatch = code.match(
+          /fn move_leg\(\) {\s*\*move\(leg="(\w+)", pos="(\w+)"\);\s*}/,
+        );
         if (commandMatch) {
+          // eslint-disable-next-line
           const [_, leg, pos] = commandMatch;
           setCustomCommand(`${leg},${pos}`);
         }
