@@ -4,35 +4,128 @@ import { EditorState } from "@codemirror/state";
 import { lineNumbers } from "@codemirror/view";
 import CodeMirror from "@uiw/react-codemirror";
 
+interface WasmParser {
+  parse_code: (code: string) => string;
+}
+
+const formatParsedOutput = (parsed: string): string => {
+  const lines = parsed.split("\n").map((line) => line.trim());
+  const stack: { rule: string; depth: number; content: string | null }[] = [];
+  let result = "";
+
+  const addToResult = (rule: string, content: string | null, depth: number) => {
+    const indent = "  ".repeat(depth);
+    if (content !== null) {
+      result += `${indent}- ${rule}: "${content}"\n`;
+    } else {
+      result += `${indent}- ${rule}\n`;
+    }
+  };
+
+  const isChainableRule = (rule: string) => {
+    const chainableRules = [
+      "expression",
+      "conditional",
+      "logical_or",
+      "logical_and",
+      "equality",
+      "comparison",
+      "additive",
+      "multiplicative",
+      "unary",
+      "primary",
+    ];
+    return chainableRules.includes(rule);
+  };
+
+  let currentDepth = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (line.startsWith("Pair {")) {
+      const ruleLine = lines[++i];
+      const rule = ruleLine.replace("rule:", "").trim().replace(/,$/, "");
+      // eslint-disable-next-line
+      const spanLine = lines[++i];
+      const strLine = lines[++i];
+      const content = strLine.includes("str:")
+        ? strLine
+            .replace("str:", "")
+            .trim()
+            .replace(/^"|"$/g, "")
+            .replace(/,$/, "")
+        : null;
+
+      while (
+        stack.length > 0 &&
+        stack[stack.length - 1].depth >= currentDepth
+      ) {
+        const popped = stack.pop();
+        if (popped) addToResult(popped.rule, popped.content, popped.depth);
+      }
+
+      if (
+        isChainableRule(rule) &&
+        stack.length > 0 &&
+        isChainableRule(stack[stack.length - 1].rule)
+      ) {
+        stack[stack.length - 1].rule += ` > ${rule}`;
+        if (content !== null) {
+          stack[stack.length - 1].content = content;
+        }
+      } else {
+        stack.push({ rule, depth: currentDepth, content });
+      }
+
+      if (lines[i + 1]?.trim() === "inner:") {
+        currentDepth++;
+      }
+    } else if (line === "]") {
+      currentDepth--;
+    }
+  }
+
+  while (stack.length > 0) {
+    const popped = stack.pop();
+    if (popped) addToResult(popped.rule, popped.content, popped.depth);
+  }
+
+  return result;
+};
+
 const MUJOCO = ({ url }: { url: string }) => {
   const appBodyRef = useRef<HTMLDivElement>(null);
   const scriptRef = useRef<HTMLScriptElement | null>(null);
-  const [code, setCode] = useState(`def program() {\n  wave_hand();\n}`);
+  const [code, setCode] =
+    useState(`fn pick_up_apple_manual() : "Pick up an apple manually" {
+    x = 30deg;
+    y = 30deg;
+    *move(limb="left_arm", joint=2, pos=x + y);
+  }`);
   const [consoleOutput, setConsoleOutput] = useState("");
+  const [wasmParser, setWasmParser] = useState<WasmParser | null>(null);
 
   const [selectedProgram, setSelectedProgram] = useState("program_1.k");
   const [selectedRobot, setSelectedRobot] = useState("robot_1.xml");
   const [selectedEmbodiment, setSelectedEmbodiment] =
     useState("environment_1.xml");
 
-  const [showNotification, setShowNotification] = useState(false);
+  const [showNotification] = useState(false);
 
   useEffect(() => {
-    const checkScreenSize = () => {
-      if (window.innerWidth < 900) {
-        setShowNotification(true);
-        setTimeout(() => {
-          setShowNotification(false);
-        }, 3000);
+    const loadWasm = async () => {
+      try {
+        const wasm = await import("../../../klang_parser/pkg/klang_parser.js");
+        await wasm.default();
+        console.log("Wasm module loaded:", wasm);
+        setWasmParser(wasm);
+      } catch (err) {
+        console.error("Error loading Wasm:", err);
       }
     };
 
-    checkScreenSize();
-    window.addEventListener("resize", checkScreenSize);
-
-    return () => {
-      window.removeEventListener("resize", checkScreenSize);
-    };
+    loadWasm();
   }, []);
 
   useEffect(() => {
@@ -83,19 +176,30 @@ const MUJOCO = ({ url }: { url: string }) => {
     };
   }, [url]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    e.stopPropagation();
-  };
-
   const handleRun = () => {
-    setConsoleOutput(
-      `Current Loaded Program: ${selectedProgram}, robot ${selectedRobot}, and environment ${selectedEmbodiment}\nOutput: ` +
-        code,
-    );
+    if (wasmParser && wasmParser.parse_code) {
+      try {
+        const parsed = wasmParser.parse_code(code);
+        const formattedOutput = formatParsedOutput(parsed);
+        setConsoleOutput(`Parsed output:\n${formattedOutput}`);
+      } catch (err) {
+        if (err instanceof Error) {
+          setConsoleOutput(`Error parsing code: ${err.message}`);
+        } else {
+          setConsoleOutput(`Error parsing code: ${String(err)}`);
+        }
+      }
+    } else {
+      setConsoleOutput("Wasm module not loaded or parse_code not found.");
+    }
   };
 
   const handleStop = () => {
     setConsoleOutput("Program stopped.");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    e.stopPropagation();
   };
 
   return (
