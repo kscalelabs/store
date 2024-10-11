@@ -399,8 +399,8 @@ async def generate_password_reset_token(
 ) -> ForgotPasswordResponse:
     try:
         if user := await crud.get_user_from_email(data.email):
-            await crud.remove_existing_token_for_email(user.email)
-            reset_token = await crud.create_email_signup_token(email=user.email)
+            await crud.delete_password_reset_token_by_email(user.email)
+            reset_token = await crud.create_password_reset_token(email=user.email)
 
             await send_reset_password_email(email=user.email, token=reset_token.id)
             logger.info(f"Password reset email sent to {user.email}")
@@ -424,7 +424,7 @@ class ResetPasswordResponse(BaseModel):
 async def validate_password_reset_token(
     data: ResetPasswordRequest, crud: Annotated[Crud, Depends(Crud.get)]
 ) -> ResetPasswordResponse:
-    reset_token = await crud.get_email_signup_token(data.token)
+    reset_token = await crud.get_password_reset_token(data.token)
     if not reset_token:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid or expired reset token")
 
@@ -439,6 +439,6 @@ async def validate_password_reset_token(
     )
 
     # Remove reset token
-    await crud.delete_email_signup_token(data.token)
+    await crud.delete_password_reset_token(data.token)
 
     return ResetPasswordResponse(message="Password updated successful", email=updated_user.email)

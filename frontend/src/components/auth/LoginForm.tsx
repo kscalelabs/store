@@ -64,11 +64,12 @@ const LoginForm = () => {
         onClick={() => navigate("/forgot-password")}
         variant="link"
         className="justify-start px-1 mt-2"
+        type="button"
       >
         Forgot Password?
       </Button>
       {/* Submit Button */}
-      <Button variant="primary" className="mt-2">
+      <Button variant="primary" className="mt-2" type="submit">
         Login
       </Button>
     </form>
