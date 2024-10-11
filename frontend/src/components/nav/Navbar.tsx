@@ -33,30 +33,32 @@ const Navbar = () => {
       name: "Discord",
       path: "https://discord.gg/kscale",
       icon: <FaDiscord className="h-5 w-5" />,
-      // description:
-      //   "Connect with other robot developers, researchers, and enthusiasts.",
+      description:
+        "",
     },
     {
       name: "Twitter",
       path: "https://x.com/kscalelabs",
       icon: <FaXTwitter className="h-5 w-5" />,
-      // description: "Follow us on Twitter for updates on what we're building.",
+      description: "",
     },
     {
       name: "GitHub",
       path: "https://github.com/kscalelabs",
       icon: <FaGithub className="h-5 w-5" />,
-      // description: "Check out our open-source projects on GitHub.",
+      description: "",
     },
     {
       name: "Docs",
       path: "https://docs.kscale.dev/",
       icon: <FaRegFileLines className="h-5 w-5" />,
+      description: "",
     },
     {
       name: "Research",
       path: "/research",
       icon: <FaWpexplorer className="h-5 w-5" />,
+      description: "",
     },
   ];
 
