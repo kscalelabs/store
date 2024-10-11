@@ -97,12 +97,9 @@ const formatParsedOutput = (parsed: string): string => {
 const MUJOCO = ({ url }: { url: string }) => {
   const appBodyRef = useRef<HTMLDivElement>(null);
   const scriptRef = useRef<HTMLScriptElement | null>(null);
-  const [code, setCode] =
-    useState(`fn pick_up_apple_manual() : "Pick up an apple manually" {
-    x = 30deg;
-    y = 30deg;
-    *move(limb="left_arm", joint=2, pos=x + y);
-  }`);
+  const [code, setCode] = useState(`fn move_leg() {
+  *move(leg="right_leg", pos="up");
+}`);
   const [consoleOutput, setConsoleOutput] = useState("");
   const [wasmParser, setWasmParser] = useState<WasmParser | null>(null);
 
@@ -112,6 +109,7 @@ const MUJOCO = ({ url }: { url: string }) => {
     useState("environment_1.xml");
 
   const [showNotification] = useState(false);
+  const [customCommand, setCustomCommand] = useState<string | null>(null);
 
   useEffect(() => {
     const loadWasm = async () => {
@@ -176,12 +174,30 @@ const MUJOCO = ({ url }: { url: string }) => {
     };
   }, [url]);
 
+  useEffect(() => {
+    if (customCommand) {
+      window.dispatchEvent(
+        new CustomEvent("customCommand", { detail: customCommand }),
+      );
+      setCustomCommand(null);
+    }
+  }, [customCommand]);
+
   const handleRun = () => {
     if (wasmParser && wasmParser.parse_code) {
       try {
         const parsed = wasmParser.parse_code(code);
         const formattedOutput = formatParsedOutput(parsed);
         setConsoleOutput(`Parsed output:\n${formattedOutput}`);
+
+        const commandMatch = code.match(
+          /fn move_leg\(\) {\s*\*move\(leg="(\w+)", pos="(\w+)"\);\s*}/,
+        );
+        if (commandMatch) {
+          // eslint-disable-next-line
+          const [_, leg, pos] = commandMatch;
+          setCustomCommand(`${leg},${pos}`);
+        }
       } catch (err) {
         if (err instanceof Error) {
           setConsoleOutput(`Error parsing code: ${err.message}`);
