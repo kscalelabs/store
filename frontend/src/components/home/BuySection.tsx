@@ -75,9 +75,14 @@ export default function BuySection() {
             <ul className="grid gap-6 text-gray-1">
               <li>
                 <div className="grid gap-1">
-                  <h3 className="text-xl font-bold">Advanced AI</h3>
+                  <h3 className="text-xl font-bold">
+                    Program Your Robot to Do Anything
+                  </h3>
                   <p className="text-gray-8">
-                    Powered by the latest artificial intelligence algorithms.
+                    Powered by K-Lang, our neural network integrated programming
+                    language. You can tell your robot to do anything and it will
+                    learn and improve over time based on positive and negative
+                    reinforcement feedback loops.
                   </p>
                 </div>
               </li>
@@ -85,16 +90,17 @@ export default function BuySection() {
                 <div className="grid gap-1">
                   <h3 className="text-xl font-bold">Build Quality</h3>
                   <p className="text-gray-8">
-                    Built with a high-quality aluminum frame, and the best
+                    Built with an aircraft grade aluminum frame, and the best
                     motors, actuators, and sensors available.
                   </p>
                 </div>
               </li>
               <li>
                 <div className="grid gap-1">
-                  <h3 className="text-xl font-bold">24/7 Operation</h3>
+                  <h3 className="text-xl font-bold">Swappable Batteries</h3>
                   <p className="text-gray-8">
-                    Designed for continuous operation without downtime.
+                    Stompy Pro comes with a removable battery pack that can be
+                    swapped out for a charged one when needed.
                   </p>
                 </div>
               </li>

@@ -4,6 +4,7 @@ from typing import Any, Dict
 
 import stripe
 from fastapi import APIRouter, HTTPException, Request
+from pydantic import BaseModel
 
 from store.app.crud.orders import OrdersCrud
 from store.settings import settings
@@ -83,11 +84,18 @@ async def notify_payment_failed(session: Dict[str, Any]) -> None:
     print(f"Payment failed for session: {session['id']}")
 
 
-@stripe_router.post("/create-checkout-session")
-async def create_checkout_session(request: Request) -> Dict[str, Any]:
+class CreateCheckoutSessionRequest(BaseModel):
+    product_id: str
+
+
+class CreateCheckoutSessionResponse(BaseModel):
+    session_id: str
+
+
+@stripe_router.post("/create-checkout-session", response_model=CreateCheckoutSessionResponse)
+async def create_checkout_session(request: CreateCheckoutSessionRequest) -> CreateCheckoutSessionResponse:
     try:
-        data = await request.json()
-        product_id = data.get("product_id")
+        product_id = request.product_id
 
         # Create a Checkout Session
         checkout_session = stripe.checkout.Session.create(
@@ -107,6 +115,6 @@ async def create_checkout_session(request: Request) -> Dict[str, Any]:
             cancel_url=f"{settings.site.homepage}/cancel",
         )
 
-        return {"sessionId": checkout_session.id}
+        return CreateCheckoutSessionResponse(session_id=checkout_session.id)
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=400, detail=str(e))

@@ -79,6 +79,10 @@ export VITE_GOOGLE_CLIENT_ID=''
 # For OnShape
 export ONSHAPE_ACCESS_KEY=''
 export ONSHAPE_SECRET_KEY=''
+
+# For Stripe
+export VITE_STRIPE_PUBLISHABLE_KEY=''
+export VITE_STRIPE_SECRET_KEY=''
 ```
 
 ### Google OAuth Configuration

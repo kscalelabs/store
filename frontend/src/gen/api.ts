@@ -959,6 +959,16 @@ export interface components {
             /** Client Id */
             client_id: string;
         };
+        /** CreateCheckoutSessionRequest */
+        CreateCheckoutSessionRequest: {
+            /** Product Id */
+            product_id: string;
+        };
+        /** CreateCheckoutSessionResponse */
+        CreateCheckoutSessionResponse: {
+            /** Session Id */
+            session_id: string;
+        };
         /** DeleteTokenResponse */
         DeleteTokenResponse: {
             /** Message */
@@ -3024,7 +3034,11 @@ export interface operations {
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCheckoutSessionRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {
@@ -3032,7 +3046,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["CreateCheckoutSessionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

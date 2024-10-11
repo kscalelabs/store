@@ -16,7 +16,7 @@ const OrderCancel: React.FC = () => {
             Your order has been cancelled. No charges were made to your account.
           </p>
           <Button asChild>
-            <Link to="/">Return to Home</Link>
+            <Link to="/buy">Return to Buy</Link>
           </Button>
         </CardContent>
       </Card>

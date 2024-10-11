@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 
-import { Button } from "@/components/ui/button";
+import CheckoutButton from "@/components/stripe/CheckoutButton";
 import { motion, useScroll, useTransform } from "framer-motion";
 
 const BuyPage: React.FC = () => {
@@ -37,9 +37,10 @@ const HeroSection: React.FC = () => {
       <p className="text-xl text-gray-11 mb-8">
         The future of robotics, now at your fingertips.
       </p>
-      <Button variant="primary" size="lg">
-        Buy Now
-      </Button>
+      {/* Developer Mode Stompy Pro */}
+      <CheckoutButton productId="prod_Qyzd8f0gFMis7c" />
+      {/* Production Stompy Pro */}
+      {/* <CheckoutButton productId="prod_R0n3nkCO4aQdlg" /> */}
     </motion.section>
   );
 };
@@ -91,10 +92,13 @@ const PerformanceSection: React.FC = () => {
       style={{ opacity, scale }}
     >
       <div className="text-center max-w-2xl">
-        <h2 className="text-4xl font-bold mb-4">Advanced AI</h2>
+        <h2 className="text-4xl font-bold mb-4">
+          Program Your Robot to Do Anything
+        </h2>
         <p className="text-xl text-gray-11">
-          Powered by state-of-the-art artificial intelligence, Stompy Pro learns
-          and adapts to your needs.
+          Powered by K-Lang, our neural network integrated programming language.
+          You can tell your robot to do anything and it will learn and improve
+          over time based on positive and negative reinforcement feedback loops.
         </p>
       </div>
     </motion.section>
@@ -117,10 +121,10 @@ const DesignSection: React.FC = () => {
       style={{ x }}
     >
       <div className="text-center max-w-2xl">
-        <h2 className="text-4xl font-bold mb-4">Robust Design</h2>
+        <h2 className="text-4xl font-bold mb-4">Build Quality</h2>
         <p className="text-xl text-gray-11">
-          Built to last, with premium materials and meticulous attention to
-          detail.
+          Built with an aircraft grade aluminum frame, and the best motors,
+          actuators, and sensors available.
         </p>
       </div>
       <div className="absolute inset-0 -z-10 bg-gray-3" />{" "}
@@ -138,9 +142,10 @@ const CTASection: React.FC = () => {
       <p className="text-xl text-gray-11 mb-8">
         Bring Stompy Pro home today and step into the future.
       </p>
-      <Button variant="default" size="lg">
-        Order Now
-      </Button>
+      {/* Developer Mode Stompy Pro */}
+      <CheckoutButton productId="prod_Qyzd8f0gFMis7c" />
+      {/* Production Stompy Pro */}
+      {/* <CheckoutButton productId="prod_R0n3nkCO4aQdlg" /> */}
     </section>
   );
 };
