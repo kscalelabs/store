@@ -66,7 +66,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
     });
 
     if (mousePosRef.current) {
-      const radius = 15;
+      const radius = 6;
       for (let dy = -radius; dy <= radius; dy++) {
         for (let dx = -radius; dx <= radius; dx++) {
           if (dx * dx + dy * dy <= radius * radius) {

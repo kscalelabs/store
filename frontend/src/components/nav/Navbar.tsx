@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FaBars, FaDiscord, FaGithub } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6";
+import { FaRegFileLines, FaWpexplorer, FaXTwitter } from "react-icons/fa6";
 import { Link, useLocation } from "react-router-dom";
 
 import Logo from "@/components/Logo";
@@ -26,8 +26,6 @@ const Navbar = () => {
     { name: "Buy", path: "/buy", isExternal: false },
     { name: "Browse", path: "/browse", isExternal: false },
     { name: "Downloads", path: "/downloads", isExternal: false },
-    { name: "Docs", path: "https://docs.kscale.dev/", isExternal: true },
-    { name: "Research", path: "/research", isExternal: false },
   ];
 
   const communityItems = [
@@ -35,20 +33,31 @@ const Navbar = () => {
       name: "Discord",
       path: "https://discord.gg/kscale",
       icon: <FaDiscord className="h-5 w-5" />,
-      description:
-        "Connect with other robot developers, researchers, and enthusiasts.",
+      description: "",
     },
     {
       name: "Twitter",
       path: "https://x.com/kscalelabs",
       icon: <FaXTwitter className="h-5 w-5" />,
-      description: "Follow us on Twitter for updates on what we're building.",
+      description: "",
     },
     {
       name: "GitHub",
       path: "https://github.com/kscalelabs",
       icon: <FaGithub className="h-5 w-5" />,
-      description: "Check out our open-source projects on GitHub.",
+      description: "",
+    },
+    {
+      name: "Docs",
+      path: "https://docs.kscale.dev/",
+      icon: <FaRegFileLines className="h-5 w-5" />,
+      description: "",
+    },
+    {
+      name: "Research",
+      path: "/research",
+      icon: <FaWpexplorer className="h-5 w-5" />,
+      description: "",
     },
   ];
 
