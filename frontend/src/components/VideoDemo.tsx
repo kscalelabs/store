@@ -2,7 +2,7 @@ import React from "react";
 
 interface VideoDemoProps {
   src: string;
-  type: "youtube" | "local";
+  type: "youtube" | "s3" | "local";
   title?: string;
   autoplay?: boolean;
 }
