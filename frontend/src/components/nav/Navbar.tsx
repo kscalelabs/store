@@ -33,8 +33,7 @@ const Navbar = () => {
       name: "Discord",
       path: "https://discord.gg/kscale",
       icon: <FaDiscord className="h-5 w-5" />,
-      description:
-        "",
+      description: "",
     },
     {
       name: "Twitter",
