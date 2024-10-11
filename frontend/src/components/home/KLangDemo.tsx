@@ -38,11 +38,11 @@ speakPhrase("Hello, I am a robot.");`,
     >
       <div className="space-y-4">
         <div className="flex flex-col items-center space-y-4 text-center">
-          <div className="w-full max-w-4xl aspect-video overflow-hidden rounded-xl border bg-gray-11">
+          <div className="w-full max-w-4xl aspect-video overflow-hidden rounded-xl ">
             <VideoDemo
-              src="https://www.youtube.com/embed/Y-mD7Cp9KSs"
-              type="youtube"
-              title="Minimal PPO Implementation"
+              src="https://kscale-public.s3.amazonaws.com/varia/stompypro.mp4"
+              type="s3"
+              title="Stompy Pro"
               autoplay={true}
             />
           </div>
