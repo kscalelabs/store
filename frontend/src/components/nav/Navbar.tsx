@@ -145,7 +145,7 @@ const Navbar = () => {
                   >
                     {item.name}
                   </Link>
-                )
+                ),
               )}
               <NavigationMenu
                 onMouseEnter={() => setIsHoveringCommunity(true)}
