@@ -45,6 +45,7 @@ jobs:
         working-directory: frontend
         run: |
           echo "VITE_APP_BACKEND_URL=https://api.kscale.store" >> .env.production
+          echo "VITE_STRIPE_PUBLISHABLE_KEY=${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}" >> .env.production
 
       - name: Build frontend
         run: |

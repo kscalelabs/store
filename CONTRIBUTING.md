@@ -82,7 +82,8 @@ export ONSHAPE_SECRET_KEY=''
 
 # For Stripe
 export VITE_STRIPE_PUBLISHABLE_KEY=''
-export VITE_STRIPE_SECRET_KEY=''
+export STRIPE_SECRET_KEY=''
+export STRIPE_WEBHOOK_SECRET=''
 ```
 
 ### Google OAuth Configuration

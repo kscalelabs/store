@@ -67,8 +67,8 @@ class SiteSettings:
 @dataclass
 class StripeSettings:
     publishable_key: str = field(default=II("oc.env:VITE_STRIPE_PUBLISHABLE_KEY"))
-    secret_key: str = field(default=II("oc.env:VITE_STRIPE_SECRET_KEY"))
-    webhook_secret: str = field(default=II("oc.env:VITE_STRIPE_WEBHOOK_SECRET"))
+    secret_key: str = field(default=II("oc.env:STRIPE_SECRET_KEY"))
+    webhook_secret: str = field(default=II("oc.env:STRIPE_WEBHOOK_SECRET"))
 
 
 @dataclass
