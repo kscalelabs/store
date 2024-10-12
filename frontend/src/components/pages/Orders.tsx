@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
 
+import OrderCard from "@/components/orders/OrderCard";
+import Spinner from "@/components/ui/Spinner";
 import type { paths } from "@/gen/api";
 import { useAuthentication } from "@/hooks/useAuth";
 
-type Order =
-  paths["/orders/get_user_orders"]["get"]["responses"][200]["content"]["application/json"][0];
+type OrderWithProduct =
+  paths["/orders/get_user_orders_with_products"]["get"]["responses"][200]["content"]["application/json"][0];
 
 const OrdersPage: React.FC = () => {
   const { api, currentUser, isAuthenticated, isLoading } = useAuthentication();
-  const [orders, setOrders] = useState<Order[] | null>(null);
+  const [orders, setOrders] = useState<OrderWithProduct[] | null>(null);
   const [loadingOrders, setLoadingOrders] = useState(true);
 
   useEffect(() => {
@@ -17,7 +19,7 @@ const OrdersPage: React.FC = () => {
         setLoadingOrders(true);
         try {
           const { data, error } = await api.client.GET(
-            "/orders/get_user_orders",
+            "/orders/get_user_orders_with_products",
           );
           if (error) {
             console.error("Failed to fetch orders", error);
@@ -35,30 +37,39 @@ const OrdersPage: React.FC = () => {
     fetchOrders();
   }, [api, currentUser, isAuthenticated]);
 
-  if (isLoading || loadingOrders) {
-    return <div>Loading...</div>;
-  }
-
   if (!isAuthenticated) {
-    return <div>Please log in to view your orders.</div>;
+    return (
+      <div className="pt-8 min-h-screen">
+        Please log in to view orders on your account.
+      </div>
+    );
   }
 
   return (
-    <div>
-      <h1>Your Orders</h1>
-      {orders && orders.length > 0 ? (
-        <ul>
-          {orders.map((order: Order) => (
-            <li key={order.id}>
-              <p>Order ID: {order.id}</p>
-              <p>Amount: {order.amount}</p>
-              <p>Status: {order.status}</p>
-              {/* Add more order details as needed */}
-            </li>
+    <div className="p-6 md:p-8 md:pt-12 min-h-screen rounded-xl bg-gray-3">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">Your Orders</h1>
+        <p className="text-gray-11">
+          You can view the status of your past and current orders here.
+        </p>
+      </div>
+      {isLoading || loadingOrders ? (
+        <div className="flex justify-center items-center bg-gray-4 p-4 md:p-10 rounded-lg max-w-md mx-auto">
+          <Spinner className="p-1" />
+        </div>
+      ) : orders && orders.length > 0 ? (
+        <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+          {orders.map((orderWithProduct: OrderWithProduct) => (
+            <OrderCard
+              key={orderWithProduct.order.id}
+              orderWithProduct={orderWithProduct}
+            />
           ))}
-        </ul>
+        </div>
       ) : (
-        <p>No orders found.</p>
+        <div className="flex justify-center items-center bg-gray-4 p-4 md:p-10 rounded-lg max-w-md mx-auto">
+          <p className="text-gray-12">No orders yet.</p>
+        </div>
       )}
     </div>
   );

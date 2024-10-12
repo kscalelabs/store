@@ -888,6 +888,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/stripe/get_product/{product_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Product */
+        get: operations["get_product_stripe_get_product__product_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/orders/get_user_orders": {
         parameters: {
             query?: never;
@@ -914,6 +931,57 @@ export interface paths {
         };
         /** Get Order */
         get: operations["get_order_orders_get_order__order_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/get_order_with_product/{order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Order With Product */
+        get: operations["get_order_with_product_orders_get_order_with_product__order_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/get_user_orders_with_products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get User Orders With Products */
+        get: operations["get_user_orders_with_products_orders_get_user_orders_with_products_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/get_order_by_session_id": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Order By Session Id */
+        get: operations["get_order_by_session_id_orders_get_order_by_session_id_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1257,20 +1325,12 @@ export interface components {
             id: string;
             /** User Id */
             user_id: string;
-            /** Stripe Product Id */
-            stripe_product_id: string;
-            /** Stripe Price Id */
-            stripe_price_id: string;
-            /** Stripe Customer Id */
-            stripe_customer_id: string;
-            /** Stripe Subscription Id */
-            stripe_subscription_id: string;
+            /** User Email */
+            user_email: string;
             /** Stripe Checkout Session Id */
             stripe_checkout_session_id: string;
             /** Stripe Payment Intent Id */
             stripe_payment_intent_id: string;
-            /** Stripe Payment Method Id */
-            stripe_payment_method_id: string;
             /** Created At */
             created_at: number;
             /** Updated At */
@@ -1279,9 +1339,33 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "pending" | "fulfilled" | "failed";
+            status: "processing" | "in_development" | "being_assembled" | "shipped" | "delivered" | "cancelled" | "refunded" | "failed";
             /** Amount */
             amount: number;
+            /** Currency */
+            currency: string;
+            /** Product Id */
+            product_id?: string | null;
+        };
+        /** OrderWithProduct */
+        OrderWithProduct: {
+            order: components["schemas"]["Order"];
+            product: components["schemas"]["ProductInfo"];
+        };
+        /** ProductInfo */
+        ProductInfo: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string | null;
+            /** Images */
+            images: string[];
+            /** Metadata */
+            metadata: {
+                [key: string]: string;
+            };
         };
         /** PublicUserInfoResponseItem */
         PublicUserInfoResponseItem: {
@@ -3060,6 +3144,37 @@ export interface operations {
             };
         };
     };
+    get_product_stripe_get_product__product_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_user_orders_orders_get_user_orders_get: {
         parameters: {
             query?: never;
@@ -3098,6 +3213,88 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Order"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_order_with_product_orders_get_order_with_product__order_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderWithProduct"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_user_orders_with_products_orders_get_user_orders_with_products_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderWithProduct"][];
+                };
+            };
+        };
+    };
+    get_order_by_session_id_orders_get_order_by_session_id_get: {
+        parameters: {
+            query: {
+                session_id: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderWithProduct"];
                 };
             };
             /** @description Validation Error */

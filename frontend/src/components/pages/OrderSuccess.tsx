@@ -29,11 +29,18 @@ const OrderSuccess: React.FC = () => {
             processed.
           </p>
           {sessionId && (
-            <p className="text-sm text-gray-500 mb-4">Order ID: {sessionId}</p>
+            <p className="text-sm text-gray-500 mb-4">
+              Checkout Session ID: {sessionId}
+            </p>
           )}
-          <Button asChild>
-            <a href="/">Return to Home</a>
-          </Button>
+          <div className="flex gap-4">
+            <Button asChild>
+              <a href="/">Return to Home</a>
+            </Button>
+            <Button asChild variant="primary">
+              <a href="/orders">View Your Orders</a>
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -1,30 +1,80 @@
 """Defines the router endpoints for handling Orders."""
 
-from typing import List
+from typing import Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 
 from store.app.crud.base import ItemNotFoundError
-from store.app.crud.orders import OrdersCrud
+from store.app.db import Crud
 from store.app.model import Order, User
+from store.app.routers.stripe import get_product
 from store.app.routers.users import get_session_user_with_read_permission
 
 orders_router = APIRouter()
-orders_crud = OrdersCrud()
+
+
+class ProductInfo(BaseModel):
+    id: str
+    name: str
+    description: str | None
+    images: List[str]
+    metadata: Dict[str, str]
+
+
+class OrderWithProduct(BaseModel):
+    order: Order
+    product: ProductInfo
 
 
 @orders_router.get("/get_user_orders", response_model=List[Order])
-async def get_user_orders(user: User = Depends(get_session_user_with_read_permission)) -> List[Order]:
+async def get_user_orders(
+    user: User = Depends(get_session_user_with_read_permission), crud: Crud = Depends(Crud.get)
+) -> List[Order]:
     try:
-        orders = await orders_crud.get_orders_by_user_id(user.id)
+        orders = await crud.get_orders_by_user_id(user.id)
         return orders
     except ItemNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No orders found for this user")
 
 
 @orders_router.get("/get_order/{order_id}", response_model=Order)
-async def get_order(order_id: str, user: User = Depends(get_session_user_with_read_permission)) -> Order:
-    order = await orders_crud.get_order(order_id)
+async def get_order(
+    order_id: str, user: User = Depends(get_session_user_with_read_permission), crud: Crud = Depends(Crud.get)
+) -> Order:
+    order = await crud.get_order(order_id)
     if order is None or order.user_id != user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
     return order
+
+
+@orders_router.get("/get_order_with_product/{order_id}", response_model=OrderWithProduct)
+async def get_order_with_product(
+    order_id: str, user: User = Depends(get_session_user_with_read_permission), crud: Crud = Depends(Crud.get)
+) -> OrderWithProduct:
+    order = await crud.get_order(order_id)
+    if order is None or order.user_id != user.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+
+    if order.product_id is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Order has no associated product")
+
+    product = await get_product(order.product_id)
+    return OrderWithProduct(order=order, product=ProductInfo(**product))
+
+
+@orders_router.get("/get_user_orders_with_products", response_model=List[OrderWithProduct])
+async def get_user_orders_with_products(
+    user: User = Depends(get_session_user_with_read_permission), crud: Crud = Depends(Crud.get)
+) -> List[OrderWithProduct]:
+    try:
+        orders = await crud.get_orders_by_user_id(user.id)
+        orders_with_products = []
+        for order in orders:
+            if order.product_id is None:
+                continue  # Skip orders without a product_id
+            product = await get_product(order.product_id)
+            orders_with_products.append(OrderWithProduct(order=order, product=ProductInfo(**product)))
+        return orders_with_products
+    except ItemNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No orders found for this user")

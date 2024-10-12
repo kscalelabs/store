@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { FaSpinner } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
+import { Drawer } from "@/components/Drawer";
 import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
@@ -9,13 +11,23 @@ import { loadStripe } from "@stripe/stripe-js";
 
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
-const CheckoutButton: React.FC<{ productId: string }> = ({ productId }) => {
+const CheckoutButton: React.FC<{ productId: string; label?: string }> = ({
+  productId,
+  label = "Order Now",
+}) => {
   const { addErrorAlert } = useAlertQueue();
   const [isLoading, setIsLoading] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const auth = useAuthentication();
-
+  const navigate = useNavigate();
   const handleClick = async () => {
     setIsLoading(true);
+
+    if (!auth.isAuthenticated) {
+      setIsDrawerOpen(true);
+      setIsLoading(false);
+      return;
+    }
 
     if (!stripePromise) {
       console.error("Stripe configuration is missing");
@@ -68,15 +80,47 @@ const CheckoutButton: React.FC<{ productId: string }> = ({ productId }) => {
   };
 
   return (
-    <Button
-      onClick={handleClick}
-      disabled={isLoading}
-      className="flex items-center justify-center"
-      variant="primary"
-    >
-      {isLoading ? <FaSpinner className="animate-spin mr-2" /> : null}
-      {isLoading ? "Processing..." : "Buy Now"}
-    </Button>
+    <>
+      <Button
+        onClick={handleClick}
+        disabled={isLoading}
+        className="flex items-center justify-center"
+        variant="primary"
+      >
+        {isLoading ? <FaSpinner className="animate-spin mr-2" /> : null}
+        {isLoading ? "Starting checkout..." : label}
+      </Button>
+
+      <Drawer open={isDrawerOpen} setOpen={setIsDrawerOpen}>
+        <div className="p-4">
+          <h2 className="text-gray-1 text-2xl font-bold mb-4">
+            You must be logged in to place an order.
+          </h2>
+          <p className="text-gray-3 mb-4">
+            This is so you can track and receive updates on your order.
+          </p>
+          <Button
+            onClick={() => {
+              setIsDrawerOpen(false);
+              navigate("/login");
+            }}
+            variant="secondary"
+          >
+            Sign In
+          </Button>
+          <Button
+            onClick={() => {
+              setIsDrawerOpen(false);
+              navigate("/signup");
+            }}
+            variant="primary"
+            className="ml-2"
+          >
+            Sign Up
+          </Button>
+        </div>
+      </Drawer>
+    </>
   );
 };
 

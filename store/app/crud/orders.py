@@ -20,3 +20,7 @@ class OrdersCrud(BaseCrud):
 
     async def get_order(self, order_id: str) -> Order | None:
         return await self._get_item(order_id, Order, throw_if_missing=False)
+
+    async def get_order_by_session_id(self, session_id: str) -> Order | None:
+        orders = await self._get_items_from_secondary_index("stripe_checkout_session_id", session_id, Order)
+        return orders[0] if orders else None
