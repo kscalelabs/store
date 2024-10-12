@@ -58,6 +58,7 @@ const Navbar = () => {
       path: "/research",
       icon: <FaWpexplorer className="h-5 w-5" />,
       description: "",
+      isExternal: false,
     },
   ];
 
@@ -67,28 +68,43 @@ const Navbar = () => {
     title,
     children,
     icon,
+    isExternal,
   }: {
     className?: string;
     href: string;
     title: string;
     children: string;
     icon: React.ReactNode;
+    isExternal: boolean;
   }) => {
     return (
       <li>
         <NavigationMenuLink asChild>
-          <a
-            href={href}
-            className={`block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-1 hover:text-primary-9 focus:bg-gray-1 focus:text-primary-9 ${className}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <div className="flex items-center text-sm font-semibold leading-none">
-              <span className="mr-2">{icon}</span>
-              <span>{title}</span>
-            </div>
-            <p className="line-clamp-2 text-sm leading-snug">{children}</p>
-          </a>
+          {isExternal ? (
+            <a
+              href={href}
+              className={`block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-1 hover:text-primary-9 focus:bg-gray-1 focus:text-primary-9 ${className}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <div className="flex items-center text-sm font-semibold leading-none">
+                <span className="mr-2">{icon}</span>
+                <span>{title}</span>
+              </div>
+              <p className="line-clamp-2 text-sm leading-snug">{children}</p>
+            </a>
+          ) : (
+            <Link
+              to={href}
+              className={`block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-1 hover:text-primary-9 focus:bg-gray-1 focus:text-primary-9 ${className}`}
+            >
+              <div className="flex items-center text-sm font-semibold leading-none">
+                <span className="mr-2">{icon}</span>
+                <span>{title}</span>
+              </div>
+              <p className="line-clamp-2 text-sm leading-snug">{children}</p>
+            </Link>
+          )}
         </NavigationMenuLink>
       </li>
     );
@@ -129,7 +145,7 @@ const Navbar = () => {
                   >
                     {item.name}
                   </Link>
-                ),
+                )
               )}
               <NavigationMenu
                 onMouseEnter={() => setIsHoveringCommunity(true)}
@@ -156,6 +172,7 @@ const Navbar = () => {
                             href={item.path}
                             icon={item.icon}
                             className="group"
+                            isExternal={item.isExternal !== false}
                           >
                             {item.description}
                           </ListItem>
