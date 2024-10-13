@@ -18,6 +18,12 @@ const orderStatuses = [
   "failed",
 ];
 
+const activeStatuses = [
+  "processing",
+  "in_development",
+  "being_assembled",
+  "shipped",
+];
 const redStatuses = ["cancelled", "refunded", "failed"];
 
 const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
@@ -26,27 +32,28 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
   const { order, product } = orderWithProduct;
   const currentStatusIndex = orderStatuses.indexOf(order.status);
   const isRedStatus = redStatuses.includes(order.status);
-  const isDelivered = order.status === "delivered";
+  const showStatusBar = activeStatuses.includes(order.status);
 
-  const getStatusColor = (index: number) => {
+  const getStatusColor = (status: string) => {
     if (isRedStatus) return "bg-red-500";
-    return index <= currentStatusIndex ? "bg-blue-500" : "bg-gray-300";
+    if (activeStatuses.includes(status) || status === "delivered")
+      return "bg-primary-9";
+    return "bg-gray-300";
+  };
+
+  const getTextColor = (status: string) => {
+    if (isRedStatus) return "text-red-600";
+    if (activeStatuses.includes(status) || status === "delivered")
+      return "text-primary-9";
+    return "text-gray-600";
   };
 
   return (
     <div className="bg-white shadow-md rounded-lg p-4 md:p-6 mb-4 w-full">
-      <h2 className="text-gray-12 font-bold text-3xl mb-1">{product.name}</h2>
+      <h2 className="text-gray-12 font-bold text-2xl mb-1">{product.name}</h2>
       <p className="text-gray-11 mb-2 text-lg">
         Status:{" "}
-        <span
-          className={`font-semibold ${
-            isRedStatus
-              ? "text-red-600"
-              : isDelivered
-                ? "text-green-600"
-                : "text-blue-600"
-          }`}
-        >
+        <span className={`font-semibold ${getTextColor(order.status)}`}>
           {normalizeStatus(order.status)}
         </span>
       </p>
@@ -55,29 +62,60 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
         <p>{formatPrice(order.amount)}</p>
       </div>
 
-      {/* Progress bar - only show if not delivered */}
-      {!isDelivered && (
+      {showStatusBar && (
         <div className="mb-6">
           <div className="relative pt-1">
             <div className="flex mb-2 items-center justify-between">
-              <div
-                className={`text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full ${
-                  isRedStatus
-                    ? "text-red-600 bg-red-200"
-                    : "text-blue-600 bg-blue-200"
-                }`}
-              >
-                Status
-              </div>
+              {orderStatuses.slice(0, 5).map((status, index) => (
+                <div
+                  key={status}
+                  className="text-center flex flex-col items-center"
+                >
+                  <div
+                    className={`w-8 h-8 flex items-center justify-center rounded-full mb-2 ${
+                      index <= currentStatusIndex
+                        ? getStatusColor(status)
+                        : "bg-gray-300"
+                    } text-white`}
+                  >
+                    {index < currentStatusIndex ? (
+                      <svg
+                        className="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    ) : (
+                      index + 1
+                    )}
+                  </div>
+                  <span
+                    className={`text-xs ${
+                      index <= currentStatusIndex
+                        ? getTextColor(status)
+                        : "text-gray-600"
+                    } font-semibold`}
+                  >
+                    {normalizeStatus(status)}
+                  </span>
+                </div>
+              ))}
             </div>
             <div className="flex mb-2">
               <div className="w-full bg-gray-300 rounded-full h-2 overflow-hidden">
                 {orderStatuses.slice(0, 5).map((status, index) => (
                   <div
                     key={status}
-                    className={`h-full ${getStatusColor(index)} ${
-                      index === 0 ? "rounded-l-full" : ""
-                    } ${index === 4 ? "rounded-r-full" : ""}`}
+                    className={`h-full ${
+                      index <= currentStatusIndex
+                        ? getStatusColor(status)
+                        : "bg-gray-300"
+                    } ${index === 0 ? "rounded-l-full" : ""} ${index === 4 ? "rounded-r-full" : ""}`}
                     style={{
                       width: "20%",
                       float: "left",
@@ -87,32 +125,34 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
                 ))}
               </div>
             </div>
-            <div className="flex justify-between text-xs text-gray-600">
-              {orderStatuses.slice(0, 5).map((status) => (
-                <span key={status} className="w-1/5 text-center">
-                  {normalizeStatus(status)}
-                </span>
-              ))}
-            </div>
           </div>
         </div>
       )}
 
       {isRedStatus && (
         <p className="text-red-600 font-semibold mb-4">
-          This order has been {normalizeStatus(order.status)}.
+          {order.status === "failed"
+            ? "This order has failed."
+            : `This order has been ${normalizeStatus(order.status)}.`}
         </p>
       )}
 
-      <div className="mt-4">
-        {product.images && product.images.length > 0 && (
-          <img
-            src={product.images[0]}
-            alt={product.name}
-            className="w-full h-64 object-cover rounded-md mt-2"
-          />
-        )}
+      <div className="mt-4 text-sm bg-gray-3 p-3 rounded-md">
+        <h3 className="text-gray-12 font-semibold text-lg">Shipping Address</h3>
+        <p>{order.shipping_name}</p>
+        <p>{order.shipping_address_line1}</p>
+        {order.shipping_address_line2 && <p>{order.shipping_address_line2}</p>}
+        <p>{`${order.shipping_city}, ${order.shipping_state} ${order.shipping_postal_code}`}</p>
+        <p>{order.shipping_country}</p>
       </div>
+
+      {product.images && product.images.length > 0 && (
+        <img
+          src={product.images[0]}
+          alt={product.name}
+          className="w-full h-64 object-cover rounded-md mt-2"
+        />
+      )}
     </div>
   );
 };

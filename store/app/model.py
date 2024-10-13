@@ -584,6 +584,13 @@ class Order(StoreBaseModel):
     amount: int
     currency: str
     product_id: str | None = None
+    shipping_name: str | None = None
+    shipping_address_line1: str | None = None
+    shipping_address_line2: str | None = None
+    shipping_city: str | None = None
+    shipping_state: str | None = None
+    shipping_postal_code: str | None = None
+    shipping_country: str | None = None
 
     @classmethod
     def create(
@@ -596,6 +603,13 @@ class Order(StoreBaseModel):
         currency: str,
         product_id: str | None = None,
         status: OrderStatus = "processing",
+        shipping_name: str | None = None,
+        shipping_address_line1: str | None = None,
+        shipping_address_line2: str | None = None,
+        shipping_city: str | None = None,
+        shipping_state: str | None = None,
+        shipping_postal_code: str | None = None,
+        shipping_country: str | None = None,
     ) -> Self:
         now = int(time.time())
         return cls(
@@ -610,4 +624,11 @@ class Order(StoreBaseModel):
             amount=amount,
             currency=currency,
             product_id=product_id,
+            shipping_name=shipping_name,
+            shipping_address_line1=shipping_address_line1,
+            shipping_address_line2=shipping_address_line2,
+            shipping_city=shipping_city,
+            shipping_state=shipping_state,
+            shipping_postal_code=shipping_postal_code,
+            shipping_country=shipping_country,
         )

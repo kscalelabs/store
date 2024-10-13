@@ -973,23 +973,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/orders/get_order_by_session_id": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Order By Session Id */
-        get: operations["get_order_by_session_id_orders_get_order_by_session_id_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1346,6 +1329,20 @@ export interface components {
             currency: string;
             /** Product Id */
             product_id?: string | null;
+            /** Shipping Name */
+            shipping_name?: string | null;
+            /** Shipping Address Line1 */
+            shipping_address_line1?: string | null;
+            /** Shipping Address Line2 */
+            shipping_address_line2?: string | null;
+            /** Shipping City */
+            shipping_city?: string | null;
+            /** Shipping State */
+            shipping_state?: string | null;
+            /** Shipping Postal Code */
+            shipping_postal_code?: string | null;
+            /** Shipping Country */
+            shipping_country?: string | null;
         };
         /** OrderWithProduct */
         OrderWithProduct: {
@@ -3273,37 +3270,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrderWithProduct"][];
-                };
-            };
-        };
-    };
-    get_order_by_session_id_orders_get_order_by_session_id_get: {
-        parameters: {
-            query: {
-                session_id: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OrderWithProduct"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

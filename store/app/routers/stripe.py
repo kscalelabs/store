@@ -70,6 +70,9 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
 
 async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud) -> None:
     try:
+        shipping_details = session.get("shipping_details", {})
+        shipping_address = shipping_details.get("address", {})
+
         order_data = {
             "user_id": session.get("client_reference_id"),
             "user_email": session["customer_details"]["email"],
@@ -79,13 +82,19 @@ async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud)
             "currency": session["currency"],
             "status": "processing",
             "product_id": session["metadata"].get("product_id"),
+            "shipping_name": shipping_details.get("name"),
+            "shipping_address_line1": shipping_address.get("line1"),
+            "shipping_address_line2": shipping_address.get("line2"),
+            "shipping_city": shipping_address.get("city"),
+            "shipping_state": shipping_address.get("state"),
+            "shipping_postal_code": shipping_address.get("postal_code"),
+            "shipping_country": shipping_address.get("country"),
         }
 
         new_order = await crud.create_order(order_data)
         logger.info(f"New order created: {new_order.id}")
     except Exception as e:
         logger.error(f"Error creating order: {str(e)}")
-        # Add some error handling here, such as retrying or notifying an admin
         raise
 
 
@@ -165,6 +174,22 @@ async def create_checkout_session(
                 "product_id": product_id,
                 "user_email": user.email,
             },
+            shipping_address_collection={
+                "allowed_countries": ["US", "CA"],
+            },
+            shipping_options=[
+                {
+                    "shipping_rate_data": {
+                        "type": "fixed_amount",
+                        "fixed_amount": {"amount": 0, "currency": "usd"},
+                        "display_name": "Free shipping",
+                        "delivery_estimate": {
+                            "minimum": {"unit": "business_day", "value": 5},
+                            "maximum": {"unit": "business_day", "value": 7},
+                        },
+                    },
+                },
+            ],
         )
 
         logger.info(f"Checkout session created: {checkout_session.id}")
