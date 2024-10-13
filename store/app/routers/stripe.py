@@ -153,9 +153,6 @@ async def create_checkout_session(
         product_id = request.product_id
         logger.info(f"Creating checkout session for product: {product_id} and user: {user.id}")
 
-        # Fetch the product details from Stripe
-        product = stripe.Product.retrieve(product_id)
-
         # Fetch the price associated with the product
         prices = stripe.Price.list(product=product_id, active=True, limit=1)
         if not prices.data:
