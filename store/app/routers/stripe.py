@@ -153,16 +153,21 @@ async def create_checkout_session(
         product_id = request.product_id
         logger.info(f"Creating checkout session for product: {product_id} and user: {user.id}")
 
+        # Fetch the product details from Stripe
+        product = stripe.Product.retrieve(product_id)
+
+        # Fetch the price associated with the product
+        prices = stripe.Price.list(product=product_id, active=True, limit=1)
+        if not prices.data:
+            raise HTTPException(status_code=400, detail="No active price found for this product")
+        price = prices.data[0]
+
         # Create a Checkout Session
         checkout_session = stripe.checkout.Session.create(
             payment_method_types=["card"],
             line_items=[
                 {
-                    "price_data": {
-                        "currency": "usd",
-                        "product": product_id,
-                        "unit_amount": 1600000,  # $16000.00
-                    },
+                    "price": price.id,
                     "quantity": 1,
                 }
             ],

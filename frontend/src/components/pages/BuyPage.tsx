@@ -38,9 +38,20 @@ const HeroSection: React.FC = () => {
         The future of robotics, now at your fingertips.
       </p>
       {/* Developer Mode Stompy Pro */}
-      <CheckoutButton productId="prod_Qyzd8f0gFMis7c" />
+      {/* <CheckoutButton productId="prod_Qyzd8f0gFMis7c" /> */}
       {/* Production Stompy Pro */}
-      {/* <CheckoutButton productId="prod_R0n3nkCO4aQdlg" /> */}
+      <CheckoutButton productId="prod_R0n3nkCO4aQdlg" />
+
+      {/* Stompy Micro Delete Later */}
+      <div className="mt-4">
+        {/* Developer Mode Stompy Micro */}
+        {/* <CheckoutButton productId="prod_R1I3mYImsmLKGe" /> */}
+        {/* Production Stompy Micro */}
+        <CheckoutButton
+          productId="prod_R1IAtdBONHzXCb"
+          label="Buy Stompy Micro"
+        />
+      </div>
     </motion.section>
   );
 };
@@ -143,9 +154,9 @@ const CTASection: React.FC = () => {
         Bring Stompy Pro home today and step into the future.
       </p>
       {/* Developer Mode Stompy Pro */}
-      <CheckoutButton productId="prod_Qyzd8f0gFMis7c" />
+      {/* <CheckoutButton productId="prod_Qyzd8f0gFMis7c" /> */}
       {/* Production Stompy Pro */}
-      {/* <CheckoutButton productId="prod_R0n3nkCO4aQdlg" /> */}
+      <CheckoutButton productId="prod_R0n3nkCO4aQdlg" />
     </section>
   );
 };
