@@ -48,18 +48,26 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
     return "text-gray-600";
   };
 
+  const unitPrice = order.amount / order.quantity;
+
   return (
     <div className="bg-white shadow-md rounded-lg p-4 md:p-6 mb-4 w-full">
       <h2 className="text-gray-12 font-bold text-2xl mb-1">{product.name}</h2>
-      <p className="text-gray-11 mb-2 text-lg">
+      <p className="text-gray-11 mb-2 text-lg sm:text-xl">
         Status:{" "}
         <span className={`font-semibold ${getTextColor(order.status)}`}>
           {normalizeStatus(order.status)}
         </span>
       </p>
-      <div className="text-sm text-gray-9 flex flex-col gap-1 mb-4">
+      <div className="text-sm sm:text-base text-gray-9 flex flex-col gap-1 mb-4">
         <p>Order ID: {order.id}</p>
-        <p>{formatPrice(order.amount)}</p>
+        <p>Quantity: {order.quantity}</p>
+        <p>
+          <span className="font-medium">{formatPrice(order.amount)}</span>{" "}
+          <span className="font-light">
+            = {formatPrice(unitPrice)} x {order.quantity}
+          </span>
+        </p>
       </div>
 
       {showStatusBar && (

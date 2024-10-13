@@ -73,6 +73,10 @@ async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud)
         shipping_details = session.get("shipping_details", {})
         shipping_address = shipping_details.get("address", {})
 
+        # Get the line items to extract the quantity
+        line_items = stripe.checkout.Session.list_line_items(session["id"])
+        quantity = line_items.data[0].quantity if line_items.data else 1
+
         order_data = {
             "user_id": session.get("client_reference_id"),
             "user_email": session["customer_details"]["email"],
@@ -82,6 +86,7 @@ async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud)
             "currency": session["currency"],
             "status": "processing",
             "product_id": session["metadata"].get("product_id"),
+            "quantity": quantity,
             "shipping_name": shipping_details.get("name"),
             "shipping_address_line1": shipping_address.get("line1"),
             "shipping_address_line2": shipping_address.get("line2"),
@@ -165,7 +170,12 @@ async def create_checkout_session(
             line_items=[
                 {
                     "price": price.id,
-                    "quantity": 1,
+                    "quantity": 1,  # Set default quantity to 1
+                    "adjustable_quantity": {
+                        "enabled": True,
+                        "minimum": 1,
+                        "maximum": 10,  # Set a maximum quantity if needed
+                    },
                 }
             ],
             mode="payment",
