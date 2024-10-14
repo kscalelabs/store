@@ -228,3 +228,31 @@ make test
 make test-frontend  # Run only the frontend tests
 make test-backend  # Run only the backend tests
 ```
+
+## Optional
+
+Install pre-commit from [here](https://pre-commit.com/) to run the formatting and static checks automatically when you commit.
+
+Here's the pre-commit yaml configuration:
+
+```yaml
+fail_fast: true
+repos:
+  - repo: local
+    hooks:
+      - id: format
+        name: Format
+        entry: bash -c 'make format || (echo "❌ Formatting failed. Please run make format manually and commit the changes." && exit 1) && git diff --exit-code || (echo "❌ Formatting failed but formatted file. Please add and commit again." && exit 1)'
+        language: system
+        pass_filenames: false
+      - id: static-checks
+        name: Static Checks
+        entry: bash -c 'make static-checks || (echo "❌ Static checks failed. Please fix the issues and try again." && exit 1)'
+        language: system
+        pass_filenames: false
+      - id: test
+        name: Run Tests
+        entry: bash -c 'make test || (echo "❌ Tests failed. Please fix the failing tests and try again." && exit 1)'
+        language: system
+        pass_filenames: false
+```
