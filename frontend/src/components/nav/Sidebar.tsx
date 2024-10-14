@@ -36,13 +36,14 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
     { name: "Buy", path: "/buy" },
     { name: "Browse", path: "/browse" },
     { name: "Downloads", path: "/downloads" },
-    { name: "Docs", path: "https://docs.kscale.dev/", isExternal: true },
   ];
 
   const communityItems = [
     { name: "Discord", path: "https://discord.gg/kscale" },
     { name: "Twitter", path: "https://x.com/kscalelabs" },
     { name: "GitHub", path: "https://github.com/kscalelabs" },
+    { name: "Docs", path: "https://docs.kscale.dev/" },
+    { name: "Research", path: "/research" },
   ];
 
   const handleItemClick = (path: string, isExternal?: boolean) => {
@@ -76,7 +77,7 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
                   <SidebarItem
                     key={item.name}
                     title={item.name}
-                    onClick={() => handleItemClick(item.path, item.isExternal)}
+                    onClick={() => handleItemClick(item.path)}
                   />
                 ))}
                 <div className="border-t border-gray-1 my-2"></div>
@@ -84,7 +85,9 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
                   <SidebarItem
                     key={item.name}
                     title={item.name}
-                    onClick={() => handleItemClick(item.path, true)}
+                    onClick={() =>
+                      handleItemClick(item.path, item.path.startsWith("http"))
+                    }
                   />
                 ))}
                 <div className="border-t border-gray-1 my-2"></div>
