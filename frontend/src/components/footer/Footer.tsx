@@ -9,7 +9,6 @@ const Footer = () => {
   const { pathname } = location;
 
   // Show/hide footer based on pathname
-  // - to hide footer on a page add path to this
   const showFooter =
     pathname?.startsWith("/browse") === false &&
     pathname?.startsWith("/login") === false &&
@@ -23,7 +22,7 @@ const Footer = () => {
 
   return (
     <footer className="bg-gray-12 text-gray-1 py-10 mx-4 sm:mx-6 md:mx-10 xl:mx-16 rounded-lg mb-6">
-      <div className="flex flex-col gap-4 mx-8 sm:mx-12">
+      <div className="max-w-screen-lg lg:max-w-full mx-auto px-4 sm:px-6 md:px-10">
         {/* Logo and Social Links */}
         <div className="flex flex-col sm:flex-row items-start justify-between sm:items-center mb-8">
           <Logo />
@@ -53,17 +52,9 @@ const Footer = () => {
         </div>
 
         {/* Footer Links */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-12 sm:gap-4">
-          <div className="flex flex-col items-start gap-2 sm:gap-3">
-            <h2 className="text-base sm:text-lg font-bold mb-1">Company</h2>
-            {/* <a
-              href="https://kscalelabs.com"
-              className="hover:text-gray-5"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              K-Scale Labs
-            </a> */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="flex flex-col items-start gap-2">
+            <h2 className="text-base font-bold mb-1">Company</h2>
             <Link to={"/about"} className="hover:text-primary-9">
               About
             </Link>
@@ -76,8 +67,8 @@ const Footer = () => {
               Blog
             </a>
           </div>
-          <div className="flex flex-col items-start gap-2 sm:gap-3">
-            <h2 className="text-base sm:text-lg font-bold mb-1">Legal</h2>
+          <div className="flex flex-col items-start gap-2">
+            <h2 className="text-base font-bold mb-1">Legal</h2>
             <Link to={"/tos"} className="hover:text-primary-9">
               Terms of Service
             </Link>
@@ -85,8 +76,8 @@ const Footer = () => {
               Privacy Policy
             </Link>
           </div>
-          <div className="flex flex-col items-start gap-2 sm:gap-3">
-            <div className="mb-1">___</div>
+          <div className="flex flex-col items-start gap-2">
+            <div className="text-base font-bold mb-1">Product</div>
             <a
               href="https://forms.gle/HB5uj5r5mGQZUBtd8"
               className="hover:text-primary-9"
@@ -107,7 +98,7 @@ const Footer = () => {
         </div>
 
         {/* Copyright */}
-        <div className="mt-10 text-xs text-center text-gray-1">
+        <div className="mt-10 text-xs text-center">
           <p>
             <span>©</span> {new Date().getFullYear()} K-Scale Labs
           </p>
