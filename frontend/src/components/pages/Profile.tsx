@@ -117,68 +117,70 @@ export const RenderProfile = (props: RenderProfileProps) => {
         </CardHeader>
         <CardContent>
           {isEditing ? (
-            <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label
-                  htmlFor="first_name"
-                  className="block text-lg font-medium"
-                >
-                  First Name
-                </label>
-                <Input
-                  id="first_name"
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="mt-1 block w-full"
-                />
-              </div>
-              <div className="mb-4">
-                <label
-                  htmlFor="last_name"
-                  className="block text-lg font-medium"
-                >
-                  Last Name
-                </label>
-                <Input
-                  id="last_name"
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="mt-1 block w-full"
-                />
-              </div>
-              <div className="mb-4">
-                <label htmlFor="bio" className="block text-lg font-medium">
-                  Bio
-                </label>
-                <TextArea
-                  id="bio"
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  className="mt-1 block w-full rounded-md border-gray-11 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                  rows={4}
-                />
-              </div>
-              {isSubmitting ? (
-                <div className="mt-4 flex justify-center items-center">
-                  <Spinner />
-                </div>
-              ) : (
-                <div className="mt-4 flex justify-center space-x-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsEditing(false)}
+            <div className="flex justify-center">
+              <form onSubmit={handleSubmit} className="w-full max-w-lg">
+                <div className="mb-4">
+                  <label
+                    htmlFor="first_name"
+                    className="block text-lg font-medium"
                   >
-                    Cancel
-                  </Button>
-                  <Button type="submit" variant="primary">
-                    Save Changes
-                  </Button>
+                    First Name
+                  </label>
+                  <Input
+                    id="first_name"
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="mt-1 block w-full"
+                  />
                 </div>
-              )}
-            </form>
+                <div className="mb-4">
+                  <label
+                    htmlFor="last_name"
+                    className="block text-lg font-medium"
+                  >
+                    Last Name
+                  </label>
+                  <Input
+                    id="last_name"
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="mt-1 block w-full"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label htmlFor="bio" className="block text-lg font-medium">
+                    Bio
+                  </label>
+                  <TextArea
+                    id="bio"
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-11 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                    rows={4}
+                  />
+                </div>
+                {isSubmitting ? (
+                  <div className="mt-4 flex justify-center items-center">
+                    <Spinner />
+                  </div>
+                ) : (
+                  <div className="mt-4 flex justify-center space-x-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsEditing(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" variant="primary">
+                      Save Changes
+                    </Button>
+                  </div>
+                )}
+              </form>
+            </div>
           ) : (
             <div className="space-y-6">
               <div>
