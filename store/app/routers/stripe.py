@@ -170,11 +170,11 @@ async def create_checkout_session(
             line_items=[
                 {
                     "price": price.id,
-                    "quantity": 1,  # Set default quantity to 1
+                    "quantity": 1,  # default quantity
                     "adjustable_quantity": {
                         "enabled": True,
                         "minimum": 1,
-                        "maximum": 10,  # Set a maximum quantity if needed
+                        "maximum": 10,
                     },
                 }
             ],
