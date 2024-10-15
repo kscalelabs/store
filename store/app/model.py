@@ -557,3 +557,78 @@ class ListingVote(StoreBaseModel):
             is_upvote=is_upvote,
             created_at=int(time.time()),
         )
+
+
+OrderStatus = Literal[
+    "processing",
+    "in_development",
+    "being_assembled",
+    "shipped",
+    "delivered",
+    "cancelled",
+    "refunded",
+    "failed",
+]
+
+
+class Order(StoreBaseModel):
+    """Tracks completed user orders through Stripe."""
+
+    user_id: str
+    user_email: str
+    stripe_checkout_session_id: str
+    stripe_payment_intent_id: str
+    created_at: int
+    updated_at: int
+    status: OrderStatus
+    amount: int
+    currency: str
+    product_id: str | None = None
+    shipping_name: str | None = None
+    shipping_address_line1: str | None = None
+    shipping_address_line2: str | None = None
+    shipping_city: str | None = None
+    shipping_state: str | None = None
+    shipping_postal_code: str | None = None
+    shipping_country: str | None = None
+
+    @classmethod
+    def create(
+        cls,
+        user_id: str,
+        user_email: str,
+        stripe_checkout_session_id: str,
+        stripe_payment_intent_id: str,
+        amount: int,
+        currency: str,
+        product_id: str | None = None,
+        status: OrderStatus = "processing",
+        shipping_name: str | None = None,
+        shipping_address_line1: str | None = None,
+        shipping_address_line2: str | None = None,
+        shipping_city: str | None = None,
+        shipping_state: str | None = None,
+        shipping_postal_code: str | None = None,
+        shipping_country: str | None = None,
+    ) -> Self:
+        now = int(time.time())
+        return cls(
+            id=new_uuid(),
+            user_id=user_id,
+            user_email=user_email,
+            stripe_checkout_session_id=stripe_checkout_session_id,
+            stripe_payment_intent_id=stripe_payment_intent_id,
+            created_at=now,
+            updated_at=now,
+            status=status,
+            amount=amount,
+            currency=currency,
+            product_id=product_id,
+            shipping_name=shipping_name,
+            shipping_address_line1=shipping_address_line1,
+            shipping_address_line2=shipping_address_line2,
+            shipping_city=shipping_city,
+            shipping_state=shipping_state,
+            shipping_postal_code=shipping_postal_code,
+            shipping_country=shipping_country,
+        )

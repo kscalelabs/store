@@ -11,6 +11,7 @@ from store.app.crud.email import EmailCrud
 from store.app.crud.kernel_images import KernelImagesCrud
 from store.app.crud.listings import ListingsCrud
 from store.app.crud.onshape import OnshapeCrud
+from store.app.crud.orders import OrdersCrud
 from store.app.crud.users import UserCrud
 
 
@@ -21,6 +22,7 @@ class Crud(
     ListingsCrud,
     ArtifactsCrud,
     KernelImagesCrud,
+    OrdersCrud,
     BaseCrud,
 ):
     """Composes the various CRUD classes into a single class."""

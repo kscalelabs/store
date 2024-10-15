@@ -96,6 +96,9 @@ export const RenderProfile = (props: RenderProfileProps) => {
           </p>
           {!isEditing && canEdit && (
             <div className="flex space-x-2">
+              <Button onClick={() => navigate("/orders")} variant="default">
+                Orders
+              </Button>
               <Button onClick={() => navigate("/keys")} variant="primary">
                 API Keys
               </Button>

@@ -837,6 +837,142 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/stripe/create-payment-intent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Payment Intent */
+        post: operations["create_payment_intent_stripe_create_payment_intent_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stripe/webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Stripe Webhook */
+        post: operations["stripe_webhook_stripe_webhook_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stripe/create-checkout-session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Checkout Session */
+        post: operations["create_checkout_session_stripe_create_checkout_session_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stripe/get_product/{product_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Product */
+        get: operations["get_product_stripe_get_product__product_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/get_user_orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get User Orders */
+        get: operations["get_user_orders_orders_get_user_orders_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/get_order/{order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Order */
+        get: operations["get_order_orders_get_order__order_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/get_order_with_product/{order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Order With Product */
+        get: operations["get_order_with_product_orders_get_order_with_product__order_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/get_user_orders_with_products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get User Orders With Products */
+        get: operations["get_user_orders_with_products_orders_get_user_orders_with_products_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -873,6 +1009,16 @@ export interface components {
         ClientIdResponse: {
             /** Client Id */
             client_id: string;
+        };
+        /** CreateCheckoutSessionRequest */
+        CreateCheckoutSessionRequest: {
+            /** Product Id */
+            product_id: string;
+        };
+        /** CreateCheckoutSessionResponse */
+        CreateCheckoutSessionResponse: {
+            /** Session Id */
+            session_id: string;
         };
         /** DeleteTokenResponse */
         DeleteTokenResponse: {
@@ -1152,6 +1298,71 @@ export interface components {
         NewListingResponse: {
             /** Listing Id */
             listing_id: string;
+        };
+        /**
+         * Order
+         * @description Tracks completed user orders through Stripe.
+         */
+        Order: {
+            /** Id */
+            id: string;
+            /** User Id */
+            user_id: string;
+            /** User Email */
+            user_email: string;
+            /** Stripe Checkout Session Id */
+            stripe_checkout_session_id: string;
+            /** Stripe Payment Intent Id */
+            stripe_payment_intent_id: string;
+            /** Created At */
+            created_at: number;
+            /** Updated At */
+            updated_at: number;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "processing" | "in_development" | "being_assembled" | "shipped" | "delivered" | "cancelled" | "refunded" | "failed";
+            /** Amount */
+            amount: number;
+            /** Currency */
+            currency: string;
+            /** Product Id */
+            product_id?: string | null;
+            /** Shipping Name */
+            shipping_name?: string | null;
+            /** Shipping Address Line1 */
+            shipping_address_line1?: string | null;
+            /** Shipping Address Line2 */
+            shipping_address_line2?: string | null;
+            /** Shipping City */
+            shipping_city?: string | null;
+            /** Shipping State */
+            shipping_state?: string | null;
+            /** Shipping Postal Code */
+            shipping_postal_code?: string | null;
+            /** Shipping Country */
+            shipping_country?: string | null;
+        };
+        /** OrderWithProduct */
+        OrderWithProduct: {
+            order: components["schemas"]["Order"];
+            product: components["schemas"]["ProductInfo"];
+        };
+        /** ProductInfo */
+        ProductInfo: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string | null;
+            /** Images */
+            images: string[];
+            /** Metadata */
+            metadata: {
+                [key: string]: string;
+            };
         };
         /** PublicUserInfoResponseItem */
         PublicUserInfoResponseItem: {
@@ -2851,6 +3062,214 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_payment_intent_stripe_create_payment_intent_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    stripe_webhook_stripe_webhook_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+        };
+    };
+    create_checkout_session_stripe_create_checkout_session_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateCheckoutSessionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateCheckoutSessionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_product_stripe_get_product__product_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                product_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_user_orders_orders_get_user_orders_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Order"][];
+                };
+            };
+        };
+    };
+    get_order_orders_get_order__order_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Order"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_order_with_product_orders_get_order_with_product__order_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderWithProduct"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_user_orders_with_products_orders_get_user_orders_with_products_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderWithProduct"][];
                 };
             };
         };

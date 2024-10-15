@@ -31,6 +31,9 @@ import { AuthenticationProvider } from "@/hooks/useAuth";
 import GDPRBanner from "./components/gdpr/gdprbanner";
 import DownloadsPage from "./components/pages/Download";
 import MuJoCoTestPage from "./components/pages/MuJoCoTest";
+import OrderCancel from "./components/pages/OrderCancel";
+import OrderSuccess from "./components/pages/OrderSuccess";
+import Orders from "./components/pages/Orders";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import ResearchPage from "./components/pages/ResearchPage";
 import TermsOfService from "./components/pages/TermsOfService";
@@ -55,7 +58,6 @@ const App = () => {
                       <Route path="/mujoco-test" element={<MuJoCoTestPage />} />
 
                       <Route path="/about" element={<About />} />
-                      <Route path="/buy" element={<BuyPage />} />
                       <Route path="/downloads" element={<DownloadsPage />} />
                       <Route path="/research" element={<ResearchPage />} />
                       <Route path="/k-lang" element={<KLangPage />} />
@@ -77,6 +79,11 @@ const App = () => {
 
                       <Route path="/tos" element={<TermsOfService />} />
                       <Route path="/privacy" element={<PrivacyPolicy />} />
+
+                      <Route path="/buy" element={<BuyPage />} />
+                      <Route path="/success" element={<OrderSuccess />} />
+                      <Route path="/cancel" element={<OrderCancel />} />
+                      <Route path="/orders" element={<Orders />} />
 
                       <Route path="/404" element={<NotFound />} />
                       <Route path="*" element={<NotFoundRedirect />} />
