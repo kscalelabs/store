@@ -1327,6 +1327,8 @@ export interface components {
             amount: number;
             /** Currency */
             currency: string;
+            /** Quantity */
+            quantity: number;
             /** Product Id */
             product_id?: string | null;
             /** Shipping Name */

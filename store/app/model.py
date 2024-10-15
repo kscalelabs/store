@@ -583,6 +583,7 @@ class Order(StoreBaseModel):
     status: OrderStatus
     amount: int
     currency: str
+    quantity: int
     product_id: str | None = None
     shipping_name: str | None = None
     shipping_address_line1: str | None = None
@@ -601,6 +602,7 @@ class Order(StoreBaseModel):
         stripe_payment_intent_id: str,
         amount: int,
         currency: str,
+        quantity: int,
         product_id: str | None = None,
         status: OrderStatus = "processing",
         shipping_name: str | None = None,
@@ -623,6 +625,7 @@ class Order(StoreBaseModel):
             status=status,
             amount=amount,
             currency=currency,
+            quantity=quantity,
             product_id=product_id,
             shipping_name=shipping_name,
             shipping_address_line1=shipping_address_line1,

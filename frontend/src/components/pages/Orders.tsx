@@ -58,7 +58,7 @@ const OrdersPage: React.FC = () => {
           <Spinner className="p-1" />
         </div>
       ) : orders && orders.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+        <div className="grid gap-2 md:gap-6 md:grid-cols-1 lg:grid-cols-2">
           {orders.map((orderWithProduct: OrderWithProduct) => (
             <OrderCard
               key={orderWithProduct.order.id}
