@@ -17,6 +17,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
 
   const [gridInitialized, setGridInitialized] = useState(false);
 
+  // Define canvas dimensions
+  const canvasWidth = windowWidth;
+  const canvasHeight = Math.floor(windowHeight * 0.3);
+
   const rule = (neighbors: number, cell: boolean) =>
     cell ? neighbors >= 1 && neighbors <= 5 : neighbors === 3;
 
@@ -66,14 +70,15 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
     });
 
     if (mousePosRef.current) {
-      const radius = 6;
+      const { x, y } = mousePosRef.current;
+      const radius = 20;
       for (let dy = -radius; dy <= radius; dy++) {
         for (let dx = -radius; dx <= radius; dx++) {
           if (dx * dx + dy * dy <= radius * radius) {
-            const y = (mousePosRef.current.y + dy + rows) % rows;
-            const x = (mousePosRef.current.x + dx + cols) % cols;
-            newGrid[y][x] = false;
-            newActiveCells.add(`${y},${x}`);
+            const newY = (y + dy + rows) % rows;
+            const newX = (x + dx + cols) % cols;
+            newGrid[newY][newX] = false;
+            newActiveCells.add(`${newY},${newX}`);
           }
         }
       }
@@ -140,29 +145,12 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Set canvas height to 30vh
-    canvas.height = Math.floor(windowHeight * 0.3);
+    const cols = Math.floor(canvasWidth / 5); // Simplified cell size
+    const rows = Math.floor(canvasHeight / 5);
 
-    const desiredCellCount = 200;
-    let charWidth: number, charHeight: number;
-    if (windowWidth > windowHeight) {
-      charWidth = Math.floor(windowWidth / desiredCellCount);
-      charHeight = charWidth; // Make cells square
-    } else {
-      charHeight = Math.floor(windowHeight / desiredCellCount);
-      charWidth = charHeight; // Make cells square
-    }
-
-    // Minimum char width and height
-    const minCharWidth = 5;
-    const minCharHeight = 8;
-    if (charWidth < minCharWidth) charWidth = minCharWidth;
-    if (charHeight < minCharHeight) charHeight = minCharHeight;
-
-    const cols = Math.floor(windowWidth / charWidth);
-    const rows = Math.floor(canvas.height / charHeight);
-
-    canvas.width = windowWidth;
+    // Remove canvas.width and canvas.height assignments
+    // canvas.width = canvasWidth;
+    // canvas.height = canvasHeight;
 
     if (!gridInitialized) {
       gridRef.current = initializeGrid(rows, cols);
@@ -170,18 +158,15 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
     }
 
     const drawGrid = (currentGrid: boolean[][]) => {
-      const backgroundColor = "#111111";
-      const textColor = "#ff4f00";
-
-      ctx.fillStyle = backgroundColor;
+      ctx.fillStyle = "#111111";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = textColor;
-      ctx.font = `${charHeight}px monospace`;
+      ctx.fillStyle = "white";
 
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
-          const char = getCharForPosition(currentGrid, x, y);
-          ctx.fillText(char, x * charWidth, (y + 1) * charHeight);
+          if (currentGrid[y][x]) {
+            ctx.fillRect(x * 5, y * 5, 5, 5);
+          }
         }
       }
     };
@@ -196,9 +181,17 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
 
     const handleMouseMove = (event: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
-      const x = Math.floor((event.clientX - rect.left) / charWidth);
-      const y = Math.floor((event.clientY - rect.top) / charHeight);
-      mousePosRef.current = { x, y };
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      if (x >= 0 && x < canvas.width && y >= 0 && y < canvas.height) {
+        mousePosRef.current = {
+          x: Math.floor(x / 5),
+          y: Math.floor(y / 5),
+        };
+      } else {
+        mousePosRef.current = null;
+      }
     };
 
     const handleMouseLeave = () => {
@@ -215,53 +208,28 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseleave", handleMouseLeave);
     };
-  }, [windowWidth, windowHeight, initializeGrid, updateGrid, gridInitialized]);
+  }, [canvasWidth, canvasHeight, initializeGrid, updateGrid, gridInitialized]);
 
   return (
     <div className="relative rounded-lg w-full h-[30vh] overflow-hidden mb-4">
-      <div className="absolute inset-0 backdrop-blur-[2px]"></div>
-      <canvas ref={canvasRef} className="w-full h-full" />
+      <canvas
+        ref={canvasRef}
+        width={canvasWidth}
+        height={canvasHeight}
+        /* Removed className to prevent CSS conflicts */
+      />
       <div className="absolute inset-0 flex flex-col items-center justify-center px-4">
-        <h1 className="text-5xl font-bold mb-4 tracking-tight text-gray-1">
-          {title}
-        </h1>
-        <p className="text-xl max-w-md text-center tracking-wide text-gray-1">
-          {subheading}
-        </p>
+        <div className="bg-black p-6 rounded-lg border border-white bg-opacity-80">
+          <h1 className="text-5xl font-bold text-center mb-4 tracking-tight text-gray-1">
+            {title}
+          </h1>
+          <p className="text-xl max-w-md text-center tracking-wide text-gray-1">
+            {subheading}
+          </p>
+        </div>
       </div>
     </div>
   );
-};
-
-const getCharForPosition = (
-  grid: boolean[][],
-  x: number,
-  y: number,
-): string => {
-  if (!grid || !grid[y] || !grid[y][x]) return " ";
-
-  const top = y > 0 && grid[y - 1][x];
-  const bottom = y < grid.length - 1 && grid[y + 1][x];
-  const left = x > 0 && grid[y][x - 1];
-  const right = x < grid[0].length - 1 && grid[y][x + 1];
-
-  if (top && bottom && left && right) return "╋";
-  if (top && bottom && left) return "┫";
-  if (top && bottom && right) return "┣";
-  if (top && left && right) return "┻";
-  if (bottom && left && right) return "┳";
-  if (top && bottom) return "┃";
-  if (left && right) return "━";
-  if (top && right) return "┗";
-  if (top && left) return "┛";
-  if (bottom && right) return "┏";
-  if (bottom && left) return "┓";
-  if (top) return "┃";
-  if (bottom) return "┃";
-  if (left) return "━";
-  if (right) return "━";
-
-  return " ";
 };
 
 export default PageHeader;
