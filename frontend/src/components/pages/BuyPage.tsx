@@ -104,7 +104,7 @@ const BuyPage: React.FC = () => {
 
 const HeroSection: React.FC = () => {
   return (
-    <section className="relative overflow-hidden mb-12 h-[650px]">
+    <section className="relative overflow-hidden mb-12 h-[650px] rounded-lg">
       <PageHeader title="K Scale Labs" subheading="K-scale Labs" />
       <div className="absolute inset-0 z-20 flex items-center justify-center">
         <div className="text-center">
@@ -133,8 +133,8 @@ const StompyProSection: React.FC = () => {
 
   return (
     <section
-      className="relative h-[600px] overflow-hidden mb-12 cursor-pointer transition-all duration-300 hover:opacity-90"
-      onClick={() => navigate("/stompy-pro")}
+      className="relative h-[600px] overflow-hidden mb-12 cursor-pointer transition-all duration-300 hover:opacity-90 rounded-lg"
+      onClick={() => navigate("/pro")}
     >
       <div className="absolute inset-0">
         <img
@@ -162,8 +162,8 @@ const StompyMiniSection: React.FC = () => {
 
   return (
     <section
-      className="relative h-[600px] overflow-hidden mb-12 cursor-pointer transition-all duration-300 hover:opacity-90"
-      onClick={() => navigate("/stompy-mini")}
+      className="relative h-[600px] overflow-hidden mb-12 cursor-pointer transition-all duration-300 hover:opacity-90 rounded-lg"
+      onClick={() => navigate("/mini")}
     >
       <div className="absolute inset-0">
         <img

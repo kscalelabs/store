@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaBars, FaDiscord, FaGithub } from "react-icons/fa";
+import { FaBars, FaDiscord, FaExternalLinkAlt, FaGithub } from "react-icons/fa";
 import {
   FaDownload,
   FaRegFileLines,
@@ -29,8 +29,8 @@ const Navbar = () => {
   const [isHoveringDropdown, setIsHoveringDropdown] = useState(false);
 
   const navItems = [
-    { name: "Pro", path: "/stompy-pro", isExternal: false },
-    { name: "Mini", path: "/stompy-mini", isExternal: false },
+    { name: "Pro", path: "/pro", isExternal: false },
+    { name: "Mini", path: "/mini", isExternal: false },
   ];
 
   const communityItems = [
@@ -50,16 +50,10 @@ const Navbar = () => {
 
   const technicalItems = [
     {
-      name: "Research",
-      path: "/research",
-      icon: <FaWpexplorer className="h-5 w-5" />,
-      isExternal: false,
-    },
-    {
-      name: "Playground",
-      path: "/mujoco-test",
-      icon: <FaRobot className="h-5 w-5" />,
-      isExternal: false,
+      name: "Docs",
+      path: "https://docs.kscale.dev/",
+      icon: <FaRegFileLines className="h-5 w-5" />,
+      isExternal: true,
     },
     {
       name: "Browse",
@@ -74,16 +68,22 @@ const Navbar = () => {
       isExternal: false,
     },
     {
-      name: "Docs",
-      path: "https://docs.kscale.dev/",
-      icon: <FaRegFileLines className="h-5 w-5" />,
-      isExternal: true,
-    },
-    {
       name: "Code",
       path: "https://github.com/kscalelabs",
       icon: <FaGithub className="h-5 w-5" />,
       isExternal: true,
+    },
+    {
+      name: "Playground",
+      path: "/mujoco-test",
+      icon: <FaRobot className="h-5 w-5" />,
+      isExternal: false,
+    },
+    {
+      name: "Research",
+      path: "/research",
+      icon: <FaWpexplorer className="h-5 w-5" />,
+      isExternal: false,
     },
   ];
 
@@ -113,6 +113,7 @@ const Navbar = () => {
               <div className="flex items-center text-sm font-semibold leading-none">
                 <span className="mr-2">{icon}</span>
                 <span>{title}</span>
+                <FaExternalLinkAlt className="ml-2 h-3 w-3" />
               </div>
             </a>
           ) : (
@@ -148,11 +149,12 @@ const Navbar = () => {
                   <a
                     key={item.name}
                     href={item.path}
-                    className={`px-2 xl:px-3 py-2 rounded-md text-sm tracking-wide xl:tracking-widest text-gray-1 hover:bg-primary-9`}
+                    className={`px-2 xl:px-3 py-2 rounded-md text-sm tracking-wide xl:tracking-widest text-gray-1 hover:bg-primary-9 flex items-center`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     {item.name}
+                    <FaExternalLinkAlt className="ml-2 h-3 w-3" />
                   </a>
                 ) : (
                   <Link
@@ -182,7 +184,7 @@ const Navbar = () => {
                       }`}
                       disableClick
                     >
-                      Developer
+                      Developers
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
                       <ul className="grid grid-cols-2 w-[400px] gap-2 p-2">
