@@ -36,13 +36,16 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
     { name: "Mini", path: "/stompy-mini" },
   ];
 
-  const communityItems = [
-    { name: "Research", path: "/research" },
-    { name: "Playground", path: "/mujoco-test" },
+  const technicalItems = [
+    { name: "Docs", path: "https://docs.kscale.dev/" },
     { name: "Browse", path: "/browse" },
     { name: "Downloads", path: "/downloads" },
-    { name: "Docs", path: "https://docs.kscale.dev/" },
     { name: "Code", path: "https://github.com/kscalelabs" },
+    { name: "Playground", path: "/mujoco-test" },
+    { name: "Research", path: "/research" },
+  ];
+
+  const communityItems = [
     { name: "Discord", path: "https://discord.gg/kscale" },
     { name: "Twitter", path: "https://x.com/kscalelabs" },
   ];
@@ -82,13 +85,21 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
                   />
                 ))}
                 <div className="border-t border-gray-1 my-2"></div>
-                {communityItems.map((item) => (
+                {technicalItems.map((item) => (
                   <SidebarItem
                     key={item.name}
                     title={item.name}
                     onClick={() =>
                       handleItemClick(item.path, item.path.startsWith("http"))
                     }
+                  />
+                ))}
+                <div className="border-t border-gray-1 my-2"></div>
+                {communityItems.map((item) => (
+                  <SidebarItem
+                    key={item.name}
+                    title={item.name}
+                    onClick={() => handleItemClick(item.path, true)}
                   />
                 ))}
                 <div className="border-t border-gray-1 my-2"></div>
