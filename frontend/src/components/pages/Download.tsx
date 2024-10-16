@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
+import Container from "@/components/Container";
 import DownloadKernelImage from "@/components/DownloadKernelImage";
 import LoadingArtifactCard from "@/components/listing/artifacts/LoadingArtifactCard";
 import { UploadKernelImageModal } from "@/components/modals/UploadKerenlImageModal";
@@ -165,7 +166,7 @@ export default function DownloadsPage() {
     ) || false;
 
   return (
-    <div className="mx-4 sm:mx-6 md:mx-10 xl:mx-16 py-8 rounded-lg">
+    <Container>
       <h1 className="text-3xl font-bold mb-2">K-Scale Downloads</h1>
       <p className="text-muted-foreground mb-6">
         View and download official K-Scale and community uploaded kernel images
@@ -221,7 +222,7 @@ export default function DownloadsPage() {
           onUpload={handleUpload}
         />
       )}
-    </div>
+    </Container>
   );
 }
 
