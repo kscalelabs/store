@@ -1,4 +1,5 @@
 import { FaDiscord, FaGithub, FaLinkedinIn } from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
 import { Link, useLocation } from "react-router-dom";
 
 import Logo from "@/components/Logo";
@@ -47,6 +48,13 @@ const Footer = () => {
               ringColor="focus:ring-black"
             >
               <FaDiscord />
+            </SocialLink>
+            <SocialLink
+              href="https://x.com/kscalelabs"
+              ariaLabel="Join K-Scale's X"
+              ringColor="focus:ring-black"
+            >
+              <FaXTwitter />
             </SocialLink>
           </div>
         </div>

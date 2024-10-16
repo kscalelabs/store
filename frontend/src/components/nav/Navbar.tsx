@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { FaBars, FaDiscord, FaGithub } from "react-icons/fa";
-import { FaRegFileLines, FaWpexplorer, FaXTwitter } from "react-icons/fa6";
+import {
+  FaDownload,
+  FaRegFileLines,
+  FaRobot,
+  FaSearchengin,
+  FaWpexplorer,
+  FaXTwitter,
+} from "react-icons/fa6";
 import { Link, useLocation } from "react-router-dom";
 
 import Logo from "@/components/Logo";
@@ -19,13 +26,11 @@ const Navbar = () => {
   const { isAuthenticated } = useAuthentication();
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
   const location = useLocation();
-  const [isHoveringCommunity, setIsHoveringCommunity] = useState(false);
+  const [isHoveringDropdown, setIsHoveringDropdown] = useState(false);
 
   const navItems = [
-    { name: "K-Lang", path: "/k-lang", isExternal: false },
-    { name: "Buy", path: "/buy", isExternal: false },
-    { name: "Browse", path: "/browse", isExternal: false },
-    { name: "Downloads", path: "/downloads", isExternal: false },
+    { name: "Pro", path: "/stompy-pro", isExternal: false },
+    { name: "Mini", path: "/stompy-mini", isExternal: false },
   ];
 
   const communityItems = [
@@ -33,32 +38,52 @@ const Navbar = () => {
       name: "Discord",
       path: "https://discord.gg/kscale",
       icon: <FaDiscord className="h-5 w-5" />,
-      description: "",
+      isExternal: true,
     },
     {
       name: "Twitter",
       path: "https://x.com/kscalelabs",
       icon: <FaXTwitter className="h-5 w-5" />,
-      description: "",
+      isExternal: true,
+    },
+  ];
+
+  const technicalItems = [
+    {
+      name: "Research",
+      path: "/research",
+      icon: <FaWpexplorer className="h-5 w-5" />,
+      isExternal: false,
     },
     {
-      name: "GitHub",
-      path: "https://github.com/kscalelabs",
-      icon: <FaGithub className="h-5 w-5" />,
-      description: "",
+      name: "Playground",
+      path: "/mujoco-test",
+      icon: <FaRobot className="h-5 w-5" />,
+      isExternal: false,
+    },
+    {
+      name: "Browse",
+      path: "/browse",
+      icon: <FaSearchengin className="h-5 w-5" />,
+      isExternal: false,
+    },
+    {
+      name: "Downloads",
+      path: "/downloads",
+      icon: <FaDownload className="h-5 w-5" />,
+      isExternal: false,
     },
     {
       name: "Docs",
       path: "https://docs.kscale.dev/",
       icon: <FaRegFileLines className="h-5 w-5" />,
-      description: "",
+      isExternal: true,
     },
     {
-      name: "Research",
-      path: "/research",
-      icon: <FaWpexplorer className="h-5 w-5" />,
-      description: "",
-      isExternal: false,
+      name: "Code",
+      path: "https://github.com/kscalelabs",
+      icon: <FaGithub className="h-5 w-5" />,
+      isExternal: true,
     },
   ];
 
@@ -66,14 +91,12 @@ const Navbar = () => {
     className,
     href,
     title,
-    children,
     icon,
     isExternal,
   }: {
     className?: string;
     href: string;
     title: string;
-    children: string;
     icon: React.ReactNode;
     isExternal: boolean;
   }) => {
@@ -91,7 +114,6 @@ const Navbar = () => {
                 <span className="mr-2">{icon}</span>
                 <span>{title}</span>
               </div>
-              <p className="line-clamp-2 text-sm leading-snug">{children}</p>
             </a>
           ) : (
             <Link
@@ -102,7 +124,6 @@ const Navbar = () => {
                 <span className="mr-2">{icon}</span>
                 <span>{title}</span>
               </div>
-              <p className="line-clamp-2 text-sm leading-snug">{children}</p>
             </Link>
           )}
         </NavigationMenuLink>
@@ -148,35 +169,53 @@ const Navbar = () => {
                 ),
               )}
               <NavigationMenu
-                onMouseEnter={() => setIsHoveringCommunity(true)}
-                onMouseLeave={() => setIsHoveringCommunity(false)}
+                onMouseEnter={() => setIsHoveringDropdown(true)}
+                onMouseLeave={() => setIsHoveringDropdown(false)}
               >
                 <NavigationMenuList>
                   <NavigationMenuItem>
                     <NavigationMenuTrigger
                       className={`px-2 xl:px-3 py-2 rounded-md text-sm tracking-widest text-gray-1 ${
-                        isHoveringCommunity
+                        isHoveringDropdown
                           ? "bg-gray-1 text-primary-9"
                           : "hover:bg-gray-1 hover:text-primary-9"
                       }`}
                       disableClick
                     >
-                      Community
+                      Developer
                     </NavigationMenuTrigger>
                     <NavigationMenuContent>
-                      <ul className="grid w-[300px] gap-2 p-2">
-                        {communityItems.map((item) => (
-                          <ListItem
-                            key={item.name}
-                            title={item.name}
-                            href={item.path}
-                            icon={item.icon}
-                            className="group"
-                            isExternal={item.isExternal !== false}
-                          >
-                            {item.description}
-                          </ListItem>
-                        ))}
+                      <ul className="grid grid-cols-2 w-[400px] gap-2 p-2">
+                        <div>
+                          <h3 className="text-white font-semibold mb-2 pl-5">
+                            Community
+                          </h3>
+                          {communityItems.map((item) => (
+                            <ListItem
+                              key={item.name}
+                              title={item.name}
+                              href={item.path}
+                              icon={item.icon}
+                              className="group"
+                              isExternal={item.isExternal}
+                            />
+                          ))}
+                        </div>
+                        <div>
+                          <h3 className="text-white font-semibold mb-2 pl-5">
+                            Technical
+                          </h3>
+                          {technicalItems.map((item) => (
+                            <ListItem
+                              key={item.name}
+                              title={item.name}
+                              href={item.path}
+                              icon={item.icon}
+                              className="group"
+                              isExternal={item.isExternal}
+                            />
+                          ))}
+                        </div>
                       </ul>
                     </NavigationMenuContent>
                   </NavigationMenuItem>
