@@ -973,6 +973,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/orders/update_order_address/{order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Order Address */
+        put: operations["update_order_address_orders_update_order_address__order_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1442,6 +1459,23 @@ export interface components {
             description?: string | null;
             /** Tags */
             tags?: string[] | null;
+        };
+        /** UpdateOrderAddressRequest */
+        UpdateOrderAddressRequest: {
+            /** Shipping Name */
+            shipping_name: string;
+            /** Shipping Address Line1 */
+            shipping_address_line1: string;
+            /** Shipping Address Line2 */
+            shipping_address_line2: string | null;
+            /** Shipping City */
+            shipping_city: string;
+            /** Shipping State */
+            shipping_state: string;
+            /** Shipping Postal Code */
+            shipping_postal_code: string;
+            /** Shipping Country */
+            shipping_country: string;
         };
         /** UpdateUserRequest */
         UpdateUserRequest: {
@@ -3272,6 +3306,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrderWithProduct"][];
+                };
+            };
+        };
+    };
+    update_order_address_orders_update_order_address__order_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateOrderAddressRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Order"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

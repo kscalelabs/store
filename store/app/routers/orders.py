@@ -78,3 +78,29 @@ async def get_user_orders_with_products(
         return orders_with_products
     except ItemNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No orders found for this user")
+
+
+class UpdateOrderAddressRequest(BaseModel):
+    shipping_name: str
+    shipping_address_line1: str
+    shipping_address_line2: str | None
+    shipping_city: str
+    shipping_state: str
+    shipping_postal_code: str
+    shipping_country: str
+
+
+@orders_router.put("/update_order_address/{order_id}", response_model=Order)
+async def update_order_address(
+    order_id: str,
+    address_update: UpdateOrderAddressRequest,
+    user: User = Depends(get_session_user_with_read_permission),
+    crud: Crud = Depends(Crud.get),
+) -> Order:
+    order = await crud.get_order(order_id)
+    if order is None or order.user_id != user.id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+
+    # Update the order with the new address
+    updated_order = await crud.update_order(order_id, address_update.dict())
+    return updated_order
