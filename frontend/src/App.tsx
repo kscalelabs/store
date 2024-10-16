@@ -55,7 +55,7 @@ const App = () => {
                     <Routes>
                       {/* <Route path="/" element={<Home />} /> */}
 
-                      <Route path="/mujoco-test" element={<MuJoCoTestPage />} />
+                      <Route path="/playground" element={<MuJoCoTestPage />} />
 
                       <Route path="/about" element={<About />} />
                       <Route path="/downloads" element={<DownloadsPage />} />
