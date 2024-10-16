@@ -7,11 +7,11 @@ interface PageHeaderProps {
   subheading: string;
 }
 
-const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
+const PageHeader: React.FC<PageHeaderProps> = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gridRef = useRef<boolean[][]>([]);
   const intervalRef = useRef<number>();
-  const { width: windowWidth, height: windowHeight } = useWindowSize();
+  const { width: windowWidth } = useWindowSize();
   const activeCellsRef = useRef<Set<string>>(new Set());
   const mousePosRef = useRef<{ x: number; y: number } | null>(null);
 
@@ -19,7 +19,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
 
   // Define canvas dimensions
   const canvasWidth = windowWidth;
-  const canvasHeight = Math.floor(windowHeight * 0.3);
+  const canvasHeight = 800;
 
   const rule = (neighbors: number, cell: boolean) =>
     cell ? neighbors >= 1 && neighbors <= 5 : neighbors === 3;
@@ -52,7 +52,6 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
 
       if (newState !== prevState) {
         newActiveCells.add(`${y},${x}`);
-        // Add neighbors to be checked in the next iteration
         for (let dy = -1; dy <= 1; dy++) {
           for (let dx = -1; dx <= 1; dx++) {
             const newY = (y + dy + rows) % rows;
@@ -63,7 +62,6 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
       }
     };
 
-    // Check all currently active cells and their neighbors
     activeCellsRef.current.forEach((cellKey) => {
       const [y, x] = cellKey.split(",").map(Number);
       checkAndUpdateCell(y, x);
@@ -97,7 +95,6 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
 
       const spawnPattern = (centerX: number, centerY: number) => {
         const radius = 4;
-
         for (let y = 0; y < radius; y++) {
           for (let x = 0; x < radius; x++) {
             const gridY = centerY - Math.floor(radius / 2) + y;
@@ -120,7 +117,6 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
       };
 
       spawnPattern(Math.floor(cols / 2), Math.floor(rows / 2));
-
       for (let i = 0; i < 10; i++) {
         spawnPattern(
           Math.floor(Math.random() * cols),
@@ -129,11 +125,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
       }
 
       activeCellsRef.current = activeSet;
-
-      // Step the simulation once
-      const updatedGrid = updateGrid(grid);
-
-      return updatedGrid;
+      return updateGrid(grid);
     },
     [updateGrid],
   );
@@ -145,12 +137,11 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const cols = Math.floor(canvasWidth / 5); // Simplified cell size
+    const cols = Math.floor(canvasWidth / 5);
     const rows = Math.floor(canvasHeight / 5);
 
-    // Remove canvas.width and canvas.height assignments
-    // canvas.width = canvasWidth;
-    // canvas.height = canvasHeight;
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
 
     if (!gridInitialized) {
       gridRef.current = initializeGrid(rows, cols);
@@ -158,7 +149,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
     }
 
     const drawGrid = (currentGrid: boolean[][]) => {
-      ctx.fillStyle = "#111111";
+      ctx.fillStyle = "#1e1f24";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = "white";
 
@@ -211,23 +202,13 @@ const PageHeader: React.FC<PageHeaderProps> = ({ title, subheading }) => {
   }, [canvasWidth, canvasHeight, initializeGrid, updateGrid, gridInitialized]);
 
   return (
-    <div className="relative rounded-lg w-full h-[30vh] overflow-hidden mb-4">
+    <div className="relative w-full h-[800px] overflow-hidden">
       <canvas
         ref={canvasRef}
         width={canvasWidth}
         height={canvasHeight}
-        /* Removed className to prevent CSS conflicts */
+        className="absolute inset-0"
       />
-      <div className="absolute inset-0 flex flex-col items-center justify-center px-4">
-        <div className="bg-black p-6 rounded-lg border border-white bg-opacity-80">
-          <h1 className="text-5xl font-bold text-center mb-4 tracking-tight text-gray-1">
-            {title}
-          </h1>
-          <p className="text-xl max-w-md text-center tracking-wide text-gray-1">
-            {subheading}
-          </p>
-        </div>
-      </div>
     </div>
   );
 };

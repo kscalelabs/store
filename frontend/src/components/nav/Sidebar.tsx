@@ -32,18 +32,19 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
   const { isAuthenticated } = useAuthentication();
 
   const navItems = [
-    { name: "K-Lang", path: "/k-lang" },
-    { name: "Buy", path: "/buy" },
-    { name: "Browse", path: "/browse" },
-    { name: "Downloads", path: "/downloads" },
+    { name: "Pro", path: "/stompy-pro" },
+    { name: "Mini", path: "/stompy-mini" },
   ];
 
   const communityItems = [
+    { name: "Research", path: "/research" },
+    { name: "Playground", path: "/mujoco-test" },
+    { name: "Browse", path: "/browse" },
+    { name: "Downloads", path: "/downloads" },
+    { name: "Docs", path: "https://docs.kscale.dev/" },
+    { name: "Code", path: "https://github.com/kscalelabs" },
     { name: "Discord", path: "https://discord.gg/kscale" },
     { name: "Twitter", path: "https://x.com/kscalelabs" },
-    { name: "GitHub", path: "https://github.com/kscalelabs" },
-    { name: "Docs", path: "https://docs.kscale.dev/" },
-    { name: "Research", path: "/research" },
   ];
 
   const handleItemClick = (path: string, isExternal?: boolean) => {

@@ -17,7 +17,7 @@ import BuyPage from "@/components/pages/BuyPage";
 import Create from "@/components/pages/Create";
 import EmailSignup from "@/components/pages/EmailSignup";
 import FileBrowser from "@/components/pages/FileBrowser";
-import Home from "@/components/pages/Home";
+// import Home from "@/components/pages/Home";
 import KLangPage from "@/components/pages/KLangPage";
 import ListingDetails from "@/components/pages/ListingDetails";
 import Login from "@/components/pages/Login";
@@ -53,7 +53,7 @@ const App = () => {
                 <div className="flex-grow">
                   <Container>
                     <Routes>
-                      <Route path="/" element={<Home />} />
+                      {/* <Route path="/" element={<Home />} /> */}
 
                       <Route path="/mujoco-test" element={<MuJoCoTestPage />} />
 
@@ -80,7 +80,7 @@ const App = () => {
                       <Route path="/tos" element={<TermsOfService />} />
                       <Route path="/privacy" element={<PrivacyPolicy />} />
 
-                      <Route path="/buy" element={<BuyPage />} />
+                      <Route path="/" element={<BuyPage />} />
                       <Route path="/success" element={<OrderSuccess />} />
                       <Route path="/cancel" element={<OrderCancel />} />
                       <Route path="/orders" element={<Orders />} />

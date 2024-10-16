@@ -1,162 +1,187 @@
 import React, { useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
-import CheckoutButton from "@/components/stripe/CheckoutButton";
-import { motion, useScroll, useTransform } from "framer-motion";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/Card";
+import PageHeader from "@/components/ui/PageHeader";
+import KScaleASCII from "@/images/KScaleASCII.png";
+import KScaleASCIIMobile from "@/images/KScaleASCIIMobile.png";
+import {
+  ChevronRightIcon,
+  CodeIcon,
+  DownloadIcon,
+  ExternalLinkIcon,
+  LayersIcon,
+  MagnifyingGlassIcon,
+} from "@radix-ui/react-icons";
 
 const BuyPage: React.FC = () => {
   const containerRef = useRef(null);
+  const navigate = useNavigate();
 
   return (
     <div ref={containerRef} className="bg-gray-1 text-gray-12">
       <HeroSection />
-      <FeaturesSection />
-      <PerformanceSection />
-      <DesignSection />
-      <CTASection />
+      <StompyProSection />
+      <StompyMiniSection />
+      <section className="w-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            {
+              title: "Downloads",
+              description: "Kernel images, URDFs, ML models, and more.",
+              icon: DownloadIcon,
+              path: "/downloads",
+              buttonText: "Browse Downloads",
+            },
+            {
+              title: "Browse Builds",
+              description:
+                "Browse robot builds with linked CAD files, part lists, and various related downloads.",
+              icon: MagnifyingGlassIcon,
+              path: "/browse",
+              buttonText: "View Builds",
+            },
+            {
+              title: "Code",
+              description:
+                "Explore or contribute to dozens of open-source repositories from robot builds to edge vision-language-action models, kernel images, simulations, and more.",
+              icon: CodeIcon,
+              path: "https://github.com/kscalelabs",
+              buttonText: "Visit our Github",
+              external: true,
+            },
+            {
+              title: "Discord",
+              description:
+                "Connect with fellow robot enthusiasts, industry experts, and researchers. Share projects and ideas, and stay updated on the latest K-Scale developments.",
+              icon: LayersIcon,
+              path: "https://discord.com/invite/kscale",
+              buttonText: "Join our Discord",
+              external: true,
+            },
+          ].map((item, index) => (
+            <Card
+              key={index}
+              className="cursor-pointer flex flex-col h-full transition-all duration-300 ease-in-out hover:scale-[1.03] hover:shadow-lg bg-gray-12"
+              onClick={() =>
+                item.external
+                  ? window.open(item.path, "_blank")
+                  : navigate(item.path)
+              }
+            >
+              <CardHeader>
+                <CardTitle className="text-gray-2 text-lg sm:text-xl">
+                  {item.title}
+                </CardTitle>
+                <CardDescription className="text-gray-7 font-light">
+                  {item.description}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="flex-grow flex flex-col justify-end">
+                <item.icon className="w-12 h-12 mb-4 text-primary-9" />
+                <div className="inline-flex items-center text-sm font-medium text-primary-1">
+                  {item.buttonText}
+                  {item.external ? (
+                    <ExternalLinkIcon className="ml-1 h-4 w-4" />
+                  ) : (
+                    <ChevronRightIcon className="ml-1 h-4 w-4" />
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
     </div>
   );
 };
 
 const HeroSection: React.FC = () => {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
-  });
+  return (
+    <section className="relative overflow-hidden mb-12 h-[650px]">
+      <PageHeader title="K Scale Labs" subheading="K-scale Labs" />
+      <div className="absolute inset-0 z-20 flex items-center justify-center">
+        <div className="text-center">
+          <div className="hidden md:block select-none">
+            <img
+              src={KScaleASCII}
+              alt="K Scale Labs Logo"
+              className="w-[720px] h-[100px]"
+            />
+          </div>
+          <div className="md:hidden select-none">
+            <img
+              src={KScaleASCIIMobile}
+              alt="K Scale Labs Logo Mobile"
+              className="w-[300px] h-[140px]"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
 
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8]);
+const StompyProSection: React.FC = () => {
+  const navigate = useNavigate();
 
   return (
-    <motion.section
-      ref={ref}
-      className="h-screen flex flex-col items-center justify-center text-center p-4 bg-gray-3 rounded-lg"
-      style={{ opacity, scale }}
+    <section
+      className="relative h-[600px] overflow-hidden mb-12 cursor-pointer transition-all duration-300 hover:opacity-90"
+      onClick={() => navigate("/stompy-pro")}
     >
-      <h1 className="text-6xl font-bold mb-4 font-orbitron">Stompy Pro</h1>
-      <p className="text-xl text-gray-11 mb-8">
-        The future of robotics, now at your fingertips.
-      </p>
-      {/* Developer Mode Stompy Pro */}
-      {/* <CheckoutButton productId="prod_Qyzd8f0gFMis7c" /> */}
-      {/* Production Stompy Pro */}
-      <CheckoutButton productId="prod_R0n3nkCO4aQdlg" />
-
-      {/* Stompy Micro Delete Later */}
-      <div className="mt-4">
-        {/* Developer Mode Stompy Micro */}
-        {/* <CheckoutButton productId="prod_R1I3mYImsmLKGe" /> */}
-        {/* Production Stompy Micro */}
-        <CheckoutButton
-          productId="prod_R1IAtdBONHzXCb"
-          label="Buy Stompy Micro"
+      <div className="absolute inset-0">
+        <img
+          src="https://www.kscalelabs.com/images/hero/heroBG.png"
+          alt="Stompy Pro Background"
+          className="w-full h-full object-cover"
         />
       </div>
-    </motion.section>
-  );
-};
 
-const FeaturesSection: React.FC = () => {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-
-  const y = useTransform(scrollYProgress, [0, 1], ["20%", "-20%"]);
-
-  return (
-    <motion.section
-      ref={ref}
-      className="min-h-screen flex items-center justify-center relative overflow-hidden rounded-lg"
-      style={{ y }}
-    >
-      <div className="text-center max-w-2xl">
-        <h2 className="text-4xl font-bold mb-4">
-          The best and most affordable humanoid robot on the market
-        </h2>
-        <p className="text-xl text-gray-11">
-          Exceptional build quality and all the capabilities of other humanoid
-          robot platforms, with full customizability at a fraction of the price.
-        </p>
+      <div className="relative z-10 max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between h-full px-4">
+        <div className="unit-copy-wrapper text-center md:text-left mb-8 md:mb-0">
+          <div className="split-wrapper-top mt-8 md:mt-0">
+            <h2 className="headline text-4xl font-bold mb-2 md:mb-4 text-gray-900">
+              Stompy Pro
+            </h2>
+          </div>
+        </div>
       </div>
-      <div className="absolute inset-0 -z-10 bg-gray-3" />{" "}
-      {/* Placeholder for background image */}
-    </motion.section>
+    </section>
   );
 };
 
-const PerformanceSection: React.FC = () => {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-
-  const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.8, 1, 0.8]);
+const StompyMiniSection: React.FC = () => {
+  const navigate = useNavigate();
 
   return (
-    <motion.section
-      ref={ref}
-      className="min-h-screen flex items-center justify-center bg-gray-2 rounded-lg"
-      style={{ opacity, scale }}
+    <section
+      className="relative h-[600px] overflow-hidden mb-12 cursor-pointer transition-all duration-300 hover:opacity-90"
+      onClick={() => navigate("/stompy-mini")}
     >
-      <div className="text-center max-w-2xl">
-        <h2 className="text-4xl font-bold mb-4">
-          Program Your Robot to Do Anything
-        </h2>
-        <p className="text-xl text-gray-11">
-          Powered by K-Lang, our neural network integrated programming language.
-          You can tell your robot to do anything and it will learn and improve
-          over time based on positive and negative reinforcement feedback loops.
-        </p>
+      <div className="absolute inset-0">
+        <img
+          src="https://images.squarespace-cdn.com/content/v1/662fdf6ffc8fcf23e5165c23/f2d3c866-922b-4155-b898-77d85b3b06b3/FULL+FIEW2.jpg?format=2500w"
+          alt="Stompy Mini Background"
+          className="w-full h-full object-cover"
+        />
       </div>
-    </motion.section>
-  );
-};
 
-const DesignSection: React.FC = () => {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start end", "end start"],
-  });
-
-  const x = useTransform(scrollYProgress, [0, 1], ["-50%", "0%"]);
-
-  return (
-    <motion.section
-      ref={ref}
-      className="min-h-screen flex items-center justify-center relative overflow-hidden rounded-lg"
-      style={{ x }}
-    >
-      <div className="text-center max-w-2xl">
-        <h2 className="text-4xl font-bold mb-4">Build Quality</h2>
-        <p className="text-xl text-gray-11">
-          Built with an aircraft grade aluminum frame, and the best motors,
-          actuators, and sensors available.
-        </p>
+      <div className="relative z-10 max-w-7xl mx-auto flex flex-col md:flex-row-reverse items-center justify-between h-full px-4">
+        <div className="unit-copy-wrapper text-center md:text-right mb-8 md:mb-0">
+          <div className="split-wrapper-top mt-8 md:mt-0">
+            <h2 className="headline text-4xl font-bold mb-2 md:mb-4 text-white">
+              Stompy Mini
+            </h2>
+          </div>
+        </div>
       </div>
-      <div className="absolute inset-0 -z-10 bg-gray-3" />{" "}
-      {/* Placeholder for background image */}
-    </motion.section>
-  );
-};
-
-const CTASection: React.FC = () => {
-  return (
-    <section className="min-h-screen flex flex-col items-center justify-center text-center p-4 bg-gray-2 rounded-lg">
-      <h2 className="text-4xl font-bold mb-4">
-        Ready to transform your world?
-      </h2>
-      <p className="text-xl text-gray-11 mb-8">
-        Bring Stompy Pro home today and step into the future.
-      </p>
-      {/* Developer Mode Stompy Pro */}
-      {/* <CheckoutButton productId="prod_Qyzd8f0gFMis7c" /> */}
-      {/* Production Stompy Pro */}
-      <CheckoutButton productId="prod_R0n3nkCO4aQdlg" />
     </section>
   );
 };
