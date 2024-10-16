@@ -1,11 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 
+import EditAddressModal from "@/components/modals/EditAddressModal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import type { paths } from "@/gen/api";
 import { formatPrice } from "@/lib/utils/formatNumber";
 import { normalizeStatus } from "@/lib/utils/formatString";
 
 type OrderWithProduct =
   paths["/orders/get_user_orders_with_products"]["get"]["responses"][200]["content"]["application/json"][0];
+
+type Order =
+  paths["/orders/get_user_orders"]["get"]["responses"][200]["content"]["application/json"][0];
 
 const orderStatuses = [
   "processing",
@@ -27,9 +37,14 @@ const activeStatuses = [
 const redStatuses = ["cancelled", "refunded", "failed"];
 
 const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
-  orderWithProduct,
+  orderWithProduct: initialOrderWithProduct,
 }) => {
+  const [orderWithProduct, setOrderWithProduct] = useState(
+    initialOrderWithProduct,
+  );
   const { order, product } = orderWithProduct;
+  const [isEditAddressModalOpen, setIsEditAddressModalOpen] = useState(false);
+
   const currentStatusIndex = orderStatuses.indexOf(order.status);
   const isRedStatus = redStatuses.includes(order.status);
   const showStatusBar = activeStatuses.includes(order.status);
@@ -50,6 +65,10 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
 
   const unitPrice = order.amount / order.quantity;
 
+  const handleOrderUpdate = (updatedOrder: Order) => {
+    setOrderWithProduct((prev) => ({ ...prev, order: updatedOrder }));
+  };
+
   return (
     <div className="bg-white shadow-md rounded-lg p-4 md:p-6 mb-4 w-full">
       <h2 className="text-gray-12 font-bold text-2xl mb-1">{product.name}</h2>
@@ -59,9 +78,24 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
           {normalizeStatus(order.status)}
         </span>
       </p>
-      <div className="text-sm sm:text-base text-gray-9 flex flex-col gap-1 mb-4">
+      <div className="text-sm sm:text-base text-gray-10 flex flex-col mb-4">
         <p>Order ID: {order.id}</p>
-        <p>Quantity: {order.quantity}</p>
+        <div className="mb-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger className="text-primary-9 underline cursor-pointer">
+              Manage order
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem
+                onSelect={() => setIsEditAddressModalOpen(true)}
+                className="cursor-pointer hover:bg-gray-100"
+              >
+                Change delivery address
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <p>Quantity: {order.quantity}x</p>
         <p>
           <span className="font-medium">{formatPrice(order.amount)}</span>{" "}
           <span className="font-light">
@@ -161,6 +195,13 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
           className="w-full h-64 object-cover rounded-md mt-2"
         />
       )}
+
+      <EditAddressModal
+        isOpen={isEditAddressModalOpen}
+        onOpenChange={setIsEditAddressModalOpen}
+        order={order}
+        onOrderUpdate={handleOrderUpdate}
+      />
     </div>
   );
 };
