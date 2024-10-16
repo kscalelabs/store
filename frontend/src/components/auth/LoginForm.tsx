@@ -1,4 +1,5 @@
 import { SubmitHandler, useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import { Input } from "@/components/ui/Input/Input";
@@ -20,6 +21,7 @@ const LoginForm = () => {
 
   const { addAlert, addErrorAlert } = useAlertQueue();
   const auth = useAuthentication();
+  const navigate = useNavigate();
 
   const onSubmit: SubmitHandler<LoginType> = async (data: LoginType) => {
     try {
@@ -39,25 +41,37 @@ const LoginForm = () => {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="grid grid-cols-1 space-y-6"
-    >
-      {/* Email Input */}
-      <div className="relative">
-        <Input placeholder="Email" type="text" {...register("email")} />
-        {errors?.email && <ErrorMessage>{errors?.email?.message}</ErrorMessage>}
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div className="grid grid-cols-1 space-y-6">
+        {/* Email Input */}
+        <div className="relative">
+          <Input placeholder="Email" type="text" {...register("email")} />
+          {errors?.email && (
+            <ErrorMessage>{errors?.email?.message}</ErrorMessage>
+          )}
+        </div>
+        {/* Password Input */}
+        <PasswordInput<LoginType>
+          placeholder="Password"
+          register={register}
+          errors={errors}
+          name="password"
+          showStrength={false} // Hide password strength bar
+        />
       </div>
-      {/* Password Input */}
-      <PasswordInput<LoginType>
-        placeholder="Password"
-        register={register}
-        errors={errors}
-        name="password"
-        showStrength={false} // Hide password strength bar
-      />
+      {/* Forgot Link */}
+      <Button
+        onClick={() => navigate("/forgot-password")}
+        variant="link"
+        className="justify-start px-1 mt-2"
+        type="button"
+      >
+        Forgot Password?
+      </Button>
       {/* Submit Button */}
-      <Button variant="primary">Login</Button>
+      <Button variant="primary" className="mt-2" type="submit">
+        Login
+      </Button>
     </form>
   );
 };
