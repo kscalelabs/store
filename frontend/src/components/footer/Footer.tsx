@@ -21,7 +21,7 @@ const Footer = () => {
   }
 
   return (
-    <footer className="bg-gray-12 text-gray-1 py-10 mx-4 sm:mx-6 md:mx-10 xl:mx-16 rounded-lg mb-6">
+    <footer className="bg-gray-12 text-gray-1 py-10 mx-4 sm:mx-6 md:mx-10 xl:mx-16 2xl:mx-24 rounded-lg mb-6">
       <div className="max-w-screen-lg lg:max-w-full mx-auto px-4 sm:px-6 md:px-10">
         {/* Logo and Social Links */}
         <div className="flex flex-col sm:flex-row items-start justify-between sm:items-center mb-8">
