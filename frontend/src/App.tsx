@@ -30,7 +30,6 @@ import { AuthenticationProvider } from "@/hooks/useAuth";
 
 import GDPRBanner from "./components/gdpr/gdprbanner";
 import DownloadsPage from "./components/pages/Download";
-import MuJoCoTestPage from "./components/pages/MuJoCoTest";
 import OrderCancel from "./components/pages/OrderCancel";
 import OrderSuccess from "./components/pages/OrderSuccess";
 import Orders from "./components/pages/Orders";
@@ -39,6 +38,7 @@ import ResearchPage from "./components/pages/ResearchPage";
 import StompyMini from "./components/pages/StompyMini";
 import StompyPro from "./components/pages/StompyPro";
 import TermsOfService from "./components/pages/TermsOfService";
+import PlaygroundPage from "./components/pages/playground";
 
 const App = () => {
   return (
@@ -57,7 +57,7 @@ const App = () => {
                     <Routes>
                       {/* <Route path="/" element={<Home />} /> */}
 
-                      <Route path="/playground" element={<MuJoCoTestPage />} />
+                      <Route path="/playground" element={<PlaygroundPage />} />
 
                       <Route path="/about" element={<About />} />
                       <Route path="/downloads" element={<DownloadsPage />} />
