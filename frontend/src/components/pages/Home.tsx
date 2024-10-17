@@ -12,6 +12,7 @@ import {
 import PageHeader from "@/components/ui/PageHeader";
 import KScaleASCII from "@/images/KScaleASCII.png";
 import KScaleASCIIMobile from "@/images/KScaleASCIIMobile.png";
+import stompy from "@/images/stompy.png";
 import {
   ChevronRightIcon,
   CodeIcon,
@@ -139,7 +140,7 @@ const StompyProSection: React.FC = () => {
     >
       <div className="absolute inset-0">
         <img
-          src="https://www.kscalelabs.com/images/hero/heroBG.png"
+          src={stompy}
           alt="Stompy Pro Background"
           className="w-full h-full object-cover"
         />
@@ -168,16 +169,16 @@ const StompyMiniSection: React.FC = () => {
     >
       <div className="absolute inset-0">
         <img
-          src="https://images.squarespace-cdn.com/content/v1/662fdf6ffc8fcf23e5165c23/f2d3c866-922b-4155-b898-77d85b3b06b3/FULL+FIEW2.jpg?format=2500w"
+          src={stompy}
           alt="Stompy Mini Background"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover scale-x-[-1]"
         />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto flex flex-col md:flex-row-reverse items-center justify-between h-full px-4">
         <div className="unit-copy-wrapper text-center md:text-right mb-8 md:mb-0">
           <div className="split-wrapper-top mt-8 md:mt-0">
-            <h2 className="headline text-4xl font-bold mb-2 md:mb-4 text-white">
+            <h2 className="headline text-4xl font-bold mb-2 md:mb-4 text-gray-900">
               Stompy Mini
             </h2>
           </div>

@@ -209,20 +209,16 @@ const Navbar = () => {
                 onMouseEnter={handleMouseEnter}
                 onMouseLeave={handleMouseLeave}
               >
-                <button
-                  className={`px-2 xl:px-3 py-2 rounded-md text-sm tracking-widest text-gray-1 hover:text-primary-9`}
-                >
+                <button className="px-2 xl:px-3 py-2 rounded-md text-sm tracking-widest text-gray-1 hover:text-primary-9">
                   Developers
                 </button>
                 <div
                   ref={dropdownRef}
-                  className={`absolute right-0 bg-gray-12 shadow-lg rounded-2xl transition-all duration-300 ease-in-out overflow-hidden max-w-[400px] w-max border border-gray-10 ${
+                  className={`absolute right-0 top-full mt-5 bg-gray-12 shadow-lg rounded-2xl transition-all duration-300 ease-in-out overflow-hidden max-w-[400px] w-max border border-gray-10 ${
                     showDevelopersDropdown
-                      ? "opacity-100 max-h-[500px] mt-4"
-                      : "opacity-0 max-h-0 mt-3"
+                      ? "opacity-100 visible"
+                      : "opacity-0 invisible"
                   }`}
-                  onMouseEnter={handleMouseEnter}
-                  onMouseLeave={handleMouseLeave}
                 >
                   <div className="py-4 px-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
