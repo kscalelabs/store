@@ -1,4 +1,12 @@
-import { FaTimes } from "react-icons/fa";
+import { FaDiscord, FaGithub, FaTimes } from "react-icons/fa";
+import {
+  FaDownload,
+  FaRegFileLines,
+  FaRobot,
+  FaSearchengin,
+  FaWpexplorer,
+  FaXTwitter,
+} from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 
 import Logo from "@/components/Logo";
@@ -32,22 +40,26 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
   const { isAuthenticated } = useAuthentication();
 
   const navItems = [
-    { name: "Pro", path: "/stompy-pro" },
-    { name: "Mini", path: "/stompy-mini" },
+    { name: "Pro", path: "/stompy-pro", icon: <FaRobot /> },
+    { name: "Mini", path: "/stompy-mini", icon: <FaRobot /> },
   ];
 
   const technicalItems = [
-    { name: "Docs", path: "https://docs.kscale.dev/" },
-    { name: "Browse", path: "/browse" },
-    { name: "Downloads", path: "/downloads" },
-    { name: "Code", path: "https://github.com/kscalelabs" },
-    { name: "Playground", path: "/mujoco-test" },
-    { name: "Research", path: "/research" },
+    {
+      name: "Docs",
+      path: "https://docs.kscale.dev/",
+      icon: <FaRegFileLines />,
+    },
+    { name: "Browse", path: "/browse", icon: <FaSearchengin /> },
+    { name: "Downloads", path: "/downloads", icon: <FaDownload /> },
+    { name: "Code", path: "https://github.com/kscalelabs", icon: <FaGithub /> },
+    { name: "Playground", path: "/mujoco-test", icon: <FaRobot /> },
+    { name: "Research", path: "/research", icon: <FaWpexplorer /> },
   ];
 
   const communityItems = [
-    { name: "Discord", path: "https://discord.gg/kscale" },
-    { name: "Twitter", path: "https://x.com/kscalelabs" },
+    { name: "Discord", path: "https://discord.gg/kscale", icon: <FaDiscord /> },
+    { name: "Twitter", path: "https://x.com/kscalelabs", icon: <FaXTwitter /> },
   ];
 
   const handleItemClick = (path: string, isExternal?: boolean) => {
@@ -76,11 +88,12 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
             </div>
             <div className="border-t border-gray-1 my-2"></div>
             <nav>
-              <ul className="space-y-1l">
+              <ul className="space-y-1">
                 {navItems.map((item) => (
                   <SidebarItem
                     key={item.name}
                     title={item.name}
+                    icon={item.icon}
                     onClick={() => handleItemClick(item.path)}
                   />
                 ))}
@@ -89,6 +102,7 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
                   <SidebarItem
                     key={item.name}
                     title={item.name}
+                    icon={item.icon}
                     onClick={() =>
                       handleItemClick(item.path, item.path.startsWith("http"))
                     }
@@ -99,6 +113,7 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
                   <SidebarItem
                     key={item.name}
                     title={item.name}
+                    icon={item.icon}
                     onClick={() => handleItemClick(item.path, true)}
                   />
                 ))}
