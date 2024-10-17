@@ -66,14 +66,9 @@ const Footer = () => {
             <Link to={"/about"} className="hover:text-primary-9">
               About
             </Link>
-            <a
-              href="https://blog.kscale.dev"
-              className="hover:text-primary-9"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <Link to={"/research"} className="hover:text-primary-9">
               Blog
-            </a>
+            </Link>
           </div>
           <div className="flex flex-col items-start gap-2">
             <h2 className="text-base font-bold mb-1">Legal</h2>
