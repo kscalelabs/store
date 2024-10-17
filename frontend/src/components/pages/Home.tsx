@@ -10,8 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/Card";
 import PageHeader from "@/components/ui/PageHeader";
-import KScaleASCII from "@/images/KScaleASCII.png";
-import KScaleASCIIMobile from "@/images/KScaleASCIIMobile.png";
 import stompy from "@/images/stompy.png";
 import {
   ChevronRightIcon,
@@ -104,28 +102,44 @@ const Home: React.FC = () => {
 };
 
 const HeroSection: React.FC = () => {
-  return (
-    <section className="relative overflow-hidden mb-12 h-[60vh] rounded-lg">
-      <PageHeader />
+  const myFillGridString = [
+    "███████████████████████████████████████████████████████████",
+    "█                                                         █",
+    "█                                                         █",
+    "█  ██   ██       ███████  ██████  █████  ██      ███████  █",
+    "█  ██   ██       ███████  ██████  █████  ██      ███████  █",
+    "█  ██  ██        ██      ██      ██   ██ ██      ██       █",
+    "█  ██  ██        ██      ██      ██   ██ ██      ██       █",
+    "█  █████   █████ ███████ ██      ███████ ██      █████    █",
+    "█  █████   █████ ███████ ██      ███████ ██      █████    █",
+    "█  ██  ██             ██ ██      ██   ██ ██      ██       █",
+    "█  ██  ██             ██ ██      ██   ██ ██      ██       █",
+    "█  ██   ██       ███████  ██████ ██   ██ ███████ ███████  █",
+    "█  ██   ██       ███████  ██████ ██   ██ ███████ ███████   ",
+    "                                                           ",
+    "                                                           ",
+    "              ██       █████  ██████  ███████             █",
+    "█             ██       █████  ██████  ███████             █",
+    "█             ██      ██   ██ ██   ██ ██                  █",
+    "█             ██      ██   ██ ██   ██ ██                  █",
+    "█             ██      ███████ ██████  ███████             █",
+    "█             ██      ███████ ██████  ███████             █",
+    "█             ██      ██   ██ ██   ██      ██             █",
+    "█             ██      ██   ██ ██   ██      ██             █",
+    "█             ███████ ██   ██ ██████  ███████             █",
+    "█             ███████ ██   ██ ██████  ███████             █",
+    "█                                                         █",
+    "█                                                         █",
+    "███████████████████████████████████████████████████████████",
+  ];
 
-      <div className="absolute inset-0 z-20 flex items-center justify-center">
-        <div className="text-center">
-          <div className="hidden md:block select-none">
-            <img
-              src={KScaleASCII}
-              alt="K Scale Labs Logo"
-              className="w-[720px] h-[100px]"
-            />
-          </div>
-          <div className="md:hidden select-none">
-            <img
-              src={KScaleASCIIMobile}
-              alt="K Scale Labs Logo Mobile"
-              className="w-[300px] h-[140px]"
-            />
-          </div>
-        </div>
-      </div>
+  const myFillGrid = myFillGridString.map((row) =>
+    row.split("").map((char) => char !== " "),
+  );
+
+  return (
+    <section className="relative overflow-hidden mb-12 h-[40vh] rounded-lg">
+      <PageHeader fillGrid={myFillGrid} />
     </section>
   );
 };
