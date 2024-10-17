@@ -194,9 +194,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({ fillGrid }) => {
               Math.floor(rows / 2) - Math.floor(fillGridRef.current.length / 2),
             endX:
               Math.floor(cols / 2) +
-              Math.floor(fillGridRef.current[0].length / 2),
+              Math.floor((fillGridRef.current[0].length - 1) / 2),
             endY:
-              Math.floor(rows / 2) + Math.floor(fillGridRef.current.length / 2),
+              Math.floor(rows / 2) +
+              Math.floor((fillGridRef.current.length - 1) / 2),
           }
         : null;
 
@@ -209,7 +210,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ fillGrid }) => {
         const maxDistance = Math.sqrt(
           Math.pow(cols / 2, 2) + Math.pow(rows / 2, 2),
         );
-        // Adjust the gradient factor to make the purple area larger
+        // Adjust the gradient factor to make the white area larger
         const gradientFactor = Math.max(
           0,
           (distanceFromCenter - maxDistance / 4) / (maxDistance * 0.75),
@@ -222,12 +223,12 @@ const PageHeader: React.FC<PageHeaderProps> = ({ fillGrid }) => {
           fillGridBounds.startY <= y &&
           fillGridBounds.endY >= y
         ) {
-          ctx.fillStyle = `hsl(280, 100%, 80%)`; // Brighter purple
+          ctx.fillStyle = `hsl(0, 0%, 100%)`; // Pure white
         } else {
-          // Interpolate between purple (hsl(280, 100%, 50%)) and dark blue (hsl(240, 100%, 20%))
-          const hue = 280 - gradientFactor * 40;
+          // Interpolate between white (hsl(30, 100%, 100%)) and orange (hsl(30, 100%, 50%))
+          const hue = 30;
           const saturation = 100;
-          const lightness = 50 - gradientFactor * 30;
+          const lightness = 100 - gradientFactor * 50;
 
           ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
         }
@@ -317,10 +318,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({ fillGrid }) => {
               Math.floor(rows / 2) - Math.floor(fillGridRef.current.length / 2),
             endX:
               Math.floor(cols / 2) +
-              Math.floor((fillGridRef.current[0].length + 1) / 2),
+              Math.floor((fillGridRef.current[0].length - 1) / 2),
             endY:
               Math.floor(rows / 2) +
-              Math.floor((fillGridRef.current.length + 1) / 2),
+              Math.floor((fillGridRef.current.length - 1) / 2),
           }
         : null;
 
@@ -347,9 +348,9 @@ const PageHeader: React.FC<PageHeaderProps> = ({ fillGrid }) => {
               const isInFillGrid =
                 fillGridBounds &&
                 newX >= fillGridBounds.startX &&
-                newX < fillGridBounds.endX &&
+                newX <= fillGridBounds.endX &&
                 newY >= fillGridBounds.startY &&
-                newY < fillGridBounds.endY;
+                newY <= fillGridBounds.endY;
 
               if (!isInFillGrid) {
                 const cellKey = `${newY},${newX}`;
