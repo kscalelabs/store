@@ -104,8 +104,8 @@ const BuyPage: React.FC = () => {
 
 const HeroSection: React.FC = () => {
   return (
-    <section className="relative overflow-hidden mb-12 h-[650px] rounded-lg">
-      <PageHeader title="K Scale Labs" subheading="K-scale Labs" />
+    <section className="relative overflow-hidden mb-12 h-[60vh] rounded-lg">
+      <PageHeader />
       <div className="absolute inset-0 z-20 flex items-center justify-center">
         <div className="text-center">
           <div className="hidden md:block select-none">
