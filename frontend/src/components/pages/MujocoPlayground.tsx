@@ -2,7 +2,7 @@ import React from "react";
 
 import MUJOCO from "../listing/mujoco";
 
-const MuJoCoTestPage: React.FC = () => {
+const PlaygroundPage: React.FC = () => {
   return (
     <div className="">
       <MUJOCO url="/examples/scenes/stompypro.xml" />
@@ -10,4 +10,4 @@ const MuJoCoTestPage: React.FC = () => {
   );
 };
 
-export default MuJoCoTestPage;
+export default PlaygroundPage;

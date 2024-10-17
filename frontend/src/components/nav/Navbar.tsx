@@ -75,7 +75,7 @@ const Navbar = () => {
     },
     {
       name: "Playground",
-      path: "/mujoco-test",
+      path: "/playground",
       icon: <FaRobot className="h-5 w-5" />,
       isExternal: false,
     },

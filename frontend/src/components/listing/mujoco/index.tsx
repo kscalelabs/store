@@ -220,6 +220,12 @@ const MUJOCO = ({ url }: { url: string }) => {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
+      <div className="bg-primary-9 text-black py-2 px-4 text-center font-bold">
+        <span className="mr-2">🚧</span>
+        This page is under construction. Some features may not be fully
+        functional.
+        <span className="ml-2">🚧</span>
+      </div>
       {showNotification && (
         <div className="fixed top-2 left-1/2 transform -translate-x-1/2 bg-primary-9 px-5 py-2 rounded-md z-50 font-bold">
           For the best user experience, visit with a desktop.

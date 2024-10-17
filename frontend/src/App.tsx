@@ -30,7 +30,7 @@ import { AuthenticationProvider } from "@/hooks/useAuth";
 
 import GDPRBanner from "./components/gdpr/gdprbanner";
 import DownloadsPage from "./components/pages/Download";
-import MuJoCoTestPage from "./components/pages/MuJoCoTest";
+import PlaygroundPage from "./components/pages/MujocoPlayground";
 import OrderCancel from "./components/pages/OrderCancel";
 import OrderSuccess from "./components/pages/OrderSuccess";
 import Orders from "./components/pages/Orders";
@@ -57,7 +57,7 @@ const App = () => {
                     <Routes>
                       {/* <Route path="/" element={<Home />} /> */}
 
-                      <Route path="/mujoco-test" element={<MuJoCoTestPage />} />
+                      <Route path="/playground" element={<PlaygroundPage />} />
 
                       <Route path="/about" element={<About />} />
                       <Route path="/downloads" element={<DownloadsPage />} />
