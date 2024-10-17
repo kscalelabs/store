@@ -1,30 +1,26 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { useWindowSize } from "@/hooks/useWindowSize";
-
-interface PageHeaderProps {
-  title: string;
-  subheading: string;
-}
-
-const PageHeader: React.FC<PageHeaderProps> = () => {
+const PageHeader = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gridRef = useRef<boolean[][]>([]);
   const intervalRef = useRef<number>();
-  const { width: windowWidth } = useWindowSize();
   const activeCellsRef = useRef<Set<string>>(new Set());
-  const mousePosRef = useRef<{ x: number; y: number } | null>(null);
+  const prevMousePosRef = useRef<{ x: number; y: number } | null>(null);
 
   const [gridInitialized, setGridInitialized] = useState(false);
-
-  // Define canvas dimensions
-  const canvasWidth = windowWidth;
-  const canvasHeight = 800;
 
   const rule = (neighbors: number, cell: boolean) =>
     cell ? neighbors >= 1 && neighbors <= 5 : neighbors === 3;
 
   const updateGrid = useCallback((currentGrid: boolean[][]) => {
+    if (
+      !currentGrid ||
+      currentGrid.length === 0 ||
+      currentGrid[0].length === 0
+    ) {
+      return { newGrid: [], changedCells: [] };
+    }
+
     const rows = currentGrid.length;
     const cols = currentGrid[0].length;
     const newGrid = currentGrid.map((row) => [...row]);
@@ -67,27 +63,16 @@ const PageHeader: React.FC<PageHeaderProps> = () => {
       checkAndUpdateCell(y, x);
     });
 
-    if (mousePosRef.current) {
-      const { x, y } = mousePosRef.current;
-      const radius = 10;
-      for (let dy = -radius; dy <= radius; dy++) {
-        for (let dx = -radius; dx <= radius; dx++) {
-          if (dx * dx + dy * dy <= radius * radius) {
-            const newY = (y + dy + rows) % rows;
-            const newX = (x + dx + cols) % cols;
-            newGrid[newY][newX] = false;
-            newActiveCells.add(`${newY},${newX}`);
-          }
-        }
-      }
-    }
-
     activeCellsRef.current = newActiveCells;
-    return newGrid;
+    return { newGrid, changedCells: Array.from(newActiveCells) };
   }, []);
 
   const initializeGrid = useCallback(
     (rows: number, cols: number) => {
+      if (rows <= 0 || cols <= 0) {
+        return { newGrid: [], changedCells: [] };
+      }
+
       const grid = Array(rows)
         .fill(null)
         .map(() => Array(cols).fill(false));
@@ -137,56 +122,176 @@ const PageHeader: React.FC<PageHeaderProps> = () => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const cols = Math.floor(canvasWidth / 5);
-    const rows = Math.floor(canvasHeight / 5);
-
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
+    // Set canvas size to match its display size
+    const resizeCanvas = () => {
+      const { width, height } = canvas.getBoundingClientRect();
+      canvas.width = width;
+      canvas.height = height;
+      setGridInitialized(false);
+    };
 
     if (!gridInitialized) {
-      gridRef.current = initializeGrid(rows, cols);
+      resizeCanvas();
+    }
+    window.addEventListener("resize", resizeCanvas);
+
+    // Adjust cell size to ensure all cells fit within the canvas
+    const cellSize = 5;
+    const cols = Math.floor(canvas.width / cellSize);
+    const rows = Math.floor(canvas.height / cellSize);
+
+    if (!gridInitialized) {
+      const { newGrid } = initializeGrid(rows, cols);
+      gridRef.current = newGrid;
       setGridInitialized(true);
     }
 
-    const drawGrid = (currentGrid: boolean[][]) => {
+    const drawCell = (x: number, y: number, isAlive: boolean) => {
+      if (!ctx) return;
+      if (isAlive) {
+        const centerX = cols / 2;
+        const centerY = rows / 2;
+        const distanceFromCenter = Math.sqrt(
+          Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2),
+        );
+        const maxDistance = Math.sqrt(
+          Math.pow(cols / 2, 2) + Math.pow(rows / 2, 2),
+        );
+        // Adjust the gradient factor to make the purple area larger
+        const gradientFactor = Math.max(
+          0,
+          (distanceFromCenter - maxDistance / 4) / (maxDistance * 0.75),
+        );
+
+        // Interpolate between purple (hsl(280, 100%, 50%)) and dark blue (hsl(240, 100%, 20%))
+        const hue = 280 - gradientFactor * 40;
+        const saturation = 100;
+        const lightness = 50 - gradientFactor * 30;
+
+        ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+      } else {
+        ctx.fillStyle = "#1e1f24";
+      }
+      ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+    };
+
+    const drawFullGrid = (currentGrid: boolean[][]) => {
+      if (!ctx) return;
       ctx.fillStyle = "#1e1f24";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "white";
 
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
           if (currentGrid[y][x]) {
-            ctx.fillRect(x * 5, y * 5, 5, 5);
+            drawCell(x, y, true);
           }
         }
       }
     };
 
-    const updateAndDraw = () => {
-      gridRef.current = updateGrid(gridRef.current);
-      drawGrid(gridRef.current);
+    const updateChangedCells = (
+      currentGrid: boolean[][],
+      changedCells: string[],
+    ) => {
+      changedCells.forEach((cellKey) => {
+        const [y, x] = cellKey.split(",").map(Number);
+        drawCell(x, y, currentGrid[y][x]);
+      });
     };
 
-    drawGrid(gridRef.current);
+    const updateAndDraw = () => {
+      const { newGrid, changedCells } = updateGrid(gridRef.current);
+      gridRef.current = newGrid;
+      updateChangedCells(gridRef.current, changedCells);
+    };
+
+    // Initial full draw
+    drawFullGrid(gridRef.current);
+
     intervalRef.current = window.setInterval(updateAndDraw, 33);
+
+    const clearLineBetweenPoints = (
+      x1: number,
+      y1: number,
+      x2: number,
+      y2: number,
+    ) => {
+      const radius = 20;
+      const clearRadius = radius + 1;
+      const clearedCells = new Set<string>();
+
+      // Pre-calculate squared radius for faster distance checks
+      const radiusSquared = radius * radius;
+
+      // Bresenham's line algorithm (optimized)
+      let x = x1;
+      let y = y1;
+      const dx = Math.abs(x2 - x1);
+      const dy = Math.abs(y2 - y1);
+      const sx = x1 < x2 ? 1 : -1;
+      const sy = y1 < y2 ? 1 : -1;
+      let err = dx - dy;
+
+      while (true) {
+        // Clear circle at current point and mark surrounding cells
+        for (let dy = -clearRadius; dy <= clearRadius; dy++) {
+          for (let dx = -clearRadius; dx <= clearRadius; dx++) {
+            // Use squared distance for faster comparison
+            const distanceSquared = dx * dx + dy * dy;
+            if (distanceSquared <= radiusSquared) {
+              const newY = Math.max(0, Math.min(rows - 1, y + dy));
+              const newX = Math.max(0, Math.min(cols - 1, x + dx));
+              const cellKey = `${newY},${newX}`;
+
+              if (!clearedCells.has(cellKey)) {
+                gridRef.current[newY][newX] = false;
+                clearedCells.add(cellKey);
+                activeCellsRef.current.add(cellKey);
+              }
+            }
+          }
+        }
+
+        if (x === x2 && y === y2) break;
+        const e2 = 2 * err;
+        if (e2 > -dy) {
+          err -= dy;
+          x += sx;
+        }
+        if (e2 < dx) {
+          err += dx;
+          y += sy;
+        }
+      }
+
+      return Array.from(clearedCells);
+    };
 
     const handleMouseMove = (event: MouseEvent) => {
       const rect = canvas.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = Math.floor(((event.clientX - rect.left) * scaleX) / cellSize);
+      const y = Math.floor(((event.clientY - rect.top) * scaleY) / cellSize);
 
-      if (x >= 0 && x < canvas.width && y >= 0 && y < canvas.height) {
-        mousePosRef.current = {
-          x: Math.floor(x / 5),
-          y: Math.floor(y / 5),
-        };
+      if (x >= 0 && x < cols && y >= 0 && y < rows) {
+        if (prevMousePosRef.current) {
+          const changedCells = clearLineBetweenPoints(
+            prevMousePosRef.current.x,
+            prevMousePosRef.current.y,
+            x,
+            y,
+          );
+          updateChangedCells(gridRef.current, changedCells);
+        }
+        prevMousePosRef.current = { x, y };
       } else {
-        mousePosRef.current = null;
+        prevMousePosRef.current = null;
       }
     };
 
     const handleMouseLeave = () => {
-      mousePosRef.current = null;
+      prevMousePosRef.current = null;
     };
 
     document.addEventListener("mousemove", handleMouseMove);
@@ -198,17 +303,13 @@ const PageHeader: React.FC<PageHeaderProps> = () => {
       }
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("resize", resizeCanvas);
     };
-  }, [canvasWidth, canvasHeight, initializeGrid, updateGrid, gridInitialized]);
+  }, [initializeGrid, updateGrid, gridInitialized]);
 
   return (
-    <div className="relative w-full h-[800px] overflow-hidden">
-      <canvas
-        ref={canvasRef}
-        width={canvasWidth}
-        height={canvasHeight}
-        className="absolute inset-0"
-      />
+    <div className="relative w-full h-full overflow-hidden">
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
     </div>
   );
 };
