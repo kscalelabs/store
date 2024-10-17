@@ -45,16 +45,16 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
   ];
 
   const technicalItems = [
+    { name: "Browse", path: "/browse", icon: <FaSearchengin /> },
+    { name: "Downloads", path: "/downloads", icon: <FaDownload /> },
+    { name: "Playground", path: "/mujoco-test", icon: <FaRobot /> },
+    { name: "Research", path: "/research", icon: <FaWpexplorer /> },
     {
       name: "Docs",
       path: "https://docs.kscale.dev/",
       icon: <FaRegFileLines />,
     },
-    { name: "Browse", path: "/browse", icon: <FaSearchengin /> },
-    { name: "Downloads", path: "/downloads", icon: <FaDownload /> },
     { name: "Code", path: "https://github.com/kscalelabs", icon: <FaGithub /> },
-    { name: "Playground", path: "/mujoco-test", icon: <FaRobot /> },
-    { name: "Research", path: "/research", icon: <FaWpexplorer /> },
   ];
 
   const communityItems = [

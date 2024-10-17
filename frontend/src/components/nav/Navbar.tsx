@@ -49,13 +49,7 @@ const Navbar = () => {
 
   const technicalItems = [
     {
-      name: "Docs",
-      path: "https://docs.kscale.dev/",
-      icon: <FaRegFileLines className="h-5 w-5" />,
-      isExternal: true,
-    },
-    {
-      name: "Browse",
+      name: "Builds",
       path: "/browse",
       icon: <MagnifyingGlassIcon className="h-5 w-5" />,
       isExternal: false,
@@ -65,12 +59,6 @@ const Navbar = () => {
       path: "/downloads",
       icon: <DownloadIcon className="h-5 w-5" />,
       isExternal: false,
-    },
-    {
-      name: "Code",
-      path: "https://github.com/kscalelabs",
-      icon: <FaGithub className="h-5 w-5" />,
-      isExternal: true,
     },
     {
       name: "Playground",
@@ -83,6 +71,18 @@ const Navbar = () => {
       path: "/research",
       icon: <FaWpexplorer className="h-5 w-5" />,
       isExternal: false,
+    },
+    {
+      name: "Docs",
+      path: "https://docs.kscale.dev/",
+      icon: <FaRegFileLines className="h-5 w-5" />,
+      isExternal: true,
+    },
+    {
+      name: "Code",
+      path: "https://github.com/kscalelabs",
+      icon: <FaGithub className="h-5 w-5" />,
+      isExternal: true,
     },
   ];
 
@@ -104,7 +104,7 @@ const Navbar = () => {
         {isExternal ? (
           <a
             href={href}
-            className={`block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-1 hover:text-primary-9 focus:bg-gray-1 focus:text-primary-9 ${className}`}
+            className={`block select-none rounded-md p-2 leading-none no-underline outline-none transition-colors hover:bg-gray-1 hover:text-primary-9 focus:bg-gray-1 focus:text-primary-9 ${className}`}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -117,7 +117,7 @@ const Navbar = () => {
         ) : (
           <Link
             to={href}
-            className={`block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-1 hover:text-primary-9 focus:bg-gray-1 focus:text-primary-9 ${className}`}
+            className={`block select-none rounded-md p-2 leading-none no-underline outline-none transition-colors hover:bg-gray-1 hover:text-primary-9 focus:bg-gray-1 focus:text-primary-9 ${className}`}
           >
             <div className="flex items-center text-sm font-semibold leading-none">
               <span className="mr-2">{icon}</span>
@@ -224,13 +224,13 @@ const Navbar = () => {
                   onMouseEnter={handleMouseEnter}
                   onMouseLeave={handleMouseLeave}
                 >
-                  <div className="py-6 px-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="py-4 px-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <h3 className="text-white font-semibold mb-4 px-2">
+                        <h3 className="text-white font-semibold mb-2 px-2">
                           Community
                         </h3>
-                        <ul className="space-y-2">
+                        <ul className="space-y-1">
                           {communityItems.map((item) => (
                             <ListItem
                               key={item.name}
@@ -244,10 +244,10 @@ const Navbar = () => {
                         </ul>
                       </div>
                       <div>
-                        <h3 className="text-white font-semibold mb-4 px-2">
+                        <h3 className="text-white font-semibold mb-2 px-2">
                           Technical
                         </h3>
-                        <ul className="space-y-2">
+                        <ul className="space-y-1">
                           {technicalItems.map((item) => (
                             <ListItem
                               key={item.name}
