@@ -21,19 +21,19 @@ const PageHeader: React.FC<PageHeaderProps> = () => {
   const canvasWidth = windowWidth;
   const canvasHeight = 800;
 
-  // const kernelRadius = 8; // R = 13
-  // const mu = 0.15; // μ = 0.15
-  // const sigma = 0.014; // σ = 0.014
-  // const alpha = 5; // α = 4
-  // const deltaT = 0.16; // Δt = 0.16
-  // const cellSize = 5;
-
-  const kernelRadius = 5; // R = 13
+  const kernelRadius = 8; // R = 13
   const mu = 0.15; // μ = 0.15
-  const sigma = 0.015; // σ = 0.014
-  const alpha = 1; // α = 4
+  const sigma = 0.014; // σ = 0.014
+  const alpha = 5; // α = 4
   const deltaT = 0.16; // Δt = 0.16
   const cellSize = 5;
+
+  // const kernelRadius = 5; // R = 13
+  // const mu = 0.15; // μ = 0.15
+  // const sigma = 0.015; // σ = 0.014
+  // const alpha = 1; // α = 4
+  // const deltaT = 0.16; // Δt = 0.16
+  // const cellSize = 5;
 
   const centerX = Math.floor(canvasWidth / 12);
   const centerY = Math.floor(canvasHeight / 12);
@@ -176,6 +176,22 @@ const PageHeader: React.FC<PageHeaderProps> = () => {
                 currentGrid[newY][newX] = 0; // Erase the cell by setting its value to 0
               }
             }
+          }
+        }
+      }
+
+      // Define the rectangle where the logo is
+      const logoStartX = 90; // Example starting x-coordinate
+      const logoStartY = 52; // Example starting y-coordinate
+      const logoWidth = 150;  // Example width of the logo
+      const logoHeight = 25; // Example height of the logo
+
+      // Force grid values to zero in the logo rectangle
+      const currentGrid = gridRef.current;
+      for (let y = logoStartY; y < logoStartY + logoHeight; y++) {
+        for (let x = logoStartX; x < logoStartX + logoWidth; x++) {
+          if (currentGrid[y] && currentGrid[y][x] !== undefined) {
+            currentGrid[y][x] = 0;
           }
         }
       }
