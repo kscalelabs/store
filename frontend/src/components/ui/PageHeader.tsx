@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const PageHeader = () => {
+interface PageHeaderProps {
+  fillGrid?: boolean[][];
+}
+
+const PageHeader: React.FC<PageHeaderProps> = ({ fillGrid }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gridRef = useRef<boolean[][]>([]);
   const intervalRef = useRef<number>();
@@ -9,63 +13,102 @@ const PageHeader = () => {
 
   const [gridInitialized, setGridInitialized] = useState(false);
 
-  const rule = (neighbors: number, cell: boolean) =>
-    cell ? neighbors >= 1 && neighbors <= 5 : neighbors === 3;
+  const fillGridRef = useRef<boolean[][] | undefined>(fillGrid);
 
-  const updateGrid = useCallback((currentGrid: boolean[][]) => {
-    if (
-      !currentGrid ||
-      currentGrid.length === 0 ||
-      currentGrid[0].length === 0
-    ) {
-      return { newGrid: [], changedCells: [] };
-    }
+  const rule = useCallback(
+    (neighbors: number, cell: boolean, x: number, y: number) => {
+      if (
+        fillGridRef.current &&
+        gridRef.current &&
+        gridRef.current.length > 0 &&
+        gridRef.current[0].length > 0
+      ) {
+        const centerX =
+          Math.floor(gridRef.current[0].length / 2) -
+          Math.floor(fillGridRef.current[0].length / 2);
+        const centerY =
+          Math.floor(gridRef.current.length / 2) -
+          Math.floor(fillGridRef.current.length / 2);
 
-    const rows = currentGrid.length;
-    const cols = currentGrid[0].length;
-    const newGrid = currentGrid.map((row) => [...row]);
-    const newActiveCells = new Set<string>();
-
-    const checkAndUpdateCell = (y: number, x: number) => {
-      const neighbors = [
-        [-1, -1],
-        [-1, 0],
-        [-1, 1],
-        [0, -1],
-        [0, 1],
-        [1, -1],
-        [1, 0],
-        [1, 1],
-      ].reduce((count, [dy, dx]) => {
-        const newY = (y + dy + rows) % rows;
-        const newX = (x + dx + cols) % cols;
-        return count + (currentGrid[newY][newX] ? 1 : 0);
-      }, 0);
-
-      const prevState = currentGrid[y][x];
-      const newState = rule(neighbors, currentGrid[y][x]);
-      newGrid[y][x] = newState;
-
-      if (newState !== prevState) {
-        newActiveCells.add(`${y},${x}`);
-        for (let dy = -1; dy <= 1; dy++) {
-          for (let dx = -1; dx <= 1; dx++) {
-            const newY = (y + dy + rows) % rows;
-            const newX = (x + dx + cols) % cols;
-            newActiveCells.add(`${newY},${newX}`);
-          }
+        if (
+          x >= centerX &&
+          x < centerX + fillGridRef.current[0].length &&
+          y >= centerY &&
+          y < centerY + fillGridRef.current.length
+        ) {
+          const fillX = x - centerX;
+          const fillY = y - centerY;
+          return fillGridRef.current[fillY][fillX];
         }
       }
-    };
+      return cell ? neighbors >= 1 && neighbors <= 5 : neighbors === 3;
+    },
+    [],
+  );
 
-    activeCellsRef.current.forEach((cellKey) => {
-      const [y, x] = cellKey.split(",").map(Number);
-      checkAndUpdateCell(y, x);
-    });
+  const updateGrid = useCallback(
+    (currentGrid: boolean[][]) => {
+      if (
+        !currentGrid ||
+        currentGrid.length === 0 ||
+        currentGrid[0].length === 0
+      ) {
+        return { newGrid: [], changedCells: [] };
+      }
 
-    activeCellsRef.current = newActiveCells;
-    return { newGrid, changedCells: Array.from(newActiveCells) };
-  }, []);
+      const rows = currentGrid.length;
+      const cols = currentGrid[0].length;
+      const newGrid = currentGrid.map((row) => [...row]);
+      const newActiveCells = new Set<string>();
+
+      const checkAndUpdateCell = (y: number, x: number) => {
+        // Allow overflow by 2 cells
+        const wrappedY = (y + rows) % rows;
+        const wrappedX = (x + cols) % cols;
+
+        const neighbors = [
+          [-1, -1],
+          [-1, 0],
+          [-1, 1],
+          [0, -1],
+          [0, 1],
+          [1, -1],
+          [1, 0],
+          [1, 1],
+        ].reduce((count, [dy, dx]) => {
+          const newY = (wrappedY + dy + rows) % rows;
+          const newX = (wrappedX + dx + cols) % cols;
+          return count + (currentGrid[newY][newX] ? 1 : 0);
+        }, 0);
+
+        const prevState = currentGrid[wrappedY][wrappedX];
+        const newState = rule(neighbors, prevState, wrappedX, wrappedY);
+        newGrid[wrappedY][wrappedX] = newState;
+
+        if (newState !== prevState) {
+          newActiveCells.add(`${wrappedY},${wrappedX}`);
+          for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+              const newY = (wrappedY + dy + rows) % rows;
+              const newX = (wrappedX + dx + cols) % cols;
+              newActiveCells.add(`${newY},${newX}`);
+            }
+          }
+        }
+      };
+
+      // Check cells including 2 rows/columns outside the visible area
+      for (let y = -2; y < rows + 2; y++) {
+        for (let x = -2; x < cols + 2; x++) {
+          checkAndUpdateCell(y, x);
+        }
+      }
+
+      activeCellsRef.current = newActiveCells;
+      return { newGrid, changedCells: Array.from(newActiveCells) };
+    },
+    [rule],
+  );
 
   const initializeGrid = useCallback(
     (rows: number, cols: number) => {
@@ -78,14 +121,18 @@ const PageHeader = () => {
         .map(() => Array(cols).fill(false));
       const activeSet = new Set<string>();
 
-      const spawnPattern = (centerX: number, centerY: number) => {
-        const radius = 4;
-        for (let y = 0; y < radius; y++) {
-          for (let x = 0; x < radius; x++) {
-            const gridY = centerY - Math.floor(radius / 2) + y;
-            const gridX = centerX - Math.floor(radius / 2) + x;
+      if (fillGridRef.current) {
+        const centerX =
+          Math.floor(cols / 2) - Math.floor(fillGridRef.current[0].length / 2);
+        const centerY =
+          Math.floor(rows / 2) - Math.floor(fillGridRef.current.length / 2);
+
+        for (let y = 0; y < fillGridRef.current.length; y++) {
+          for (let x = 0; x < fillGridRef.current[0].length; x++) {
+            const gridY = centerY + y;
+            const gridX = centerX + x;
             if (gridY >= 0 && gridY < rows && gridX >= 0 && gridX < cols) {
-              grid[gridY][gridX] = Math.random() < 0.5;
+              grid[gridY][gridX] = fillGridRef.current[y][x];
               if (grid[gridY][gridX]) {
                 activeSet.add(`${gridY},${gridX}`);
                 for (let dy = -1; dy <= 1; dy++) {
@@ -99,14 +146,6 @@ const PageHeader = () => {
             }
           }
         }
-      };
-
-      spawnPattern(Math.floor(cols / 2), Math.floor(rows / 2));
-      for (let i = 0; i < 10; i++) {
-        spawnPattern(
-          Math.floor(Math.random() * cols),
-          Math.floor(Math.random() * rows),
-        );
       }
 
       activeCellsRef.current = activeSet;
@@ -137,8 +176,8 @@ const PageHeader = () => {
 
     // Adjust cell size to ensure all cells fit within the canvas
     const cellSize = 5;
-    const cols = Math.floor(canvas.width / cellSize);
-    const rows = Math.floor(canvas.height / cellSize);
+    const cols = Math.ceil(canvas.width / cellSize);
+    const rows = Math.ceil(canvas.height / cellSize);
 
     if (!gridInitialized) {
       const { newGrid } = initializeGrid(rows, cols);
@@ -148,6 +187,28 @@ const PageHeader = () => {
 
     const drawCell = (x: number, y: number, isAlive: boolean) => {
       if (!ctx) return;
+
+      // Allow drawing 2 cells outside the visible area
+      const drawX = ((x + cols) % cols) * cellSize;
+      const drawY = ((y + rows) % rows) * cellSize;
+
+      // Calculate fillGrid boundaries
+      const fillGridBounds = fillGridRef.current
+        ? {
+            startX:
+              Math.floor(cols / 2) -
+              Math.floor(fillGridRef.current[0].length / 2),
+            startY:
+              Math.floor(rows / 2) - Math.floor(fillGridRef.current.length / 2),
+            endX:
+              Math.floor(cols / 2) +
+              Math.floor((fillGridRef.current[0].length - 1) / 2),
+            endY:
+              Math.floor(rows / 2) +
+              Math.floor((fillGridRef.current.length - 1) / 2),
+          }
+        : null;
+
       if (isAlive) {
         const centerX = cols / 2;
         const centerY = rows / 2;
@@ -157,22 +218,32 @@ const PageHeader = () => {
         const maxDistance = Math.sqrt(
           Math.pow(cols / 2, 2) + Math.pow(rows / 2, 2),
         );
-        // Adjust the gradient factor to make the purple area larger
+        // Adjust the gradient factor to make the white area larger
         const gradientFactor = Math.max(
           0,
           (distanceFromCenter - maxDistance / 4) / (maxDistance * 0.75),
         );
 
-        // Interpolate between purple (hsl(280, 100%, 50%)) and dark blue (hsl(240, 100%, 20%))
-        const hue = 280 - gradientFactor * 40;
-        const saturation = 100;
-        const lightness = 50 - gradientFactor * 30;
+        if (
+          fillGridBounds &&
+          fillGridBounds.startX <= x &&
+          fillGridBounds.endX >= x &&
+          fillGridBounds.startY <= y &&
+          fillGridBounds.endY >= y
+        ) {
+          ctx.fillStyle = `hsl(0, 0%, 100%)`; // Pure white
+        } else {
+          // Interpolate between white (hsl(30, 100%, 100%)) and orange (hsl(30, 100%, 50%))
+          const hue = 30;
+          const saturation = 100;
+          const lightness = 100 - gradientFactor * 50;
 
-        ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+          ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        }
       } else {
         ctx.fillStyle = "#1e1f24";
       }
-      ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+      ctx.fillRect(drawX, drawY, cellSize, cellSize);
     };
 
     const drawFullGrid = (currentGrid: boolean[][]) => {
@@ -180,9 +251,12 @@ const PageHeader = () => {
       ctx.fillStyle = "#1e1f24";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          if (currentGrid[y][x]) {
+      // Draw cells including 2 rows/columns outside the visible area
+      for (let y = -2; y < rows + 2; y++) {
+        for (let x = -2; x < cols + 2; x++) {
+          const wrappedY = (y + rows) % rows;
+          const wrappedX = (x + cols) % cols;
+          if (currentGrid[wrappedY][wrappedX]) {
             drawCell(x, y, true);
           }
         }
@@ -202,6 +276,28 @@ const PageHeader = () => {
     const updateAndDraw = () => {
       const { newGrid, changedCells } = updateGrid(gridRef.current);
       gridRef.current = newGrid;
+
+      // Apply fillGrid pattern after each update
+      if (fillGridRef.current) {
+        const centerX =
+          Math.floor(cols / 2) - Math.floor(fillGridRef.current[0].length / 2);
+        const centerY =
+          Math.floor(rows / 2) - Math.floor(fillGridRef.current.length / 2);
+
+        for (let y = 0; y < fillGridRef.current.length; y++) {
+          for (let x = 0; x < fillGridRef.current[0].length; x++) {
+            const gridY = centerY + y;
+            const gridX = centerX + x;
+            if (gridY >= 0 && gridY < rows && gridX >= 0 && gridX < cols) {
+              if (gridRef.current[gridY][gridX] !== fillGridRef.current[y][x]) {
+                gridRef.current[gridY][gridX] = fillGridRef.current[y][x];
+                changedCells.push(`${gridY},${gridX}`);
+              }
+            }
+          }
+        }
+      }
+
       updateChangedCells(gridRef.current, changedCells);
     };
 
@@ -223,6 +319,23 @@ const PageHeader = () => {
       // Pre-calculate squared radius for faster distance checks
       const radiusSquared = radius * radius;
 
+      // Calculate fillGrid boundaries
+      const fillGridBounds = fillGridRef.current
+        ? {
+            startX:
+              Math.floor(cols / 2) -
+              Math.floor(fillGridRef.current[0].length / 2),
+            startY:
+              Math.floor(rows / 2) - Math.floor(fillGridRef.current.length / 2),
+            endX:
+              Math.floor(cols / 2) +
+              Math.floor((fillGridRef.current[0].length - 1) / 2),
+            endY:
+              Math.floor(rows / 2) +
+              Math.floor((fillGridRef.current.length - 1) / 2),
+          }
+        : null;
+
       // Bresenham's line algorithm (optimized)
       let x = x1;
       let y = y1;
@@ -239,14 +352,24 @@ const PageHeader = () => {
             // Use squared distance for faster comparison
             const distanceSquared = dx * dx + dy * dy;
             if (distanceSquared <= radiusSquared) {
-              const newY = Math.max(0, Math.min(rows - 1, y + dy));
-              const newX = Math.max(0, Math.min(cols - 1, x + dx));
-              const cellKey = `${newY},${newX}`;
+              const newY = (y + dy + rows) % rows;
+              const newX = (x + dx + cols) % cols;
 
-              if (!clearedCells.has(cellKey)) {
-                gridRef.current[newY][newX] = false;
-                clearedCells.add(cellKey);
-                activeCellsRef.current.add(cellKey);
+              // Check if the cell is within the fillGrid boundaries
+              const isInFillGrid =
+                fillGridBounds &&
+                newX >= fillGridBounds.startX &&
+                newX <= fillGridBounds.endX &&
+                newY >= fillGridBounds.startY &&
+                newY <= fillGridBounds.endY;
+
+              if (!isInFillGrid) {
+                const cellKey = `${newY},${newX}`;
+                if (!clearedCells.has(cellKey)) {
+                  gridRef.current[newY][newX] = false;
+                  clearedCells.add(cellKey);
+                  activeCellsRef.current.add(cellKey);
+                }
               }
             }
           }
