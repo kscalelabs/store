@@ -62,7 +62,9 @@ const PageHeader: React.FC<PageHeaderProps> = ({ fillGrid }) => {
       const newActiveCells = new Set<string>();
 
       const checkAndUpdateCell = (y: number, x: number) => {
-        if (y < 0 || y >= rows || x < 0 || x >= cols) return;
+        // Allow overflow by 2 cells
+        const wrappedY = (y + rows) % rows;
+        const wrappedX = (x + cols) % cols;
 
         const neighbors = [
           [-1, -1],
@@ -74,31 +76,33 @@ const PageHeader: React.FC<PageHeaderProps> = ({ fillGrid }) => {
           [1, 0],
           [1, 1],
         ].reduce((count, [dy, dx]) => {
-          const newY = (y + dy + rows) % rows;
-          const newX = (x + dx + cols) % cols;
+          const newY = (wrappedY + dy + rows) % rows;
+          const newX = (wrappedX + dx + cols) % cols;
           return count + (currentGrid[newY][newX] ? 1 : 0);
         }, 0);
 
-        const prevState = currentGrid[y][x];
-        const newState = rule(neighbors, currentGrid[y][x], x, y);
-        newGrid[y][x] = newState;
+        const prevState = currentGrid[wrappedY][wrappedX];
+        const newState = rule(neighbors, prevState, wrappedX, wrappedY);
+        newGrid[wrappedY][wrappedX] = newState;
 
         if (newState !== prevState) {
-          newActiveCells.add(`${y},${x}`);
+          newActiveCells.add(`${wrappedY},${wrappedX}`);
           for (let dy = -1; dy <= 1; dy++) {
             for (let dx = -1; dx <= 1; dx++) {
-              const newY = (y + dy + rows) % rows;
-              const newX = (x + dx + cols) % cols;
+              const newY = (wrappedY + dy + rows) % rows;
+              const newX = (wrappedX + dx + cols) % cols;
               newActiveCells.add(`${newY},${newX}`);
             }
           }
         }
       };
 
-      activeCellsRef.current.forEach((cellKey) => {
-        const [y, x] = cellKey.split(",").map(Number);
-        checkAndUpdateCell(y, x);
-      });
+      // Check cells including 2 rows/columns outside the visible area
+      for (let y = -2; y < rows + 2; y++) {
+        for (let x = -2; x < cols + 2; x++) {
+          checkAndUpdateCell(y, x);
+        }
+      }
 
       activeCellsRef.current = newActiveCells;
       return { newGrid, changedCells: Array.from(newActiveCells) };
@@ -172,8 +176,8 @@ const PageHeader: React.FC<PageHeaderProps> = ({ fillGrid }) => {
 
     // Adjust cell size to ensure all cells fit within the canvas
     const cellSize = 5;
-    const cols = Math.floor(canvas.width / cellSize);
-    const rows = Math.floor(canvas.height / cellSize);
+    const cols = Math.ceil(canvas.width / cellSize);
+    const rows = Math.ceil(canvas.height / cellSize);
 
     if (!gridInitialized) {
       const { newGrid } = initializeGrid(rows, cols);
@@ -183,6 +187,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({ fillGrid }) => {
 
     const drawCell = (x: number, y: number, isAlive: boolean) => {
       if (!ctx) return;
+
+      // Allow drawing 2 cells outside the visible area
+      const drawX = ((x + cols) % cols) * cellSize;
+      const drawY = ((y + rows) % rows) * cellSize;
 
       // Calculate fillGrid boundaries
       const fillGridBounds = fillGridRef.current
@@ -235,7 +243,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({ fillGrid }) => {
       } else {
         ctx.fillStyle = "#1e1f24";
       }
-      ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+      ctx.fillRect(drawX, drawY, cellSize, cellSize);
     };
 
     const drawFullGrid = (currentGrid: boolean[][]) => {
@@ -243,9 +251,12 @@ const PageHeader: React.FC<PageHeaderProps> = ({ fillGrid }) => {
       ctx.fillStyle = "#1e1f24";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          if (currentGrid[y][x]) {
+      // Draw cells including 2 rows/columns outside the visible area
+      for (let y = -2; y < rows + 2; y++) {
+        for (let x = -2; x < cols + 2; x++) {
+          const wrappedY = (y + rows) % rows;
+          const wrappedX = (x + cols) % cols;
+          if (currentGrid[wrappedY][wrappedX]) {
             drawCell(x, y, true);
           }
         }
@@ -341,8 +352,8 @@ const PageHeader: React.FC<PageHeaderProps> = ({ fillGrid }) => {
             // Use squared distance for faster comparison
             const distanceSquared = dx * dx + dy * dy;
             if (distanceSquared <= radiusSquared) {
-              const newY = Math.max(0, Math.min(rows - 1, y + dy));
-              const newX = Math.max(0, Math.min(cols - 1, x + dx));
+              const newY = (y + dy + rows) % rows;
+              const newX = (x + dx + cols) % cols;
 
               // Check if the cell is within the fillGrid boundaries
               const isInFillGrid =
