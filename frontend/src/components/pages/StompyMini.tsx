@@ -1,26 +1,45 @@
 import React from "react";
 
-import Container from "@/components/Container";
-import CheckoutButton from "@/components/stripe/CheckoutButton";
+import ProductPage from "@/components/products/ProductPage";
+import stompy from "@/images/stompy.png";
 
 const StompyMini: React.FC = () => {
+  const images = [stompy, stompy, stompy, stompy];
+
+  const productInfo = {
+    name: "Stompy Mini",
+    description:
+      "Introducing the Stompy Mini, a compact and customizable 3D-printed robot kit for your desktop or workbench. Perfect for hobbyists, makers, and STEM enthusiasts, this DIY robot brings advanced robotics to your fingertips at an affordable price.",
+    specs: [
+      "Height: 12 inches (30 cm)",
+      "3D-printable parts for easy customization",
+      "Arduino-compatible microcontroller",
+      "Modular design for easy assembly",
+      "Beginner-friendly programming interface",
+    ],
+    features: [
+      "Step-by-step assembly guide",
+      "Basic movement and sensor capabilities",
+      "Expandable with additional modules",
+      "Open-source software and hardware",
+      "Active community for support and ideas",
+      "Regular firmware updates",
+    ],
+    price: 350,
+    productId: "prod_R1IAtdBONHzXCb",
+  };
+
   return (
-    <Container>
-      <div className="flex flex-col items-center justify-center h-full">
-        <h1 className="text-2xl font-bold">Stompy Mini</h1>
-        <p className="text-xl text-gray-11">PAGE IS UNDER CONSTRUCTION</p>
-        {/* Developer Mode Stompy Mini */}
-        {/* <CheckoutButton
-          productId="prod_R1I3mYImsmLKGe"
-          label="Buy Stompy Mini"
-        /> */}
-        {/* Production Stompy Mini */}
-        <CheckoutButton
-          productId="prod_R1IAtdBONHzXCb"
-          label="Buy Stompy Mini"
-        />
-      </div>
-    </Container>
+    <ProductPage
+      images={images}
+      productId={productInfo.productId}
+      checkoutLabel="Buy Stompy Mini"
+      title={productInfo.name}
+      description={productInfo.description}
+      features={productInfo.features}
+      keyFeatures={productInfo.specs}
+      price={productInfo.price.toString()}
+    />
   );
 };
 

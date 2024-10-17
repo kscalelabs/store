@@ -17,8 +17,6 @@ import Create from "@/components/pages/Create";
 import EmailSignup from "@/components/pages/EmailSignup";
 import FileBrowser from "@/components/pages/FileBrowser";
 import Home from "@/components/pages/Home";
-// import Home from "@/components/pages/Home";
-import KLangPage from "@/components/pages/KLangPage";
 import ListingDetails from "@/components/pages/ListingDetails";
 import Login from "@/components/pages/Login";
 import Logout from "@/components/pages/Logout";
@@ -62,7 +60,6 @@ const App = () => {
                       <Route path="/about" element={<About />} />
                       <Route path="/downloads" element={<DownloadsPage />} />
                       <Route path="/research" element={<ResearchPage />} />
-                      <Route path="/klang" element={<KLangPage />} />
                       <Route path="/browse/:page?" element={<Browse />} />
                       <Route
                         path="/file/:artifactId"

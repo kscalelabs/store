@@ -1,20 +1,45 @@
 import React from "react";
 
-import Container from "@/components/Container";
-import CheckoutButton from "@/components/stripe/CheckoutButton";
+import ProductPage from "@/components/products/ProductPage";
+import stompy from "@/images/stompy.png";
 
 const StompyPro: React.FC = () => {
+  const images = [stompy, stompy, stompy, stompy];
+
+  const productInfo = {
+    name: "Stompy Pro",
+    description:
+      "Introducing the Stompy Pro, a cutting-edge 5-foot tall humanoid robot designed to revolutionize your home or business. With advanced AI capabilities and robust construction, Stompy Pro is the perfect assistant for a wide range of tasks.",
+    specs: [
+      "Height: 5 feet (152 cm)",
+      "Advanced AI-powered decision making",
+      "Durable all-terrain design",
+      "Voice-activated commands",
+      "Customizable appearance",
+    ],
+    features: [
+      "Autonomous navigation",
+      "Object recognition and manipulation",
+      "Natural language processing",
+      "Wireless connectivity",
+      "Expandable functionality through apps",
+      "Regular software updates",
+    ],
+    price: 15000,
+    productId: "prod_R0n3nkCO4aQdlg",
+  };
+
   return (
-    <Container>
-      <div className="flex flex-col items-center justify-center h-full">
-        <h1 className="text-2xl font-bold">Stompy Pro</h1>
-        <p className="text-xl text-gray-11">PAGE IS UNDER CONSTRUCTION</p>
-        {/* Developer Mode Stompy Pro */}
-        {/* <CheckoutButton productId="prod_Qyzd8f0gFMis7c" /> */}
-        {/* Production Stompy Pro */}
-        <CheckoutButton productId="prod_R0n3nkCO4aQdlg" />
-      </div>
-    </Container>
+    <ProductPage
+      images={images}
+      productId={productInfo.productId}
+      checkoutLabel="Buy Stompy Pro"
+      title={productInfo.name}
+      description={productInfo.description}
+      features={productInfo.features}
+      keyFeatures={productInfo.specs}
+      price={productInfo.price.toString()}
+    />
   );
 };
 
