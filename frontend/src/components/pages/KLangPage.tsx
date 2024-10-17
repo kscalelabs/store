@@ -2,15 +2,10 @@ import React from "react";
 import { FiArrowUpRight } from "react-icons/fi";
 
 import { ExampleContent, TextParallaxContent } from "@/components/TextParallax";
-import PageHeader from "@/components/ui/PageHeader";
 
 const KLangPage: React.FC = () => {
   return (
     <div>
-      <PageHeader
-        title="K-Lang"
-        subheading="Our programming language for humanoid robots with neural network integration built in"
-      />
       <section className="mb-12">
         <TextParallaxContent
           imgUrl="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2671&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"

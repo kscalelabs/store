@@ -139,7 +139,7 @@ const Navbar = () => {
   const handleMouseLeave = () => {
     timeoutRef.current = window.setTimeout(() => {
       setShowDevelopersDropdown(false);
-    }, 200);
+    }, 500);
   };
 
   useEffect(() => {

@@ -13,7 +13,7 @@ import APIKeys from "@/components/pages/APIKeys";
 import About from "@/components/pages/About";
 import Account from "@/components/pages/Account";
 import Browse from "@/components/pages/Browse";
-import BuyPage from "@/components/pages/BuyPage";
+import Home from "@/components/pages/Home";
 import Create from "@/components/pages/Create";
 import EmailSignup from "@/components/pages/EmailSignup";
 import FileBrowser from "@/components/pages/FileBrowser";
@@ -55,14 +55,14 @@ const App = () => {
                 <div className="flex-grow">
                   <Container>
                     <Routes>
-                      {/* <Route path="/" element={<Home />} /> */}
+                      <Route path="/" element={<Home />} />
 
                       <Route path="/playground" element={<PlaygroundPage />} />
 
                       <Route path="/about" element={<About />} />
                       <Route path="/downloads" element={<DownloadsPage />} />
                       <Route path="/research" element={<ResearchPage />} />
-                      <Route path="/k-lang" element={<KLangPage />} />
+                      <Route path="/klang" element={<KLangPage />} />
                       <Route path="/browse/:page?" element={<Browse />} />
                       <Route
                         path="/file/:artifactId"
@@ -85,7 +85,6 @@ const App = () => {
                       <Route path="/pro" element={<StompyPro />} />
                       <Route path="/mini" element={<StompyMini />} />
 
-                      <Route path="/" element={<BuyPage />} />
                       <Route path="/success" element={<OrderSuccess />} />
                       <Route path="/cancel" element={<OrderCancel />} />
                       <Route path="/orders" element={<Orders />} />
