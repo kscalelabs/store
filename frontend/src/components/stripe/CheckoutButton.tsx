@@ -92,32 +92,34 @@ const CheckoutButton: React.FC<{ productId: string; label?: string }> = ({
       </Button>
 
       <Drawer open={isDrawerOpen} setOpen={setIsDrawerOpen}>
-        <div className="p-4">
+        <div className="p-4 flex flex-col items-center justify-center">
           <h2 className="text-gray-1 text-2xl font-bold mb-4">
             You must be logged in to place an order.
           </h2>
           <p className="text-gray-3 mb-4">
             This is so you can track and receive updates on your order.
           </p>
-          <Button
-            onClick={() => {
-              setIsDrawerOpen(false);
-              navigate("/login");
-            }}
-            variant="secondary"
-          >
-            Sign In
-          </Button>
-          <Button
-            onClick={() => {
-              setIsDrawerOpen(false);
-              navigate("/signup");
-            }}
-            variant="primary"
-            className="ml-2"
-          >
-            Sign Up
-          </Button>
+          <div className="flex flex-row items-center justify-center">
+            <Button
+              onClick={() => {
+                setIsDrawerOpen(false);
+                navigate("/login");
+              }}
+              variant="secondary"
+            >
+              Sign In
+            </Button>
+            <Button
+              onClick={() => {
+                setIsDrawerOpen(false);
+                navigate("/signup");
+              }}
+              variant="primary"
+              className="ml-2"
+            >
+              Sign Up
+            </Button>
+          </div>
         </div>
       </Drawer>
     </>
