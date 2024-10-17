@@ -36,6 +36,8 @@ import OrderSuccess from "./components/pages/OrderSuccess";
 import Orders from "./components/pages/Orders";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import ResearchPage from "./components/pages/ResearchPage";
+import StompyMini from "./components/pages/StompyMini";
+import StompyPro from "./components/pages/StompyPro";
 import TermsOfService from "./components/pages/TermsOfService";
 
 const App = () => {
@@ -79,6 +81,9 @@ const App = () => {
 
                       <Route path="/tos" element={<TermsOfService />} />
                       <Route path="/privacy" element={<PrivacyPolicy />} />
+
+                      <Route path="/pro" element={<StompyPro />} />
+                      <Route path="/mini" element={<StompyMini />} />
 
                       <Route path="/" element={<BuyPage />} />
                       <Route path="/success" element={<OrderSuccess />} />

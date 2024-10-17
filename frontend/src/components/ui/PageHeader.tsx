@@ -69,7 +69,7 @@ const PageHeader: React.FC<PageHeaderProps> = () => {
 
     if (mousePosRef.current) {
       const { x, y } = mousePosRef.current;
-      const radius = 20;
+      const radius = 10;
       for (let dy = -radius; dy <= radius; dy++) {
         for (let dx = -radius; dx <= radius; dx++) {
           if (dx * dx + dy * dy <= radius * radius) {
