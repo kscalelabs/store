@@ -127,9 +127,12 @@ const PageHeader = () => {
       const { width, height } = canvas.getBoundingClientRect();
       canvas.width = width;
       canvas.height = height;
+      setGridInitialized(false);
     };
 
-    resizeCanvas();
+    if (!gridInitialized) {
+      resizeCanvas();
+    }
     window.addEventListener("resize", resizeCanvas);
 
     // Adjust cell size to ensure all cells fit within the canvas
