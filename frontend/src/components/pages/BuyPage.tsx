@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import { FaDiscord } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -16,7 +17,6 @@ import {
   CodeIcon,
   DownloadIcon,
   ExternalLinkIcon,
-  LayersIcon,
   MagnifyingGlassIcon,
 } from "@radix-ui/react-icons";
 
@@ -60,7 +60,7 @@ const BuyPage: React.FC = () => {
               title: "Discord",
               description:
                 "Connect with fellow robot enthusiasts, industry experts, and researchers. Share projects and ideas, and stay updated on the latest K-Scale developments.",
-              icon: LayersIcon,
+              icon: FaDiscord,
               path: "https://discord.com/invite/kscale",
               buttonText: "Join our Discord",
               external: true,

@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { FaBars, FaDiscord, FaExternalLinkAlt, FaGithub } from "react-icons/fa";
 import {
-  FaDownload,
+  FaBars,
+  FaDiscord,
+  FaGithub,
   FaRegFileLines,
   FaRobot,
-  FaSearchengin,
   FaWpexplorer,
   FaXTwitter,
 } from "react-icons/fa6";
@@ -21,6 +21,11 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { useAuthentication } from "@/hooks/useAuth";
+import {
+  DownloadIcon,
+  ExternalLinkIcon,
+  MagnifyingGlassIcon,
+} from "@radix-ui/react-icons";
 
 const Navbar = () => {
   const { isAuthenticated } = useAuthentication();
@@ -58,13 +63,13 @@ const Navbar = () => {
     {
       name: "Browse",
       path: "/browse",
-      icon: <FaSearchengin className="h-5 w-5" />,
+      icon: <MagnifyingGlassIcon className="h-5 w-5" />,
       isExternal: false,
     },
     {
       name: "Downloads",
       path: "/downloads",
-      icon: <FaDownload className="h-5 w-5" />,
+      icon: <DownloadIcon className="h-5 w-5" />,
       isExternal: false,
     },
     {
@@ -113,7 +118,7 @@ const Navbar = () => {
               <div className="flex items-center text-sm font-semibold leading-none">
                 <span className="mr-2">{icon}</span>
                 <span>{title}</span>
-                <FaExternalLinkAlt className="ml-2 h-3 w-3" />
+                <ExternalLinkIcon className="ml-2 h-4 w-4" />
               </div>
             </a>
           ) : (
@@ -136,12 +141,28 @@ const Navbar = () => {
     <>
       <nav className="fixed w-full z-30 top-0 start-0 bg-gray-1/30 backdrop-blur-lg">
         <div className="flex items-center justify-between py-3 mx-4 sm:mx-6 md:mx-10 xl:mx-16 2xl:mx-28 font-medium">
-          <Link
-            to="/"
-            className="flex items-center space-x-2 bg-gray-12 p-3 rounded-lg hover:bg-primary-9 transition-all duration-300"
-          >
-            <Logo />
-          </Link>
+          <div className="flex items-center justify-between w-full lg:w-auto gap-3">
+            <Link
+              to="/"
+              className="
+                flex items-center
+                flex-grow
+                lg:flex-grow-0
+                space-x-2 p-3
+                rounded-lg
+                bg-gray-12 hover:bg-primary-9
+                transition-all duration-300
+              "
+            >
+              <Logo />
+            </Link>
+            <button
+              onClick={() => setShowSidebar(true)}
+              className="lg:hidden text-gray-300 hover:bg-gray-700 bg-gray-12 hover:text-white p-4 rounded-md text-sm"
+            >
+              <FaBars size={20} />
+            </button>
+          </div>
           <div className="hidden lg:flex items-center flex-grow justify-between ml-4">
             <div className="flex space-x-1 bg-gray-12 rounded-lg p-2 flex-grow justify-center">
               {navItems.map((item) =>
@@ -154,7 +175,7 @@ const Navbar = () => {
                     rel="noopener noreferrer"
                   >
                     {item.name}
-                    <FaExternalLinkAlt className="ml-2 h-3 w-3" />
+                    <ExternalLinkIcon className="ml-2 h-4 w-4" />
                   </a>
                 ) : (
                   <Link
@@ -262,12 +283,6 @@ const Navbar = () => {
               )}
             </div>
           </div>
-          <button
-            onClick={() => setShowSidebar(true)}
-            className="lg:hidden text-gray-300 hover:bg-gray-700 bg-gray-12 hover:text-white p-4 rounded-md text-sm"
-          >
-            <FaBars size={20} />
-          </button>
         </div>
       </nav>
       <Sidebar show={showSidebar} onClose={() => setShowSidebar(false)} />
