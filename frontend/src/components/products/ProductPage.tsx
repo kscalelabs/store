@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import Container from "@/components/Container";
 import CheckoutButton from "@/components/stripe/CheckoutButton";
+import { formatPrice } from "@/lib/utils/formatNumber";
 
 interface Props {
   productId: string;
@@ -10,7 +11,7 @@ interface Props {
   description: string;
   features: string[];
   keyFeatures: string[];
-  price: string;
+  price: number;
   images: string[];
 }
 
@@ -175,8 +176,8 @@ const ProductPage = ({
 
         {isFixed && (
           <div className="fixed bottom-0 left-0 right-0 bg-white shadow-md p-4 transition-all duration-300 ease-in-out z-10">
-            <div className="max-w-7xl mx-auto flex justify-between items-center">
-              <p className="text-3xl font-bold">${price}</p>
+            <div className="max-w-7xl mx-auto flex justify-between items-center px-6">
+              <p className="text-2xl font-semibold">{formatPrice(price)}</p>
               <CheckoutButton productId={productId} label={checkoutLabel} />
             </div>
           </div>
@@ -184,7 +185,7 @@ const ProductPage = ({
 
         <div className="relative left-0 right-0 bg-white shadow-md p-4 transition-all duration-300 ease-in-out rounded-lg">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <p className="text-3xl font-bold">${price}</p>
+            <p className="text-2xl font-semibold">{formatPrice(price)}</p>
             <CheckoutButton productId={productId} label={checkoutLabel} />
           </div>
         </div>

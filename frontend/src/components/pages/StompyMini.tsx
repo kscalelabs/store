@@ -25,7 +25,7 @@ const StompyMini: React.FC = () => {
       "Active community for support and ideas",
       "Regular firmware updates",
     ],
-    price: 350,
+    price: 35000,
     productId: "prod_R1IAtdBONHzXCb",
   };
 
@@ -38,7 +38,7 @@ const StompyMini: React.FC = () => {
       description={productInfo.description}
       features={productInfo.features}
       keyFeatures={productInfo.specs}
-      price={productInfo.price.toString()}
+      price={productInfo.price}
     />
   );
 };
