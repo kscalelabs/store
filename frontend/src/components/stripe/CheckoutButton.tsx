@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaSpinner } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { Drawer } from "@/components/Drawer";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,8 @@ const CheckoutButton: React.FC<{ productId: string; label?: string }> = ({
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const auth = useAuthentication();
   const navigate = useNavigate();
+  const location = useLocation();
+
   const handleClick = async () => {
     setIsLoading(true);
 
@@ -53,7 +55,10 @@ const CheckoutButton: React.FC<{ productId: string; label?: string }> = ({
       const { data } = await auth.client.POST(
         "/stripe/create-checkout-session",
         {
-          body: { product_id: productId },
+          body: {
+            product_id: productId,
+            cancel_url: location.pathname,
+          },
         },
       );
 

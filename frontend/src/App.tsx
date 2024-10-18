@@ -29,7 +29,6 @@ import { AuthenticationProvider } from "@/hooks/useAuth";
 import GDPRBanner from "./components/gdpr/gdprbanner";
 import DownloadsPage from "./components/pages/Download";
 import PlaygroundPage from "./components/pages/MujocoPlayground";
-import OrderCancel from "./components/pages/OrderCancel";
 import OrderSuccess from "./components/pages/OrderSuccess";
 import Orders from "./components/pages/Orders";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
@@ -83,7 +82,6 @@ const App = () => {
                       <Route path="/mini" element={<StompyMini />} />
 
                       <Route path="/success" element={<OrderSuccess />} />
-                      <Route path="/cancel" element={<OrderCancel />} />
                       <Route path="/orders" element={<Orders />} />
 
                       <Route path="/404" element={<NotFound />} />
