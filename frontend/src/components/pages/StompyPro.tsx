@@ -25,7 +25,7 @@ const StompyPro: React.FC = () => {
       "Expandable functionality through apps",
       "Regular software updates",
     ],
-    price: 15000,
+    price: 1600000,
     productId: "prod_R0n3nkCO4aQdlg",
   };
 
@@ -38,7 +38,7 @@ const StompyPro: React.FC = () => {
       description={productInfo.description}
       features={productInfo.features}
       keyFeatures={productInfo.specs}
-      price={productInfo.price.toString()}
+      price={productInfo.price}
     />
   );
 };
