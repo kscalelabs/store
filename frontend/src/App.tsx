@@ -83,7 +83,6 @@ const App = () => {
                       <Route path="/mini" element={<StompyMini />} />
 
                       <Route path="/success" element={<OrderSuccess />} />
-                      <Route path="/cancel" element={<OrderCancel />} />
                       <Route path="/orders" element={<Orders />} />
 
                       <Route path="/404" element={<NotFound />} />
