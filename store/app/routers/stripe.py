@@ -143,6 +143,7 @@ async def notify_payment_failed(session: Dict[str, Any]) -> None:
 
 class CreateCheckoutSessionRequest(BaseModel):
     product_id: str
+    cancel_url: str
 
 
 class CreateCheckoutSessionResponse(BaseModel):
@@ -156,6 +157,7 @@ async def create_checkout_session(
 ) -> CreateCheckoutSessionResponse:
     try:
         product_id = request.product_id
+        cancel_url = request.cancel_url
         logger.info(f"Creating checkout session for product: {product_id} and user: {user.id}")
 
         # Fetch the price associated with the product
@@ -180,7 +182,7 @@ async def create_checkout_session(
             ],
             mode="payment",
             success_url=f"{settings.site.homepage}/success?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{settings.site.homepage}/cancel",
+            cancel_url=f"{settings.site.homepage}{cancel_url}",
             client_reference_id=user.id,
             metadata={
                 "product_id": product_id,

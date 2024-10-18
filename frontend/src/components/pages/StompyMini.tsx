@@ -26,7 +26,8 @@ const StompyMini: React.FC = () => {
       "Regular firmware updates",
     ],
     price: 35000,
-    productId: "prod_R1IAtdBONHzXCb",
+    productId: "prod_R1I3mYImsmLKGe", // developer
+    // productId: "prod_R1IAtdBONHzXCb", // production
   };
 
   return (
