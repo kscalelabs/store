@@ -193,55 +193,13 @@ const PageHeader: React.FC<PageHeaderProps> = ({ fillGrid }) => {
       const drawY = ((y + rows) % rows) * cellSize;
 
       // Calculate fillGrid boundaries
-      const fillGridBounds = fillGridRef.current
-        ? {
-            startX:
-              Math.floor(cols / 2) -
-              Math.floor(fillGridRef.current[0].length / 2),
-            startY:
-              Math.floor(rows / 2) - Math.floor(fillGridRef.current.length / 2),
-            endX:
-              Math.floor(cols / 2) +
-              Math.floor((fillGridRef.current[0].length - 1) / 2),
-            endY:
-              Math.floor(rows / 2) +
-              Math.floor((fillGridRef.current.length - 1) / 2),
-          }
-        : null;
 
       if (isAlive) {
-        const centerX = cols / 2;
-        const centerY = rows / 2;
-        const distanceFromCenter = Math.sqrt(
-          Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2),
-        );
-        const maxDistance = Math.sqrt(
-          Math.pow(cols / 2, 2) + Math.pow(rows / 2, 2),
-        );
-        // Adjust the gradient factor to make the white area larger
-        const gradientFactor = Math.max(
-          0,
-          (distanceFromCenter - maxDistance / 4) / (maxDistance * 0.75),
-        );
-
-        if (
-          fillGridBounds &&
-          fillGridBounds.startX <= x &&
-          fillGridBounds.endX >= x &&
-          fillGridBounds.startY <= y &&
-          fillGridBounds.endY >= y
-        ) {
-          ctx.fillStyle = `hsl(0, 0%, 100%)`; // Pure white
-        } else {
-          // Interpolate between white (hsl(30, 100%, 100%)) and orange (hsl(30, 100%, 50%))
-          const hue = 30;
-          const saturation = 100;
-          const lightness = 100 - gradientFactor * 50;
-
-          ctx.fillStyle = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-        }
+        ctx.fillStyle = "#ffffff";
+        // ctx.fillStyle = "#1e1f24";
       } else {
         ctx.fillStyle = "#1e1f24";
+        // ctx.fillStyle = "#ffffff";
       }
       ctx.fillRect(drawX, drawY, cellSize, cellSize);
     };
