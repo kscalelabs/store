@@ -140,11 +140,31 @@ DYNAMO_ENDPOINT=http://127.0.0.1:4566 dynamodb-admin
 
 ### Creating a Python Virtual Environment
 
-Create a Python virtual environment using [uv](https://astral.sh/blog/uv) or [virtualenv](https://virtualenv.pypa.io/en/latest/) with Python 3.11 or later:
+Create a Python virtual environment using [uv](https://astral.sh/blog/uv) or [virtualenv](https://virtualenv.pypa.io/en/latest/) with **Python 3.11 or later**:
+
+1. **Using `uv`**:
+```bash
+uv venv .venv --python 3.11
+```
+
+2. **Using `virtualenv`**: If you choose to use `virtualenv`, ensure that **Python 3.11** is installed on your machine. You can check if it's installed by running:
+```bash
+python3.11 --version
+```
+If Python 3.11 is installed, create the virtual environment with:
+```bash
+python3.11 -m venv .venv
+```
+**Note**: If Python 3.11 is not installed on your machine, you will need to install it before proceeding. For macOS, you can install Python 3.11 using `Homebrew`:
 
 ```bash
-uv venv .venv --python 3.11  # Using uv
-python -m venv .venv  # Using vanilla virtualenv
+brew install python@3.11
+```
+
+### Activate the virtual environment: 
+
+Once the virtual environment is created, activate it:
+```bash
 source .venv/bin/activate
 ```
 
