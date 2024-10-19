@@ -5,7 +5,6 @@ from email.utils import parseaddr as parse_email_address
 from typing import Annotated, Literal, Mapping, Self, overload
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel
 from pydantic.networks import EmailStr
 
@@ -35,15 +34,24 @@ async def get_api_key_from_header(headers: Mapping[str, str], require_header: Li
 
 async def get_api_key_from_header(headers: Mapping[str, str], require_header: bool) -> str | None:
     authorization = headers.get("Authorization") or headers.get("authorization")
+    logger.debug(f"Received authorization header: {authorization}")
     if not authorization:
         if require_header:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
         return None
-    scheme, credentials = get_authorization_scheme_param(authorization)
-    if not (scheme and credentials):
+
+    # Check if the authorization header starts with "Bearer "
+    if authorization.startswith("Bearer "):
+        credentials = authorization[7:]  # Remove "Bearer " prefix
+    else:
+        # If "Bearer " is missing, assume the entire header is the token
+        credentials = authorization
+
+    logger.debug(f"Extracted credentials: {credentials}")
+
+    if not credentials:
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Authorization header is invalid")
-    if scheme.lower() != TOKEN_TYPE.lower():
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Authorization scheme is invalid")
+
     return credentials
 
 
@@ -73,6 +81,7 @@ async def get_session_user_with_read_permission(
     crud: Annotated[Crud, Depends(Crud.get)],
     api_key_id: Annotated[str, Depends(get_request_api_key_id)],
 ) -> User:
+    logger.debug(f"Attempting to get user with read permission. API Key ID: {api_key_id}")
     return await get_session_user_with_permission("read", crud, api_key_id)
 
 
@@ -255,7 +264,6 @@ async def login_user(data: LoginRequest, user_crud: UserCrud = Depends()) -> Log
         user = await user_crud.get_user_from_email(data.email)
         if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-
         # Determine if the user logged in via OAuth or hashed password
         source: APIKeySource
         if user.hashed_password is None:
