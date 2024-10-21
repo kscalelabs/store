@@ -34,7 +34,6 @@ async def get_api_key_from_header(headers: Mapping[str, str], require_header: Li
 
 async def get_api_key_from_header(headers: Mapping[str, str], require_header: bool) -> str | None:
     authorization = headers.get("Authorization") or headers.get("authorization")
-    logger.debug(f"Received authorization header: {authorization}")
     if not authorization:
         if require_header:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
@@ -46,8 +45,6 @@ async def get_api_key_from_header(headers: Mapping[str, str], require_header: bo
     else:
         # If "Bearer " is missing, assume the entire header is the token
         credentials = authorization
-
-    logger.debug(f"Extracted credentials: {credentials}")
 
     if not credentials:
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Authorization header is invalid")
@@ -81,7 +78,6 @@ async def get_session_user_with_read_permission(
     crud: Annotated[Crud, Depends(Crud.get)],
     api_key_id: Annotated[str, Depends(get_request_api_key_id)],
 ) -> User:
-    logger.debug(f"Attempting to get user with read permission. API Key ID: {api_key_id}")
     return await get_session_user_with_permission("read", crud, api_key_id)
 
 
