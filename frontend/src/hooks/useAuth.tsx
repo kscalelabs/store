@@ -16,16 +16,35 @@ import createClient, { Client } from "openapi-fetch";
 
 const AUTH_KEY_ID = "AUTH";
 
-const getLocalStorageAuth = (): string | null => {
-  return localStorage.getItem(AUTH_KEY_ID);
+const getStoredAuth = (): string | null => {
+  const localAuth = localStorage.getItem(AUTH_KEY_ID);
+  if (localAuth) {
+    return localAuth;
+  }
+
+  const cookies = document.cookie.split(";");
+  const authCookie = cookies.find((cookie) =>
+    cookie.trim().startsWith(`${AUTH_KEY_ID}=`),
+  );
+  if (authCookie) {
+    return authCookie.split("=")[1];
+  }
+
+  return null;
 };
 
-export const setLocalStorageAuth = (id: string) => {
+export const setStoredAuth = (id: string) => {
   localStorage.setItem(AUTH_KEY_ID, id);
+  console.log("Auth set in localStorage:", id);
+
+  const cookieValue = `${AUTH_KEY_ID}=${id}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Strict`;
+  document.cookie = cookieValue;
+  console.log("Auth cookie set:", cookieValue);
 };
 
-export const deleteLocalStorageAuth = () => {
+export const deleteStoredAuth = () => {
   localStorage.removeItem(AUTH_KEY_ID);
+  document.cookie = `${AUTH_KEY_ID}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict`;
 };
 
 interface AuthenticationContextProps {
@@ -53,9 +72,7 @@ interface AuthenticationProviderProps {
 export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
   const { children } = props;
   const navigate = useNavigate();
-  const [apiKeyId, setApiKeyId] = useState<string | null>(
-    getLocalStorageAuth(),
-  );
+  const [apiKeyId, setApiKeyId] = useState<string | null>(getStoredAuth());
   const [currentUser, setCurrentUser] = useState<
     | paths["/users/public/{id}"]["get"]["responses"][200]["content"]["application/json"]
     | null
@@ -106,9 +123,9 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
 
   const login = useCallback(
     (newApiKeyId: string) => {
-      setLocalStorageAuth(newApiKeyId);
+      setStoredAuth(newApiKeyId);
       setApiKeyId(newApiKeyId);
-      setCurrentUser(null); // Reset current user to trigger a new fetch
+      setCurrentUser(null);
       setIsLoading(true);
       navigate("/");
     },
@@ -116,7 +133,7 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
   );
 
   const logout = useCallback(() => {
-    deleteLocalStorageAuth();
+    deleteStoredAuth();
     setApiKeyId(null);
     setCurrentUser(null);
     setIsLoading(false);
