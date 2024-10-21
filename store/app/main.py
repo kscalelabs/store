@@ -21,6 +21,7 @@ from store.app.errors import (
     NotAuthorizedError,
 )
 from store.app.routers.artifacts import artifacts_router
+from store.app.routers.authenticate import auth_router
 from store.app.routers.email import email_router
 from store.app.routers.kernel_images import kernel_images_router
 from store.app.routers.keys import keys_router
@@ -122,10 +123,42 @@ async def read_root() -> bool:
 @app.get("/openapi.json", include_in_schema=False)
 async def get_open_api_endpoint() -> JSONResponse:
     openapi_schema = get_openapi(title="K-Scale", version="1.0.0", routes=app.routes)
+
+    # Add APIKeyHeader security scheme
     openapi_schema["components"]["securitySchemes"] = {
         "APIKeyHeader": {"type": "apiKey", "in": "header", "name": "Authorization"}
     }
-    openapi_schema["security"] = [{"APIKeyHeader": []}]
+
+    # Define paths that don't require authorization
+    unsecured_paths = {
+        "/",
+        "/auth/login",
+        "/auth/logout",
+        "/auth/google/client-id",
+        "/auth/github/client-id",
+        "/auth/google/login",
+        "/auth/github/code",
+        "/auth/signup",
+        "/listings/search",
+        "/listings/dump",
+        "/listings/{id}",
+        "/kernel-images/public",
+        "/email/signup/create",
+        "/email/signup/get/{id}",
+        "/email/signup/delete/{id}",
+    }
+
+    # Set default security for all paths
+    for path, path_item in openapi_schema["paths"].items():
+        for method in path_item.values():
+            method["security"] = [{"APIKeyHeader": []}]
+
+    # Remove security for unsecured paths
+    for path in unsecured_paths:
+        if path in openapi_schema["paths"]:
+            for method in openapi_schema["paths"][path].values():
+                method.pop("security", None)
+
     return JSONResponse(openapi_schema)
 
 
@@ -217,8 +250,9 @@ async def validate_auth_token(auth_token: str = Depends(api_key_header)) -> str:
     return auth_token
 
 
-app.include_router(artifacts_router, prefix="/artifacts", tags=["artifacts"])
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(email_router, prefix="/email", tags=["email"])
+app.include_router(artifacts_router, prefix="/artifacts", tags=["artifacts"])
 app.include_router(keys_router, prefix="/keys", tags=["keys"])
 app.include_router(listings_router, prefix="/listings", tags=["listings"])
 app.include_router(onshape_router, prefix="/onshape", tags=["onshape"])

@@ -14,11 +14,11 @@ def test_user_auth_functions(test_client: TestClient) -> None:
     assert response.json()["detail"] == "Not authenticated"
 
     # Checks that we can't log the user out without the session token.
-    response = test_client.delete("/users/logout")
+    response = test_client.delete("/auth/logout")
     assert response.status_code == status.HTTP_401_UNAUTHORIZED, response.json()
 
     # Because of the way we patched GitHub functions for mocking, it doesn't matter what token we pass in.
-    response = test_client.post("/users/github/code", json={"code": "test_code"})
+    response = test_client.post("/auth/github/code", json={"code": "test_code"})
     assert response.status_code == status.HTTP_200_OK, response.json()
     token = response.json()["api_key"]
     auth_headers = {"Authorization": f"Bearer {token}"}
@@ -28,7 +28,7 @@ def test_user_auth_functions(test_client: TestClient) -> None:
     assert response.status_code == status.HTTP_200_OK, response.json()
 
     # Log the user out, which deletes the session token.
-    response = test_client.delete("/users/logout", headers=auth_headers)
+    response = test_client.delete("/auth/logout", headers=auth_headers)
     assert response.status_code == status.HTTP_200_OK, response.json()
     assert response.json() is True
 
@@ -38,7 +38,7 @@ def test_user_auth_functions(test_client: TestClient) -> None:
     assert response.json()["detail"] == "Not authenticated"
 
     # Log the user back in, getting new session token.
-    response = test_client.post("/users/github/code", json={"code": "test_code"})
+    response = test_client.post("/auth/github/code", json={"code": "test_code"})
     assert response.status_code == status.HTTP_200_OK, response.json()
     assert response.json()["api_key"] != token
     token = response.json()["api_key"]
@@ -59,7 +59,7 @@ async def test_user_general_functions(app_client: AsyncClient) -> None:
     await create_tables()
 
     # Because of the way we patched GitHub functions for mocking, it doesn't matter what token we pass in.
-    response = await app_client.post("/users/github/code", json={"code": "test_code"})
+    response = await app_client.post("/auth/github/code", json={"code": "test_code"})
     assert response.status_code == status.HTTP_200_OK, response.json()
     token = response.json()["api_key"]
     auth_headers = {"Authorization": f"Bearer {token}"}

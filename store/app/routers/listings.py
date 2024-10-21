@@ -29,7 +29,6 @@ class ListListingsResponse(BaseModel):
 @listings_router.get("/search", response_model=ListListingsResponse)
 async def list_listings(
     crud: Annotated[Crud, Depends(Crud.get)],
-    user: Annotated[User, Depends(get_session_user_with_read_permission)],
     page: int = Query(1, description="Page number for pagination"),
     search_query: str = Query("", description="Search query string"),
     sort_by: SortOption = Query(SortOption.NEWEST, description="Sort option for listings"),

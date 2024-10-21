@@ -9,7 +9,7 @@ from PIL import Image
 
 def test_user_auth_functions(test_client: TestClient, tmpdir: Path) -> None:
     # Get an auth token using the mocked Github endpoint.
-    response = test_client.post("/users/github/code", json={"code": "test_code"})
+    response = test_client.post("/auth/github/code", json={"code": "test_code"})
     assert response.status_code == status.HTTP_200_OK, response.json()
     token = response.json()["api_key"]
     auth_headers = {"Authorization": f"Bearer {token}"}
