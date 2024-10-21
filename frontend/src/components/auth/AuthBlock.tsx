@@ -50,7 +50,7 @@ export const AuthBlockInner: React.FC<{ initialSignup?: boolean }> = ({
 
       if (code) {
         setUseSpinner(true);
-        const { data, error } = await auth.client.POST("/users/github/code", {
+        const { data, error } = await auth.client.POST("/auth/github/code", {
           body: { code },
         });
 

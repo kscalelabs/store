@@ -5,18 +5,13 @@ from email.utils import parseaddr as parse_email_address
 from typing import Annotated, Literal, Mapping, Self, overload
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from fastapi.security.utils import get_authorization_scheme_param
 from pydantic.main import BaseModel
 from pydantic.networks import EmailStr
 
-from store.app.crud.users import UserCrud
 from store.app.db import Crud
 from store.app.errors import ItemNotFoundError, NotAuthenticatedError
-from store.app.model import APIKeySource, User, UserPermission, UserPublic
-from store.app.routers.auth.github import github_auth_router
-from store.app.routers.auth.google import google_auth_router
+from store.app.model import User, UserPermission, UserPublic
 from store.app.utils.email import send_delete_email
-from store.app.utils.password import verify_password
 
 logger = logging.getLogger(__name__)
 
@@ -35,15 +30,22 @@ async def get_api_key_from_header(headers: Mapping[str, str], require_header: Li
 
 async def get_api_key_from_header(headers: Mapping[str, str], require_header: bool) -> str | None:
     authorization = headers.get("Authorization") or headers.get("authorization")
+    logger.debug(f"Received authorization header: {authorization}")
     if not authorization:
         if require_header:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
         return None
-    scheme, credentials = get_authorization_scheme_param(authorization)
-    if not (scheme and credentials):
+
+    # Check if the authorization header starts with "Bearer "
+    if authorization.startswith("Bearer "):
+        credentials = authorization[7:]  # Remove "Bearer " prefix
+    else:
+        # If "Bearer " is missing, assume the entire header is the token
+        credentials = authorization
+
+    if not credentials:
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Authorization header is invalid")
-    if scheme.lower() != TOKEN_TYPE.lower():
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Authorization scheme is invalid")
+
     return credentials
 
 
@@ -170,15 +172,6 @@ async def delete_user_endpoint(
     return True
 
 
-@users_router.delete("/logout")
-async def logout_user_endpoint(
-    token: Annotated[str, Depends(get_request_api_key_id)],
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    await crud.delete_api_key(token)
-    return True
-
-
 class UserInfoResponseItem(BaseModel):
     id: str
     email: str
@@ -225,19 +218,6 @@ class PublicUsersInfoResponse(BaseModel):
     users: list[PublicUserInfoResponseItem]
 
 
-@users_router.post("/signup", response_model=UserInfoResponseItem)
-async def register_user(data: UserSignup, crud: Annotated[Crud, Depends(Crud.get)]) -> UserInfoResponseItem:
-    signup_token = await crud.get_email_signup_token(data.signup_token_id)
-    if not signup_token:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid or expired registration token")
-    existing_user = await crud.get_user_from_email(signup_token.email)
-    if existing_user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists")
-    user = await crud._create_user_from_email(email=signup_token.email, password=data.password)
-    await crud.delete_email_signup_token(data.signup_token_id)
-    return UserInfoResponseItem(id=user.id, email=user.email)
-
-
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
@@ -246,37 +226,6 @@ class LoginRequest(BaseModel):
 class LoginResponse(BaseModel):
     user_id: str
     token: str
-
-
-@users_router.post("/login", response_model=LoginResponse)
-async def login_user(data: LoginRequest, user_crud: UserCrud = Depends()) -> LoginResponse:
-    async with user_crud:
-        # Fetch user by email
-        user = await user_crud.get_user_from_email(data.email)
-        if not user:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-
-        # Determine if the user logged in via OAuth or hashed password
-        source: APIKeySource
-        if user.hashed_password is None:
-            # OAuth login
-            if user.google_id or user.github_id:
-                source = "oauth"
-            else:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unknown login source")
-        else:
-            # Password login
-            if not verify_password(data.password, user.hashed_password):
-                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password")
-            source = "password"
-
-        api_key = await user_crud.add_api_key(
-            user.id,
-            source=source,
-            permissions="full",  # Users with verified email accounts have full permissions.
-        )
-
-        return LoginResponse(user_id=user.id, token=api_key.id)
 
 
 @users_router.get("/batch", response_model=PublicUsersInfoResponse)
@@ -364,10 +313,6 @@ async def validate_api_key_endpoint(
         return True
     except ItemNotFoundError:
         return False
-
-
-users_router.include_router(github_auth_router, prefix="/github")
-users_router.include_router(google_auth_router, prefix="/google")
 
 
 class SetModeratorRequest(BaseModel):

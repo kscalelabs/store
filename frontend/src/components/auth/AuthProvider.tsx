@@ -19,7 +19,7 @@ const GoogleAuthButton = () => {
   useEffect(() => {
     (async () => {
       if (credential !== null) {
-        const { data, error } = await auth.client.POST("/users/google/login", {
+        const { data, error } = await auth.client.POST("/auth/google/login", {
           body: {
             token: credential,
           },
@@ -73,7 +73,7 @@ const GoogleAuthButtonWrapper = () => {
     (async () => {
       if (googleClientId !== null) return;
 
-      const { data, error } = await auth.client.GET("/users/google/client-id");
+      const { data, error } = await auth.client.GET("/auth/google/client-id");
       if (error) {
         addErrorAlert(error);
       } else {
@@ -107,7 +107,7 @@ const GithubAuthButton = () => {
     (async () => {
       if (githubClientId !== null) return;
 
-      const { data, error } = await auth.client.GET("/users/github/client-id");
+      const { data, error } = await auth.client.GET("/auth/github/client-id");
       if (error) {
         addErrorAlert(error);
       } else {

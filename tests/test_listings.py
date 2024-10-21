@@ -11,7 +11,7 @@ from store.app.model import ListingVote
 
 def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     # Signup.
-    response = test_client.post("/users/github/code", json={"code": "test_code"})
+    response = test_client.post("/auth/github/code", json={"code": "test_code"})
     assert response.status_code == status.HTTP_200_OK, response.json()
     token = response.json()["api_key"]
     auth_headers = {"Authorization": f"Bearer {token}"}
