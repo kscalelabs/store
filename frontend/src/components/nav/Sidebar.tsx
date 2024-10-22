@@ -40,8 +40,8 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
   const { isAuthenticated } = useAuthentication();
 
   const navItems = [
-    { name: "Pro", path: "/stompy-pro", icon: <FaRobot /> },
-    { name: "Mini", path: "/stompy-mini", icon: <FaRobot /> },
+    { name: "Pro", path: "/pro", icon: <FaRobot /> },
+    { name: "Mini", path: "/mini", icon: <FaRobot /> },
   ];
 
   const technicalItems = [
