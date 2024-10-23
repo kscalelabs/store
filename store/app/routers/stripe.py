@@ -180,6 +180,7 @@ async def create_checkout_session(
                     },
                 }
             ],
+            automatic_tax={"enabled": True},
             mode="payment",
             success_url=f"{settings.site.homepage}/success?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{settings.site.homepage}{cancel_url}",

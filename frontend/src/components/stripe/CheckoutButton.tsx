@@ -6,7 +6,7 @@ import { Drawer } from "@/components/Drawer";
 import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
-import { STRIPE_PUBLISHABLE_KEY } from "@/lib/constants/env";
+import { STRIPE_PUBLISHABLE_KEY, BACKEND_URL } from "@/lib/constants/env";
 import { loadStripe } from "@stripe/stripe-js";
 
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
