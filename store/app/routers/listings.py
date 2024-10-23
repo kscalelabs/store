@@ -133,8 +133,9 @@ async def list_my_listings(
 
 class NewListingRequest(BaseModel):
     name: str
-    child_ids: list[str]
     description: str | None
+    child_ids: list[str]
+    slug: str
 
 
 class NewListingResponse(BaseModel):
@@ -151,8 +152,9 @@ async def add_listing(
     listing = Listing.create(
         name=data.name,
         description=data.description,
-        user_id=user.id,
         child_ids=data.child_ids,
+        slug=data.slug,
+        user_id=user.id,
     )
     await crud.add_listing(listing)
     return NewListingResponse(listing_id=listing.id)
@@ -285,7 +287,7 @@ async def get_listing(
         views=listing.views,
         score=listing.score,
         user_vote=user_vote,
-        creator_id=listing.user_id,  # Add this line
+        creator_id=listing.user_id,
         creator_name=creator_name,
     )
 
@@ -323,3 +325,59 @@ async def remove_vote(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
 ) -> None:
     await crud.handle_vote(user.id, id, None)
+
+
+@listings_router.put("/{id}/slug", response_model=bool)
+async def update_listing_slug(
+    id: str,
+    new_slug: str,
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> bool:
+    listing = await crud.get_listing(id)
+    if listing is None:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    if not await can_write_listing(user, listing):
+        raise HTTPException(status_code=403, detail="You don't have permission to edit this listing")
+    if await crud.is_slug_taken(user.id, new_slug):
+        raise HTTPException(status_code=400, detail="Slug is already taken for this user")
+    await crud.set_slug(id, new_slug)
+    return True
+
+
+@listings_router.get("/{username}/{slug}", response_model=GetListingResponse)
+async def get_listing_by_username_and_slug(
+    username: str,
+    slug: str,
+    user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> GetListingResponse:
+    listing = await crud.get_listing_by_username_and_slug(username, slug)
+    if listing is None:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    listing_tags = await crud.get_tags_for_listing(listing.id)
+
+    user_vote = None
+    if user and (vote := await crud.get_user_vote(user.id, listing.id)) is not None:
+        user_vote = vote.is_upvote
+
+    creator_name = None
+    if (creator := await crud.get_user_public(listing.user_id)) is not None:
+        creator_name = " ".join(filter(None, [creator.first_name, creator.last_name]))
+
+    return GetListingResponse(
+        id=listing.id,
+        name=listing.name,
+        description=listing.description,
+        child_ids=listing.child_ids,
+        tags=listing_tags,  # This is now correct as listing_tags is already a list[str]
+        onshape_url=listing.onshape_url,
+        can_edit=user is not None and await can_write_listing(user, listing),
+        created_at=listing.created_at,
+        views=listing.views,
+        score=listing.score,
+        user_vote=user_vote,
+        creator_id=listing.user_id,
+        creator_name=creator_name,
+    )

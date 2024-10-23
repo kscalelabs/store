@@ -9,7 +9,7 @@ from boto3.dynamodb.conditions import Attr
 
 from store.app.crud.artifacts import ArtifactsCrud
 from store.app.crud.base import TABLE_NAME, BaseCrud, ItemNotFoundError
-from store.app.model import Listing, ListingTag, ListingVote
+from store.app.model import Listing, ListingTag, ListingVote, User
 
 T = TypeVar("T")
 
@@ -311,3 +311,22 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         has_more = len(upvoted_listing_ids) > end
 
         return paginated_listings, has_more
+
+    async def set_slug(self, listing_id: str, new_slug: str) -> Listing:
+        listing = await self.get_listing(listing_id)
+        if listing is None:
+            raise ItemNotFoundError("Listing not found")
+        listing.set_slug(new_slug)
+        await self._update_item(listing_id, Listing, {"slug": new_slug, "updated_at": listing.updated_at})
+        return listing
+
+    async def is_slug_taken(self, user_id: str, slug: str) -> bool:
+        existing_listings = await self._get_items_from_secondary_index("user_id", user_id, Listing)
+        return any(listing.slug == slug for listing in existing_listings)
+
+    async def get_listing_by_username_and_slug(self, username: str, slug: str) -> Listing | None:
+        user = await self._get_unique_item_from_secondary_index("username", username, User)
+        if user is None:
+            return None
+        listings = await self._get_items_from_secondary_index("user_id", user.id, Listing)
+        return next((listing for listing in listings if listing.slug == slug), None)

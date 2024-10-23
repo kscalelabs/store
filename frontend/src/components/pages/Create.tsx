@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { NewListingSchema, NewListingType } from "@/lib/types";
+import { slugify } from "@/lib/utils/formatString";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const Create = () => {
@@ -20,18 +21,31 @@ const Create = () => {
   const navigate = useNavigate();
 
   const [description, setDescription] = useState<string>("");
+  const [slug, setSlug] = useState<string>("");
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
+    setValue,
   } = useForm<NewListingType>({
     resolver: zodResolver(NewListingSchema),
   });
 
+  const name = watch("name");
+
+  useEffect(() => {
+    if (name) {
+      const newSlug = slugify(name);
+      setSlug(newSlug);
+      setValue("slug", newSlug, { shouldValidate: true });
+    }
+  }, [name, setValue]);
+
   // On submit, add the listing to the database and navigate to the
   // newly-created listing.
-  const onSubmit = async ({ name, description }: NewListingType) => {
+  const onSubmit = async ({ name, description, slug }: NewListingType) => {
     const { data: responseData, error } = await auth.client.POST(
       "/listings/add",
       {
@@ -39,6 +53,7 @@ const Create = () => {
           name,
           description,
           child_ids: [],
+          slug,
         },
       },
     );
@@ -113,6 +128,32 @@ const Create = () => {
                   <RenderDescription description={description} />
                 </div>
               )}
+
+              {/* Slug */}
+              <div>
+                <label
+                  htmlFor="slug"
+                  className="block mb-2 text-sm font-medium text-gray-12"
+                >
+                  Slug
+                </label>
+                <Input
+                  id="slug"
+                  placeholder="Unique identifier for your listing"
+                  type="text"
+                  {...register("slug", {
+                    onChange: (e) => {
+                      const newSlug = slugify(e.target.value);
+                      setSlug(newSlug);
+                      setValue("slug", newSlug, { shouldValidate: true });
+                    },
+                  })}
+                  value={slug}
+                />
+                {errors?.slug && (
+                  <ErrorMessage>{errors?.slug?.message}</ErrorMessage>
+                )}
+              </div>
 
               {/* Submit */}
               <div className="flex justify-end">

@@ -1,6 +1,9 @@
 """Defines CRUD interface for user API."""
 
 import asyncio
+import logging
+import random
+import string
 import warnings
 from typing import Any, Literal, Optional, overload
 
@@ -19,6 +22,8 @@ from store.app.model import (
 from store.settings import settings
 from store.utils import cache_async_result
 
+logger = logging.getLogger(__name__)
+
 
 def github_auth_key(github_id: str) -> str:
     return f"github:{github_id}"
@@ -36,7 +41,7 @@ class UserNotFoundError(Exception):
 class UserCrud(BaseCrud):
     @classmethod
     def get_gsis(cls) -> set[str]:
-        return super().get_gsis().union({"user_id", "email", "user_token"})
+        return super().get_gsis().union({"user_id", "email", "user_token", "username"})
 
     @overload
     async def get_user(self, id: str, throw_if_missing: Literal[True]) -> User: ...
@@ -54,9 +59,15 @@ class UserCrud(BaseCrud):
         return UserPublic(**user.model_dump())
 
     async def _create_user_from_email(self, email: str, password: str) -> User:
-        user = User.create(email=email, password=password)
-        await self._add_item(user, unique_fields=["email"])
-        return user
+        try:
+            base_username = email.split("@")[0]
+            unique_username = await self.generate_unique_username(base_username)
+            user = User.create(email=email, username=unique_username, password=password)
+            await self._add_item(user, unique_fields=["email", "username"])
+            return user
+        except Exception as e:
+            logger.error(f"Error in _create_user_from_email: {str(e)}", exc_info=True)
+            raise
 
     async def _create_user_from_oauth(
         self,
@@ -66,21 +77,32 @@ class UserCrud(BaseCrud):
         first_name: Optional[str] = None,
         last_name: Optional[str] = None,
     ) -> User:
-        user = await self.get_user_from_email(email)
-        if user is None:
-            user = User.create(email=email, first_name=first_name, last_name=last_name, password=None)
-            if provider == "github":
-                user.github_id = user_token
+        try:
+            user = await self.get_user_from_email(email)
+            if user is None:
+                # Generate a unique username based on the email
+                base_username = email.split("@")[0]
+                unique_username = await self.generate_unique_username(base_username)
+
+                user = User.create(
+                    email=email, username=unique_username, first_name=first_name, last_name=last_name, password=None
+                )
+                if provider == "github":
+                    user.github_id = user_token
+                elif provider == "google":
+                    user.google_id = user_token
+                await self._add_item(user, unique_fields=["email", "username"])
+            elif provider == "github":
+                await self._update_item(user.id, User, {"github_id": user_token})
             elif provider == "google":
-                user.google_id = user_token
-            await self._add_item(user, unique_fields=["email"])
-        elif provider == "github":
-            await self._update_item(user.id, User, {"github_id": user_token})
-        elif provider == "google":
-            await self._update_item(user.id, User, {"google_id": user_token})
-        oauth_key = OAuthKey.create(user_id=user.id, provider=provider, user_token=user_token)
-        await self._add_item(oauth_key, unique_fields=["user_token"])
-        return user
+                await self._update_item(user.id, User, {"google_id": user_token})
+
+            oauth_key = OAuthKey.create(user_id=user.id, provider=provider, user_token=user_token)
+            await self._add_item(oauth_key, unique_fields=["user_token"])
+            return user
+        except Exception as e:
+            logger.error(f"Error in _create_user_from_oauth: {str(e)}", exc_info=True)
+            raise
 
     @overload
     async def _get_oauth_key(self, token: str, throw_if_missing: Literal[True]) -> OAuthKey: ...
@@ -101,11 +123,15 @@ class UserCrud(BaseCrud):
         return None if key is None else await self.get_user(key.user_id)
 
     async def get_user_from_github_token(self, token: str, email: str) -> User:
-        auth_key = github_auth_key(token)
-        user = await self._get_user_from_auth_key(auth_key)
-        if user is not None:
-            return user
-        return await self._create_user_from_oauth(email, "github", auth_key)
+        try:
+            auth_key = github_auth_key(token)
+            user = await self._get_user_from_auth_key(auth_key)
+            if user is not None:
+                return user
+            return await self._create_user_from_oauth(email, "github", auth_key)
+        except Exception as e:
+            logger.error(f"Error in get_user_from_github_token: {str(e)}", exc_info=True)
+            raise
 
     async def delete_github_token(self, github_id: str) -> None:
         await self._delete_item(await self._get_oauth_key(github_auth_key(github_id), throw_if_missing=True))
@@ -113,11 +139,15 @@ class UserCrud(BaseCrud):
     async def get_user_from_google_token(
         self, email: str, first_name: Optional[str] = None, last_name: Optional[str] = None
     ) -> User:
-        auth_key = google_auth_key(email)
-        user = await self._get_user_from_auth_key(auth_key)
-        if user is not None:
-            return user
-        return await self._create_user_from_oauth(email, "google", auth_key, first_name, last_name)
+        try:
+            auth_key = google_auth_key(email)
+            user = await self._get_user_from_auth_key(auth_key)
+            if user is not None:
+                return user
+            return await self._create_user_from_oauth(email, "google", auth_key, first_name, last_name)
+        except Exception as e:
+            logger.error(f"Error in get_user_from_google_token: {str(e)}", exc_info=True)
+            raise
 
     async def delete_google_token(self, google_id: str) -> None:
         await self._delete_item(await self._get_oauth_key(google_auth_key(google_id), throw_if_missing=True))
@@ -204,6 +234,25 @@ class UserCrud(BaseCrud):
             user.permissions.discard("is_mod")
         await self._update_item(user_id, User, {"permissions": list(user.permissions)})
         return user
+
+    async def set_username(self, user_id: str, new_username: str) -> User:
+        user = await self.get_user(user_id, throw_if_missing=True)
+        user.set_username(new_username)
+        await self._update_item(user_id, User, {"username": new_username, "updated_at": user.updated_at})
+        return user
+
+    async def is_username_taken(self, username: str) -> bool:
+        logger.info(f"Checking if username {username} is taken")
+        existing_users = await self._get_items_from_secondary_index("username", username, User)
+        logger.info(f"existing_users: {existing_users}")
+        return len(existing_users) > 0
+
+    async def generate_unique_username(self, base: str) -> str:
+        username = base
+        while await self.is_username_taken(username):
+            random_suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
+            username = f"{base}{random_suffix}"
+        return username
 
 
 async def test_adhoc() -> None:
