@@ -204,6 +204,17 @@ async def create_checkout_session(
                         },
                     },
                 },
+                {
+                    "shipping_rate_data": {
+                        "type": "fixed_amount",
+                        "fixed_amount": {"amount": 2500, "currency": "usd"},
+                        "display_name": "Ground - Express",
+                        "delivery_estimate": {
+                            "minimum": {"unit": "business_day", "value": 2},
+                            "maximum": {"unit": "business_day", "value": 5},
+                        },
+                    },
+                },
             ],
         )
 
