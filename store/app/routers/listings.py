@@ -140,6 +140,8 @@ class NewListingRequest(BaseModel):
 
 class NewListingResponse(BaseModel):
     listing_id: str
+    username: str
+    slug: str
 
 
 @listings_router.post("/add", response_model=NewListingResponse)
@@ -157,7 +159,7 @@ async def add_listing(
         user_id=user.id,
     )
     await crud.add_listing(listing)
-    return NewListingResponse(listing_id=listing.id)
+    return NewListingResponse(listing_id=listing.id, username=user.username, slug=data.slug)
 
 
 @listings_router.delete("/delete/{listing_id}", response_model=bool)
@@ -371,7 +373,7 @@ async def get_listing_by_username_and_slug(
         name=listing.name,
         description=listing.description,
         child_ids=listing.child_ids,
-        tags=listing_tags,  # This is now correct as listing_tags is already a list[str]
+        tags=listing_tags,
         onshape_url=listing.onshape_url,
         can_edit=user is not None and await can_write_listing(user, listing),
         created_at=listing.created_at,

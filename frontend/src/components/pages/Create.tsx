@@ -22,6 +22,7 @@ const Create = () => {
 
   const [description, setDescription] = useState<string>("");
   const [slug, setSlug] = useState<string>("");
+  const [previewUrl, setPreviewUrl] = useState<string>("");
 
   const {
     register,
@@ -43,6 +44,12 @@ const Create = () => {
     }
   }, [name, setValue]);
 
+  useEffect(() => {
+    if (auth.currentUser && slug) {
+      setPreviewUrl(`/item/${auth.currentUser.username}/${slug}`);
+    }
+  }, [auth.currentUser, slug]);
+
   // On submit, add the listing to the database and navigate to the
   // newly-created listing.
   const onSubmit = async ({ name, description, slug }: NewListingType) => {
@@ -62,7 +69,10 @@ const Create = () => {
       addErrorAlert(error);
     } else {
       addAlert("New listing was created successfully", "success");
-      navigate(`/item/${responseData.listing_id}`);
+      console.log(responseData);
+      console.log(responseData.username);
+      console.log(responseData.slug);
+      navigate(`/item/${responseData.username}/${responseData.slug}`);
     }
   };
 
@@ -154,6 +164,18 @@ const Create = () => {
                   <ErrorMessage>{errors?.slug?.message}</ErrorMessage>
                 )}
               </div>
+
+              {/* URL Preview */}
+              {previewUrl && (
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-12">
+                    Listing URL Preview
+                  </label>
+                  <div className="p-2 bg-gray-3 rounded-md text-gray-11">
+                    {previewUrl}
+                  </div>
+                </div>
+              )}
 
               {/* Submit */}
               <div className="flex justify-end">

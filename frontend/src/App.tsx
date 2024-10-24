@@ -72,6 +72,10 @@ const App = () => {
 
                       <Route path="/create" element={<Create />} />
                       <Route path="/item/:id" element={<ListingDetails />} />
+                      <Route
+                        path="/item/:username/:slug"
+                        element={<ListingDetails />}
+                      />
                       <Route path="/keys" element={<APIKeys />} />
                       <Route path="/profile/:id?" element={<Profile />} />
 

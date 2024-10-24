@@ -17,11 +17,7 @@ def test_user_auth_functions(test_client: TestClient, tmpdir: Path) -> None:
     # Create a listing.
     response = test_client.post(
         "/listings/add",
-        json={
-            "name": "test listing",
-            "description": "test description",
-            "child_ids": [],
-        },
+        json={"name": "test listing", "description": "test description", "child_ids": [], "slug": "test-listing"},
         headers=auth_headers,
     )
     assert response.status_code == status.HTTP_200_OK, response.json()

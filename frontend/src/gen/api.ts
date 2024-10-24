@@ -1389,6 +1389,10 @@ export interface components {
         NewListingResponse: {
             /** Listing Id */
             listing_id: string;
+            /** Username */
+            username: string;
+            /** Slug */
+            slug: string;
         };
         /**
          * Order

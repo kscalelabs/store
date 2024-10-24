@@ -29,31 +29,45 @@ const RenderListing = ({ listing }: RenderListingProps) => {
 const ListingDetails = () => {
   const { addErrorAlert } = useAlertQueue();
   const auth = useAuthentication();
-  const { id } = useParams();
+  const { username, slug, id } = useParams();
   const [listing, setListing] = useState<ListingResponse | null>(null);
   const [isFetched, setIsFetched] = useState(false);
 
   const fetchListing = useCallback(async () => {
-    if (id === undefined) {
-      return;
-    }
-
     try {
-      const { data, error } = await auth.client.GET("/listings/{id}", {
-        params: {
-          path: { id },
-        },
-      });
+      let data, error;
+
+      if (username && slug) {
+        // Try to fetch the listing using the username/slug endpoint
+        ({ data, error } = await auth.client.GET(
+          "/listings/{username}/{slug}",
+          {
+            params: {
+              path: { username, slug },
+            },
+          },
+        ));
+      } else if (id) {
+        // Fetch the listing using the ID-based endpoint
+        ({ data, error } = await auth.client.GET("/listings/{id}", {
+          params: {
+            path: { id },
+          },
+        }));
+      } else {
+        throw new Error("Invalid URL parameters");
+      }
+
       if (error) {
         addErrorAlert(error);
-      } else {
+      } else if (data) {
         setListing(data);
         setIsFetched(true);
       }
     } catch (err) {
       addErrorAlert(err);
     }
-  }, [id, auth.client, addErrorAlert]);
+  }, [username, slug, id, auth.client, addErrorAlert]);
 
   useEffect(() => {
     fetchListing();
@@ -61,11 +75,11 @@ const ListingDetails = () => {
 
   useEffect(() => {
     const incrementViewCount = async () => {
-      if (id) {
+      if (listing?.id) {
         try {
           await auth.client.POST(`/listings/{id}/view`, {
             params: {
-              path: { id },
+              path: { id: listing.id },
             },
           });
         } catch (err) {
@@ -74,7 +88,7 @@ const ListingDetails = () => {
       }
     };
     incrementViewCount();
-  }, [id, auth.client]);
+  }, [listing?.id, auth.client]);
 
   // Refetch the listing when auth state changes or on initial load
   useEffect(() => {
