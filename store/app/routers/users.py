@@ -191,6 +191,7 @@ class UsersInfoResponse(BaseModel):
 class PublicUserInfoResponseItem(BaseModel):
     id: str
     email: str
+    username: str
     permissions: set[UserPermission] | None = None
     created_at: int | None = None
     updated_at: int | None = None
@@ -204,6 +205,7 @@ class PublicUserInfoResponseItem(BaseModel):
         return cls(
             id=user.id,
             email=user.email,
+            username=user.username,
             permissions=user.permissions,
             created_at=user.created_at,
             updated_at=user.updated_at,
@@ -257,8 +259,8 @@ async def get_user_info_by_id_endpoint(id: str, crud: Annotated[Crud, Depends(Cr
 @users_router.get("/public/me", response_model=UserPublic)
 async def get_my_public_user_info_endpoint(
     user: User = Depends(get_session_user_with_read_permission),
-) -> PublicUserInfoResponseItem:
-    return PublicUserInfoResponseItem.from_user(user)
+) -> UserPublic:  # Change return type to UserPublic
+    return UserPublic(**user.model_dump())  # Return UserPublic instance directly
 
 
 @users_router.get("/public/{id}", response_model=UserPublic)
@@ -303,6 +305,22 @@ async def update_profile(
         )
 
 
+class UpdateUsernameRequest(BaseModel):
+    new_username: str
+
+
+@users_router.put("/me/username", response_model=UserPublic)
+async def update_username(
+    request: UpdateUsernameRequest,
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> UserPublic:
+    if await crud.is_username_taken(request.new_username):
+        raise HTTPException(status_code=400, detail="Username is already taken")
+    updated_user = await crud.set_username(user.id, request.new_username)
+    return UserPublic(**updated_user.model_dump())
+
+
 @users_router.get("/validate-api-key")
 async def validate_api_key_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -328,3 +346,13 @@ async def set_moderator(
 ) -> UserPublic:
     updated_user = await crud.set_moderator(request.user_id, request.is_mod)
     return UserPublic(**updated_user.model_dump())
+
+
+@users_router.get("/check-username/{username}")
+async def check_username_availability(
+    username: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> dict[str, bool]:
+    logger.info(f"Checking if username {username} is taken")
+    is_taken = await crud.is_username_taken(username)
+    return {"available": not is_taken}

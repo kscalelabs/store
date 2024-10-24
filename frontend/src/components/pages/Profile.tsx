@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import { format } from "date-fns";
 
@@ -20,15 +21,16 @@ type UserResponse =
 interface RenderProfileProps {
   user: UserResponse;
   onUpdateProfile: (updatedUser: Partial<UserResponse>) => Promise<void>;
+  onUpdateUsername: (newUsername: string) => Promise<void>;
   canEdit: boolean;
   listingIds: string[] | null;
   isAdmin: boolean;
 }
 
 export const RenderProfile = (props: RenderProfileProps) => {
+  const { user, onUpdateProfile, onUpdateUsername, canEdit, isAdmin } = props;
   const navigate = useNavigate();
   const auth = useAuthentication();
-  const { user, onUpdateProfile, canEdit, isAdmin } = props;
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [firstName, setFirstName] = useState(user.first_name || "");
@@ -36,6 +38,11 @@ export const RenderProfile = (props: RenderProfileProps) => {
   const [bio, setBio] = useState(user.bio || "");
   const [myListingsPage, setMyListingsPage] = useState(1);
   const [upvotedPage, setUpvotedPage] = useState(1);
+  const [username, setUsername] = useState(user.username || "");
+  const [isUsernameAvailable, setIsUsernameAvailable] = useState(true);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [isUsernameChanged, setIsUsernameChanged] = useState(false);
+  const debouncedUsername = useDebounce(username, 500);
 
   const formatJoinDate = (timestamp: number) => {
     const date = new Date(timestamp * 1000); // Convert seconds to milliseconds
@@ -46,12 +53,18 @@ export const RenderProfile = (props: RenderProfileProps) => {
     event.preventDefault();
     setIsSubmitting(true);
     try {
+      if (isUsernameChanged && isUsernameAvailable) {
+        await onUpdateUsername(username);
+      }
+
       await onUpdateProfile({
         first_name: firstName,
         last_name: lastName,
         bio: bio,
       });
+
       setIsEditing(false);
+      setIsUsernameChanged(false);
     } catch (error) {
       console.error("Failed to update profile", error);
     } finally {
@@ -81,6 +94,40 @@ export const RenderProfile = (props: RenderProfileProps) => {
     }
   };
 
+  useEffect(() => {
+    const checkUsernameAvailability = async () => {
+      if (debouncedUsername && debouncedUsername !== user.username) {
+        setIsUsernameChanged(true);
+        setIsCheckingUsername(true);
+        try {
+          const { data, error } = await auth.client.GET(
+            "/users/check-username/{username}",
+            {
+              params: { path: { username: debouncedUsername } },
+            },
+          );
+          if (error) {
+            console.error("Error checking username availability:", error);
+            setIsUsernameAvailable(false);
+          } else {
+            setIsUsernameAvailable(data?.available ?? false);
+          }
+        } catch (error) {
+          console.error("Error checking username availability:", error);
+          setIsUsernameAvailable(false);
+        } finally {
+          setIsCheckingUsername(false);
+        }
+      } else {
+        setIsUsernameAvailable(true);
+        setIsCheckingUsername(false);
+        setIsUsernameChanged(false);
+      }
+    };
+
+    checkUsernameAvailability();
+  }, [debouncedUsername, user.username, auth.client]);
+
   return (
     <div className="space-y-8 mb-12">
       <Card className="w-full max-w-4xl mx-auto">
@@ -94,6 +141,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
             Joined on{" "}
             {user.created_at ? formatJoinDate(user.created_at) : "Unknown date"}
           </p>
+          <p className="text-sm text-gray-11">Username: {user.username}</p>
           {!isEditing && canEdit && (
             <div className="flex space-x-2">
               <Button onClick={() => navigate("/orders")} variant="default">
@@ -117,9 +165,44 @@ export const RenderProfile = (props: RenderProfileProps) => {
         </CardHeader>
         <CardContent>
           {isEditing ? (
-            <div className="flex justify-center">
-              <form onSubmit={handleSubmit} className="w-full max-w-lg">
-                <div className="mb-4">
+            <div className="flex justify-center space-y-4">
+              <form
+                onSubmit={handleSubmit}
+                className="w-full max-w-lg space-y-4"
+              >
+                <div>
+                  <label
+                    htmlFor="username"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Username
+                  </label>
+                  <Input
+                    id="username"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="mt-1 block w-full"
+                  />
+                  {isCheckingUsername && (
+                    <p className="text-sm text-gray-500">
+                      Checking username...
+                    </p>
+                  )}
+                  {!isCheckingUsername && isUsernameChanged && (
+                    <p
+                      className={`text-sm ${
+                        isUsernameAvailable ? "text-green-500" : "text-red-500"
+                      }`}
+                    >
+                      {isUsernameAvailable
+                        ? "Username is available"
+                        : "Username is not available"}
+                    </p>
+                  )}
+                </div>
+
+                <div>
                   <label
                     htmlFor="first_name"
                     className="block text-lg font-medium"
@@ -134,7 +217,8 @@ export const RenderProfile = (props: RenderProfileProps) => {
                     className="mt-1 block w-full"
                   />
                 </div>
-                <div className="mb-4">
+
+                <div>
                   <label
                     htmlFor="last_name"
                     className="block text-lg font-medium"
@@ -149,7 +233,8 @@ export const RenderProfile = (props: RenderProfileProps) => {
                     className="mt-1 block w-full"
                   />
                 </div>
-                <div className="mb-4">
+
+                <div>
                   <label htmlFor="bio" className="block text-lg font-medium">
                     Bio
                   </label>
@@ -161,6 +246,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
                     rows={4}
                   />
                 </div>
+
                 {isSubmitting ? (
                   <div className="mt-4 flex justify-center items-center">
                     <Spinner />
@@ -174,7 +260,11 @@ export const RenderProfile = (props: RenderProfileProps) => {
                     >
                       Cancel
                     </Button>
-                    <Button type="submit" variant="primary">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      disabled={isUsernameChanged && !isUsernameAvailable}
+                    >
                       Save Changes
                     </Button>
                   </div>
@@ -201,6 +291,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
           )}
         </CardContent>
       </Card>
+
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader>
           <h2 className="text-2xl font-bold">Listings</h2>
@@ -336,6 +427,22 @@ const Profile = () => {
     }
   };
 
+  const handleUpdateUsername = async (newUsername: string) => {
+    try {
+      const { data, error } = await auth.client.PUT("/users/me/username", {
+        body: { new_username: newUsername },
+      });
+      if (error) {
+        addErrorAlert(error);
+      } else {
+        setUser({ ...user, username: data.username } as UserResponse);
+        addAlert("Username updated successfully!", "success");
+      }
+    } catch {
+      addErrorAlert("Failed to update username");
+    }
+  };
+
   if (auth.isLoading || isLoading) {
     return (
       <div className="flex justify-center items-center pt-8">
@@ -348,6 +455,7 @@ const Profile = () => {
     <RenderProfile
       user={user}
       onUpdateProfile={handleUpdateProfile}
+      onUpdateUsername={handleUpdateUsername}
       canEdit={canEdit}
       listingIds={listingIds}
       isAdmin={isAdmin}

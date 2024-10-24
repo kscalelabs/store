@@ -73,6 +73,22 @@ const Account = () => {
     }
   };
 
+  const handleUpdateUsername = async (newUsername: string) => {
+    try {
+      const { data, error } = await auth.client.PUT("/users/me/username", {
+        body: { new_username: newUsername },
+      });
+      if (error) {
+        addErrorAlert(error);
+      } else {
+        setUser({ ...user, username: data.username } as AccountResponse);
+        addAlert("Username updated successfully!", "success");
+      }
+    } catch {
+      addErrorAlert("Failed to update username");
+    }
+  };
+
   if (auth.isLoading || isLoading) {
     return (
       <div className="flex justify-center items-center pt-8">
@@ -85,6 +101,7 @@ const Account = () => {
     <RenderProfile
       user={user}
       onUpdateProfile={handleUpdateAccount}
+      onUpdateUsername={handleUpdateUsername}
       canEdit={canEdit}
       listingIds={listingIds}
       isAdmin={isAdmin}
