@@ -192,8 +192,7 @@ export default function DownloadsPage() {
       <Tabs defaultValue="kernel" className="mb-6" onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="kernel">Kernel Images</TabsTrigger>
-          <TabsTrigger value="ml">ML</TabsTrigger>
-          <TabsTrigger value="other">Other</TabsTrigger>
+          <TabsTrigger value="ml">ML Weights</TabsTrigger>
         </TabsList>
       </Tabs>
 
