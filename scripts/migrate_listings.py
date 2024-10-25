@@ -1,15 +1,19 @@
+"""Defines a helper script for migrating listings.
+
+This script was used to add username and slug fields to listings when those
+fields were added to the Listing model.
+"""
+
 import asyncio
 import logging
 
 from store.app.db import Crud
 from store.app.model import Listing, User
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-async def update_listings_with_missing_fields(crud: Crud):
+async def update_listings_with_missing_fields(crud: Crud) -> None:
     logger.info("Starting migration of listings...")
     all_listings = await crud.dump_listings()
     updated_count = 0
@@ -29,7 +33,9 @@ async def update_listings_with_missing_fields(crud: Crud):
     logger.info(f"Migration completed. Updated {updated_count} listings.")
 
 
-async def main():
+async def main() -> None:
+    logging.basicConfig(level=logging.INFO)
+
     crud = Crud.get()
     await update_listings_with_missing_fields(crud)
 
