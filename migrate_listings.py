@@ -3,7 +3,6 @@ import logging
 
 from store.app.db import Crud
 from store.app.model import Listing, User
-from store.settings import load_settings
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -31,8 +30,7 @@ async def update_listings_with_missing_fields(crud: Crud):
 
 
 async def main():
-    settings = load_settings()
-    crud = Crud(settings)
+    crud = Crud.get()
     await update_listings_with_missing_fields(crud)
 
 
