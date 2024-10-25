@@ -10,6 +10,7 @@ import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { useDebounce } from "@/hooks/useDebounce";
+import { isValidUsername } from "@/lib/utils/validation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import { format } from "date-fns";
 
@@ -41,6 +42,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
   const [isUsernameAvailable, setIsUsernameAvailable] = useState(true);
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [isUsernameChanged, setIsUsernameChanged] = useState(false);
+  const [usernameError, setUsernameError] = useState<string | null>(null);
   const debouncedUsername = useDebounce(username, 500);
 
   const formatJoinDate = (timestamp: number) => {
@@ -96,6 +98,17 @@ export const RenderProfile = (props: RenderProfileProps) => {
       if (debouncedUsername && debouncedUsername !== user.username) {
         setIsUsernameChanged(true);
         setIsCheckingUsername(true);
+        setUsernameError(null);
+
+        if (!isValidUsername(debouncedUsername)) {
+          setIsUsernameAvailable(false);
+          setUsernameError(
+            "Username can only contain letters, numbers, underscores, and hyphens.",
+          );
+          setIsCheckingUsername(false);
+          return;
+        }
+
         try {
           const { data, error } = await auth.client.GET(
             "/users/check-username/{username}",
@@ -119,6 +132,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
         setIsUsernameAvailable(true);
         setIsCheckingUsername(false);
         setIsUsernameChanged(false);
+        setUsernameError(null);
       }
     };
 
@@ -189,12 +203,15 @@ export const RenderProfile = (props: RenderProfileProps) => {
                   {!isCheckingUsername && isUsernameChanged && (
                     <p
                       className={`text-sm ${
-                        isUsernameAvailable ? "text-green-500" : "text-red-500"
+                        isUsernameAvailable && !usernameError
+                          ? "text-green-500"
+                          : "text-red-500"
                       }`}
                     >
-                      {isUsernameAvailable
-                        ? "Username is available"
-                        : "Username is not available"}
+                      {usernameError ||
+                        (isUsernameAvailable
+                          ? "Username is available"
+                          : "Username is not available")}
                     </p>
                   )}
                 </div>
