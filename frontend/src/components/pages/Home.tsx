@@ -139,7 +139,7 @@ const OptionsSection: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="w-full">
+    <section className="w-full py-24 sm:py-36">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           {
