@@ -13,12 +13,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { components } from "@/gen/api";
+import { components, paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { useDebounce } from "@uidotdev/usehooks";
 
 type SortOption = components["schemas"]["SortOption"];
+
+type ListingInfo =
+  paths["/listings/search"]["get"]["responses"][200]["content"]["application/json"]["listings"][number];
 
 const Browse = () => {
   const auth = useAuthentication();
@@ -39,6 +42,7 @@ const Browse = () => {
   const [searchQuery, setSearchQuery] = useState(query || "");
   const debouncedSearch = useDebounce(searchQuery, 300);
   const [sortOption, setSortOption] = useState<SortOption>("most_upvoted");
+  const [listingInfos, setListingInfos] = useState<ListingInfo[] | null>(null);
 
   useEffect(() => {
     handleSearch();
@@ -46,6 +50,7 @@ const Browse = () => {
 
   const handleSearch = async () => {
     setListingIds(null);
+    setListingInfos(null);
 
     const { data, error } = await auth.client.GET("/listings/search", {
       params: {
@@ -60,8 +65,8 @@ const Browse = () => {
     if (error) {
       addErrorAlert(error);
     } else {
-      setListingIds(data.listing_ids);
       setMoreListings(data.has_next);
+      setListingInfos(data.listings);
     }
   };
 
@@ -161,7 +166,7 @@ const Browse = () => {
         </div>
       </div>
 
-      <ListingGrid listingIds={listingIds} />
+      <ListingGrid listingInfos={listingInfos} />
 
       {listingIds && (
         <div className="flex justify-between mt-2">

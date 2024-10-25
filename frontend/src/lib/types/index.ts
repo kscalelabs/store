@@ -73,6 +73,13 @@ export const NewListingSchema = z.object({
   description: z
     .string({ required_error: "Description is required." })
     .min(6, { message: "Description must be at least 6 characters long." }),
+  slug: z
+    .string({ required_error: "Slug is required." })
+    .min(1, { message: "Slug is required." })
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
+      message:
+        "Slug must contain only lowercase letters, numbers, and hyphens.",
+    }),
 });
 
 export type NewListingType = z.infer<typeof NewListingSchema>;

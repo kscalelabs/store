@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { NewListingSchema, NewListingType } from "@/lib/types";
+import { slugify } from "@/lib/utils/formatString";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const Create = () => {
@@ -20,18 +21,38 @@ const Create = () => {
   const navigate = useNavigate();
 
   const [description, setDescription] = useState<string>("");
+  const [slug, setSlug] = useState<string>("");
+  const [previewUrl, setPreviewUrl] = useState<string>("");
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
+    setValue,
   } = useForm<NewListingType>({
     resolver: zodResolver(NewListingSchema),
   });
 
+  const name = watch("name");
+
+  useEffect(() => {
+    if (name) {
+      const newSlug = slugify(name);
+      setSlug(newSlug);
+      setValue("slug", newSlug, { shouldValidate: true });
+    }
+  }, [name, setValue]);
+
+  useEffect(() => {
+    if (auth.currentUser && slug) {
+      setPreviewUrl(`/item/${auth.currentUser.username}/${slug}`);
+    }
+  }, [auth.currentUser, slug]);
+
   // On submit, add the listing to the database and navigate to the
   // newly-created listing.
-  const onSubmit = async ({ name, description }: NewListingType) => {
+  const onSubmit = async ({ name, description, slug }: NewListingType) => {
     const { data: responseData, error } = await auth.client.POST(
       "/listings/add",
       {
@@ -39,6 +60,7 @@ const Create = () => {
           name,
           description,
           child_ids: [],
+          slug,
         },
       },
     );
@@ -47,7 +69,7 @@ const Create = () => {
       addErrorAlert(error);
     } else {
       addAlert("New listing was created successfully", "success");
-      navigate(`/item/${responseData.listing_id}`);
+      navigate(`/item/${responseData.username}/${responseData.slug}`);
     }
   };
 
@@ -111,6 +133,44 @@ const Create = () => {
                 <div className="relative">
                   <h3 className="font-semibold mb-2">Description Preview</h3>
                   <RenderDescription description={description} />
+                </div>
+              )}
+
+              {/* Slug */}
+              <div>
+                <label
+                  htmlFor="slug"
+                  className="block mb-2 text-sm font-medium text-gray-12"
+                >
+                  Slug
+                </label>
+                <Input
+                  id="slug"
+                  placeholder="Unique identifier for your listing"
+                  type="text"
+                  {...register("slug", {
+                    onChange: (e) => {
+                      const newSlug = slugify(e.target.value);
+                      setSlug(newSlug);
+                      setValue("slug", newSlug, { shouldValidate: true });
+                    },
+                  })}
+                  value={slug}
+                />
+                {errors?.slug && (
+                  <ErrorMessage>{errors?.slug?.message}</ErrorMessage>
+                )}
+              </div>
+
+              {/* URL Preview */}
+              {previewUrl && (
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-12">
+                    Listing URL Preview
+                  </label>
+                  <div className="p-2 bg-gray-3 rounded-md text-gray-11">
+                    {previewUrl}
+                  </div>
                 </div>
               )}
 
