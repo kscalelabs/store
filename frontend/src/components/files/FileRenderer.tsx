@@ -1,6 +1,6 @@
 import STLRenderer from "./STLRenderer";
 import { UntarredFile } from "./Tarfile";
-import URDFRenderer from "./URDFRenderer";
+import URDFRenderer from "./SimpleURDFRenderer";
 
 const FileRenderer: React.FC<{
   file: UntarredFile;

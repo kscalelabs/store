@@ -3,6 +3,7 @@ import { route, string } from "react-router-typesafe-routes/dom";
 const ROUTES = {
   HOME: route(""),
   PLAYGROUND: route("playground"),
+  ONBOARDING: route("onboarding"),
 
   // General pages
   ABOUT: route("about"),
