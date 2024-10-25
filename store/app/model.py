@@ -34,12 +34,13 @@ UserPermission = Literal["is_admin", "is_mod"]
 class User(StoreBaseModel):
     """Defines the user model for the API.
 
-    Users are defined by their id and email (both unique).
+    Users are defined by their id, email, and username (all unique).
     Hashed password is set if user signs up with email and password, and is
     left empty if the user signed up with Google or Github OAuth.
     """
 
     email: str
+    username: str
     hashed_password: str | None = None
     permissions: set[UserPermission] | None = None
     created_at: int
@@ -55,6 +56,7 @@ class User(StoreBaseModel):
     def create(
         cls,
         email: str,
+        username: str,
         password: str | None = None,
         github_id: str | None = None,
         google_id: str | None = None,
@@ -68,6 +70,7 @@ class User(StoreBaseModel):
         return cls(
             id=new_uuid(),
             email=email,
+            username=username,
             hashed_password=hashed_pw,
             created_at=now,
             updated_at=now,
@@ -85,6 +88,10 @@ class User(StoreBaseModel):
     def verify_email(self) -> None:
         self.email_verified_at = int(time.time())
 
+    def set_username(self, new_username: str) -> None:
+        self.username = new_username
+        self.update_timestamp()
+
 
 class UserPublic(BaseModel):
     """Defines public user model for frontend.
@@ -95,6 +102,7 @@ class UserPublic(BaseModel):
 
     id: str
     email: str
+    username: str
     permissions: set[UserPermission] | None = None
     created_at: int
     updated_at: int | None = None
@@ -394,6 +402,8 @@ class Listing(StoreBaseModel):
     created_at: int
     updated_at: int
     name: str
+    username: str | None = None
+    slug: str | None = None
     child_ids: list[str]
     description: str | None = None
     onshape_url: str | None = None
@@ -407,6 +417,8 @@ class Listing(StoreBaseModel):
         cls,
         user_id: str,
         name: str,
+        username: str,
+        slug: str,
         child_ids: list[str],
         description: str | None = None,
         onshape_url: str | None = None,
@@ -417,6 +429,8 @@ class Listing(StoreBaseModel):
             created_at=int(time.time()),
             updated_at=int(time.time()),
             name=name,
+            username=username,
+            slug=slug,
             child_ids=child_ids,
             description=description,
             onshape_url=onshape_url,
@@ -425,6 +439,10 @@ class Listing(StoreBaseModel):
             downvotes=0,
             score=0,
         )
+
+    def set_slug(self, new_slug: str) -> None:
+        self.slug = new_slug
+        self.updated_at = int(time.time())
 
 
 class ListingTag(StoreBaseModel):

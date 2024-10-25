@@ -21,8 +21,14 @@ listings_router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
+class ListingInfo(BaseModel):
+    id: str
+    username: str
+    slug: str | None
+
+
 class ListListingsResponse(BaseModel):
-    listing_ids: list[str]
+    listings: list[ListingInfo]
     has_next: bool = False
 
 
@@ -34,13 +40,17 @@ async def list_listings(
     sort_by: SortOption = Query(SortOption.NEWEST, description="Sort option for listings"),
 ) -> ListListingsResponse:
     listings, has_next = await crud.get_listings(page, search_query=search_query, sort_by=sort_by)
-    listing_ids = [listing.id for listing in listings]
-    return ListListingsResponse(listing_ids=listing_ids, has_next=has_next)
+    listing_infos = [
+        ListingInfo(id=listing.id, username=listing.username or "Unknown", slug=listing.slug) for listing in listings
+    ]
+    return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
 
 class ListingInfoResponse(BaseModel):
     id: str
     name: str
+    slug: str | None
+    username: str | None
     description: str | None
     child_ids: list[str]
     image_url: str | None
@@ -61,39 +71,53 @@ async def get_batch_listing_info(
     user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
     ids: list[str] = Query(description="List of part ids"),
 ) -> GetBatchListingsResponse:
+    logger.info(f"Fetching batch listing info for ids: {ids}")
+
     listings, artifacts = await asyncio.gather(
         crud._get_item_batch(ids, Listing),
         crud.get_listings_artifacts(ids),
     )
+
+    logger.info(f"Retrieved {len(listings)} listings and {len(artifacts)} artifacts")
+
     user_votes = {}
     if user:
         user_votes = {vote.listing_id: vote.is_upvote for vote in await crud.get_user_votes(user.id, ids)}
 
-    return GetBatchListingsResponse(
-        listings=[
-            ListingInfoResponse(
-                id=listing.id,
-                name=listing.name,
-                description=listing.description,
-                child_ids=listing.child_ids,
-                image_url=next(
+    logger.info(f"User votes: {user_votes}")
+
+    listing_responses = []
+    for listing, artifacts in zip(listings, artifacts):
+        if listing is not None:
+            try:
+                image_url = next(
                     (
                         get_artifact_url(artifact=artifact, size="small")
                         for artifact in artifacts
                         if artifact.artifact_type == "image"
                     ),
                     None,
-                ),
-                onshape_url=listing.onshape_url,
-                created_at=listing.created_at,
-                views=listing.views,
-                score=listing.score,
-                user_vote=user_votes.get(listing.id),
-            )
-            for listing, artifacts in zip(listings, artifacts)
-            if listing is not None
-        ]
-    )
+                )
+                listing_response = ListingInfoResponse(
+                    id=listing.id,
+                    name=listing.name,
+                    slug=listing.slug,  # This can be None
+                    username=listing.username,
+                    description=listing.description,
+                    child_ids=listing.child_ids,
+                    image_url=image_url,
+                    onshape_url=listing.onshape_url,
+                    created_at=listing.created_at,
+                    views=listing.views,
+                    score=listing.score,
+                    user_vote=user_votes.get(listing.id),
+                )
+                listing_responses.append(listing_response)
+            except Exception as e:
+                logger.error(f"Error creating ListingInfoResponse for listing {listing.id}: {str(e)}")
+
+    logger.info(f"Returning {len(listing_responses)} listing responses")
+    return GetBatchListingsResponse(listings=listing_responses)
 
 
 class DumpListingsResponse(BaseModel):
@@ -107,38 +131,44 @@ async def dump_listings(
     return DumpListingsResponse(listings=await crud.dump_listings())
 
 
-@listings_router.get("/user/{id}", response_model=ListListingsResponse)
-async def list_user_listings(
-    id: str,
+@listings_router.get("/user/{user_id}", response_model=ListListingsResponse)
+async def get_user_listings(
+    user_id: str,
     crud: Annotated[Crud, Depends(Crud.get)],
-    page: int = Query(description="Page number for pagination"),
-    search_query: str = Query(None, description="Search query string"),
+    page: int = Query(1, description="Page number for pagination"),
 ) -> ListListingsResponse:
-    listings, has_next = await crud.get_user_listings(id, page, search_query=search_query)
-    listing_ids = [listing.id for listing in listings]
-    return ListListingsResponse(listing_ids=listing_ids, has_next=has_next)
+    listings, has_next = await crud.get_user_listings(user_id, page)
+    listing_infos = [
+        ListingInfo(id=listing.id, username=listing.username or "Unknown", slug=listing.slug) for listing in listings
+    ]
+    return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
 
 @listings_router.get("/me", response_model=ListListingsResponse)
-async def list_my_listings(
-    crud: Annotated[Crud, Depends(Crud.get)],
+async def get_my_listings(
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
-    page: int = Query(description="Page number for pagination"),
-    search_query: str = Query(None, description="Search query string"),
+    crud: Annotated[Crud, Depends(Crud.get)],
+    page: int = Query(1, description="Page number for pagination"),
 ) -> ListListingsResponse:
-    listings, has_next = await crud.get_user_listings(user.id, page, search_query=search_query)
-    listing_ids = [listing.id for listing in listings]
-    return ListListingsResponse(listing_ids=listing_ids, has_next=has_next)
+    listings, has_next = await crud.get_user_listings(user.id, page)
+    listing_infos = [
+        ListingInfo(id=listing.id, username=listing.username or user.username, slug=listing.slug)
+        for listing in listings
+    ]
+    return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
 
 class NewListingRequest(BaseModel):
     name: str
-    child_ids: list[str]
     description: str | None
+    child_ids: list[str]
+    slug: str
 
 
 class NewListingResponse(BaseModel):
     listing_id: str
+    username: str
+    slug: str
 
 
 @listings_router.post("/add", response_model=NewListingResponse)
@@ -151,11 +181,13 @@ async def add_listing(
     listing = Listing.create(
         name=data.name,
         description=data.description,
-        user_id=user.id,
         child_ids=data.child_ids,
+        slug=data.slug,
+        user_id=user.id,
+        username=user.username,
     )
     await crud.add_listing(listing)
-    return NewListingResponse(listing_id=listing.id)
+    return NewListingResponse(listing_id=listing.id, username=user.username, slug=data.slug)
 
 
 @listings_router.delete("/delete/{listing_id}", response_model=bool)
@@ -223,22 +255,25 @@ class UpvotedListingsResponse(BaseModel):
     has_more: bool
 
 
-@listings_router.get("/upvotes", response_model=UpvotedListingsResponse)
+@listings_router.get("/upvotes", response_model=ListListingsResponse)
 async def get_upvoted_listings(
-    crud: Annotated[Crud, Depends(Crud.get)],
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
     page: int = Query(1, description="Page number for pagination"),
-) -> UpvotedListingsResponse:
-    listings, has_more = await crud.get_upvoted_listings(user.id, page)
-
-    upvoted_listing_ids = [listing.id for listing in listings]
-
-    return UpvotedListingsResponse(upvoted_listing_ids=upvoted_listing_ids, has_more=has_more)
+) -> ListListingsResponse:
+    listings, has_next = await crud.get_upvoted_listings(user.id, page)
+    listing_infos = [
+        ListingInfo(id=listing["id"], username=listing["username"] or "Unknown", slug=listing["slug"])
+        for listing in listings
+    ]
+    return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
 
 class GetListingResponse(BaseModel):
     id: str
     name: str
+    username: str | None
+    slug: str | None
     description: str | None
     child_ids: list[str]
     tags: list[str]
@@ -276,6 +311,8 @@ async def get_listing(
     return GetListingResponse(
         id=listing.id,
         name=listing.name,
+        username=listing.username,
+        slug=listing.slug,
         description=listing.description,
         child_ids=listing.child_ids,
         tags=listing_tags,
@@ -285,7 +322,7 @@ async def get_listing(
         views=listing.views,
         score=listing.score,
         user_vote=user_vote,
-        creator_id=listing.user_id,  # Add this line
+        creator_id=listing.user_id,
         creator_name=creator_name,
     )
 
@@ -323,3 +360,61 @@ async def remove_vote(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
 ) -> None:
     await crud.handle_vote(user.id, id, None)
+
+
+@listings_router.put("/edit/{id}/slug", response_model=bool)
+async def update_listing_slug(
+    id: str,
+    new_slug: str,
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> bool:
+    listing = await crud.get_listing(id)
+    if listing is None:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    if not await can_write_listing(user, listing):
+        raise HTTPException(status_code=403, detail="You don't have permission to edit this listing")
+    if await crud.is_slug_taken(user.id, new_slug):
+        raise HTTPException(status_code=400, detail="Slug is already taken for this user")
+    await crud.set_slug(id, new_slug)
+    return True
+
+
+@listings_router.get("/{username}/{slug}", response_model=GetListingResponse)
+async def get_listing_by_username_and_slug(
+    username: str,
+    slug: str,
+    user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> GetListingResponse:
+    listing = await crud.get_listing_by_username_and_slug(username, slug)
+    if listing is None:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    listing_tags = await crud.get_tags_for_listing(listing.id)
+
+    user_vote = None
+    if user and (vote := await crud.get_user_vote(user.id, listing.id)) is not None:
+        user_vote = vote.is_upvote
+
+    creator_name = None
+    if (creator := await crud.get_user_public(listing.user_id)) is not None:
+        creator_name = " ".join(filter(None, [creator.first_name, creator.last_name]))
+
+    return GetListingResponse(
+        id=listing.id,
+        name=listing.name,
+        username=listing.username,
+        slug=listing.slug,
+        description=listing.description,
+        child_ids=listing.child_ids,
+        tags=listing_tags,
+        onshape_url=listing.onshape_url,
+        can_edit=user is not None and await can_write_listing(user, listing),
+        created_at=listing.created_at,
+        views=listing.views,
+        score=listing.score,
+        user_vote=user_vote,
+        creator_id=listing.user_id,
+        creator_name=creator_name,
+    )
