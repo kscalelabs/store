@@ -21,16 +21,26 @@ import {
   MagnifyingGlassIcon,
 } from "@radix-ui/react-icons";
 
+type NavItem = {
+  name: string;
+  path: string;
+  isExternal: boolean;
+};
+
 const Navbar = () => {
   const { isAuthenticated } = useAuthentication();
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
   const location = useLocation();
   const [showDevelopersDropdown, setShowDevelopersDropdown] = useState(false);
 
-  const navItems = [
-    { name: "Pro", path: "/pro", isExternal: false },
-    { name: "Mini", path: "/mini", isExternal: false },
-  ];
+  let navItems: NavItem[] = [];
+
+  if (isAuthenticated) {
+    navItems = [
+      { name: "Terminal", path: "/terminal", isExternal: false },
+      ...navItems,
+    ];
+  }
 
   const communityItems = [
     {
@@ -190,11 +200,10 @@ const Navbar = () => {
                 }
               >
                 <button className="px-2 xl:px-3 py-2 rounded-md text-sm tracking-widest text-gray-1 hover:text-primary-9 flex items-center">
-                  Developers
                   {showDevelopersDropdown ? (
-                    <ChevronUpIcon className="ml-1 h-4 w-4" />
+                    <ChevronUpIcon className="h-5 w-5" />
                   ) : (
-                    <ChevronDownIcon className="ml-1 h-4 w-4" />
+                    <ChevronDownIcon className="h-5 w-5" />
                   )}
                 </button>
                 <div
