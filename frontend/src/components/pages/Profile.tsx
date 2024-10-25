@@ -297,10 +297,6 @@ export const RenderProfile = (props: RenderProfileProps) => {
                   </p>
                 )}
               </div>
-              <div>
-                <h2 className="text-xl font-semibold mb-2">Contact</h2>
-                <p>Email: {user.email || "No email set"}</p>
-              </div>
             </div>
           )}
         </CardContent>
