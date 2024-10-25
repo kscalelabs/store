@@ -8,7 +8,7 @@ import { useAuthentication } from "@/hooks/useAuth";
 type OrderWithProduct =
   paths["/orders/get_user_orders_with_products"]["get"]["responses"][200]["content"]["application/json"][0];
 
-const OrdersPage: React.FC = () => {
+const TerminalPage: React.FC = () => {
   const { api, currentUser, isAuthenticated, isLoading } = useAuthentication();
   const [orders, setOrders] = useState<OrderWithProduct[] | null>(null);
   const [loadingOrders, setLoadingOrders] = useState(true);
@@ -75,4 +75,4 @@ const OrdersPage: React.FC = () => {
   );
 };
 
-export default OrdersPage;
+export default TerminalPage;

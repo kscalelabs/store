@@ -30,11 +30,11 @@ import GDPRBanner from "./components/gdpr/gdprbanner";
 import DownloadsPage from "./components/pages/Download";
 import PlaygroundPage from "./components/pages/MujocoPlayground";
 import OrderSuccess from "./components/pages/OrderSuccess";
-import Orders from "./components/pages/Orders";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import ResearchPage from "./components/pages/ResearchPage";
 import StompyMini from "./components/pages/StompyMini";
 import StompyPro from "./components/pages/StompyPro";
+import TerminalPage from "./components/pages/Terminal";
 import TermsOfService from "./components/pages/TermsOfService";
 
 const App = () => {
@@ -85,7 +85,7 @@ const App = () => {
                       <Route path="/mini" element={<StompyMini />} />
 
                       <Route path="/success" element={<OrderSuccess />} />
-                      <Route path="/orders" element={<Orders />} />
+                      <Route path="/terminal" element={<TerminalPage />} />
 
                       <Route path="/404" element={<NotFound />} />
                       <Route path="*" element={<NotFoundRedirect />} />

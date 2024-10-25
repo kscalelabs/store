@@ -1,5 +1,3 @@
-import PageHeader from "../ui/PageHeader";
-
 const About = () => {
   return (
     <div>
@@ -46,10 +44,6 @@ const About = () => {
             </div>
           </div>
         </div>
-      </section>
-
-      <section className="relative overflow-hidden mt-6 h-[40vh] rounded-lg">
-        <PageHeader />
       </section>
     </div>
   );
