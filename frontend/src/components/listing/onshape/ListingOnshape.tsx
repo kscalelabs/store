@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 
 import ListingOnshapeUpdate from "@/components/listing/onshape/ListingOnshapeUpdate";
+import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
@@ -257,82 +258,88 @@ const ListingOnshape = (props: Props) => {
       <Spinner />
     </div>
   ) : (
-    <div className="flex flex-col my-2 py-2 w-full">
-      {isEditing ? (
-        <div className="flex flex-col items-start w-full">
-          <UrlInput url={url} setUrl={setUrl} handleSave={handleSave} />
-          {edit && (
-            <UpdateButtons
-              isEditing={isEditing}
-              setIsEditing={setIsEditing}
-              handleSave={handleSave}
-              url={url}
-              toggleInstructions={toggleInstructions}
-              showInstructions={showInstructions}
-            />
-          )}
-        </div>
-      ) : url === null ? (
-        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 w-full">
-          <Button
-            onClick={() => setIsEditing(true)}
-            variant="primary"
-            className="w-full sm:w-auto flex items-center justify-center"
-          >
-            Add Onshape URL
-          </Button>
-          {edit && (
-            <Button
-              onClick={toggleInstructions}
-              variant="secondary"
-              className="w-full sm:w-auto flex items-center justify-center"
-            >
-              <FaInfoCircle className="mr-2" />
-              {showInstructions
-                ? "Hide URDF Instructions"
-                : "Show URDF Instructions"}
-            </Button>
-          )}
-        </div>
-      ) : (
-        <div className="flex flex-col items-start w-full">
-          {edit ? (
-            <UpdateButtons
-              isEditing={isEditing}
-              setIsEditing={setIsEditing}
-              handleSave={handleSave}
-              handleRemove={handleRemove}
-              handleReload={handleReload}
-              url={url}
-              disabled={updateOnshape}
-              toggleInstructions={toggleInstructions}
-              showInstructions={showInstructions}
-            />
-          ) : (
-            <div className="flex items-center">
-              <Button
-                onClick={() =>
-                  window.open(url, "_blank", "noopener,noreferrer")
-                }
-                variant="secondary"
-                className="flex items-center justify-center"
-              >
-                Visit Onshape
-                <FaExternalLinkAlt className="ml-2" />
-              </Button>
-            </div>
-          )}
-          {updateOnshape && (
-            <ListingOnshapeUpdate
-              listingId={listingId}
-              onClose={() => setUpdateOnshape(false)}
-              addArtifactId={addArtifactId}
-            />
-          )}
-        </div>
-      )}
-      {showInstructions && renderUrdfInstructions()}
-    </div>
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>
+          <div className="flex flex-col my-2 py-2 w-full">
+            {isEditing ? (
+              <div className="flex flex-col items-start w-full">
+                <UrlInput url={url} setUrl={setUrl} handleSave={handleSave} />
+                {edit && (
+                  <UpdateButtons
+                    isEditing={isEditing}
+                    setIsEditing={setIsEditing}
+                    handleSave={handleSave}
+                    url={url}
+                    toggleInstructions={toggleInstructions}
+                    showInstructions={showInstructions}
+                  />
+                )}
+              </div>
+            ) : url === null ? (
+              <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 w-full">
+                <Button
+                  onClick={() => setIsEditing(true)}
+                  variant="primary"
+                  className="w-full sm:w-auto flex items-center justify-center"
+                >
+                  Add Onshape URL
+                </Button>
+                {edit && (
+                  <Button
+                    onClick={toggleInstructions}
+                    variant="secondary"
+                    className="w-full sm:w-auto flex items-center justify-center"
+                  >
+                    <FaInfoCircle className="mr-2" />
+                    {showInstructions
+                      ? "Hide URDF Instructions"
+                      : "Show URDF Instructions"}
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col items-start w-full">
+                {edit ? (
+                  <UpdateButtons
+                    isEditing={isEditing}
+                    setIsEditing={setIsEditing}
+                    handleSave={handleSave}
+                    handleRemove={handleRemove}
+                    handleReload={handleReload}
+                    url={url}
+                    disabled={updateOnshape}
+                    toggleInstructions={toggleInstructions}
+                    showInstructions={showInstructions}
+                  />
+                ) : (
+                  <div className="flex items-center">
+                    <Button
+                      onClick={() =>
+                        window.open(url, "_blank", "noopener,noreferrer")
+                      }
+                      variant="secondary"
+                      className="flex items-center justify-center"
+                    >
+                      Visit Onshape
+                      <FaExternalLinkAlt className="ml-2" />
+                    </Button>
+                  </div>
+                )}
+                {updateOnshape && (
+                  <ListingOnshapeUpdate
+                    listingId={listingId}
+                    onClose={() => setUpdateOnshape(false)}
+                    addArtifactId={addArtifactId}
+                  />
+                )}
+              </div>
+            )}
+            {showInstructions && renderUrdfInstructions()}
+          </div>
+        </CardTitle>
+      </CardHeader>
+    </Card>
   );
 };
 

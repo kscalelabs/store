@@ -2,10 +2,23 @@
 
 import asyncio
 import logging
-from typing import Annotated
+from decimal import Decimal
+from typing import Annotated, List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    UploadFile,
+    status,
+)
 from pydantic import BaseModel
+
+"""Defines all listing related API endpoints."""
+
 
 from store.app.crud.listings import SortOption
 from store.app.db import Crud
@@ -163,6 +176,9 @@ class NewListingRequest(BaseModel):
     description: str | None
     child_ids: list[str]
     slug: str
+    stripe_link: str | None
+    key_features: str | None
+    price: float | None  # Add this line
 
 
 class NewListingResponse(BaseModel):
@@ -175,19 +191,63 @@ class NewListingResponse(BaseModel):
 async def add_listing(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
-    data: NewListingRequest,
+    name: str = Form(...),
+    description: str | None = Form(None),
+    child_ids: str = Form(""),
+    slug: str = Form(""),
+    stripe_link: str | None = Form(None),
+    key_features: str | None = Form(None),
+    price: float | None = Form(None),
+    photos: List[UploadFile] = File(None),
 ) -> NewListingResponse:
+    logger.info(
+        f"Received form data: name={name}, description={description}, child_ids={child_ids}, slug={slug}, stripe_link={stripe_link}, key_features={key_features}, price={price}"
+    )
+    logger.info(f"Received {len(photos) if photos else 0} photos")
+
+    # Generate a slug if not provided
+    if not slug:
+        slug = await generate_unique_slug(crud, user.id, name)
+
+    # Convert price to Decimal if it's not None
+    decimal_price = Decimal(str(price)) if price is not None else None
+
     # Creates a new listing.
     listing = Listing.create(
-        name=data.name,
-        description=data.description,
-        child_ids=data.child_ids,
-        slug=data.slug,
+        name=name,
+        description=description or "",
+        child_ids=child_ids.split(",") if child_ids else [],
+        slug=slug,
         user_id=user.id,
         username=user.username,
+        stripe_link=stripe_link,
+        key_features=key_features or "",
+        price=decimal_price,
     )
     await crud.add_listing(listing)
-    return NewListingResponse(listing_id=listing.id, username=user.username, slug=data.slug)
+
+    # Handle photo uploads
+    if photos:
+        for photo in photos:
+            await crud.upload_artifact(
+                name=photo.filename,
+                file=photo,
+                listing=listing,
+                artifact_type="image",
+            )
+
+    return NewListingResponse(listing_id=listing.id, username=user.username, slug=slug)
+
+
+# Add this new function to generate a unique slug
+async def generate_unique_slug(crud: Crud, user_id: str, name: str) -> str:
+    base_slug = slugify(name)
+    slug = base_slug
+    counter = 1
+    while await crud.is_slug_taken(user_id, slug):
+        slug = f"{base_slug}-{counter}"
+        counter += 1
+    return slug
 
 
 @listings_router.delete("/delete/{listing_id}", response_model=bool)
@@ -285,6 +345,8 @@ class GetListingResponse(BaseModel):
     user_vote: bool | None
     creator_id: str
     creator_name: str | None
+    key_features: str | None
+    price: float | None  # Add this line
 
 
 @listings_router.get("/{id}", response_model=GetListingResponse)
@@ -324,6 +386,8 @@ async def get_listing(
         user_vote=user_vote,
         creator_id=listing.user_id,
         creator_name=creator_name,
+        key_features=listing.key_features,
+        price=listing.price,  # Add this line to include the price
     )
 
 
@@ -417,4 +481,6 @@ async def get_listing_by_username_and_slug(
         user_vote=user_vote,
         creator_id=listing.user_id,
         creator_name=creator_name,
+        key_features=listing.key_features,
+        price=listing.price,  # Add this line
     )

@@ -1,143 +1,108 @@
-import { useEffect, useState } from "react";
-import Masonry from "react-masonry-css";
-
-import ListingChildren from "@/components/listing/ListingChildren";
-import ListingDescription from "@/components/listing/ListingDescription";
+import React, { useState, useEffect } from "react";
+import ProductPage from "@/components/products/ProductPage";
 import ListingOnshape from "@/components/listing/onshape/ListingOnshape";
-import { Card, CardContent } from "@/components/ui/Card";
-import { components, paths } from "@/gen/api";
-import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
-
-import ArtifactCard from "./artifacts/ArtifactCard";
-import LoadingArtifactCard from "./artifacts/LoadingArtifactCard";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { formatPrice } from "@/lib/utils/formatNumber";
 
 type ListingResponse =
   paths["/listings/{id}"]["get"]["responses"][200]["content"]["application/json"];
 
 interface ListingBodyProps {
   listing: ListingResponse;
+  newTitle: string; // Add this line
 }
 
-const ListingBody = (props: ListingBodyProps) => {
-  const { listing } = props;
-  const { addErrorAlert } = useAlertQueue();
+const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [images, setImages] = useState<string[]>([]);
   const auth = useAuthentication();
-  const [artifacts, setArtifacts] = useState<
-    components["schemas"]["ListArtifactsResponse"]["artifacts"] | null
-  >(null);
-
-  const addArtifactId = async (newArtifactId: string) => {
-    const { data, error } = await auth.client.GET(
-      "/artifacts/info/{artifact_id}",
-      {
-        params: { path: { artifact_id: newArtifactId } },
-      },
-    );
-
-    if (error) {
-      addErrorAlert(error);
-    } else {
-      setArtifacts((prev) => {
-        if (prev === null) return prev;
-        return [...prev, data];
-      });
-    }
-  };
-
-  const handleDeleteArtifact = (artifactId: string) => {
-    setArtifacts((prevArtifacts) =>
-      prevArtifacts
-        ? prevArtifacts.filter(
-            (artifact) => artifact.artifact_id !== artifactId,
-          )
-        : null,
-    );
-  };
-
-  const breakpointColumnsObj = {
-    default: 3,
-    1024: 2,
-    640: 1,
-  };
+  const { addErrorAlert } = useAlertQueue();
 
   useEffect(() => {
-    if (artifacts !== null) return;
-
     const fetchArtifacts = async () => {
-      const { data, error } = await auth.client.GET(
-        "/artifacts/list/{listing_id}",
-        {
+      try {
+        const { data, error } = await auth.client.GET("/artifacts/list/{listing_id}", {
           params: { path: { listing_id: listing.id } },
-        },
-      );
+        });
 
-      if (error) {
-        addErrorAlert(error);
-      } else {
-        setArtifacts(data.artifacts);
+        if (error) {
+          addErrorAlert(error);
+        } else {
+          const artifactImages = data.artifacts
+            .filter(artifact => artifact.artifact_type === "image")
+            .map(artifact => artifact.urls.large);
+
+          const uploadedImages = listing.uploaded_files?.map(file => file.url) || [];
+          setImages([...uploadedImages, ...artifactImages]);
+        }
+      } catch (err) {
+        addErrorAlert("Error fetching artifacts");
       }
     };
+
     fetchArtifacts();
-  }, [listing.id, artifacts, auth.client, addErrorAlert]);
+  }, [listing.id, auth.client, addErrorAlert]);
+
+  console.log("Raw listing price:", listing.price);
+  console.log("Listing price type:", typeof listing.price);
+
+  const productInfo = {
+    name: newTitle || listing.name,
+    description: listing.description || "Product Description",
+    specs: listing.key_features ? listing.key_features.split('\n') : [],
+    features: [],
+    price: listing.price,
+    productId: listing.product_id || "default_product_id",
+  };
+
+  console.log("Product info:", productInfo);
+
+  const openModal = (image: string) => {
+    setSelectedImage(image);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setSelectedImage(null);
+    setIsModalOpen(false);
+  };
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardContent className="pt-6">
-          <ListingDescription
-            listingId={listing.id}
-            description={listing.description}
-            edit={listing.can_edit}
-          />
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="pt-6">
-          <ListingOnshape
-            listingId={listing.id}
-            onshapeUrl={listing.onshape_url}
-            addArtifactId={addArtifactId}
-            edit={listing.can_edit}
-          />
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="pt-6">
-          <ListingChildren
-            child_ids={listing.child_ids}
-            edit={listing.can_edit}
-          />
-        </CardContent>
-      </Card>
-      <div className="mt-4">
-        <Masonry
-          breakpointCols={breakpointColumnsObj}
-          className="flex w-auto -ml-4"
-          columnClassName="pl-4 bg-clip-padding"
-        >
-          {artifacts === null ? (
-            <LoadingArtifactCard />
-          ) : (
-            artifacts
-              .slice()
-              .reverse()
-              .map((artifact) => (
-                <Card key={artifact.artifact_id} className="mb-4">
-                  <CardContent className="p-4">
-                    <ArtifactCard
-                      artifact={artifact}
-                      onDelete={() =>
-                        handleDeleteArtifact(artifact.artifact_id)
-                      }
-                      canEdit={listing.can_edit}
-                    />
-                  </CardContent>
-                </Card>
-              ))
-          )}
-        </Masonry>
+      <ProductPage
+        images={images}
+        productId={productInfo.productId}
+        checkoutLabel={`Buy ${productInfo.name}`}
+        description={productInfo.description}
+        features={productInfo.features}
+        keyFeatures={productInfo.specs}
+        price={productInfo.price}
+        onImageClick={openModal}
+      />
+      <div className="mt-6">
+        <ListingOnshape
+          listingId={listing.id}
+          onshapeUrl={listing.onshape_url}
+          addArtifactId={() => {}}
+          edit={listing.can_edit}
+        />
       </div>
+
+      {isModalOpen && selectedImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="relative">
+            <img src={selectedImage} alt="Selected" className="max-w-full max-h-full" />
+            <button
+              onClick={closeModal}
+              className="absolute top-0 right-0 m-4 text-white text-2xl"
+            >
+              &times;
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
