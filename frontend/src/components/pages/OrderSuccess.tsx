@@ -38,7 +38,7 @@ const OrderSuccess: React.FC = () => {
               <a href="/">Return to Home</a>
             </Button>
             <Button asChild variant="primary">
-              <a href="/orders">View Your Orders</a>
+              <a href="/terminal">View Your Orders</a>
             </Button>
           </div>
         </CardContent>
