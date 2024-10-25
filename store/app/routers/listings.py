@@ -246,7 +246,11 @@ async def get_upvoted_listings(
     page: int = Query(1, description="Page number for pagination"),
 ) -> ListListingsResponse:
     listings, has_next = await crud.get_upvoted_listings(user.id, page)
-    return ListListingsResponse(listings=listings, has_next=has_next)
+    listing_infos = [
+        ListingInfo(id=listing["id"], username=listing["username"] or "Unknown", slug=listing["slug"])
+        for listing in listings
+    ]
+    return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
 
 class GetListingResponse(BaseModel):
