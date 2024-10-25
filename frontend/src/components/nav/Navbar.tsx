@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   FaBars,
   FaDiscord,
@@ -14,6 +14,8 @@ import Logo from "@/components/Logo";
 import Sidebar from "@/components/nav/Sidebar";
 import { useAuthentication } from "@/hooks/useAuth";
 import {
+  ChevronDownIcon,
+  ChevronUpIcon,
   DownloadIcon,
   ExternalLinkIcon,
   MagnifyingGlassIcon,
@@ -24,8 +26,6 @@ const Navbar = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
   const location = useLocation();
   const [showDevelopersDropdown, setShowDevelopersDropdown] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<number | null>(null);
 
   const navItems = [
     { name: "Pro", path: "/pro", isExternal: false },
@@ -129,27 +129,6 @@ const Navbar = () => {
     );
   };
 
-  const handleMouseEnter = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
-    setShowDevelopersDropdown(true);
-  };
-
-  const handleMouseLeave = () => {
-    timeoutRef.current = window.setTimeout(() => {
-      setShowDevelopersDropdown(false);
-    }, 500);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-
   return (
     <>
       <nav className="fixed w-full z-30 top-0 start-0 bg-gray-1/30 backdrop-blur-lg">
@@ -206,14 +185,19 @@ const Navbar = () => {
               )}
               <div
                 className="relative"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
+                onClick={() =>
+                  setShowDevelopersDropdown(!showDevelopersDropdown)
+                }
               >
-                <button className="px-2 xl:px-3 py-2 rounded-md text-sm tracking-widest text-gray-1 hover:text-primary-9">
+                <button className="px-2 xl:px-3 py-2 rounded-md text-sm tracking-widest text-gray-1 hover:text-primary-9 flex items-center">
                   Developers
+                  {showDevelopersDropdown ? (
+                    <ChevronUpIcon className="ml-1 h-4 w-4" />
+                  ) : (
+                    <ChevronDownIcon className="ml-1 h-4 w-4" />
+                  )}
                 </button>
                 <div
-                  ref={dropdownRef}
                   className={`absolute right-0 top-full mt-5 bg-gray-12 shadow-lg rounded-2xl transition-all duration-300 ease-in-out overflow-hidden max-w-[400px] w-max border border-gray-10 ${
                     showDevelopersDropdown
                       ? "opacity-100 visible"
