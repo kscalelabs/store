@@ -29,45 +29,43 @@ const RenderListing = ({ listing }: RenderListingProps) => {
 const ListingDetails = () => {
   const { addErrorAlert } = useAlertQueue();
   const auth = useAuthentication();
-  const { username, slug, id } = useParams();
+  const { username, slug } = useParams();
   const [listing, setListing] = useState<ListingResponse | null>(null);
   const [isFetched, setIsFetched] = useState(false);
 
   const fetchListing = useCallback(async () => {
-    try {
-      let data, error;
+    if (!username || !slug) {
+      addErrorAlert(new Error("Invalid URL parameters"));
+      return;
+    }
 
-      if (username && slug) {
-        // Try to fetch the listing using the username/slug endpoint
-        ({ data, error } = await auth.client.GET(
-          "/listings/{username}/{slug}",
-          {
-            params: {
-              path: { username, slug },
-            },
-          },
-        ));
-      } else if (id) {
-        // Fetch the listing using the ID-based endpoint
-        ({ data, error } = await auth.client.GET("/listings/{id}", {
+    try {
+      // Try to fetch the listing using the username/slug endpoint
+      let response = await auth.client.GET("/listings/{username}/{slug}", {
+        params: {
+          path: { username, slug },
+        },
+      });
+
+      if (response.error) {
+        // If not found, try fetching by ID using the slug
+        response = await auth.client.GET("/listings/{id}", {
           params: {
-            path: { id },
+            path: { id: slug },
           },
-        }));
-      } else {
-        throw new Error("Invalid URL parameters");
+        });
       }
 
-      if (error) {
-        addErrorAlert(error);
-      } else if (data) {
-        setListing(data);
+      if (response.error) {
+        addErrorAlert(response.error);
+      } else if (response.data) {
+        setListing(response.data);
         setIsFetched(true);
       }
     } catch (err) {
       addErrorAlert(err);
     }
-  }, [username, slug, id, auth.client, addErrorAlert]);
+  }, [username, slug, auth.client, addErrorAlert]);
 
   useEffect(() => {
     fetchListing();

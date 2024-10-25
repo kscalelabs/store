@@ -402,7 +402,8 @@ class Listing(StoreBaseModel):
     created_at: int
     updated_at: int
     name: str
-    slug: str
+    username: str | None = None
+    slug: str | None = None
     child_ids: list[str]
     description: str | None = None
     onshape_url: str | None = None
@@ -416,6 +417,7 @@ class Listing(StoreBaseModel):
         cls,
         user_id: str,
         name: str,
+        username: str,
         slug: str,
         child_ids: list[str],
         description: str | None = None,
@@ -427,6 +429,7 @@ class Listing(StoreBaseModel):
             created_at=int(time.time()),
             updated_at=int(time.time()),
             name=name,
+            username=username,
             slug=slug,
             child_ids=child_ids,
             description=description,

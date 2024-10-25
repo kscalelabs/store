@@ -21,8 +21,14 @@ listings_router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
+class ListingInfo(BaseModel):
+    id: str
+    username: str
+    slug: str | None
+
+
 class ListListingsResponse(BaseModel):
-    listing_ids: list[str]
+    listings: list[ListingInfo]
     has_next: bool = False
 
 
@@ -34,8 +40,10 @@ async def list_listings(
     sort_by: SortOption = Query(SortOption.NEWEST, description="Sort option for listings"),
 ) -> ListListingsResponse:
     listings, has_next = await crud.get_listings(page, search_query=search_query, sort_by=sort_by)
-    listing_ids = [listing.id for listing in listings]
-    return ListListingsResponse(listing_ids=listing_ids, has_next=has_next)
+    listing_infos = [
+        ListingInfo(id=listing.id, username=listing.username or "Unknown", slug=listing.slug) for listing in listings
+    ]
+    return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
 
 class ListingInfoResponse(BaseModel):
@@ -107,28 +115,31 @@ async def dump_listings(
     return DumpListingsResponse(listings=await crud.dump_listings())
 
 
-@listings_router.get("/user/{id}", response_model=ListListingsResponse)
-async def list_user_listings(
-    id: str,
+@listings_router.get("/user/{user_id}", response_model=ListListingsResponse)
+async def get_user_listings(
+    user_id: str,
     crud: Annotated[Crud, Depends(Crud.get)],
-    page: int = Query(description="Page number for pagination"),
-    search_query: str = Query(None, description="Search query string"),
+    page: int = Query(1, description="Page number for pagination"),
 ) -> ListListingsResponse:
-    listings, has_next = await crud.get_user_listings(id, page, search_query=search_query)
-    listing_ids = [listing.id for listing in listings]
-    return ListListingsResponse(listing_ids=listing_ids, has_next=has_next)
+    listings, has_next = await crud.get_user_listings(user_id, page)
+    listing_infos = [
+        ListingInfo(id=listing.id, username=listing.username or "Unknown", slug=listing.slug) for listing in listings
+    ]
+    return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
 
 @listings_router.get("/me", response_model=ListListingsResponse)
-async def list_my_listings(
-    crud: Annotated[Crud, Depends(Crud.get)],
+async def get_my_listings(
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
-    page: int = Query(description="Page number for pagination"),
-    search_query: str = Query(None, description="Search query string"),
+    crud: Annotated[Crud, Depends(Crud.get)],
+    page: int = Query(1, description="Page number for pagination"),
 ) -> ListListingsResponse:
-    listings, has_next = await crud.get_user_listings(user.id, page, search_query=search_query)
-    listing_ids = [listing.id for listing in listings]
-    return ListListingsResponse(listing_ids=listing_ids, has_next=has_next)
+    listings, has_next = await crud.get_user_listings(user.id, page)
+    listing_infos = [
+        ListingInfo(id=listing.id, username=listing.username or user.username, slug=listing.slug)
+        for listing in listings
+    ]
+    return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
 
 class NewListingRequest(BaseModel):
@@ -157,6 +168,7 @@ async def add_listing(
         child_ids=data.child_ids,
         slug=data.slug,
         user_id=user.id,
+        username=user.username,
     )
     await crud.add_listing(listing)
     return NewListingResponse(listing_id=listing.id, username=user.username, slug=data.slug)
@@ -227,17 +239,14 @@ class UpvotedListingsResponse(BaseModel):
     has_more: bool
 
 
-@listings_router.get("/upvotes", response_model=UpvotedListingsResponse)
+@listings_router.get("/upvotes", response_model=ListListingsResponse)
 async def get_upvoted_listings(
-    crud: Annotated[Crud, Depends(Crud.get)],
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
     page: int = Query(1, description="Page number for pagination"),
-) -> UpvotedListingsResponse:
-    listings, has_more = await crud.get_upvoted_listings(user.id, page)
-
-    upvoted_listing_ids = [listing.id for listing in listings]
-
-    return UpvotedListingsResponse(upvoted_listing_ids=upvoted_listing_ids, has_more=has_more)
+) -> ListListingsResponse:
+    listings, has_next = await crud.get_upvoted_listings(user.id, page)
+    return ListListingsResponse(listings=listings, has_next=has_next)
 
 
 class GetListingResponse(BaseModel):

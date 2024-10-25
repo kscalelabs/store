@@ -79,7 +79,7 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
 
     response = test_client.get(f"/listings/user/{id}", headers=auth_headers, params={"page": 1})
     assert response.status_code == status.HTTP_200_OK, response.json()
-    items = response.json()["listing_ids"]
+    items = response.json()["listings"]
     assert (num_listings := len(items)) >= 1
 
     # Checks my own listings.
@@ -90,7 +90,7 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
-    items, has_next = data["listing_ids"], data["has_next"]
+    items, has_next = data["listings"], data["has_next"]
     assert (num_listings := len(items)) >= 1
 
     # Uploads a zipfile.
@@ -123,13 +123,13 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
-    items, has_next = data["listing_ids"], data["has_next"]
+    items, has_next = data["listings"], data["has_next"]
     assert len(items) == num_listings
-    listing_ids = data["listing_ids"]
-    assert listing_id in listing_ids
+    listings = data["listings"]
+    assert listing_id in [listing["id"] for listing in listings]
 
     # Gets the listing by ID.
-    listing_id = listing_ids[0]
+    listing_id = listings[0]["id"]
     response = test_client.get(f"/listings/{listing_id}", headers=auth_headers)
     assert response.status_code == status.HTTP_200_OK, response.json()
 
@@ -208,7 +208,7 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
-    items, has_next = data["listing_ids"], data["has_next"]
+    items, has_next = data["listings"], data["has_next"]
     assert len(items) == num_listings - 1
     assert not has_next
 

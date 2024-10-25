@@ -71,7 +71,6 @@ const App = () => {
                       <Route path="/signup/:id" element={<EmailSignup />} />
 
                       <Route path="/create" element={<Create />} />
-                      <Route path="/item/:id" element={<ListingDetails />} />
                       <Route
                         path="/item/:username/:slug"
                         element={<ListingDetails />}

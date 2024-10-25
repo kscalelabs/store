@@ -47,7 +47,7 @@ const Account = () => {
       if (error) {
         addErrorAlert(error);
       } else {
-        setListingIds(data.listing_ids);
+        setListingIds(data.listings.map((listing) => listing.id));
       }
     };
 

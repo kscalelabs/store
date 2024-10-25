@@ -69,9 +69,6 @@ const Create = () => {
       addErrorAlert(error);
     } else {
       addAlert("New listing was created successfully", "success");
-      console.log(responseData);
-      console.log(responseData.username);
-      console.log(responseData.slug);
       navigate(`/item/${responseData.username}/${responseData.slug}`);
     }
   };

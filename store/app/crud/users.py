@@ -11,6 +11,7 @@ from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
 from store.app.crud.base import TABLE_NAME, BaseCrud
+from store.app.crud.listings import ListingsCrud
 from store.app.model import (
     APIKey,
     APIKeyPermissionSet,
@@ -239,6 +240,12 @@ class UserCrud(BaseCrud):
         user = await self.get_user(user_id, throw_if_missing=True)
         user.set_username(new_username)
         await self._update_item(user_id, User, {"username": new_username, "updated_at": user.updated_at})
+
+        # Update username in all listings
+        listings_crud = ListingsCrud()
+        async with listings_crud:
+            await listings_crud.update_username_for_user_listings(user_id, new_username)
+
         return user
 
     async def is_username_taken(self, username: str) -> bool:

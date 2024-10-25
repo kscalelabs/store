@@ -7,29 +7,36 @@ import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 
-type ListingInfo =
-  paths["/listings/batch"]["get"]["responses"][200]["content"]["application/json"]["listings"];
+type ListingInfo = {
+  id: string;
+  username: string;
+  slug: string | null;
+};
+
+type ListingDetails =
+  paths["/listings/batch"]["get"]["responses"][200]["content"]["application/json"]["listings"][number];
 
 interface ListingGridProps {
-  listingIds: string[] | null;
+  listingInfos: ListingInfo[] | null;
 }
 
 const ListingGrid = (props: ListingGridProps) => {
-  const { listingIds } = props;
-  const auth = useAuthentication();
+  const { listingInfos } = props;
   const { addErrorAlert } = useAlertQueue();
+  const auth = useAuthentication();
 
-  const [listingInfo, setListingInfoResponse] = useState<ListingInfo | null>(
-    null,
-  );
+  const [listingDetails, setListingDetails] = useState<Record<
+    string,
+    ListingDetails
+  > | null>(null);
 
   useEffect(() => {
-    if (listingIds !== null && listingIds.length > 0) {
+    if (listingInfos !== null && listingInfos.length > 0) {
       (async () => {
         const { data, error } = await auth.client.GET("/listings/batch", {
           params: {
             query: {
-              ids: listingIds,
+              ids: listingInfos.map((info) => info.id),
             },
           },
         });
@@ -39,22 +46,29 @@ const ListingGrid = (props: ListingGridProps) => {
           return;
         }
 
-        setListingInfoResponse(data.listings);
+        const detailsMap: Record<string, ListingDetails> = {};
+        data.listings.forEach((listing) => {
+          detailsMap[listing.id] = listing;
+        });
+        setListingDetails(detailsMap);
       })();
     }
-  }, [listingIds]);
+  }, [listingInfos]);
 
-  return listingIds === null ? (
+  return listingInfos === null ? (
     <div className="flex justify-center items-center h-64">
       <Spinner />
     </div>
   ) : (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-      {listingIds.map((listingId) => (
-        <Link to={`/item/${listingId}`} key={listingId}>
+      {listingInfos.map((info) => (
+        <Link
+          to={`/item/${info.username}/${info.slug || info.id}`}
+          key={info.id}
+        >
           <ListingGridCard
-            listingId={listingId}
-            listing={listingInfo?.find((l) => l.id === listingId)}
+            listingId={info.id}
+            listing={listingDetails?.[info.id]}
             showDescription={true}
           />
         </Link>

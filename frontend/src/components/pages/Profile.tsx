@@ -36,7 +36,6 @@ export const RenderProfile = (props: RenderProfileProps) => {
   const [firstName, setFirstName] = useState(user.first_name || "");
   const [lastName, setLastName] = useState(user.last_name || "");
   const [bio, setBio] = useState(user.bio || "");
-  const [myListingsPage, setMyListingsPage] = useState(1);
   const [upvotedPage, setUpvotedPage] = useState(1);
   const [username, setUsername] = useState(user.username || "");
   const [isUsernameAvailable, setIsUsernameAvailable] = useState(true);
@@ -89,8 +88,6 @@ export const RenderProfile = (props: RenderProfileProps) => {
   const handleTabChange = (tab: string) => {
     if (tab === "own") {
       setUpvotedPage(1);
-    } else {
-      setMyListingsPage(1);
     }
   };
 
@@ -318,10 +315,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="own">
-                <MyListingGrid
-                  page={myListingsPage}
-                  setPage={setMyListingsPage}
-                />
+                <MyListingGrid userId={user.id} />
               </TabsContent>
               <TabsContent value="upvoted">
                 <UpvotedGrid page={upvotedPage} setPage={setUpvotedPage} />
@@ -385,19 +379,22 @@ const Profile = () => {
     const fetchUserListing = async () => {
       if (id !== undefined) {
         try {
-          const { data, error } = await auth.client.GET("/listings/user/{id}", {
-            params: {
-              path: { id },
-              query: {
-                page: pageNumber,
+          const { data, error } = await auth.client.GET(
+            "/listings/user/{user_id}",
+            {
+              params: {
+                path: { user_id: id },
+                query: {
+                  page: pageNumber,
+                },
               },
             },
-          });
+          );
 
           if (error) {
             addErrorAlert(error);
           } else {
-            setListingIds(data.listing_ids);
+            setListingIds(data.listings.map((listing) => listing.id));
           }
         } catch (err) {
           console.error("Failed to fetch User Listings", err);

@@ -8,7 +8,10 @@ import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 
 type ListingInfo =
-  paths["/listings/batch"]["get"]["responses"][200]["content"]["application/json"]["listings"];
+  paths["/listings/upvotes"]["get"]["responses"][200]["content"]["application/json"]["listings"][number];
+
+type ListingDetails =
+  paths["/listings/batch"]["get"]["responses"][200]["content"]["application/json"]["listings"][number];
 
 interface UpvotedGridProps {
   page: number;
@@ -19,8 +22,11 @@ const UpvotedGrid = ({ page, setPage }: UpvotedGridProps) => {
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
 
-  const [listingIds, setListingIds] = useState<string[] | null>(null);
-  const [listingInfo, setListingInfo] = useState<ListingInfo | null>(null);
+  const [listingInfos, setListingInfos] = useState<ListingInfo[] | null>(null);
+  const [listingDetails, setListingDetails] = useState<Record<
+    string,
+    ListingDetails
+  > | null>(null);
   const [hasMore, setHasMore] = useState<boolean>(false);
 
   useEffect(() => {
@@ -28,8 +34,8 @@ const UpvotedGrid = ({ page, setPage }: UpvotedGridProps) => {
   }, [page]);
 
   const fetchUpvotedListings = async () => {
-    setListingIds(null);
-    setListingInfo(null);
+    setListingInfos(null);
+    setListingDetails(null);
 
     const { data, error } = await auth.client.GET("/listings/upvotes", {
       params: {
@@ -44,11 +50,11 @@ const UpvotedGrid = ({ page, setPage }: UpvotedGridProps) => {
       return;
     }
 
-    setListingIds(data.upvoted_listing_ids);
-    setHasMore(data.has_more);
+    setListingInfos(data.listings);
+    setHasMore(data.has_next);
 
-    if (data.upvoted_listing_ids.length > 0) {
-      fetchListingDetails(data.upvoted_listing_ids);
+    if (data.listings.length > 0) {
+      fetchListingDetails(data.listings.map((info: ListingInfo) => info.id));
     }
   };
 
@@ -66,24 +72,31 @@ const UpvotedGrid = ({ page, setPage }: UpvotedGridProps) => {
       return;
     }
 
-    setListingInfo(data.listings);
+    const detailsMap: Record<string, ListingDetails> = {};
+    data.listings.forEach((listing: ListingDetails) => {
+      detailsMap[listing.id] = listing;
+    });
+    setListingDetails(detailsMap);
   };
 
   const prevButton = page > 1;
   const nextButton = hasMore;
 
-  return listingIds === null ? (
+  return listingInfos === null ? (
     <div className="flex justify-center items-center h-64">
       <Spinner />
     </div>
-  ) : listingIds.length > 0 ? (
+  ) : listingInfos.length > 0 ? (
     <div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-        {listingIds.map((listingId) => (
-          <Link to={`/item/${listingId}`} key={listingId}>
+        {listingInfos.map((info) => (
+          <Link
+            to={`/item/${info.username || "unknown"}/${info.slug || info.id}`}
+            key={info.id}
+          >
             <ListingGridCard
-              listingId={listingId}
-              listing={listingInfo?.find((l) => l.id === listingId)}
+              listingId={info.id}
+              listing={listingDetails?.[info.id]}
               showDescription={true}
             />
           </Link>

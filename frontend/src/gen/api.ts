@@ -409,15 +409,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/listings/user/{id}": {
+    "/listings/user/{user_id}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** List User Listings */
-        get: operations["list_user_listings_listings_user__id__get"];
+        /** Get User Listings */
+        get: operations["get_user_listings_listings_user__user_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -433,8 +433,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List My Listings */
-        get: operations["list_my_listings_listings_me_get"];
+        /** Get My Listings */
+        get: operations["get_my_listings_listings_me_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1244,8 +1244,8 @@ export interface components {
         };
         /** ListListingsResponse */
         ListListingsResponse: {
-            /** Listing Ids */
-            listing_ids: string[];
+            /** Listings */
+            listings: components["schemas"]["ListingInfo"][];
             /**
              * Has Next
              * @default false
@@ -1270,8 +1270,10 @@ export interface components {
             updated_at: number;
             /** Name */
             name: string;
+            /** Username */
+            username?: string | null;
             /** Slug */
-            slug: string;
+            slug?: string | null;
             /** Child Ids */
             child_ids: string[];
             /** Description */
@@ -1298,6 +1300,15 @@ export interface components {
              * @default 0
              */
             score: number;
+        };
+        /** ListingInfo */
+        ListingInfo: {
+            /** Id */
+            id: string;
+            /** Username */
+            username: string;
+            /** Slug */
+            slug: string | null;
         };
         /** ListingInfoResponse */
         ListingInfoResponse: {
@@ -1585,13 +1596,6 @@ export interface components {
         UploadArtifactResponse: {
             /** Artifacts */
             artifacts: components["schemas"]["SingleArtifactResponse"][];
-        };
-        /** UpvotedListingsResponse */
-        UpvotedListingsResponse: {
-            /** Upvoted Listing Ids */
-            upvoted_listing_ids: string[];
-            /** Has More */
-            has_more: boolean;
         };
         /** UserInfoResponseItem */
         UserInfoResponseItem: {
@@ -2333,17 +2337,15 @@ export interface operations {
             };
         };
     };
-    list_user_listings_listings_user__id__get: {
+    get_user_listings_listings_user__user_id__get: {
         parameters: {
-            query: {
+            query?: {
                 /** @description Page number for pagination */
-                page: number;
-                /** @description Search query string */
-                search_query?: string;
+                page?: number;
             };
             header?: never;
             path: {
-                id: string;
+                user_id: string;
             };
             cookie?: never;
         };
@@ -2369,13 +2371,11 @@ export interface operations {
             };
         };
     };
-    list_my_listings_listings_me_get: {
+    get_my_listings_listings_me_get: {
         parameters: {
-            query: {
+            query?: {
                 /** @description Page number for pagination */
-                page: number;
-                /** @description Search query string */
-                search_query?: string;
+                page?: number;
             };
             header?: never;
             path?: never;
@@ -2520,7 +2520,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UpvotedListingsResponse"];
+                    "application/json": components["schemas"]["ListListingsResponse"];
                 };
             };
             /** @description Validation Error */
