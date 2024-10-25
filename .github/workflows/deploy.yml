@@ -106,5 +106,5 @@ jobs:
           AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
-          pip install -r requirements.txt
-          python migrate_listings.py
+          pip install -r ./store/requirements.txt
+          python ./store/migrate_listings.py
