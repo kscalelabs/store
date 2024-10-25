@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaDownload, FaFileDownload, FaHome, FaList } from "react-icons/fa";
+import { FaDownload, FaFileDownload, FaHome } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 
 import FileRenderer from "@/components/files/FileRenderer";
@@ -128,21 +128,13 @@ const FileBrowser = () => {
           Home
         </Button>
         <Button
-          onClick={() => navigate(`/item/${artifact.listing_id}`)}
-          variant="secondary"
-          className="w-full sm:w-auto"
-        >
-          <FaList className="mr-2" />
-          View Listing
-        </Button>
-        <Button
           onClick={handleDownload}
           variant="secondary"
           disabled={!artifact.urls?.large}
           className="w-full sm:w-auto"
         >
           <FaFileDownload className="mr-2" />
-          Download TGZ
+          Download
         </Button>
       </div>
       <div className="flex flex-col lg:flex-row lg:space-x-4">
