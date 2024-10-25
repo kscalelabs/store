@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 
+import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+
+type ListingInfo =
+  paths["/listings/me"]["get"]["responses"][200]["content"]["application/json"]["listings"][number];
 
 const useGetUserListing = ({
   pageNumber,
@@ -12,7 +16,9 @@ const useGetUserListing = ({
 }) => {
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
-  const [listingIds, setListingIds] = useState<string[] | null>(null);
+  const [listingInfos, setListingInfos] = useState<ListingInfo[] | null>(null);
+  const [hasNext, setHasNext] = useState<boolean>(false);
+
   useEffect(() => {
     async function fetchData() {
       const { data, error } = await auth.client.GET("/listings/me", {
@@ -26,13 +32,16 @@ const useGetUserListing = ({
       if (error) {
         addErrorAlert(error);
       } else {
-        setListingIds(data.listing_ids);
+        setListingInfos(data.listings);
+        setHasNext(data.has_next);
       }
     }
     fetchData();
-  }, []);
+  }, [pageNumber, searchQuery, auth.client, addErrorAlert]);
+
   return {
-    listingIds,
+    listingInfos,
+    hasNext,
   };
 };
 
