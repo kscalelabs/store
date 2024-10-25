@@ -1,12 +1,10 @@
 import { useState } from "react";
 import {
   FaBars,
-  FaDiscord,
   FaGithub,
   FaRegFileLines,
   FaRobot,
   FaWpexplorer,
-  FaXTwitter,
 } from "react-icons/fa6";
 import { Link, useLocation } from "react-router-dom";
 
@@ -41,21 +39,6 @@ const Navbar = () => {
       ...navItems,
     ];
   }
-
-  const communityItems = [
-    {
-      name: "Discord",
-      path: "https://discord.gg/kscale",
-      icon: <FaDiscord className="h-5 w-5" />,
-      isExternal: true,
-    },
-    {
-      name: "Twitter",
-      path: "https://x.com/kscalelabs",
-      icon: <FaXTwitter className="h-5 w-5" />,
-      isExternal: true,
-    },
-  ];
 
   const technicalItems = [
     {
@@ -214,42 +197,18 @@ const Navbar = () => {
                   }`}
                 >
                   <div className="py-4 px-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <h3 className="text-white font-semibold mb-2 px-2">
-                          Community
-                        </h3>
-                        <ul className="space-y-1">
-                          {communityItems.map((item) => (
-                            <ListItem
-                              key={item.name}
-                              title={item.name}
-                              href={item.path}
-                              icon={item.icon}
-                              className="group text-gray-1"
-                              isExternal={item.isExternal}
-                            />
-                          ))}
-                        </ul>
-                      </div>
-                      <div>
-                        <h3 className="text-white font-semibold mb-2 px-2">
-                          Technical
-                        </h3>
-                        <ul className="space-y-1">
-                          {technicalItems.map((item) => (
-                            <ListItem
-                              key={item.name}
-                              title={item.name}
-                              href={item.path}
-                              icon={item.icon}
-                              className="group text-gray-1"
-                              isExternal={item.isExternal}
-                            />
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
+                    <ul className="space-y-1">
+                      {technicalItems.map((item) => (
+                        <ListItem
+                          key={item.name}
+                          title={item.name}
+                          href={item.path}
+                          icon={item.icon}
+                          className="group text-gray-1"
+                          isExternal={item.isExternal}
+                        />
+                      ))}
+                    </ul>
                   </div>
                 </div>
               </div>
