@@ -40,9 +40,24 @@ async def list_listings(
     sort_by: SortOption = Query(SortOption.NEWEST, description="Sort option for listings"),
 ) -> ListListingsResponse:
     listings, has_next = await crud.get_listings(page, search_query=search_query, sort_by=sort_by)
-    listing_infos = [
-        ListingInfo(id=listing.id, username=listing.username or "Unknown", slug=listing.slug) for listing in listings
-    ]
+
+    # Collect all user IDs from listings
+    user_ids = [listing.user_id for listing in listings if listing.username is None]
+
+    # Fetch users in batch
+    users = await crud.get_user_batch(user_ids) if user_ids else []
+    user_map = {user.id: user for user in users}
+
+    listing_infos = []
+    for listing in listings:
+        if listing.username:
+            username = listing.username
+        else:
+            user = user_map.get(listing.user_id)
+            username = user.username if user else "Unknown"
+
+        listing_infos.append(ListingInfo(id=listing.id, username=username, slug=listing.slug))
+
     return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
 
