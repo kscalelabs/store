@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
 import EditAddressModal from "@/components/modals/EditAddressModal";
+import CancelOrderModal from "@/components/modals/CancelOrderModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,6 +45,7 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
   );
   const { order, product } = orderWithProduct;
   const [isEditAddressModalOpen, setIsEditAddressModalOpen] = useState(false);
+  const [isCancelOrderModalOpen, setIsCancelOrderModalOpen] = useState(false);
 
   const currentStatusIndex = orderStatuses.indexOf(order.status);
   const isRedStatus = redStatuses.includes(order.status);
@@ -91,6 +93,12 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
                 className="cursor-pointer hover:bg-gray-100"
               >
                 Change delivery address
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={() => setIsCancelOrderModalOpen(true)}
+                className="cursor-pointer hover:bg-gray-100"
+              >
+                Cancel Order
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -199,6 +207,12 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
       <EditAddressModal
         isOpen={isEditAddressModalOpen}
         onOpenChange={setIsEditAddressModalOpen}
+        order={order}
+        onOrderUpdate={handleOrderUpdate}
+      />
+      <CancelOrderModal
+        isOpen={isCancelOrderModalOpen}
+        onOpenChange={setIsCancelOrderModalOpen}
         order={order}
         onOrderUpdate={handleOrderUpdate}
       />

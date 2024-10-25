@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 
 from store.app.db import Crud
-from store.app.model import User
+from store.app.model import Order, User
 from store.app.routers.users import get_session_user_with_read_permission
 from store.settings import settings
 
@@ -38,6 +38,56 @@ async def create_payment_intent(request: Request) -> Dict[str, Any]:
         return {"clientSecret": intent.client_secret}
     except Exception as e:
         return {"error": str(e)}
+
+
+class CreateRefundsRequest(BaseModel):
+    payment_intent_id: str
+    cancel_reason: str
+    amount: int
+
+
+@stripe_router.put("/refunds/{order_id}", response_model=Order)
+async def refund_payment_intent(
+    order_id: str,
+    refund_request: CreateRefundsRequest,
+    user: User = Depends(get_session_user_with_read_permission),
+    crud: Crud = Depends(),
+) -> Order:
+    async with crud:
+        try:
+            amount = refund_request.amount
+            paymentIntentID = refund_request.payment_intent_id
+            customer_reason = refund_request.cancel_reason
+
+            # Create a Refund for payment_intent_id with the order amount
+            refund = stripe.Refund.create(
+                payment_intent=paymentIntentID,
+                amount=amount,
+                reason="requested_by_customer",
+                metadata={"custom_reason": customer_reason},
+            )
+            logger.info(f"Refund created: {refund.id}")
+
+            # Make sure order exists
+            order = await crud.get_order(order_id)
+            if order is None or order.user_id != user.id:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+            logger.info(f"Found order id: {order.id}")
+            # Update order status
+            order_data = {
+                "stripe_refund_id": refund.id,
+                "status": (
+                    "refunded" if (refund.status and refund.status) == "succeeded" else (refund.status or "no status!")
+                ),
+            }
+
+            updated_order = await crud.update_order(order_id, order_data)
+
+            logger.info(f"Updated order with status: {refund.status}")
+            return updated_order
+        except Exception as e:
+            logger.error(f"Error processing refund: {str(e)}")
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @stripe_router.post("/webhook")
