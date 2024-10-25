@@ -107,4 +107,4 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
           pip install -r ./store/requirements.txt
-          python ./store/migrate_listings.py
+          python migrate_listings.py
