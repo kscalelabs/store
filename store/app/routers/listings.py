@@ -49,6 +49,8 @@ async def list_listings(
 class ListingInfoResponse(BaseModel):
     id: str
     name: str
+    slug: str | None
+    username: str | None
     description: str | None
     child_ids: list[str]
     image_url: str | None
@@ -69,39 +71,53 @@ async def get_batch_listing_info(
     user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
     ids: list[str] = Query(description="List of part ids"),
 ) -> GetBatchListingsResponse:
+    logger.info(f"Fetching batch listing info for ids: {ids}")
+
     listings, artifacts = await asyncio.gather(
         crud._get_item_batch(ids, Listing),
         crud.get_listings_artifacts(ids),
     )
+
+    logger.info(f"Retrieved {len(listings)} listings and {len(artifacts)} artifacts")
+
     user_votes = {}
     if user:
         user_votes = {vote.listing_id: vote.is_upvote for vote in await crud.get_user_votes(user.id, ids)}
 
-    return GetBatchListingsResponse(
-        listings=[
-            ListingInfoResponse(
-                id=listing.id,
-                name=listing.name,
-                description=listing.description,
-                child_ids=listing.child_ids,
-                image_url=next(
+    logger.info(f"User votes: {user_votes}")
+
+    listing_responses = []
+    for listing, artifacts in zip(listings, artifacts):
+        if listing is not None:
+            try:
+                image_url = next(
                     (
                         get_artifact_url(artifact=artifact, size="small")
                         for artifact in artifacts
                         if artifact.artifact_type == "image"
                     ),
                     None,
-                ),
-                onshape_url=listing.onshape_url,
-                created_at=listing.created_at,
-                views=listing.views,
-                score=listing.score,
-                user_vote=user_votes.get(listing.id),
-            )
-            for listing, artifacts in zip(listings, artifacts)
-            if listing is not None
-        ]
-    )
+                )
+                listing_response = ListingInfoResponse(
+                    id=listing.id,
+                    name=listing.name,
+                    slug=listing.slug,  # This can be None
+                    username=listing.username,
+                    description=listing.description,
+                    child_ids=listing.child_ids,
+                    image_url=image_url,
+                    onshape_url=listing.onshape_url,
+                    created_at=listing.created_at,
+                    views=listing.views,
+                    score=listing.score,
+                    user_vote=user_votes.get(listing.id),
+                )
+                listing_responses.append(listing_response)
+            except Exception as e:
+                logger.error(f"Error creating ListingInfoResponse for listing {listing.id}: {str(e)}")
+
+    logger.info(f"Returning {len(listing_responses)} listing responses")
+    return GetBatchListingsResponse(listings=listing_responses)
 
 
 class DumpListingsResponse(BaseModel):
@@ -256,6 +272,8 @@ async def get_upvoted_listings(
 class GetListingResponse(BaseModel):
     id: str
     name: str
+    username: str | None
+    slug: str | None
     description: str | None
     child_ids: list[str]
     tags: list[str]
@@ -293,6 +311,8 @@ async def get_listing(
     return GetListingResponse(
         id=listing.id,
         name=listing.name,
+        username=listing.username,
+        slug=listing.slug,
         description=listing.description,
         child_ids=listing.child_ids,
         tags=listing_tags,
@@ -342,7 +362,7 @@ async def remove_vote(
     await crud.handle_vote(user.id, id, None)
 
 
-@listings_router.put("/{id}/slug", response_model=bool)
+@listings_router.put("/edit/{id}/slug", response_model=bool)
 async def update_listing_slug(
     id: str,
     new_slug: str,
@@ -384,6 +404,8 @@ async def get_listing_by_username_and_slug(
     return GetListingResponse(
         id=listing.id,
         name=listing.name,
+        username=listing.username,
+        slug=listing.slug,
         description=listing.description,
         child_ids=listing.child_ids,
         tags=listing_tags,

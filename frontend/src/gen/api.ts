@@ -563,7 +563,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/listings/{id}/slug": {
+    "/listings/edit/{id}/slug": {
         parameters: {
             query?: never;
             header?: never;
@@ -572,7 +572,7 @@ export interface paths {
         };
         get?: never;
         /** Update Listing Slug */
-        put: operations["update_listing_slug_listings__id__slug_put"];
+        put: operations["update_listing_slug_listings_edit__id__slug_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1141,6 +1141,10 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+            /** Username */
+            username: string | null;
+            /** Slug */
+            slug: string | null;
             /** Description */
             description: string | null;
             /** Child Ids */
@@ -1316,6 +1320,10 @@ export interface components {
             id: string;
             /** Name */
             name: string;
+            /** Slug */
+            slug: string | null;
+            /** Username */
+            username: string | null;
             /** Description */
             description: string | null;
             /** Child Ids */
@@ -2661,7 +2669,7 @@ export interface operations {
             };
         };
     };
-    update_listing_slug_listings__id__slug_put: {
+    update_listing_slug_listings_edit__id__slug_put: {
         parameters: {
             query: {
                 new_slug: string;

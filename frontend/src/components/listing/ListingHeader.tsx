@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaCheck, FaEye, FaHome, FaList, FaPen } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -134,6 +134,50 @@ const NavigationButtons = ({ listing }: Props) => {
 const ListingHeader = (props: Props) => {
   const { listing } = props;
   const navigate = useNavigate();
+  const auth = useAuthentication();
+  const { addAlert, addErrorAlert } = useAlertQueue();
+
+  const [isEditingSlug, setIsEditingSlug] = useState(false);
+  const [newSlug, setNewSlug] = useState(listing.slug || "");
+  const [previewUrl, setPreviewUrl] = useState("");
+
+  useEffect(() => {
+    if (auth.currentUser && newSlug) {
+      setPreviewUrl(`/item/${auth.currentUser.username}/${newSlug}`);
+    }
+  }, [auth.currentUser, newSlug]);
+
+  const handleSaveSlug = async () => {
+    if (newSlug === listing.slug) {
+      setIsEditingSlug(false);
+      return;
+    }
+
+    const { error } = await auth.client.PUT(`/listings/edit/{id}/slug`, {
+      params: { path: { id: listing.id }, query: { new_slug: newSlug } },
+    });
+
+    if (error) {
+      addErrorAlert(error);
+    } else {
+      addAlert("Listing URL updated successfully", "success");
+      setIsEditingSlug(false);
+      // Redirect to the new URL
+      if (newSlug !== "") {
+        navigate(`/item/${auth.currentUser?.username}/${newSlug}`);
+      }
+    }
+  };
+
+  const sanitizeSlug = (input: string) => {
+    // Allow alphanumeric characters and dashes, replace spaces with dashes
+    return input
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/-+/g, "-") // Replace multiple consecutive dashes with a single dash
+      .replace(/^-|-$/g, ""); // Remove leading and trailing dashes
+  };
 
   return (
     <Card className="mb-6">
@@ -161,6 +205,54 @@ const ListingHeader = (props: Props) => {
                   <p onClick={() => navigate(`/profile/${listing.creator_id}`)}>
                     By {listing.creator_name}
                   </p>{" "}
+                </div>
+              )}
+              {/* URL editing section */}
+              {listing.can_edit && (
+                <div className="mt-2">
+                  {isEditingSlug ? (
+                    <div className="flex flex-col space-y-2">
+                      <Input
+                        type="text"
+                        value={newSlug}
+                        onChange={(e) =>
+                          setNewSlug(sanitizeSlug(e.target.value))
+                        }
+                        className="border-b border-gray-5"
+                        placeholder="Enter new URL slug"
+                      />
+                      {previewUrl && (
+                        <div className="text-sm text-gray-11 font-medium">
+                          Preview: {previewUrl}
+                        </div>
+                      )}
+                      <div className="flex space-x-2">
+                        <Button
+                          onClick={handleSaveSlug}
+                          variant="primary"
+                          size="sm"
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          onClick={() => setIsEditingSlug(false)}
+                          variant="ghost"
+                          size="sm"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Button
+                      onClick={() => setIsEditingSlug(true)}
+                      variant="ghost"
+                      size="sm"
+                      className="text-primary hover:text-primary/80"
+                    >
+                      <FaPen className="mr-2" /> Edit URL
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
