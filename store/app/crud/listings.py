@@ -45,7 +45,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             # Fetch usernames for listings that don't have them
             listings_without_username = [listing for listing in listings if listing.username is None]
             if listings_without_username:
-                user_ids = [listing.user_id for listing in listings_without_username]
+                user_ids = list(set(listing.user_id for listing in listings_without_username))
                 users = await self._get_item_batch(user_ids, User)
                 user_map = {user.id: user.username for user in users if user is not None}
 
