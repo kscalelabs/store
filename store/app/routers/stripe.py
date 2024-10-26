@@ -56,12 +56,12 @@ async def refund_payment_intent(
     async with crud:
         try:
             amount = refund_request.amount
-            paymentIntentID = refund_request.payment_intent_id
+            payment_intent_id = refund_request.payment_intent_id
             customer_reason = refund_request.cancel_reason
 
             # Create a Refund for payment_intent_id with the order amount
             refund = stripe.Refund.create(
-                payment_intent=paymentIntentID,
+                payment_intent=payment_intent_id,
                 amount=amount,
                 reason="requested_by_customer",
                 metadata={"custom_reason": customer_reason},

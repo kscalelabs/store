@@ -25,7 +25,7 @@ interface CancelOrderModalProps {
 
 const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
   isOpen,
-onOpenChange,
+  onOpenChange,
   order,
   onOrderUpdate,
 }) => {
@@ -34,7 +34,7 @@ onOpenChange,
   const [cancellation, setCancellation] = useState({
     payment_intent_id: order["stripe_payment_intent_id"],
     cancel_reason: "",
-    amount: order["amount"]
+    amount: order["amount"],
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,17 +46,13 @@ onOpenChange,
     e.preventDefault();
     try {
       debugger;
-      const { data, error } = await client.PUT(
-        "/stripe/refunds/{order_id}",
-        {
-          params: { path: { order_id: order.id } },
-          body: cancellation,
-        },
-      );
+      const { data, error } = await client.PUT("/stripe/refunds/{order_id}", {
+        params: { path: { order_id: order.id } },
+        body: cancellation,
+      });
 
       if (error) {
         addErrorAlert("Failed to cancel the order");
-        console.log(data)
         console.error("Error canceling order:", error);
       } else {
         addAlert("Order successfully canceled", "success");

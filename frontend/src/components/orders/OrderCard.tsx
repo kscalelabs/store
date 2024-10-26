@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
-import EditAddressModal from "@/components/modals/EditAddressModal";
 import CancelOrderModal from "@/components/modals/CancelOrderModal";
+import EditAddressModal from "@/components/modals/EditAddressModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
