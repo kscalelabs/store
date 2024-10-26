@@ -45,7 +45,6 @@ const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      debugger;
       const { data, error } = await client.PUT("/stripe/refunds/{order_id}", {
         params: { path: { order_id: order.id } },
         body: cancellation,
