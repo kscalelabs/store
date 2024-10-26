@@ -1,8 +1,9 @@
 // src/components/UploadContent.tsx
-import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { FC, useEffect } from "react";
 import { XCircleFill } from "react-bootstrap-icons";
 import ImageUploading, { ImageListType } from "react-images-uploading";
+
+import { useAlertQueue } from "@/hooks/useAlertQueue";
 
 interface UploadContentProps {
   images: ImageListType;
@@ -23,7 +24,10 @@ const UploadContent: FC<UploadContentProps> = ({ images, onChange }) => {
       if (item.type.startsWith("image")) {
         const file = item.getAsFile();
         if (file) {
-          const newImageList = [...images, { file, data_url: URL.createObjectURL(file) }];
+          const newImageList = [
+            ...images,
+            { file, data_url: URL.createObjectURL(file) },
+          ];
           console.log("Image pasted, updating image list:", newImageList);
           onChange(newImageList);
           addAlert("Image pasted from clipboard!", "success");
@@ -96,7 +100,9 @@ const UploadContent: FC<UploadContentProps> = ({ images, onChange }) => {
                   </div>
                 ))
               ) : (
-                <p className="text-gray-11 whitespace-nowrap">No images uploaded yet.</p>
+                <p className="text-gray-11 whitespace-nowrap">
+                  No images uploaded yet.
+                </p>
               )}
             </div>
           </div>

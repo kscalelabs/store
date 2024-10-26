@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react";
-import ProductPage from "@/components/products/ProductPage";
+import React, { useEffect, useState } from "react";
+
 import ListingOnshape from "@/components/listing/onshape/ListingOnshape";
-import { useAuthentication } from "@/hooks/useAuth";
+import ProductPage from "@/components/products/ProductPage";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
-import { formatPrice } from "@/lib/utils/formatNumber";
+import { useAuthentication } from "@/hooks/useAuth";
 
 type ListingResponse =
   paths["/listings/{id}"]["get"]["responses"][200]["content"]["application/json"];
 
 interface ListingBodyProps {
   listing: ListingResponse;
-  newTitle: string; // Add this line
+  newTitle: string;
 }
 
 const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
@@ -23,22 +23,28 @@ const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
   useEffect(() => {
     const fetchArtifacts = async () => {
       try {
-        const { data, error } = await auth.client.GET("/artifacts/list/{listing_id}", {
-          params: { path: { listing_id: listing.id } },
-        });
+        const { data, error } = await auth.client.GET(
+          "/artifacts/list/{listing_id}",
+          {
+            params: { path: { listing_id: listing.id } },
+          },
+        );
 
         if (error) {
           addErrorAlert(error);
         } else {
           const artifactImages = data.artifacts
-            .filter(artifact => artifact.artifact_type === "image")
-            .map(artifact => artifact.urls.large);
+            .filter((artifact) => artifact.artifact_type === "image")
+            .map((artifact) => artifact.urls.large);
 
-          const uploadedImages = listing.uploaded_files?.map(file => file.url) || [];
+          const uploadedImages =
+            listing.uploaded_files?.map((file) => file.url) || [];
           setImages([...uploadedImages, ...artifactImages]);
         }
       } catch (err) {
-        addErrorAlert("Error fetching artifacts");
+        addErrorAlert(
+          error`Error fetching artifacts: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     };
 
@@ -51,7 +57,7 @@ const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
   const productInfo = {
     name: newTitle || listing.name,
     description: listing.description || "Product Description",
-    specs: listing.key_features ? listing.key_features.split('\n') : [],
+    specs: listing.key_features ? listing.key_features.split("\n") : [],
     features: [],
     price: listing.price,
     productId: listing.product_id || "default_product_id",
@@ -93,7 +99,11 @@ const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
       {isModalOpen && selectedImage && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
           <div className="relative">
-            <img src={selectedImage} alt="Selected" className="max-w-full max-h-full" />
+            <img
+              src={selectedImage}
+              alt="Selected"
+              className="max-w-full max-h-full"
+            />
             <button
               onClick={closeModal}
               className="absolute top-0 right-0 m-4 text-white text-2xl"

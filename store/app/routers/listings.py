@@ -2,7 +2,6 @@
 
 import asyncio
 import logging
-from decimal import Decimal
 from typing import Annotated, List
 
 from fastapi import (
@@ -20,10 +19,15 @@ from pydantic import BaseModel
 """Defines all listing related API endpoints."""
 
 
-from store.app.crud.listings import SortOption
-from store.app.db import Crud
-from store.app.model import Listing, User, can_write_listing, get_artifact_url
-from store.app.routers.users import (
+from store.app.crud.listings import SortOption  # noqa: E402
+from store.app.db import Crud  # noqa: E402
+from store.app.model import (  # noqa: E402
+    Listing,
+    User,
+    can_write_listing,
+    get_artifact_url,
+)
+from store.app.routers.users import (  # noqa: E402
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
     maybe_get_user_from_api_key,
@@ -200,17 +204,14 @@ async def add_listing(
     price: float | None = Form(None),
     photos: List[UploadFile] = File(None),
 ) -> NewListingResponse:
-    logger.info(
-        f"Received form data: name={name}, description={description}, child_ids={child_ids}, slug={slug}, stripe_link={stripe_link}, key_features={key_features}, price={price}"
-    )
     logger.info(f"Received {len(photos) if photos else 0} photos")
 
     # Generate a slug if not provided
     if not slug:
         slug = await generate_unique_slug(crud, user.id, name)
 
-    # Convert price to Decimal if it's not None
-    decimal_price = Decimal(str(price)) if price is not None else None
+    # Convert price to float if it's not None
+    float_price = float(price) if price is not None else None
 
     # Creates a new listing.
     listing = Listing.create(
@@ -222,26 +223,29 @@ async def add_listing(
         username=user.username,
         stripe_link=stripe_link,
         key_features=key_features or "",
-        price=decimal_price,
+        price=float_price,  # Use float_price instead of decimal_price
     )
     await crud.add_listing(listing)
 
     # Handle photo uploads
     if photos:
         for photo in photos:
-            await crud.upload_artifact(
-                name=photo.filename,
-                file=photo,
-                listing=listing,
-                artifact_type="image",
-            )
+            if photo.filename:  # Add this check
+                await crud.upload_artifact(
+                    name=photo.filename,
+                    file=photo,
+                    listing=listing,
+                    artifact_type="image",
+                )
+            else:
+                logger.warning("Skipping photo upload due to missing filename")
 
     return NewListingResponse(listing_id=listing.id, username=user.username, slug=slug)
 
 
 # Add this new function to generate a unique slug
 async def generate_unique_slug(crud: Crud, user_id: str, name: str) -> str:
-    base_slug = slugify(name)
+    base_slug = slugify(name)  # noqa: F821
     slug = base_slug
     counter = 1
     while await crud.is_slug_taken(user_id, slug):
@@ -370,6 +374,9 @@ async def get_listing(
     if (creator := await crud.get_user_public(listing.user_id)) is not None:
         creator_name = " ".join(filter(None, [creator.first_name, creator.last_name]))
 
+    # Convert Decimal to float if price is not None
+    price = float(listing.price) if listing.price is not None else None
+
     return GetListingResponse(
         id=listing.id,
         name=listing.name,
@@ -387,7 +394,7 @@ async def get_listing(
         creator_id=listing.user_id,
         creator_name=creator_name,
         key_features=listing.key_features,
-        price=listing.price,  # Add this line to include the price
+        price=price,  # Use the converted price here
     )
 
 
@@ -465,6 +472,9 @@ async def get_listing_by_username_and_slug(
     if (creator := await crud.get_user_public(listing.user_id)) is not None:
         creator_name = " ".join(filter(None, [creator.first_name, creator.last_name]))
 
+    # Convert Decimal to float if price is not None
+    price = float(listing.price) if listing.price is not None else None
+
     return GetListingResponse(
         id=listing.id,
         name=listing.name,
@@ -482,5 +492,5 @@ async def get_listing_by_username_and_slug(
         creator_id=listing.user_id,
         creator_name=creator_name,
         key_features=listing.key_features,
-        price=listing.price,  # Add this line
+        price=price,  # Use the converted price here
     )

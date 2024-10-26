@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { ImageListType } from "react-images-uploading";
 import { useNavigate } from "react-router-dom";
 
 import RequireAuthentication from "@/components/auth/RequireAuthentication";
 import { RenderDescription } from "@/components/listing/ListingDescription";
+import UploadContent from "@/components/listing/UploadContent";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import Header from "@/components/ui/Header";
@@ -14,8 +16,6 @@ import { useAuthentication } from "@/hooks/useAuth";
 import { NewListingSchema, NewListingType } from "@/lib/types";
 import { slugify } from "@/lib/utils/formatString";
 import { zodResolver } from "@hookform/resolvers/zod";
-import UploadContent from "@/components/listing/UploadContent";
-import { ImageListType } from "react-images-uploading";
 
 const Create = () => {
   const auth = useAuthentication();
@@ -72,7 +72,14 @@ const Create = () => {
     setValue("price", parseFloat(decimalValue), { shouldValidate: true });
   };
 
-  const onSubmit = async ({ name, description, slug, stripeLink, keyFeatures, price }: NewListingType) => {
+  const onSubmit = async ({
+    name,
+    description,
+    slug,
+    stripeLink,
+    keyFeatures,
+    price,
+  }: NewListingType) => {
     const formData = new FormData();
     formData.append("name", name);
     formData.append("description", description || "");
@@ -85,28 +92,22 @@ const Create = () => {
     }
 
     // Append photos to formData
-    images.forEach((image, index) => {
+    images.forEach((image) => {
       if (image.file) {
         formData.append(`photos`, image.file);
       }
     });
 
     try {
-      const { data: responseData, error } = await auth.client.POST(
-        "/listings/add",
-        {
-          body: formData,
-        },
-      );
+      const { data: responseData } = await auth.client.POST("/listings/add", {
+        body: formData,
+      });
 
-      if (error) {
-        addErrorAlert(error);
-      } else {
-        addAlert("New listing was created successfully", "success");
-        navigate(`/item/${responseData.username}/${responseData.slug}`);
-      }
+      addAlert("New listing was created successfully", "success");
+      navigate(`/item/${responseData.username}/${responseData.slug}`);
     } catch (error) {
       addErrorAlert("Failed to create listing");
+      console.error("Error creating listing:", error);
     }
   };
 
@@ -124,7 +125,10 @@ const Create = () => {
             >
               {/* Name */}
               <div>
-                <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-12">
+                <label
+                  htmlFor="name"
+                  className="block mb-2 text-sm font-medium text-gray-12"
+                >
                   Name
                 </label>
                 <Input
@@ -133,12 +137,17 @@ const Create = () => {
                   type="text"
                   {...register("name")}
                 />
-                {errors?.name && <ErrorMessage>{errors?.name?.message}</ErrorMessage>}
+                {errors?.name && (
+                  <ErrorMessage>{errors?.name?.message}</ErrorMessage>
+                )}
               </div>
 
               {/* Description Input */}
               <div className="relative">
-                <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-12">
+                <label
+                  htmlFor="description"
+                  className="block mb-2 text-sm font-medium text-gray-12"
+                >
                   Description (supports Markdown formatting)
                 </label>
                 <TextArea
@@ -149,7 +158,9 @@ const Create = () => {
                     onChange: (e) => setDescription(e.target.value),
                   })}
                 />
-                {errors?.description && <ErrorMessage>{errors?.description?.message}</ErrorMessage>}
+                {errors?.description && (
+                  <ErrorMessage>{errors?.description?.message}</ErrorMessage>
+                )}
               </div>
 
               {/* Render Description */}
@@ -162,7 +173,10 @@ const Create = () => {
 
               {/* Key Features */}
               <div className="relative">
-                <label htmlFor="keyFeatures" className="block mb-2 text-sm font-medium text-gray-12">
+                <label
+                  htmlFor="keyFeatures"
+                  className="block mb-2 text-sm font-medium text-gray-12"
+                >
                   Key Features (supports Markdown formatting)
                 </label>
                 <TextArea
@@ -173,7 +187,9 @@ const Create = () => {
                     onChange: (e) => setKeyFeatures(e.target.value),
                   })}
                 />
-                {errors?.keyFeatures && <ErrorMessage>{errors?.keyFeatures?.message}</ErrorMessage>}
+                {errors?.keyFeatures && (
+                  <ErrorMessage>{errors?.keyFeatures?.message}</ErrorMessage>
+                )}
               </div>
 
               {/* Render Key Features */}
@@ -186,7 +202,10 @@ const Create = () => {
 
               {/* Slug */}
               <div>
-                <label htmlFor="slug" className="block mb-2 text-sm font-medium text-gray-12">
+                <label
+                  htmlFor="slug"
+                  className="block mb-2 text-sm font-medium text-gray-12"
+                >
                   Slug
                 </label>
                 <Input
@@ -202,7 +221,9 @@ const Create = () => {
                   })}
                   value={slug}
                 />
-                {errors?.slug && <ErrorMessage>{errors?.slug?.message}</ErrorMessage>}
+                {errors?.slug && (
+                  <ErrorMessage>{errors?.slug?.message}</ErrorMessage>
+                )}
               </div>
 
               {/* URL Preview */}
@@ -219,7 +240,10 @@ const Create = () => {
 
               {/* Stripe Link */}
               <div>
-                <label htmlFor="stripeLink" className="block mb-2 text-sm font-medium text-gray-12">
+                <label
+                  htmlFor="stripeLink"
+                  className="block mb-2 text-sm font-medium text-gray-12"
+                >
                   Stripe Link
                 </label>
                 <Input
@@ -228,12 +252,17 @@ const Create = () => {
                   type="text"
                   {...register("stripeLink")}
                 />
-                {errors?.stripeLink && <ErrorMessage>{errors?.stripeLink?.message}</ErrorMessage>}
+                {errors?.stripeLink && (
+                  <ErrorMessage>{errors?.stripeLink?.message}</ErrorMessage>
+                )}
               </div>
 
               {/* Price */}
               <div>
-                <label htmlFor="price" className="block mb-2 text-sm font-medium text-gray-12">
+                <label
+                  htmlFor="price"
+                  className="block mb-2 text-sm font-medium text-gray-12"
+                >
                   Price
                 </label>
                 <Input
@@ -243,7 +272,9 @@ const Create = () => {
                   value={displayPrice}
                   onChange={handlePriceChange}
                 />
-                {errors?.price && <ErrorMessage>{errors?.price?.message}</ErrorMessage>}
+                {errors?.price && (
+                  <ErrorMessage>{errors?.price?.message}</ErrorMessage>
+                )}
                 {displayPrice && (
                   <p className="mt-1 text-sm text-gray-11">
                     Entered price: ${displayPrice}
