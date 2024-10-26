@@ -40,9 +40,14 @@ async def create_payment_intent(request: Request) -> Dict[str, Any]:
         return {"error": str(e)}
 
 
+class CancelReason(BaseModel):
+    reason: str
+    details: str
+
+
 class CreateRefundsRequest(BaseModel):
     payment_intent_id: str
-    cancel_reason: str
+    cancel_reason: CancelReason
     amount: int
 
 
@@ -57,14 +62,18 @@ async def refund_payment_intent(
         try:
             amount = refund_request.amount
             payment_intent_id = refund_request.payment_intent_id
-            customer_reason = refund_request.cancel_reason
+            customer_reason = (
+                refund_request.cancel_reason.details
+                if (refund_request.cancel_reason.reason == "Other" and refund_request.cancel_reason.details)
+                else refund_request.cancel_reason.reason
+            )
 
             # Create a Refund for payment_intent_id with the order amount
             refund = stripe.Refund.create(
                 payment_intent=payment_intent_id,
                 amount=amount,
                 reason="requested_by_customer",
-                metadata={"custom_reason": customer_reason},
+                metadata={"customer_reason": customer_reason},
             )
             logger.info(f"Refund created: {refund.id}")
 

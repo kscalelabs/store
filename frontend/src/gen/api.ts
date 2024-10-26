@@ -1107,6 +1107,13 @@ export interface components {
             /** Files */
             files: string[];
         };
+        /** CancelReason */
+        CancelReason: {
+            /** Reason */
+            reason: string;
+            /** Details */
+            details: string;
+        };
         /** ClientIdResponse */
         ClientIdResponse: {
             /** Client Id */
@@ -1128,8 +1135,7 @@ export interface components {
         CreateRefundsRequest: {
             /** Payment Intent Id */
             payment_intent_id: string;
-            /** Cancel Reason */
-            cancel_reason: string;
+            cancel_reason: components["schemas"]["CancelReason"];
             /** Amount */
             amount: number;
         };
