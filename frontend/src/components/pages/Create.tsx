@@ -99,9 +99,10 @@ const Create = () => {
     });
 
     try {
+      // @ts-expect-error Server accepts FormData but TypeScript doesn't recognize it
       const { data: responseData } = await auth.client.POST("/listings/add", {
         body: formData,
-      });
+      } as { body: FormData });
 
       if (responseData && responseData.username && responseData.slug) {
         addAlert("New listing was created successfully", "success");

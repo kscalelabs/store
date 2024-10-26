@@ -5,22 +5,27 @@ import ProductPage from "@/components/products/ProductPage";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 
-// Define the ListingResponse type explicitly
+// Update the ListingResponse type to match the actual structure
 type ListingResponse = {
   id: string;
   name: string;
-  description?: string;
-  key_features?: string;
-  price: number;
-  product_id?: string;
+  username: string | null;
+  slug: string | null;
+  description: string | null;
+  child_ids: string[];
+  tags: string[];
+  onshape_url: string | null;
   can_edit: boolean;
-  onshape_url: string;
-  uploaded_files?: { url: string }[];
+  created_at: number;
+  creator_name: string | null;
+  // Add any other properties that are present in your listing object
+  // If price is not always present, make it optional
+  price?: number;
 };
 
 interface ListingBodyProps {
   listing: ListingResponse;
-  newTitle: string;
+  newTitle?: string;
 }
 
 const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
@@ -75,8 +80,8 @@ const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
     description: listing.description || "Product Description",
     specs: listing.key_features ? listing.key_features.split("\n") : [],
     features: [],
-    price: listing.price,
-    productId: listing.product_id || "default_product_id",
+    price: listing.price, // This might be undefined if price is not always present
+    productId: listing.id, // Use listing.id instead of product_id
   };
 
   console.log("Product info:", productInfo);
@@ -94,6 +99,7 @@ const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
   return (
     <div className="space-y-6">
       <ProductPage
+        title={productInfo.name}
         images={images}
         productId={productInfo.productId}
         checkoutLabel={`Buy ${productInfo.name}`}
