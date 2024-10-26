@@ -4,7 +4,7 @@ import Container from "@/components/Container";
 import CheckoutButton from "@/components/stripe/CheckoutButton";
 import { formatPrice } from "@/lib/utils/formatNumber";
 
-interface Props {
+interface ProductPageProps {
   productId: string;
   checkoutLabel: string;
   title: string;
@@ -13,9 +13,10 @@ interface Props {
   keyFeatures: string[];
   price: number;
   images: string[];
+  onImageClick?: (image: string) => void;
 }
 
-const ProductPage = ({
+const ProductPage: React.FC<ProductPageProps> = ({
   productId,
   checkoutLabel,
   title,
@@ -24,7 +25,8 @@ const ProductPage = ({
   keyFeatures,
   price,
   images,
-}: Props) => {
+  onImageClick,
+}) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [fadeOut, setFadeOut] = useState(false);
 
@@ -158,16 +160,16 @@ const ProductPage = ({
 
         <div className="mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {images.map((img, index) => (
+            {images.map((image, index) => (
               <div
                 key={index}
                 className="aspect-square overflow-hidden rounded-lg shadow-md cursor-pointer"
-                onClick={() => openModal(img)}
+                onClick={() => onImageClick && onImageClick(image)}
               >
                 <img
-                  src={img}
-                  alt={`${title} Detail ${index + 1}`}
-                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                  src={image}
+                  alt={`Product image ${index + 1}`}
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-110 cursor-pointer"
                 />
               </div>
             ))}

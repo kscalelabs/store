@@ -76,7 +76,7 @@ const Create = () => {
     name,
     description,
     slug,
-    stripeLink,
+    stripe_link,
     keyFeatures,
     price,
   }: NewListingType) => {
@@ -84,7 +84,7 @@ const Create = () => {
     formData.append("name", name);
     formData.append("description", description || "");
     formData.append("slug", slug || slugify(name));
-    formData.append("stripe_link", stripeLink || "");
+    formData.append("stripe_link", stripe_link || "");
     formData.append("key_features", keyFeatures || "");
     if (price !== undefined && price !== null) {
       const priceInCents = Math.round(price * 100);
@@ -103,8 +103,12 @@ const Create = () => {
         body: formData,
       });
 
-      addAlert("New listing was created successfully", "success");
-      navigate(`/item/${responseData.username}/${responseData.slug}`);
+      if (responseData && responseData.username && responseData.slug) {
+        addAlert("New listing was created successfully", "success");
+        navigate(`/item/${responseData.username}/${responseData.slug}`);
+      } else {
+        throw new Error("Invalid response data");
+      }
     } catch (error) {
       addErrorAlert("Failed to create listing");
       console.error("Error creating listing:", error);
@@ -241,19 +245,19 @@ const Create = () => {
               {/* Stripe Link */}
               <div>
                 <label
-                  htmlFor="stripeLink"
+                  htmlFor="stripe_link"
                   className="block mb-2 text-sm font-medium text-gray-12"
                 >
                   Stripe Link
                 </label>
                 <Input
-                  id="stripeLink"
+                  id="stripe_link"
                   placeholder="Enter your Stripe product link"
                   type="text"
-                  {...register("stripeLink")}
+                  {...register("stripe_link")}
                 />
-                {errors?.stripeLink && (
-                  <ErrorMessage>{errors?.stripeLink?.message}</ErrorMessage>
+                {errors?.stripe_link && (
+                  <ErrorMessage>{errors?.stripe_link?.message}</ErrorMessage>
                 )}
               </div>
 

@@ -5,8 +5,18 @@ import ProductPage from "@/components/products/ProductPage";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 
-type ListingResponse =
-  paths["/listings/{id}"]["get"]["responses"][200]["content"]["application/json"];
+// Define the ListingResponse type explicitly
+type ListingResponse = {
+  id: string;
+  name: string;
+  description?: string;
+  key_features?: string;
+  price: number;
+  product_id?: string;
+  can_edit: boolean;
+  onshape_url: string;
+  uploaded_files?: { url: string }[];
+};
 
 interface ListingBodyProps {
   listing: ListingResponse;
@@ -34,16 +44,22 @@ const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
           addErrorAlert(error);
         } else {
           const artifactImages = data.artifacts
-            .filter((artifact) => artifact.artifact_type === "image")
-            .map((artifact) => artifact.urls.large);
+            .filter(
+              (artifact: { artifact_type: string }) =>
+                artifact.artifact_type === "image",
+            )
+            .map(
+              (artifact: { urls: { large: string } }) => artifact.urls.large,
+            );
 
           const uploadedImages =
-            listing.uploaded_files?.map((file) => file.url) || [];
+            listing.uploaded_files?.map((file: { url: string }) => file.url) ||
+            [];
           setImages([...uploadedImages, ...artifactImages]);
         }
       } catch (err) {
         addErrorAlert(
-          error`Error fetching artifacts: ${err instanceof Error ? err.message : String(err)}`,
+          `Error fetching artifacts: ${err instanceof Error ? err.message : String(err)}`,
         );
       }
     };
@@ -91,7 +107,7 @@ const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
         <ListingOnshape
           listingId={listing.id}
           onshapeUrl={listing.onshape_url}
-          addArtifactId={() => {}}
+          addArtifactId={async () => {}}
           edit={listing.can_edit}
         />
       </div>
