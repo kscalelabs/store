@@ -206,10 +206,6 @@ async def add_listing(
 ) -> NewListingResponse:
     logger.info(f"Received {len(photos) if photos else 0} photos")
 
-    # Generate a slug if not provided
-    if not slug:
-        slug = await generate_unique_slug(crud, user.id, name)
-
     # Convert price to float if it's not None
     float_price = float(price) if price is not None else None
 
@@ -241,17 +237,6 @@ async def add_listing(
                 logger.warning("Skipping photo upload due to missing filename")
 
     return NewListingResponse(listing_id=listing.id, username=user.username, slug=slug)
-
-
-# Add this new function to generate a unique slug
-async def generate_unique_slug(crud: Crud, user_id: str, name: str) -> str:
-    base_slug = slugify(name)  # noqa: F821
-    slug = base_slug
-    counter = 1
-    while await crud.is_slug_taken(user_id, slug):
-        slug = f"{base_slug}-{counter}"
-        counter += 1
-    return slug
 
 
 @listings_router.delete("/delete/{listing_id}", response_model=bool)
