@@ -18,9 +18,9 @@ type ListingResponse = {
   can_edit: boolean;
   created_at: number;
   creator_name: string | null;
-  // Add any other properties that are present in your listing object
-  // If price is not always present, make it optional
+  uploaded_files?: { url: string }[];
   price?: number;
+  key_features?: string;
 };
 
 interface ListingBodyProps {
@@ -80,8 +80,8 @@ const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
     description: listing.description || "Product Description",
     specs: listing.key_features ? listing.key_features.split("\n") : [],
     features: [],
-    price: listing.price, // This might be undefined if price is not always present
-    productId: listing.id, // Use listing.id instead of product_id
+    price: listing.price ?? 0,
+    productId: listing.id,
   };
 
   console.log("Product info:", productInfo);
