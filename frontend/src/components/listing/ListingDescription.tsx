@@ -14,19 +14,22 @@ interface RenderDescriptionProps {
 }
 
 export const RenderDescription = ({ description }: RenderDescriptionProps) => {
-  const [imageModal, setImageModal] = useState<[string, string] | null>(null);
-
   return (
-    <>
+    <div className="w-full">
       <Markdown
         remarkPlugins={[remarkGfm]}
+        className="w-full flex flex-col gap-2"
         components={{
           p: ({ children }) => <p className="mb-1">{children}</p>,
-          ul: ({ children }) => <ul className="list-disc ml-4">{children}</ul>,
+          ul: ({ children }) => (
+            <ul className="list-disc ml-4 w-full flex flex-col gap-1">
+              {children}
+            </ul>
+          ),
           ol: ({ children }) => (
             <ol className="list-decimal ml-4">{children}</ol>
           ),
-          li: ({ children }) => <li className="mb-1">{children}</li>,
+          li: ({ children }) => <li className="w-full">{children}</li>,
           table: ({ children }) => (
             <table className="table-auto w-full">{children}</table>
           ),
@@ -51,7 +54,9 @@ export const RenderDescription = ({ description }: RenderDescriptionProps) => {
               {children}
             </a>
           ),
-          h1: ({ children }) => <h1 className="text-2xl mb-2">{children}</h1>,
+          h1: ({ children }) => (
+            <h1 className="text-2xl mb-2 w-full">{children}</h1>
+          ),
           h2: ({ children }) => <h2 className="text-xl mb-2">{children}</h2>,
           h3: ({ children }) => (
             <h3 className="text-lg mb-2 underline">{children}</h3>
@@ -72,25 +77,7 @@ export const RenderDescription = ({ description }: RenderDescriptionProps) => {
       >
         {description}
       </Markdown>
-
-      {imageModal !== null && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          onClick={() => setImageModal(null)}
-        >
-          <div
-            className="absolute bg-white rounded-lg p-4 max-w-4xl max-h-4xl m-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={imageModal[0]}
-              alt={imageModal[1]}
-              className="max-h-full max-w-full"
-            />
-          </div>
-        </div>
-      )}
-    </>
+    </div>
   );
 };
 

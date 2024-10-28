@@ -7,7 +7,7 @@ import ListingDeleteButton from "@/components/listing/ListingDeleteButton";
 import { RenderDescription } from "@/components/listing/ListingDescription";
 import ListingVoteButtons from "@/components/listing/ListingVoteButtons";
 import CheckoutButton from "@/components/stripe/CheckoutButton";
-import { Input } from "@/components/ui/Input/Input";
+import { Input, TextArea } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
@@ -36,7 +36,7 @@ const ProductPage: React.FC<ProductPageProps> = ({
   productId,
   checkoutLabel,
   title,
-  description,
+  description: initialDescription,
   features = [],
   price,
   images = [],
@@ -208,6 +208,37 @@ const ProductPage: React.FC<ProductPageProps> = ({
     } else {
       addAlert("Listing updated successfully", "success");
       setIsEditingTitle(false);
+    }
+    setSubmitting(false);
+  };
+
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [newDescription, setNewDescription] = useState(initialDescription);
+  const [descriptionHasChanged, setDescriptionHasChanged] = useState(false);
+
+  const handleSaveDescription = async () => {
+    if (!descriptionHasChanged) {
+      setIsEditingDescription(false);
+      return;
+    }
+    if (newDescription.length < 6) {
+      addErrorAlert("Description must be at least 6 characters long.");
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await auth.client.PUT("/listings/edit/{id}", {
+      params: {
+        path: { id: productId },
+      },
+      body: {
+        description: newDescription,
+      },
+    });
+    if (error) {
+      addErrorAlert(error);
+    } else {
+      addAlert("Listing updated successfully", "success");
+      setIsEditingDescription(false);
     }
     setSubmitting(false);
   };
@@ -420,7 +451,95 @@ const ProductPage: React.FC<ProductPageProps> = ({
             <div className="py-8">
               <div className="space-y-4">
                 <div className="text-black leading-6">
-                  <RenderDescription description={description} />
+                  {submitting ? (
+                    <Spinner />
+                  ) : (
+                    <>
+                      {isEditingDescription ? (
+                        <div className="flex flex-col gap-4">
+                          <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-2">
+                              <label className="text-sm font-medium">
+                                Edit Description (Markdown supported)
+                              </label>
+                              <TextArea
+                                value={newDescription}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && e.ctrlKey) {
+                                    handleSaveDescription();
+                                  }
+                                }}
+                                onChange={(e) => {
+                                  setNewDescription(e.target.value);
+                                  setDescriptionHasChanged(true);
+                                }}
+                                className="min-h-[300px] font-mono text-sm p-4"
+                                placeholder="# Heading 1
+                                  ## Heading 2
+                                  **Bold text**
+                                  *Italic text*
+
+                                  - Bullet point
+                                  - Another point
+
+                                  1. Numbered list
+                                  2. Second item
+
+                                  [Link text](https://example.com)
+
+                                  ![Image alt text](image-url.jpg)"
+                                autoFocus
+                              />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                              <label className="text-sm font-medium">
+                                Preview
+                              </label>
+                              <div className="border rounded-md p-4 min-h-[200px] bg-gray-50">
+                                <RenderDescription
+                                  description={newDescription}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={handleSaveDescription}
+                              variant="primary"
+                              size="sm"
+                              disabled={!descriptionHasChanged}
+                            >
+                              Save
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                setIsEditingDescription(false);
+                                setNewDescription(initialDescription);
+                                setDescriptionHasChanged(false);
+                              }}
+                              variant="ghost"
+                              size="sm"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-start gap-2">
+                          <RenderDescription description={newDescription} />
+                          {creatorInfo?.can_edit && (
+                            <Button
+                              onClick={() => setIsEditingDescription(true)}
+                              variant="ghost"
+                              className="-mr-3"
+                            >
+                              <FaPen />
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
                 {features.length > 0 && (
                   <ul className="list-disc list-inside text-gray-700">
