@@ -35,11 +35,9 @@ const getStoredAuth = (): string | null => {
 
 export const setStoredAuth = (id: string) => {
   localStorage.setItem(AUTH_KEY_ID, id);
-  console.log("Auth set in localStorage:", id);
 
   const cookieValue = `${AUTH_KEY_ID}=${id}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Strict`;
   document.cookie = cookieValue;
-  console.log("Auth cookie set:", cookieValue);
 };
 
 export const deleteStoredAuth = () => {

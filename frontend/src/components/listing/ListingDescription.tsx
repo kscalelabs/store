@@ -11,9 +11,13 @@ import remarkGfm from "remark-gfm";
 
 interface RenderDescriptionProps {
   description: string;
+  onImageClick?: (src: string, alt: string) => void;
 }
 
-export const RenderDescription = ({ description }: RenderDescriptionProps) => {
+export const RenderDescription = ({
+  description,
+  onImageClick,
+}: RenderDescriptionProps) => {
   return (
     <div className="w-full">
       <Markdown
@@ -67,7 +71,7 @@ export const RenderDescription = ({ description }: RenderDescriptionProps) => {
           img: ({ src, alt }) => (
             <span
               className="flex flex-col justify-center w-full mx-auto gap-2 my-4 md:w-2/3 lg:w-1/2 cursor-pointer"
-              onClick={() => src && setImageModal([src, alt ?? ""])}
+              onClick={() => src && onImageClick?.(src, alt ?? "")}
             >
               <img src={src} alt={alt} className="rounded-lg" />
               {alt && <span className="text-sm text-center">{alt}</span>}
@@ -102,6 +106,8 @@ const ListingDescription = (props: Props) => {
   const [debouncedDescription, setDebouncedDescription] = useState(
     initialDescription ?? "",
   );
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [imageModal, setImageModal] = useState<[string, string] | null>(null);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -164,7 +170,10 @@ const ListingDescription = (props: Props) => {
               autoFocus
             />
           )}
-          <RenderDescription description={debouncedDescription} />
+          <RenderDescription
+            description={debouncedDescription}
+            onImageClick={(src, alt) => setImageModal([src, alt])}
+          />
           {edit && (
             <Button
               onClick={() => {
