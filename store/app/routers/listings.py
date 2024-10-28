@@ -177,7 +177,6 @@ class NewListingRequest(BaseModel):
     child_ids: list[str]
     slug: str
     stripe_link: str | None
-    key_features: str | None
     price: float | None
 
 
@@ -196,7 +195,6 @@ async def add_listing(
     child_ids: str = Form(""),
     slug: str = Form(""),
     stripe_link: str | None = Form(None),
-    key_features: str | None = Form(None),
     price: float | None = Form(None),
     photos: List[UploadFile] = File(None),
 ) -> NewListingResponse:
@@ -213,7 +211,6 @@ async def add_listing(
         user_id=user.id,
         username=user.username,
         stripe_link=stripe_link,
-        key_features=key_features or "",
         price=float_price,
     )
     await crud.add_listing(listing)
@@ -329,7 +326,6 @@ class GetListingResponse(BaseModel):
     user_vote: bool | None
     creator_id: str
     creator_name: str | None
-    key_features: str | None
     price: float | None
 
 
@@ -372,7 +368,6 @@ async def get_listing(
         user_vote=user_vote,
         creator_id=listing.user_id,
         creator_name=creator_name,
-        key_features=listing.key_features,
         price=price,
     )
 
@@ -469,6 +464,5 @@ async def get_listing_by_username_and_slug(
         user_vote=user_vote,
         creator_id=listing.user_id,
         creator_name=creator_name,
-        key_features=listing.key_features,
         price=price,
     )

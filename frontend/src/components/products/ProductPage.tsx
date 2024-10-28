@@ -1,19 +1,35 @@
 import { useEffect, useRef, useState } from "react";
+import { FaCheck, FaEye, FaPen } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 import Container from "@/components/Container";
+import ListingDeleteButton from "@/components/listing/ListingDeleteButton";
+import { RenderDescription } from "@/components/listing/ListingDescription";
+import ListingVoteButtons from "@/components/listing/ListingVoteButtons";
 import CheckoutButton from "@/components/stripe/CheckoutButton";
+import { Input } from "@/components/ui/Input/Input";
+import Spinner from "@/components/ui/Spinner";
+import { Button } from "@/components/ui/button";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
 import { formatPrice } from "@/lib/utils/formatNumber";
+import { formatNumber } from "@/lib/utils/formatNumber";
+import { formatTimeSince } from "@/lib/utils/formatTimeSince";
+
+const FALLBACK_IMAGE =
+  "https://miro.medium.com/v2/resize:fit:720/format:webp/1*gTRwcZ8ZBLvFtWw9-fq9_w.png";
 
 interface ProductPageProps {
   productId: string;
   checkoutLabel: string;
   title: string;
   description: string;
-  features: string[];
-  keyFeatures: string[];
+  features?: string[];
   price: number;
   images: string[];
   onImageClick?: (image: string) => void;
+  creatorName?: string;
+  creatorId?: string;
 }
 
 const ProductPage: React.FC<ProductPageProps> = ({
@@ -21,12 +37,49 @@ const ProductPage: React.FC<ProductPageProps> = ({
   checkoutLabel,
   title,
   description,
-  features,
-  keyFeatures,
+  features = [],
   price,
-  images,
+  images = [],
   onImageClick,
 }) => {
+  const navigate = useNavigate();
+  const auth = useAuthentication();
+  const [creatorInfo, setCreatorInfo] = useState<{
+    name: string | null;
+    id: string;
+    views: number;
+    created_at: number;
+    slug: string | null;
+    can_edit: boolean;
+    score: number;
+    user_vote: number | null;
+  } | null>(null);
+
+  useEffect(() => {
+    const fetchCreatorInfo = async () => {
+      const { data, error } = await auth.client.GET("/listings/{id}", {
+        params: {
+          path: { id: productId },
+        },
+      });
+
+      if (!error && data) {
+        setCreatorInfo({
+          name: data.creator_name,
+          id: data.creator_id,
+          views: data.views,
+          created_at: data.created_at,
+          slug: data.slug,
+          can_edit: data.can_edit,
+          score: data.score,
+          user_vote: data.user_vote as number | null,
+        });
+      }
+    };
+
+    fetchCreatorInfo();
+  }, [productId, auth.client]);
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [fadeOut, setFadeOut] = useState(false);
 
@@ -77,90 +130,313 @@ const ProductPage: React.FC<ProductPageProps> = ({
     setModalOpen(false);
   };
 
+  const displayImages = images.length > 0 ? images : [FALLBACK_IMAGE];
+  const showNavigation = displayImages.length > 1;
+
+  const { addAlert, addErrorAlert } = useAlertQueue();
+  const [isEditingSlug, setIsEditingSlug] = useState(false);
+  const [newSlug, setNewSlug] = useState("");
+  const [previewUrl, setPreviewUrl] = useState("");
+
+  useEffect(() => {
+    if (auth.currentUser && newSlug) {
+      setPreviewUrl(`/item/${auth.currentUser.username}/${newSlug}`);
+    }
+  }, [auth.currentUser, newSlug]);
+
+  useEffect(() => {
+    if (creatorInfo?.slug) {
+      setNewSlug(creatorInfo.slug);
+    }
+  }, [creatorInfo]);
+
+  const handleSaveSlug = async () => {
+    if (newSlug === creatorInfo?.slug) {
+      setIsEditingSlug(false);
+      return;
+    }
+
+    const { error } = await auth.client.PUT(`/listings/edit/{id}/slug`, {
+      params: { path: { id: productId }, query: { new_slug: newSlug } },
+    });
+
+    if (error) {
+      addErrorAlert(error);
+    } else {
+      addAlert("Listing URL updated successfully", "success");
+      setIsEditingSlug(false);
+      if (newSlug !== "") {
+        navigate(`/item/${auth.currentUser?.username}/${newSlug}`);
+      }
+    }
+  };
+
+  const sanitizeSlug = (input: string) => {
+    return input
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+  };
+
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [newTitle, setNewTitle] = useState(title);
+  const [hasChanged, setHasChanged] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSaveTitle = async () => {
+    if (!hasChanged) {
+      setIsEditingTitle(false);
+      return;
+    }
+    if (newTitle.length < 4) {
+      addErrorAlert("Title must be at least 4 characters long.");
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await auth.client.PUT("/listings/edit/{id}", {
+      params: {
+        path: { id: productId },
+      },
+      body: {
+        name: newTitle,
+      },
+    });
+    if (error) {
+      addErrorAlert(error);
+    } else {
+      addAlert("Listing updated successfully", "success");
+      setIsEditingTitle(false);
+    }
+    setSubmitting(false);
+  };
+
   return (
     <Container>
       <div ref={contentRef}>
         <div className="flex flex-col lg:flex-row items-start justify-between max-w-7xl mx-auto py-12 gap-12 mb-24">
-          <div className="w-full lg:w-1/2 relative">
-            <img
-              src={images[currentImageIndex]}
-              alt={`${title} - Image ${currentImageIndex + 1}`}
-              className={`w-full h-auto rounded-lg shadow-lg object-cover transition-opacity duration-300 ${
-                fadeOut ? "opacity-0" : "opacity-100"
-              } cursor-pointer`}
-              onClick={() => openModal(images[currentImageIndex])}
-            />
-            <button
-              onClick={prevImage}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 p-2 rounded-full border-gray-800 hover:bg-opacity-75 transition-all duration-300"
-            >
-              <span className="sr-only">Previous image</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-            </button>
-            <button
-              onClick={nextImage}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 p-2 rounded-full border-gray-800 hover:bg-opacity-75 transition-all duration-300"
-            >
-              <span className="sr-only">Next image</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
+          <div className="w-full lg:w-1/2 relative flex gap-4">
+            {/* Voting buttons */}
+            <div className="flex flex-col items-center">
+              <ListingVoteButtons
+                listingId={productId}
+                initialScore={creatorInfo?.score ?? 0}
+                initialUserVote={creatorInfo?.user_vote ?? 0}
+              />
+            </div>
+
+            {/* Image section - Update this container */}
+            <div className="flex-1 relative">
+              <img
+                src={displayImages[currentImageIndex]}
+                alt={`${title} - Image ${currentImageIndex + 1}`}
+                className={`w-full h-auto rounded-lg shadow-lg object-cover transition-opacity duration-300 ${
+                  fadeOut ? "opacity-0" : "opacity-100"
+                } cursor-pointer`}
+                onClick={() => openModal(displayImages[currentImageIndex])}
+              />
+              {showNavigation && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 p-2 rounded-full border-gray-800 hover:bg-opacity-75 transition-all duration-300"
+                  >
+                    <span className="sr-only">Previous image</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 p-2 rounded-full border-gray-800 hover:bg-opacity-75 transition-all duration-300"
+                  >
+                    <span className="sr-only">Next image</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
           <div className="w-full lg:w-1/2">
-            <h1 className="text-4xl font-bold mb-8">{title}</h1>
-
-            <div className="mb-12">
-              <h2 className="text-2xl font-semibold mb-4">
-                Product Description
-              </h2>
-              <p className="text-gray-700 mb-4">{description}</p>
-              <ul className="list-disc list-inside text-gray-700">
-                {features.map((feature, index) => (
-                  <li key={index}>{feature}</li>
-                ))}
-              </ul>
+            <div className="py-4 md:py-8">
+              <div className="flex items-center">
+                {submitting ? (
+                  <Spinner />
+                ) : (
+                  <>
+                    {isEditingTitle ? (
+                      <Input
+                        type="text"
+                        value={newTitle}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleSaveTitle();
+                          }
+                        }}
+                        onChange={(e) => {
+                          setNewTitle(e.target.value);
+                          setHasChanged(true);
+                        }}
+                        className="border-b border-gray-5"
+                        autoFocus
+                      />
+                    ) : (
+                      <h3 className="text-xl/normal md:text-2xl/normal font-medium text-black pr-2">
+                        {newTitle}
+                      </h3>
+                    )}
+                    {creatorInfo?.can_edit && (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          onClick={() => {
+                            if (isEditingTitle) {
+                              handleSaveTitle();
+                            } else {
+                              setIsEditingTitle(true);
+                            }
+                          }}
+                          variant="ghost"
+                          className="-ml-3"
+                        >
+                          {isEditingTitle ? <FaCheck /> : <FaPen />}
+                        </Button>
+                        <ListingDeleteButton listingId={productId} />
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
 
-            <div className="mb-12">
-              <h2 className="text-2xl font-semibold mb-4">Key Features</h2>
-              <ul className="list-disc list-inside text-gray-700">
-                {keyFeatures.map((feature, index) => (
-                  <li key={index}>{feature}</li>
-                ))}
-              </ul>
+            <div className="flex w-full">
+              <div className="h-[1px] bg-neutral-200 w-full"></div>
+              <div className="h-[1px] bg-gradient-to-r from-neutral-200 to-transparent w-full"></div>
+            </div>
+
+            <div className="py-4 md:py-8">
+              {creatorInfo && (
+                <>
+                  <p className="font-medium leading-[22px]">
+                    Listed by{" "}
+                    <span
+                      onClick={() => navigate(`/profile/${creatorInfo.id}`)}
+                      className="text-primary hover:underline hover:text-primary/80 cursor-pointer"
+                    >
+                      {creatorInfo.name}
+                    </span>
+                  </p>
+                  <div className="mt-2 text-sm text-muted-foreground flex items-center gap-4 flex-wrap">
+                    <div className="flex items-center">
+                      <FaEye className="mr-1" />
+                      <span>{formatNumber(creatorInfo.views)} views</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      Posted{" "}
+                      {formatTimeSince(new Date(creatorInfo.created_at * 1000))}
+                      {creatorInfo.can_edit && (
+                        <>
+                          {isEditingSlug ? (
+                            <div className="flex flex-col space-y-2">
+                              <Input
+                                type="text"
+                                value={newSlug}
+                                onChange={(e) =>
+                                  setNewSlug(sanitizeSlug(e.target.value))
+                                }
+                                className="border-b border-gray-5"
+                                placeholder="Enter new URL slug"
+                              />
+                              {previewUrl && (
+                                <div className="text-sm text-gray-11 font-medium">
+                                  Preview: {previewUrl}
+                                </div>
+                              )}
+                              <div className="flex space-x-2">
+                                <Button
+                                  onClick={handleSaveSlug}
+                                  variant="primary"
+                                  size="sm"
+                                >
+                                  Save
+                                </Button>
+                                <Button
+                                  onClick={() => setIsEditingSlug(false)}
+                                  variant="ghost"
+                                  size="sm"
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <Button
+                              onClick={() => setIsEditingSlug(true)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-primary hover:text-primary/80 -my-1 h-auto py-0 px-2"
+                            >
+                              <FaPen className="mr-2" /> Edit URL
+                            </Button>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="flex w-full">
+              <div className="h-[1px] bg-neutral-200 w-full"></div>
+              <div className="h-[1px] bg-gradient-to-r from-neutral-200 to-transparent w-full"></div>
+            </div>
+
+            <div className="py-8">
+              <div className="space-y-4">
+                <div className="text-black leading-6">
+                  <RenderDescription description={description} />
+                </div>
+                {features.length > 0 && (
+                  <ul className="list-disc list-inside text-gray-700">
+                    {features.map((feature, index) => (
+                      <li key={index}>{feature}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
         <div className="mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {images.map((image, index) => (
+            {displayImages.map((image, index) => (
               <div
                 key={index}
                 className="aspect-square overflow-hidden rounded-lg shadow-md cursor-pointer"
@@ -193,7 +469,6 @@ const ProductPage: React.FC<ProductPageProps> = ({
         </div>
       </div>
 
-      {/* Image Modal */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="relative max-w-4xl max-h-[90vh] overflow-hidden">

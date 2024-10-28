@@ -26,8 +26,8 @@ const Create = () => {
   const [slug, setSlug] = useState<string>("");
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [images, setImages] = useState<ImageListType>([]);
-  const [keyFeatures, setKeyFeatures] = useState<string>("");
   const [displayPrice, setDisplayPrice] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -77,15 +77,15 @@ const Create = () => {
     description,
     slug,
     stripe_link,
-    keyFeatures,
     price,
   }: NewListingType) => {
+    setIsSubmitting(true);
+
     const formData = new FormData();
     formData.append("name", name);
     formData.append("description", description || "");
     formData.append("slug", slug || slugify(name));
     formData.append("stripe_link", stripe_link || "");
-    formData.append("key_features", keyFeatures || "");
     if (price !== undefined && price !== null) {
       const priceInCents = Math.round(price * 100);
       formData.append("price", priceInCents.toString());
@@ -113,6 +113,8 @@ const Create = () => {
     } catch (error) {
       addErrorAlert("Failed to create listing");
       console.error("Error creating listing:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -173,35 +175,6 @@ const Create = () => {
                 <div className="relative">
                   <h3 className="font-semibold mb-2">Description Preview</h3>
                   <RenderDescription description={description} />
-                </div>
-              )}
-
-              {/* Key Features */}
-              <div className="relative">
-                <label
-                  htmlFor="keyFeatures"
-                  className="block mb-2 text-sm font-medium text-gray-12"
-                >
-                  Key Features (supports Markdown formatting)
-                </label>
-                <TextArea
-                  id="keyFeatures"
-                  placeholder="Enter key features (supports Markdown)"
-                  rows={4}
-                  {...register("keyFeatures", {
-                    onChange: (e) => setKeyFeatures(e.target.value),
-                  })}
-                />
-                {errors?.keyFeatures && (
-                  <ErrorMessage>{errors?.keyFeatures?.message}</ErrorMessage>
-                )}
-              </div>
-
-              {/* Render Key Features */}
-              {keyFeatures && (
-                <div className="relative">
-                  <h3 className="font-semibold mb-2">Key Features Preview</h3>
-                  <RenderDescription description={keyFeatures} />
                 </div>
               )}
 
@@ -297,8 +270,8 @@ const Create = () => {
 
               {/* Submit */}
               <div className="flex justify-end">
-                <Button variant="primary" type="submit">
-                  Post build
+                <Button variant="primary" type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Posting..." : "Post build"}
                 </Button>
               </div>
             </form>
