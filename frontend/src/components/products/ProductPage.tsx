@@ -222,7 +222,7 @@ const ProductPage: React.FC<ProductPageProps> = ({
               <ListingVoteButtons
                 listingId={productId}
                 initialScore={creatorInfo?.score ?? 0}
-                initialUserVote={creatorInfo?.user_vote ?? 0}
+                initialUserVote={creatorInfo?.user_vote ? true : null}
               />
             </div>
 
