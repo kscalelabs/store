@@ -2,15 +2,32 @@
 
 import asyncio
 import logging
-from typing import Annotated
+from typing import Annotated, List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    UploadFile,
+    status,
+)
 from pydantic import BaseModel
 
-from store.app.crud.listings import SortOption
-from store.app.db import Crud
-from store.app.model import Listing, User, can_write_listing, get_artifact_url
-from store.app.routers.users import (
+"""Defines all listing related API endpoints."""
+
+
+from store.app.crud.listings import SortOption  # noqa: E402
+from store.app.db import Crud  # noqa: E402
+from store.app.model import (  # noqa: E402
+    Listing,
+    User,
+    can_write_listing,
+    get_artifact_url,
+)
+from store.app.routers.users import (  # noqa: E402
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
     maybe_get_user_from_api_key,
@@ -78,13 +95,9 @@ async def get_batch_listing_info(
         crud.get_listings_artifacts(ids),
     )
 
-    logger.info(f"Retrieved {len(listings)} listings and {len(artifacts)} artifacts")
-
     user_votes = {}
     if user:
         user_votes = {vote.listing_id: vote.is_upvote for vote in await crud.get_user_votes(user.id, ids)}
-
-    logger.info(f"User votes: {user_votes}")
 
     listing_responses = []
     for listing, artifacts in zip(listings, artifacts):
@@ -163,6 +176,9 @@ class NewListingRequest(BaseModel):
     description: str | None
     child_ids: list[str]
     slug: str
+    stripe_link: str | None
+    key_features: str | None
+    price: float | None
 
 
 class NewListingResponse(BaseModel):
@@ -175,19 +191,47 @@ class NewListingResponse(BaseModel):
 async def add_listing(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
-    data: NewListingRequest,
+    name: str = Form(...),
+    description: str | None = Form(None),
+    child_ids: str = Form(""),
+    slug: str = Form(""),
+    stripe_link: str | None = Form(None),
+    key_features: str | None = Form(None),
+    price: float | None = Form(None),
+    photos: List[UploadFile] = File(None),
 ) -> NewListingResponse:
+    logger.info(f"Received {len(photos) if photos else 0} photos")
+
+    float_price = float(price) if price is not None else None
+
     # Creates a new listing.
     listing = Listing.create(
-        name=data.name,
-        description=data.description,
-        child_ids=data.child_ids,
-        slug=data.slug,
+        name=name,
+        description=description or "",
+        child_ids=child_ids.split(",") if child_ids else [],
+        slug=slug,
         user_id=user.id,
         username=user.username,
+        stripe_link=stripe_link,
+        key_features=key_features or "",
+        price=float_price,
     )
     await crud.add_listing(listing)
-    return NewListingResponse(listing_id=listing.id, username=user.username, slug=data.slug)
+
+    # Handle photo uploads
+    if photos:
+        for photo in photos:
+            if photo.filename:  # Add this check
+                await crud.upload_artifact(
+                    name=photo.filename,
+                    file=photo,
+                    listing=listing,
+                    artifact_type="image",
+                )
+            else:
+                logger.warning("Skipping photo upload due to missing filename")
+
+    return NewListingResponse(listing_id=listing.id, username=user.username, slug=slug)
 
 
 @listings_router.delete("/delete/{listing_id}", response_model=bool)
@@ -285,6 +329,8 @@ class GetListingResponse(BaseModel):
     user_vote: bool | None
     creator_id: str
     creator_name: str | None
+    key_features: str | None
+    price: float | None
 
 
 @listings_router.get("/{id}", response_model=GetListingResponse)
@@ -308,6 +354,8 @@ async def get_listing(
     if (creator := await crud.get_user_public(listing.user_id)) is not None:
         creator_name = " ".join(filter(None, [creator.first_name, creator.last_name]))
 
+    price = float(listing.price) if listing.price is not None else None
+
     return GetListingResponse(
         id=listing.id,
         name=listing.name,
@@ -324,6 +372,8 @@ async def get_listing(
         user_vote=user_vote,
         creator_id=listing.user_id,
         creator_name=creator_name,
+        key_features=listing.key_features,
+        price=price,
     )
 
 
@@ -401,6 +451,8 @@ async def get_listing_by_username_and_slug(
     if (creator := await crud.get_user_public(listing.user_id)) is not None:
         creator_name = " ".join(filter(None, [creator.first_name, creator.last_name]))
 
+    price = float(listing.price) if listing.price is not None else None
+
     return GetListingResponse(
         id=listing.id,
         name=listing.name,
@@ -417,4 +469,6 @@ async def get_listing_by_username_and_slug(
         user_vote=user_vote,
         creator_id=listing.user_id,
         creator_name=creator_name,
+        key_features=listing.key_features,
+        price=price,
     )

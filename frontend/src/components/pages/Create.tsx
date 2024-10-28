@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { ImageListType } from "react-images-uploading";
 import { useNavigate } from "react-router-dom";
 
 import RequireAuthentication from "@/components/auth/RequireAuthentication";
 import { RenderDescription } from "@/components/listing/ListingDescription";
+import UploadContent from "@/components/listing/UploadContent";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import Header from "@/components/ui/Header";
@@ -23,6 +25,9 @@ const Create = () => {
   const [description, setDescription] = useState<string>("");
   const [slug, setSlug] = useState<string>("");
   const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [images, setImages] = useState<ImageListType>([]);
+  const [keyFeatures, setKeyFeatures] = useState<string>("");
+  const [displayPrice, setDisplayPrice] = useState<string>("");
 
   const {
     register,
@@ -50,26 +55,64 @@ const Create = () => {
     }
   }, [auth.currentUser, slug]);
 
-  // On submit, add the listing to the database and navigate to the
-  // newly-created listing.
-  const onSubmit = async ({ name, description, slug }: NewListingType) => {
-    const { data: responseData, error } = await auth.client.POST(
-      "/listings/add",
-      {
-        body: {
-          name,
-          description,
-          child_ids: [],
-          slug,
-        },
-      },
-    );
+  const handleImageChange = (imageList: ImageListType) => {
+    setImages(imageList);
+  };
 
-    if (error) {
-      addErrorAlert(error);
-    } else {
-      addAlert("New listing was created successfully", "success");
-      navigate(`/item/${responseData.username}/${responseData.slug}`);
+  const convertToDecimal = (value: string) => {
+    const numericValue = parseFloat(value);
+    if (isNaN(numericValue)) return "";
+    return (numericValue / 100).toFixed(2);
+  };
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value.replace(/[^0-9]/g, "");
+    const decimalValue = convertToDecimal(inputValue);
+    setDisplayPrice(decimalValue);
+    setValue("price", parseFloat(decimalValue), { shouldValidate: true });
+  };
+
+  const onSubmit = async ({
+    name,
+    description,
+    slug,
+    stripe_link,
+    keyFeatures,
+    price,
+  }: NewListingType) => {
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("description", description || "");
+    formData.append("slug", slug || slugify(name));
+    formData.append("stripe_link", stripe_link || "");
+    formData.append("key_features", keyFeatures || "");
+    if (price !== undefined && price !== null) {
+      const priceInCents = Math.round(price * 100);
+      formData.append("price", priceInCents.toString());
+    }
+
+    // Append photos to formData
+    images.forEach((image) => {
+      if (image.file) {
+        formData.append(`photos`, image.file);
+      }
+    });
+
+    try {
+      // @ts-expect-error Server accepts FormData but TypeScript doesn't recognize it
+      const { data: responseData } = await auth.client.POST("/listings/add", {
+        body: formData,
+      } as { body: FormData });
+
+      if (responseData && responseData.username && responseData.slug) {
+        addAlert("New listing was created successfully", "success");
+        navigate(`/item/${responseData.username}/${responseData.slug}`);
+      } else {
+        throw new Error("Invalid response data");
+      }
+    } catch (error) {
+      addErrorAlert("Failed to create listing");
+      console.error("Error creating listing:", error);
     }
   };
 
@@ -117,10 +160,7 @@ const Create = () => {
                   placeholder="Description (at least 6 characters)"
                   rows={4}
                   {...register("description", {
-                    setValueAs: (value) => {
-                      setDescription(value);
-                      return value;
-                    },
+                    onChange: (e) => setDescription(e.target.value),
                   })}
                 />
                 {errors?.description && (
@@ -133,6 +173,35 @@ const Create = () => {
                 <div className="relative">
                   <h3 className="font-semibold mb-2">Description Preview</h3>
                   <RenderDescription description={description} />
+                </div>
+              )}
+
+              {/* Key Features */}
+              <div className="relative">
+                <label
+                  htmlFor="keyFeatures"
+                  className="block mb-2 text-sm font-medium text-gray-12"
+                >
+                  Key Features (supports Markdown formatting)
+                </label>
+                <TextArea
+                  id="keyFeatures"
+                  placeholder="Enter key features (supports Markdown)"
+                  rows={4}
+                  {...register("keyFeatures", {
+                    onChange: (e) => setKeyFeatures(e.target.value),
+                  })}
+                />
+                {errors?.keyFeatures && (
+                  <ErrorMessage>{errors?.keyFeatures?.message}</ErrorMessage>
+                )}
+              </div>
+
+              {/* Render Key Features */}
+              {keyFeatures && (
+                <div className="relative">
+                  <h3 className="font-semibold mb-2">Key Features Preview</h3>
+                  <RenderDescription description={keyFeatures} />
                 </div>
               )}
 
@@ -173,6 +242,58 @@ const Create = () => {
                   </div>
                 </div>
               )}
+
+              {/* Stripe Link */}
+              <div>
+                <label
+                  htmlFor="stripe_link"
+                  className="block mb-2 text-sm font-medium text-gray-12"
+                >
+                  Stripe Link
+                </label>
+                <Input
+                  id="stripe_link"
+                  placeholder="Enter your Stripe product link"
+                  type="text"
+                  {...register("stripe_link")}
+                />
+                {errors?.stripe_link && (
+                  <ErrorMessage>{errors?.stripe_link?.message}</ErrorMessage>
+                )}
+              </div>
+
+              {/* Price */}
+              <div>
+                <label
+                  htmlFor="price"
+                  className="block mb-2 text-sm font-medium text-gray-12"
+                >
+                  Price
+                </label>
+                <Input
+                  id="price"
+                  placeholder="Enter price (e.g., 10.00)"
+                  type="text"
+                  value={displayPrice}
+                  onChange={handlePriceChange}
+                />
+                {errors?.price && (
+                  <ErrorMessage>{errors?.price?.message}</ErrorMessage>
+                )}
+                {displayPrice && (
+                  <p className="mt-1 text-sm text-gray-11">
+                    Entered price: ${displayPrice}
+                  </p>
+                )}
+              </div>
+
+              {/* Photos */}
+              <div>
+                <label className="block mb-2 text-sm font-medium text-gray-12">
+                  Photos
+                </label>
+                <UploadContent images={images} onChange={handleImageChange} />
+              </div>
 
               {/* Submit */}
               <div className="flex justify-end">

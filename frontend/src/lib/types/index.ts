@@ -80,6 +80,9 @@ export const NewListingSchema = z.object({
       message:
         "Slug must contain only lowercase letters, numbers, and hyphens.",
     }),
+  keyFeatures: z.string().min(1, "Key features are required"),
+  stripe_link: z.string().url("Invalid URL").optional(),
+  price: z.number().min(0).optional(),
 });
 
 export type NewListingType = z.infer<typeof NewListingSchema>;

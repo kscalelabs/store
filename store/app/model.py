@@ -7,6 +7,7 @@ expects (for example, converting a UUID into a string).
 
 import time
 from datetime import datetime, timedelta
+from decimal import Decimal
 from typing import Literal, Self, cast, get_args
 
 from pydantic import BaseModel
@@ -411,6 +412,10 @@ class Listing(StoreBaseModel):
     upvotes: int = 0
     downvotes: int = 0
     score: int = 0
+    stripe_link: str | None = None
+    key_features: str | None = None
+    uploaded_files: list[dict] = []
+    price: Decimal | None = None
 
     @classmethod
     def create(
@@ -422,6 +427,9 @@ class Listing(StoreBaseModel):
         child_ids: list[str],
         description: str | None = None,
         onshape_url: str | None = None,
+        stripe_link: str | None = None,
+        key_features: str | None = None,
+        price: float | None = None,
     ) -> Self:
         return cls(
             id=new_uuid(),
@@ -438,6 +446,9 @@ class Listing(StoreBaseModel):
             upvotes=0,
             downvotes=0,
             score=0,
+            stripe_link=stripe_link,
+            key_features=key_features,
+            price=Decimal(str(price)) if price is not None else None,
         )
 
     def set_slug(self, new_slug: str) -> None:

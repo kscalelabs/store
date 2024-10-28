@@ -19,7 +19,16 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     # Create a listing.
     response = test_client.post(
         "/listings/add",
-        json={"name": "test listing", "description": "test description", "child_ids": [], "slug": "test-listing"},
+        data={
+            "name": "test listing",
+            "description": "test description",
+            "child_ids": "",
+            "slug": "test-listing",
+            "price": "19.99",
+            "username": "testuser",
+            "stripe_link": "",
+            "key_features": "",
+        },
         headers=auth_headers,
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
@@ -31,8 +40,8 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     image.save(image_path)
     response = test_client.post(
         f"/artifacts/upload/{listing_id}",
-        headers=auth_headers,
         files={"files": ("test.png", open(image_path, "rb"), "image/png")},
+        headers=auth_headers,
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
@@ -42,8 +51,8 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     urdf_path = Path(__file__).parent / "assets" / "sample.urdf"
     response = test_client.post(
         f"/artifacts/upload/{listing_id}",
-        headers=auth_headers,
         files={"files": ("sample.urdf", open(urdf_path, "rb"), "application/xml")},
+        headers=auth_headers,
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
@@ -132,6 +141,13 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
     listing_id = listings[0]["id"]
     response = test_client.get(f"/listings/{listing_id}", headers=auth_headers)
     assert response.status_code == status.HTTP_200_OK, response.json()
+
+    # Verify the listing was created with the correct details
+    listing_data = response.json()
+    assert listing_data["price"] == 19.99
+    assert listing_data["name"] == "test listing"
+    assert listing_data["description"] == "test description"
+    assert listing_data["slug"] == "test-listing"
 
     # Edits the listing.
     response = test_client.put(
