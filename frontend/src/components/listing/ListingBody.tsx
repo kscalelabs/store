@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from "react";
+import Masonry from "react-masonry-css";
 
 import ListingOnshape from "@/components/listing/onshape/ListingOnshape";
 import ProductPage from "@/components/products/ProductPage";
+import { Card, CardContent } from "@/components/ui/Card";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+
+import ArtifactCard from "./artifacts/ArtifactCard";
+import LoadingArtifactCard from "./artifacts/LoadingArtifactCard";
 
 // Update the ListingResponse type to match the actual structure
 type ListingResponse = {
@@ -20,7 +25,26 @@ type ListingResponse = {
   creator_name: string | null;
   uploaded_files?: { url: string }[];
   price?: number;
-  key_features?: string;
+  artifacts?:
+    | {
+        artifact_id: string;
+        listing_id: string;
+        name: string;
+        artifact_type:
+          | "image"
+          | "urdf"
+          | "mjcf"
+          | "stl"
+          | "obj"
+          | "dae"
+          | "ply"
+          | "tgz"
+          | "zip";
+        description: string | null;
+        timestamp: number;
+        urls: { large: string };
+      }[]
+    | undefined;
 };
 
 interface ListingBodyProps {
@@ -32,8 +56,27 @@ const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [images, setImages] = useState<string[]>([]);
+  const [artifacts, setArtifacts] = useState<
+    ListingResponse["artifacts"] | null
+  >(null);
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
+
+  const breakpointColumnsObj = {
+    default: 3,
+    1024: 2,
+    640: 1,
+  };
+
+  const handleDeleteArtifact = (artifactId: string) => {
+    setArtifacts((prevArtifacts) =>
+      prevArtifacts
+        ? prevArtifacts.filter(
+            (artifact) => artifact.artifact_id !== artifactId,
+          )
+        : null,
+    );
+  };
 
   useEffect(() => {
     const fetchArtifacts = async () => {
@@ -48,6 +91,7 @@ const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
         if (error) {
           addErrorAlert(error);
         } else {
+          setArtifacts(data.artifacts);
           const artifactImages = data.artifacts
             .filter(
               (artifact: { artifact_type: string }) =>
@@ -72,19 +116,12 @@ const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
     fetchArtifacts();
   }, [listing.id, auth.client, addErrorAlert]);
 
-  console.log("Raw listing price:", listing.price);
-  console.log("Listing price type:", typeof listing.price);
-
   const productInfo = {
     name: newTitle || listing.name,
     description: listing.description || "Product Description",
-    specs: listing.key_features ? listing.key_features.split("\n") : [],
-    features: [],
     price: listing.price ?? 0,
     productId: listing.id,
   };
-
-  console.log("Product info:", productInfo);
 
   const openModal = (image: string) => {
     setSelectedImage(image);
@@ -104,8 +141,6 @@ const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
         productId={productInfo.productId}
         checkoutLabel={`Buy ${productInfo.name}`}
         description={productInfo.description}
-        features={productInfo.features}
-        keyFeatures={productInfo.specs}
         price={productInfo.price}
         onImageClick={openModal}
       />
@@ -116,6 +151,35 @@ const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
           addArtifactId={async () => {}}
           edit={listing.can_edit}
         />
+      </div>
+
+      <div className="mt-4">
+        <Masonry
+          breakpointCols={breakpointColumnsObj}
+          className="flex w-auto -ml-4"
+          columnClassName="pl-4 bg-clip-padding"
+        >
+          {artifacts === null ? (
+            <LoadingArtifactCard />
+          ) : artifacts ? (
+            artifacts
+              .slice()
+              .reverse()
+              .map((artifact) => (
+                <Card key={artifact.artifact_id} className="mb-4">
+                  <CardContent className="p-4">
+                    <ArtifactCard
+                      artifact={artifact}
+                      onDelete={() =>
+                        handleDeleteArtifact(artifact.artifact_id)
+                      }
+                      canEdit={listing.can_edit}
+                    />
+                  </CardContent>
+                </Card>
+              ))
+          ) : null}
+        </Masonry>
       </div>
 
       {isModalOpen && selectedImage && (

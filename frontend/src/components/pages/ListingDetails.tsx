@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
 import ListingBody from "@/components/listing/ListingBody";
-import ListingHeader from "@/components/listing/ListingHeader";
 import Spinner from "@/components/ui/Spinner";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
@@ -17,8 +16,7 @@ interface RenderListingProps {
 
 const RenderListing = ({ listing }: RenderListingProps) => {
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
-      <ListingHeader listing={listing} />
+    <div className="max-w-7xl mx-auto px-4">
       <div className="flex-grow">
         <ListingBody listing={listing} />
       </div>

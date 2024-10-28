@@ -38,7 +38,6 @@ const StompyMini: React.FC = () => {
       title={productInfo.name}
       description={productInfo.description}
       features={productInfo.features}
-      keyFeatures={productInfo.specs}
       price={productInfo.price}
     />
   );

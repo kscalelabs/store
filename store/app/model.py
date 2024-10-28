@@ -413,7 +413,6 @@ class Listing(StoreBaseModel):
     downvotes: int = 0
     score: int = 0
     stripe_link: str | None = None
-    key_features: str | None = None
     uploaded_files: list[dict] = []
     price: Decimal | None = None
 
@@ -428,7 +427,6 @@ class Listing(StoreBaseModel):
         description: str | None = None,
         onshape_url: str | None = None,
         stripe_link: str | None = None,
-        key_features: str | None = None,
         price: float | None = None,
     ) -> Self:
         return cls(
@@ -447,7 +445,6 @@ class Listing(StoreBaseModel):
             downvotes=0,
             score=0,
             stripe_link=stripe_link,
-            key_features=key_features,
             price=Decimal(str(price)) if price is not None else None,
         )
 

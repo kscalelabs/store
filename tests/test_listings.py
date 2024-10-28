@@ -27,7 +27,6 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
             "price": "19.99",
             "username": "testuser",
             "stripe_link": "",
-            "key_features": "",
         },
         headers=auth_headers,
     )

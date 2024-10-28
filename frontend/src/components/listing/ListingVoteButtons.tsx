@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -23,7 +23,11 @@ const ListingVoteButtons = ({
   const { addErrorAlert } = useAlertQueue();
   const [isVoting, setIsVoting] = useState(false);
   const [score, setScore] = useState(initialScore);
-  const [userVote, setUserVote] = useState(initialUserVote);
+  const [userVote, setUserVote] = useState<boolean | null>(initialUserVote);
+
+  useEffect(() => {
+    setUserVote(initialUserVote);
+  }, [initialUserVote]);
 
   const handleVote = async (upvote: boolean, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -33,12 +37,9 @@ const ListingVoteButtons = ({
       return;
     }
 
-    if (isVoting) {
-      return; // Prevent double-clicking
-    }
+    if (isVoting) return;
 
     setIsVoting(true);
-
     const previousVote = userVote;
     const previousScore = score;
 
@@ -61,12 +62,13 @@ const ListingVoteButtons = ({
         });
       } else {
         // Add or change vote
-        await auth.client.POST(`/listings/{id}/vote`, {
+        const { error } = await auth.client.POST(`/listings/{id}/vote`, {
           params: {
             path: { id: listingId },
             query: { upvote },
           },
         });
+        if (error) throw error;
       }
     } catch (error) {
       // Revert changes if API call fails
