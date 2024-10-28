@@ -95,13 +95,9 @@ async def get_batch_listing_info(
         crud.get_listings_artifacts(ids),
     )
 
-    logger.info(f"Retrieved {len(listings)} listings and {len(artifacts)} artifacts")
-
     user_votes = {}
     if user:
         user_votes = {vote.listing_id: vote.is_upvote for vote in await crud.get_user_votes(user.id, ids)}
-
-    logger.info(f"User votes: {user_votes}")
 
     listing_responses = []
     for listing, artifacts in zip(listings, artifacts):
@@ -182,7 +178,7 @@ class NewListingRequest(BaseModel):
     slug: str
     stripe_link: str | None
     key_features: str | None
-    price: float | None  # Add this line
+    price: float | None
 
 
 class NewListingResponse(BaseModel):
@@ -206,7 +202,6 @@ async def add_listing(
 ) -> NewListingResponse:
     logger.info(f"Received {len(photos) if photos else 0} photos")
 
-    # Convert price to float if it's not None
     float_price = float(price) if price is not None else None
 
     # Creates a new listing.
@@ -219,7 +214,7 @@ async def add_listing(
         username=user.username,
         stripe_link=stripe_link,
         key_features=key_features or "",
-        price=float_price,  # Use float_price instead of decimal_price
+        price=float_price,
     )
     await crud.add_listing(listing)
 
@@ -335,7 +330,7 @@ class GetListingResponse(BaseModel):
     creator_id: str
     creator_name: str | None
     key_features: str | None
-    price: float | None  # Add this line
+    price: float | None
 
 
 @listings_router.get("/{id}", response_model=GetListingResponse)
@@ -359,7 +354,6 @@ async def get_listing(
     if (creator := await crud.get_user_public(listing.user_id)) is not None:
         creator_name = " ".join(filter(None, [creator.first_name, creator.last_name]))
 
-    # Convert Decimal to float if price is not None
     price = float(listing.price) if listing.price is not None else None
 
     return GetListingResponse(
@@ -379,7 +373,7 @@ async def get_listing(
         creator_id=listing.user_id,
         creator_name=creator_name,
         key_features=listing.key_features,
-        price=price,  # Use the converted price here
+        price=price,
     )
 
 
@@ -457,7 +451,6 @@ async def get_listing_by_username_and_slug(
     if (creator := await crud.get_user_public(listing.user_id)) is not None:
         creator_name = " ".join(filter(None, [creator.first_name, creator.last_name]))
 
-    # Convert Decimal to float if price is not None
     price = float(listing.price) if listing.price is not None else None
 
     return GetListingResponse(
@@ -477,5 +470,5 @@ async def get_listing_by_username_and_slug(
         creator_id=listing.user_id,
         creator_name=creator_name,
         key_features=listing.key_features,
-        price=price,  # Use the converted price here
+        price=price,
     )
