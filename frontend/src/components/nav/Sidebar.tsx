@@ -4,6 +4,7 @@ import {
   FaRegFileLines,
   FaRobot,
   FaSearchengin,
+  FaTerminal,
   FaWpexplorer,
   FaXTwitter,
 } from "react-icons/fa6";
@@ -35,14 +36,30 @@ const SidebarItem = ({ icon, title, onClick }: SidebarItemProps) => (
   </li>
 );
 
+type NavItem = {
+  name: string;
+  path: string;
+  isExternal: boolean;
+  icon?: JSX.Element;
+};
+
 const Sidebar = ({ show, onClose }: SidebarProps) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthentication();
 
-  const navItems = [
-    { name: "Pro", path: "/pro", icon: <FaRobot /> },
-    { name: "Mini", path: "/mini", icon: <FaRobot /> },
-  ];
+  let navItems: NavItem[] = [];
+
+  if (isAuthenticated) {
+    navItems = [
+      {
+        name: "Terminal",
+        path: "/terminal",
+        isExternal: false,
+        icon: <FaTerminal />,
+      },
+      ...navItems,
+    ];
+  }
 
   const technicalItems = [
     { name: "Browse", path: "/browse", icon: <FaSearchengin /> },
@@ -89,15 +106,19 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
             <div className="border-t border-gray-1 my-2"></div>
             <nav>
               <ul className="space-y-1">
-                {navItems.map((item) => (
-                  <SidebarItem
-                    key={item.name}
-                    title={item.name}
-                    icon={item.icon}
-                    onClick={() => handleItemClick(item.path)}
-                  />
-                ))}
-                <div className="border-t border-gray-1 my-2"></div>
+                {isAuthenticated && (
+                  <>
+                    {navItems.map((item) => (
+                      <SidebarItem
+                        key={item.name}
+                        title={item.name}
+                        icon={item.icon}
+                        onClick={() => handleItemClick(item.path)}
+                      />
+                    ))}
+                    <div className="border-t border-gray-1 my-2"></div>
+                  </>
+                )}
                 {technicalItems.map((item) => (
                   <SidebarItem
                     key={item.name}
