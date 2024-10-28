@@ -82,6 +82,7 @@ async def refund_payment_intent(
             if order is None or order.user_id != user.id:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
             logger.info(f"Found order id: {order.id}")
+
             # Update order status
             order_data = {
                 "stripe_refund_id": refund.id,

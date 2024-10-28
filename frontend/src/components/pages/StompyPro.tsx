@@ -26,8 +26,8 @@ const StompyPro: React.FC = () => {
       "Regular software updates",
     ],
     price: 1600000,
-    productId: "prod_R5JsUGklKnSxpG", // developer
-    // productId: "prod_R0n3nkCO4aQdlg", // production
+    // productId: "prod_Qyzd8f0gFMis7c", // developer
+    productId: "prod_R0n3nkCO4aQdlg", // production
   };
 
   return (
