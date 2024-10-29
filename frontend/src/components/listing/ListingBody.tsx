@@ -45,6 +45,7 @@ type ListingResponse = {
         urls: { large: string };
       }[]
     | undefined;
+  main_image_url?: string;
 };
 
 interface ListingBodyProps {
@@ -55,7 +56,7 @@ interface ListingBodyProps {
 const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [images, setImages] = useState<string[]>([]);
+  const [images, setImages] = useState<string[]>(listing.images || []);
   const [artifacts, setArtifacts] = useState<
     ListingResponse["artifacts"] | null
   >(null);
@@ -104,7 +105,19 @@ const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
           const uploadedImages =
             listing.uploaded_files?.map((file: { url: string }) => file.url) ||
             [];
-          setImages([...uploadedImages, ...artifactImages]);
+
+          const allImages = [...uploadedImages, ...artifactImages];
+          if (listing.main_image_url) {
+            const mainImageIndex = allImages.findIndex(
+              (img) => img === listing.main_image_url,
+            );
+            if (mainImageIndex !== -1) {
+              const [mainImage] = allImages.splice(mainImageIndex, 1);
+              allImages.unshift(mainImage);
+            }
+          }
+
+          setImages(allImages);
         }
       } catch (err) {
         addErrorAlert(
@@ -114,7 +127,7 @@ const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
     };
 
     fetchArtifacts();
-  }, [listing.id, auth.client, addErrorAlert]);
+  }, [listing.id, listing.main_image_url, auth.client, addErrorAlert]);
 
   const productInfo = {
     name: newTitle || listing.name,
@@ -143,6 +156,9 @@ const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
         description={productInfo.description}
         price={productInfo.price}
         onImageClick={openModal}
+        onImagesChange={(newImages) => {
+          setImages(newImages);
+        }}
       />
       <div className="mt-6">
         <ListingOnshape
@@ -165,6 +181,7 @@ const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
             artifacts
               .slice()
               .reverse()
+              .filter((artifact) => artifact.artifact_type !== "image")
               .map((artifact) => (
                 <Card key={artifact.artifact_id} className="mb-4">
                   <CardContent className="p-4">
