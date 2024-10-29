@@ -922,6 +922,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/stripe/refunds/{order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Refund Payment Intent */
+        put: operations["refund_payment_intent_stripe_refunds__order_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/stripe/webhook": {
         parameters: {
             query?: never;
@@ -1090,6 +1107,13 @@ export interface components {
             /** Files */
             files: string[];
         };
+        /** CancelReason */
+        CancelReason: {
+            /** Reason */
+            reason: string;
+            /** Details */
+            details: string;
+        };
         /** ClientIdResponse */
         ClientIdResponse: {
             /** Client Id */
@@ -1106,6 +1130,14 @@ export interface components {
         CreateCheckoutSessionResponse: {
             /** Session Id */
             session_id: string;
+        };
+        /** CreateRefundsRequest */
+        CreateRefundsRequest: {
+            /** Payment Intent Id */
+            payment_intent_id: string;
+            cancel_reason: components["schemas"]["CancelReason"];
+            /** Amount */
+            amount: number;
         };
         /** DeleteTokenResponse */
         DeleteTokenResponse: {
@@ -1428,6 +1460,8 @@ export interface components {
             stripe_checkout_session_id: string;
             /** Stripe Payment Intent Id */
             stripe_payment_intent_id: string;
+            /** Stripe Refund Id */
+            stripe_refund_id?: string | null;
             /** Created At */
             created_at: number;
             /** Updated At */
@@ -3344,6 +3378,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    refund_payment_intent_stripe_refunds__order_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateRefundsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Order"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
