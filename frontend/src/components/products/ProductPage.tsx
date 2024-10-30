@@ -34,6 +34,7 @@ interface ProductPageProps {
   creatorId?: string;
   onPriceChange?: (newPrice: number) => void;
   onImagesChange?: (newImages: string[]) => void;
+  onImageClick?: (image: string) => void;
 }
 
 const ProductPage: React.FC<ProductPageProps> = ({

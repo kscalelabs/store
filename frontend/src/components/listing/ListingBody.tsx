@@ -25,6 +25,7 @@ type ListingResponse = {
   creator_name: string | null;
   uploaded_files?: { url: string }[];
   price: number | null;
+  images?: string[];
   artifacts?:
     | {
         artifact_id: string;
@@ -43,6 +44,7 @@ type ListingResponse = {
         description: string | null;
         timestamp: number;
         urls: { large: string };
+        is_main: boolean;
       }[]
     | undefined;
   main_image_url?: string;
@@ -186,7 +188,10 @@ const ListingBody: React.FC<ListingBodyProps> = ({ listing, newTitle }) => {
                 <Card key={artifact.artifact_id} className="mb-4">
                   <CardContent className="p-4">
                     <ArtifactCard
-                      artifact={artifact}
+                      artifact={{
+                        ...artifact,
+                        is_main: listing.main_image_url === artifact.urls.large,
+                      }}
                       onDelete={() =>
                         handleDeleteArtifact(artifact.artifact_id)
                       }
