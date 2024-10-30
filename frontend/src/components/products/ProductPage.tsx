@@ -123,7 +123,7 @@ const ProductPage: React.FC<ProductPageProps> = ({
     }, 300);
   };
 
-  const [isFixed, setIsFixed] = useState(false);
+  const [isFixed, setIsFixed] = useState(true);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -134,8 +134,9 @@ const ProductPage: React.FC<ProductPageProps> = ({
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
     handleScroll();
+
+    window.addEventListener("scroll", handleScroll);
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -323,8 +324,6 @@ const ProductPage: React.FC<ProductPageProps> = ({
     currentImages.length > 0 ? currentImages : [FALLBACK_IMAGE];
   const showNavigation = displayImages.length > 1;
 
-  const shouldShowCheckout = price > 0 && checkoutLabel;
-
   const [isEditingPrice, setIsEditingPrice] = useState(false);
   const [displayPrice, setDisplayPrice] = useState<string>("");
   const [newPrice, setNewPrice] = useState(price);
@@ -504,6 +503,8 @@ const ProductPage: React.FC<ProductPageProps> = ({
     multiple: false,
     onDrop: handleImageUpload,
   });
+
+  const shouldShowCheckout = currentPrice > 0 && checkoutLabel;
 
   return (
     <Container>
@@ -713,9 +714,9 @@ const ProductPage: React.FC<ProductPageProps> = ({
                                 onClick={() => {
                                   setIsEditingPrice(true);
                                   setDisplayPrice(
-                                    convertToDecimal(price.toString()),
+                                    convertToDecimal(currentPrice.toString()),
                                   );
-                                  setNewPrice(price);
+                                  setNewPrice(currentPrice);
                                 }}
                                 variant="ghost"
                                 size="sm"
