@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ type ListingInfo = {
 };
 
 const TerminalPage: React.FC = () => {
+  const navigate = useNavigate();
   const { api, currentUser, isAuthenticated, isLoading } = useAuthentication();
   const [robots, setRobots] = useState<Robot[] | null>(null);
   const [loadingRobots, setLoadingRobots] = useState(true);
@@ -253,8 +255,13 @@ const TerminalPage: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="flex justify-center items-center bg-gray-4 p-4 md:p-10 rounded-lg max-w-md mx-auto">
-          <p className="text-gray-12">No robots yet.</p>
+        <div className="flex flex-col gap-4 justify-center items-center bg-gray-4 p-10 rounded-lg max-w-3xl mx-auto">
+          <p className="text-gray-12 font-medium sm:text-lg">
+            No robots yet. Link your robot to a listing to get started.
+          </p>
+          <Button onClick={() => navigate("/browse")} variant="default">
+            Browse Listings
+          </Button>
         </div>
       )}
 

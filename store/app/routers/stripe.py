@@ -228,11 +228,11 @@ async def create_checkout_session(
 
         # Create a Checkout Session
         checkout_session = stripe.checkout.Session.create(
-            payment_method_types=["card"],
+            payment_method_types=["card", "affirm"],
             line_items=[
                 {
                     "price": price.id,
-                    "quantity": 1,  # default quantity
+                    "quantity": 1,
                     "adjustable_quantity": {
                         "enabled": True,
                         "minimum": 1,
@@ -252,6 +252,7 @@ async def create_checkout_session(
             shipping_address_collection={
                 "allowed_countries": ["US", "CA"],
             },
+            currency="usd",
             shipping_options=[
                 {
                     "shipping_rate_data": {
