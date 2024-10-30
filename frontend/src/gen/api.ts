@@ -253,6 +253,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/artifacts/list/{listing_id}/main_image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Main Image */
+        put: operations["set_main_image_artifacts_list__listing_id__main_image_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/email/signup/create": {
         parameters: {
             query?: never;
@@ -1335,6 +1352,8 @@ export interface components {
             creator_name: string | null;
             /** Price */
             price: number | null;
+            /** Stripe Link */
+            stripe_link: string | null;
         };
         /** GetTokenResponse */
         GetTokenResponse: {
@@ -1727,6 +1746,11 @@ export interface components {
             /** Timestamp */
             timestamp: number;
             urls: components["schemas"]["ArtifactUrls"];
+            /**
+             * Is Main
+             * @default false
+             */
+            is_main: boolean;
         };
         /**
          * SortOption
@@ -1750,6 +1774,10 @@ export interface components {
             description?: string | null;
             /** Tags */
             tags?: string[] | null;
+            /** Stripe Link */
+            stripe_link?: string | null;
+            /** Price */
+            price?: number | null;
         };
         /** UpdateOrderAddressRequest */
         UpdateOrderAddressRequest: {
@@ -2254,6 +2282,39 @@ export interface operations {
             header?: never;
             path: {
                 artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": boolean;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    set_main_image_artifacts_list__listing_id__main_image_put: {
+        parameters: {
+            query: {
+                artifact_id: string;
+            };
+            header?: never;
+            path: {
+                listing_id: string;
             };
             cookie?: never;
         };

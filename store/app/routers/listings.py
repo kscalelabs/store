@@ -107,9 +107,16 @@ async def get_batch_listing_info(
                     (
                         get_artifact_url(artifact=artifact, size="small")
                         for artifact in artifacts
-                        if artifact.artifact_type == "image"
+                        if artifact.artifact_type == "image" and artifact.is_main
                     ),
-                    None,
+                    next(
+                        (
+                            get_artifact_url(artifact=artifact, size="small")
+                            for artifact in artifacts
+                            if artifact.artifact_type == "image"
+                        ),
+                        "https://flowbite.com/docs/images/examples/image-1@2x.jpg",
+                    ),
                 )
                 listing_response = ListingInfoResponse(
                     id=listing.id,
@@ -254,6 +261,8 @@ class UpdateListingRequest(BaseModel):
     child_ids: list[str] | None = None
     description: str | None = None
     tags: list[str] | None = None
+    stripe_link: str | None = None
+    price: float | None = None
 
 
 @listings_router.put("/edit/{id}", response_model=bool)
@@ -287,6 +296,8 @@ async def edit_listing(
         child_ids=listing.child_ids,
         description=listing.description,
         tags=listing.tags,
+        stripe_link=listing.stripe_link,
+        price=listing.price,
     )
     return True
 
@@ -327,6 +338,7 @@ class GetListingResponse(BaseModel):
     creator_id: str
     creator_name: str | None
     price: float | None
+    stripe_link: str | None
 
 
 @listings_router.get("/{id}", response_model=GetListingResponse)
@@ -369,6 +381,7 @@ async def get_listing(
         creator_id=listing.user_id,
         creator_name=creator_name,
         price=price,
+        stripe_link=listing.stripe_link,
     )
 
 
@@ -465,4 +478,5 @@ async def get_listing_by_username_and_slug(
         creator_id=listing.user_id,
         creator_name=creator_name,
         price=price,
+        stripe_link=listing.stripe_link,
     )

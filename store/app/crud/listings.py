@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+from decimal import Decimal
 from enum import Enum
 from typing import Any, Callable, Type, TypeVar
 
@@ -165,6 +166,8 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         description: str | None = None,
         tags: list[str] | None = None,
         onshape_url: str | None = None,
+        stripe_link: str | None = None,
+        price: float | None = None,
     ) -> None:
         listing = await self.get_listing(listing_id)
         if listing is None:
@@ -177,6 +180,12 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             updates["child_ids"] = child_ids
         if description is not None:
             updates["description"] = description
+        if stripe_link is not None:
+            updates["stripe_link"] = stripe_link
+        if price is not None:
+            updates["price"] = Decimal(str(price))
+
+        print(f"Updating listing {listing_id} with updates: {updates}")  # Debug log
 
         coroutines = []
         if tags is not None:

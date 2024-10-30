@@ -88,6 +88,7 @@ class SingleArtifactResponse(BaseModel):
     description: str | None
     timestamp: int
     urls: ArtifactUrls
+    is_main: bool = False
 
 
 class ListArtifactsResponse(BaseModel):
@@ -115,11 +116,16 @@ async def get_artifact_info(
         description=artifact.description,
         timestamp=artifact.timestamp,
         urls=get_artifact_url_response(artifact=artifact),
+        is_main=artifact.is_main,
     )
 
 
 @artifacts_router.get("/list/{listing_id}", response_model=ListArtifactsResponse)
 async def list_artifacts(listing_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> ListArtifactsResponse:
+    artifacts = await crud.get_listing_artifacts(listing_id)
+    # Sort artifacts so that the main image comes first
+    sorted_artifacts = sorted(artifacts, key=lambda x: not x.is_main)
+
     return ListArtifactsResponse(
         artifacts=[
             SingleArtifactResponse(
@@ -130,8 +136,9 @@ async def list_artifacts(listing_id: str, crud: Annotated[Crud, Depends(Crud.get
                 description=artifact.description,
                 timestamp=artifact.timestamp,
                 urls=get_artifact_url_response(artifact=artifact),
+                is_main=artifact.is_main,
             )
-            for artifact in await crud.get_listing_artifacts(listing_id)
+            for artifact in sorted_artifacts
         ],
     )
 
@@ -228,6 +235,7 @@ async def upload(
                 description=artifact.description,
                 timestamp=artifact.timestamp,
                 urls=get_artifact_url_response(artifact=artifact),
+                is_main=artifact.is_main,
             )
             for artifact in artifacts
         ]
@@ -276,4 +284,27 @@ async def delete_artifact(
             detail="User does not have permission to delete this artifact",
         )
     await crud.remove_artifact(artifact)
+    return True
+
+
+@artifacts_router.put("/list/{listing_id}/main_image", response_model=bool)
+async def set_main_image(
+    listing_id: str,
+    artifact_id: str,
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> bool:
+    listing = await crud.get_listing(listing_id)
+    if listing is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Listing not found",
+        )
+    if not await can_write_listing(user, listing):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User does not have permission to edit this listing",
+        )
+
+    await crud.set_main_image(listing_id, artifact_id)
     return True
