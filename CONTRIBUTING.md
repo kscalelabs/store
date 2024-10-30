@@ -29,6 +29,7 @@ You can contribute to the K-Scale Store project in various ways, such as reporti
 4. [Syncing Frontend and Backend](#syncing-frontend-and-backend)
 5. [React Setup](#react-setup)
 6. [Testing](#testing)
+7. [Stripe Setup](#stripe-setup)
 
 ---
 
@@ -143,27 +144,33 @@ DYNAMO_ENDPOINT=http://127.0.0.1:4566 dynamodb-admin
 Create a Python virtual environment using [uv](https://astral.sh/blog/uv) or [virtualenv](https://virtualenv.pypa.io/en/latest/) with **Python 3.11 or later**:
 
 1. **Using `uv`**:
+
 ```bash
 uv venv .venv --python 3.11
 ```
 
 2. **Using `virtualenv`**: If you choose to use `virtualenv`, ensure that **Python 3.11** is installed on your machine. You can check if it's installed by running:
+
 ```bash
 python3.11 --version
 ```
+
 If Python 3.11 is installed, create the virtual environment with:
+
 ```bash
 python3.11 -m venv .venv
 ```
+
 **Note**: If Python 3.11 is not installed on your machine, you will need to install it before proceeding. For macOS, you can install Python 3.11 using `Homebrew`:
 
 ```bash
 brew install python@3.11
 ```
 
-### Activate the virtual environment: 
+### Activate the virtual environment:
 
 Once the virtual environment is created, activate it:
+
 ```bash
 source .venv/bin/activate
 ```
@@ -248,6 +255,18 @@ make test
 make test-frontend  # Run only the frontend tests
 make test-backend  # Run only the backend tests
 ```
+
+## Stripe Setup
+
+Run this to recieve stripe webhooks locally:
+
+```bash
+stripe listen --forward-to localhost:8080/stripe/webhook
+```
+
+Make sure to set the `STRIPE_WEBHOOK_SECRET` environment variable to the value
+shown in the terminal and source it to the terminal you are running
+`make start-backend` in.
 
 ## Optional
 

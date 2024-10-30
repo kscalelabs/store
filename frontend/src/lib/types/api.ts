@@ -1,3 +1,4 @@
+// API types
 export interface ApiValidationError {
   loc: (string | number)[];
   msg: string;
