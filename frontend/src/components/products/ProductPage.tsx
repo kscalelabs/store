@@ -167,31 +167,6 @@ const ProductPage: React.FC<ProductPageProps> = ({
     null,
   );
 
-  const extractArtifactId = (imageUrl: string) => {
-    console.log("Attempting to extract artifact ID from:", imageUrl); // Debug log
-
-    // Try matching various URL patterns
-    const patterns = [
-      /\/artifacts\/media\/([^/]+)\/([^/]+)/,
-      /\/uploads\/([^/]+)/,
-      /\/([a-zA-Z0-9-_]+)\.(jpg|jpeg|png|gif|webp)$/i,
-      /\/([^/]+?)(?:\.[^/.]+)?$/,
-    ];
-
-    for (const pattern of patterns) {
-      const match = imageUrl.match(pattern);
-      if (match) {
-        const artifactId = pattern === patterns[0] ? match[2] : match[1];
-        console.log("Found match with pattern:", pattern);
-        console.log("Extracted artifact ID:", artifactId);
-        return artifactId;
-      }
-    }
-
-    console.error("No pattern matched for URL:", imageUrl); // Debug log
-    return null;
-  };
-
   const handleDeleteImage = async (imageUrl: string, index: number) => {
     if (!creatorInfo?.can_edit) {
       addErrorAlert("You don't have permission to delete this image");
@@ -202,22 +177,42 @@ const ProductPage: React.FC<ProductPageProps> = ({
     console.log("Attempting to delete image:", imageUrl); // Debug log
 
     try {
-      const artifactId = extractArtifactId(imageUrl);
+      // Get the artifacts data to find the correct artifact_id
+      const { data, error: fetchError } = await auth.client.GET(
+        "/artifacts/list/{listing_id}",
+        {
+          params: {
+            path: { listing_id: productId },
+          },
+        },
+      );
 
-      if (!artifactId) {
-        console.error("Failed to extract artifact ID from:", imageUrl); // Debug log
-        addErrorAlert("Could not extract artifact ID from image URL");
+      if (fetchError || !data?.artifacts) {
+        console.error("Failed to fetch artifacts:", fetchError);
+        addErrorAlert(fetchError || "Failed to fetch artifacts");
         setDeletingImageIndex(null);
         return;
       }
 
-      console.log("Sending delete request for artifact ID:", artifactId); // Debug log
+      // Find the artifact that matches our image URL
+      const artifact = data.artifacts.find(
+        (a: { urls: { large: string } }) => a.urls.large === imageUrl,
+      );
+
+      if (!artifact) {
+        console.error("Could not find artifact for image:", imageUrl);
+        addErrorAlert("Could not find artifact for this image");
+        setDeletingImageIndex(null);
+        return;
+      }
+
+      console.log("Found artifact ID:", artifact.artifact_id); // Debug log
 
       const { error } = await auth.client.DELETE(
         "/artifacts/delete/{artifact_id}",
         {
           params: {
-            path: { artifact_id: artifactId },
+            path: { artifact_id: artifact.artifact_id },
           },
         },
       );
@@ -414,25 +409,41 @@ const ProductPage: React.FC<ProductPageProps> = ({
     console.log("Attempting to set main image:", imageUrl); // Debug log
 
     try {
-      const artifactId = extractArtifactId(imageUrl);
+      const { data, error: fetchError } = await auth.client.GET(
+        "/artifacts/list/{listing_id}",
+        {
+          params: {
+            path: { listing_id: productId },
+          },
+        },
+      );
 
-      if (!artifactId) {
-        console.error("Failed to extract artifact ID from:", imageUrl); // Debug log
-        addErrorAlert("Could not extract artifact ID from image URL");
+      if (fetchError || !data?.artifacts) {
+        console.error("Failed to fetch artifacts:", fetchError);
+        addErrorAlert(fetchError || "Failed to fetch artifacts");
         return;
       }
 
-      console.log(
-        "Sending main image update request for artifact ID:",
-        artifactId,
-      ); // Debug log
+      // Find the artifact that matches our image URL
+      const artifact = data.artifacts.find(
+        (a: { urls: { large: string } }) => a.urls.large === imageUrl,
+      );
+
+      if (!artifact) {
+        console.error("Could not find artifact for image:", imageUrl);
+        addErrorAlert("Could not find artifact for this image");
+        return;
+      }
+
+      console.log("Found artifact ID:", artifact.artifact_id); // Debug log
+      console.log("Listing ID:", productId); // Additional debug log
 
       const { error } = await auth.client.PUT(
         "/artifacts/list/{listing_id}/main_image",
         {
           params: {
             path: { listing_id: productId },
-            query: { artifact_id: artifactId },
+            query: { artifact_id: artifact.artifact_id },
           },
         },
       );
@@ -441,6 +452,7 @@ const ProductPage: React.FC<ProductPageProps> = ({
         console.error("Main image update request failed:", error); // Debug log
         addErrorAlert(error);
       } else {
+        console.log("Main image update successful, updating UI state"); // Debug log
         const newImages = [...currentImages];
         newImages.splice(index, 1);
         newImages.unshift(imageUrl);
