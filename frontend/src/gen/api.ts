@@ -253,6 +253,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/artifacts/list/{listing_id}/main_image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Main Image */
+        put: operations["set_main_image_artifacts_list__listing_id__main_image_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/email/signup/create": {
         parameters: {
             query?: never;
@@ -402,23 +419,6 @@ export interface paths {
         /** Download Kernel Image */
         get: operations["download_kernel_image_kernel_images_download__kernel_image_id__get"];
         put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/artifacts/list/{listing_id}/main_image": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Set Main Image */
-        put: operations["set_main_image_artifacts_list__listing_id__main_image_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -2307,6 +2307,39 @@ export interface operations {
             };
         };
     };
+    set_main_image_artifacts_list__listing_id__main_image_put: {
+        parameters: {
+            query: {
+                artifact_id: string;
+            };
+            header?: never;
+            path: {
+                listing_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": boolean;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     create_signup_token_email_signup_create_post: {
         parameters: {
             query?: never;
@@ -2532,14 +2565,32 @@ export interface operations {
             };
         };
     };
-    set_main_image_artifacts_list__listing_id__main_image_put: {
+    list_public_kernel_images_kernel_images_public_get: {
         parameters: {
-            query: {
-                artifact_id: string;
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KernelImageResponse"][];
+                };
             };
+        };
+    };
+    download_kernel_image_kernel_images_download__kernel_image_id__get: {
+        parameters: {
+            query?: never;
             header?: never;
             path: {
-                listing_id: string;
+                kernel_image_id: string;
             };
             cookie?: never;
         };
@@ -2551,7 +2602,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": boolean;
+                    "application/json": string;
                 };
             };
             /** @description Validation Error */
