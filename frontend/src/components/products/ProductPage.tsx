@@ -379,22 +379,31 @@ const ProductPage: React.FC<ProductPageProps> = ({
     }
 
     try {
-      const newImages = [...currentImages];
-      newImages.splice(index, 1);
-      newImages.unshift(imageUrl);
+      const artifactId = imageUrl.match(
+        /\/artifacts\/media\/([^/]+)\/([^/]+)/,
+      )?.[2];
 
-      const { error } = await auth.client.PUT("/listings/edit/{id}", {
-        params: {
-          path: { id: productId },
+      if (!artifactId) {
+        addErrorAlert("Invalid image URL format");
+        return;
+      }
+
+      const { error } = await auth.client.PUT(
+        "/artifacts/list/{listing_id}/main_image",
+        {
+          params: {
+            path: { listing_id: productId },
+            query: { artifact_id: artifactId },
+          },
         },
-        body: {
-          main_image_url: imageUrl,
-        },
-      });
+      );
 
       if (error) {
         addErrorAlert(error);
       } else {
+        const newImages = [...currentImages];
+        newImages.splice(index, 1);
+        newImages.unshift(imageUrl);
         setCurrentImages(newImages);
         setCurrentImageIndex(0);
         if (onImagesChange) {

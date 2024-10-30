@@ -107,9 +107,16 @@ async def get_batch_listing_info(
                     (
                         get_artifact_url(artifact=artifact, size="small")
                         for artifact in artifacts
-                        if artifact.artifact_type == "image"
+                        if artifact.artifact_type == "image" and artifact.is_main
                     ),
-                    None,
+                    next(
+                        (
+                            get_artifact_url(artifact=artifact, size="small")
+                            for artifact in artifacts
+                            if artifact.artifact_type == "image"
+                        ),
+                        "https://flowbite.com/docs/images/examples/image-1@2x.jpg",
+                    ),
                 )
                 listing_response = ListingInfoResponse(
                     id=listing.id,

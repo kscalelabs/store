@@ -328,6 +328,7 @@ class Artifact(StoreBaseModel):
     description: str | None = None
     timestamp: int
     children: list[str] | None = None
+    is_main: bool = False
 
     @classmethod
     def create(
@@ -339,6 +340,7 @@ class Artifact(StoreBaseModel):
         sizes: list[ArtifactSize] | None = None,
         description: str | None = None,
         children: list[str] | None = None,
+        is_main: bool = False,
     ) -> Self:
         return cls(
             id=new_uuid(),
@@ -350,6 +352,7 @@ class Artifact(StoreBaseModel):
             description=description,
             timestamp=int(time.time()),
             children=children,
+            is_main=is_main,
         )
 
 

@@ -98,6 +98,9 @@ class ArtifactsCrud(BaseCrud):
         listing: Listing,
         description: str | None = None,
     ) -> Artifact:
+        existing_images = await self.get_listing_artifacts(listing.id)
+        is_first_image = not any(a.artifact_type == "image" for a in existing_images)
+
         artifact = Artifact.create(
             user_id=listing.user_id,
             listing_id=listing.id,
@@ -105,6 +108,7 @@ class ArtifactsCrud(BaseCrud):
             artifact_type="image",
             sizes=list(SizeMapping.keys()),
             description=description,
+            is_main=is_first_image,
         )
 
         image = file if isinstance(file, Image.Image) else Image.open(io.BytesIO(await file.read()))
@@ -327,3 +331,11 @@ class ArtifactsCrud(BaseCrud):
             artifact_updates["description"] = description
         if artifact_updates:
             await self._update_item(artifact_id, Artifact, artifact_updates)
+
+    async def set_main_image(self, listing_id: str, artifact_id: str) -> None:
+        artifacts = await self.get_listing_artifacts(listing_id)
+        for artifact in artifacts:
+            if artifact.is_main:
+                await self._update_item(artifact.id, Artifact, {"is_main": False})
+
+        await self._update_item(artifact_id, Artifact, {"is_main": True})
