@@ -168,14 +168,27 @@ const ProductPage: React.FC<ProductPageProps> = ({
   );
 
   const extractArtifactId = (imageUrl: string) => {
-    // Try matching the production URL pattern
-    const prodMatch = imageUrl.match(/\/artifacts\/media\/([^/]+)\/([^/]+)/);
-    if (prodMatch) return prodMatch[2];
+    console.log("Attempting to extract artifact ID from:", imageUrl); // Debug log
 
-    // Try matching the local development URL pattern
-    const localMatch = imageUrl.match(/\/uploads\/([^/]+)/);
-    if (localMatch) return localMatch[1];
+    // Try matching various URL patterns
+    const patterns = [
+      /\/artifacts\/media\/([^/]+)\/([^/]+)/,
+      /\/uploads\/([^/]+)/,
+      /\/([a-zA-Z0-9-_]+)\.(jpg|jpeg|png|gif|webp)$/i,
+      /\/([^/]+?)(?:\.[^/.]+)?$/,
+    ];
 
+    for (const pattern of patterns) {
+      const match = imageUrl.match(pattern);
+      if (match) {
+        const artifactId = pattern === patterns[0] ? match[2] : match[1];
+        console.log("Found match with pattern:", pattern);
+        console.log("Extracted artifact ID:", artifactId);
+        return artifactId;
+      }
+    }
+
+    console.error("No pattern matched for URL:", imageUrl); // Debug log
     return null;
   };
 
@@ -186,15 +199,19 @@ const ProductPage: React.FC<ProductPageProps> = ({
     }
 
     setDeletingImageIndex(index);
+    console.log("Attempting to delete image:", imageUrl); // Debug log
 
     try {
       const artifactId = extractArtifactId(imageUrl);
 
       if (!artifactId) {
+        console.error("Failed to extract artifact ID from:", imageUrl); // Debug log
         addErrorAlert("Could not extract artifact ID from image URL");
         setDeletingImageIndex(null);
         return;
       }
+
+      console.log("Sending delete request for artifact ID:", artifactId); // Debug log
 
       const { error } = await auth.client.DELETE(
         "/artifacts/delete/{artifact_id}",
@@ -206,6 +223,7 @@ const ProductPage: React.FC<ProductPageProps> = ({
       );
 
       if (error) {
+        console.error("Delete request failed:", error); // Debug log
         addErrorAlert(error);
         setDeletingImageIndex(null);
       } else {
@@ -221,6 +239,7 @@ const ProductPage: React.FC<ProductPageProps> = ({
         }
       }
     } catch (err) {
+      console.error("Error in handleDeleteImage:", err); // Debug log
       addErrorAlert(humanReadableError(err));
       setDeletingImageIndex(null);
     }
@@ -392,13 +411,21 @@ const ProductPage: React.FC<ProductPageProps> = ({
       return;
     }
 
+    console.log("Attempting to set main image:", imageUrl); // Debug log
+
     try {
       const artifactId = extractArtifactId(imageUrl);
 
       if (!artifactId) {
+        console.error("Failed to extract artifact ID from:", imageUrl); // Debug log
         addErrorAlert("Could not extract artifact ID from image URL");
         return;
       }
+
+      console.log(
+        "Sending main image update request for artifact ID:",
+        artifactId,
+      ); // Debug log
 
       const { error } = await auth.client.PUT(
         "/artifacts/list/{listing_id}/main_image",
@@ -411,6 +438,7 @@ const ProductPage: React.FC<ProductPageProps> = ({
       );
 
       if (error) {
+        console.error("Main image update request failed:", error); // Debug log
         addErrorAlert(error);
       } else {
         const newImages = [...currentImages];
@@ -424,6 +452,7 @@ const ProductPage: React.FC<ProductPageProps> = ({
         addAlert("Main image updated successfully", "success");
       }
     } catch (err) {
+      console.error("Error in handleSetMainImage:", err); // Debug log
       addErrorAlert(humanReadableError(err));
     }
   };
