@@ -14,9 +14,9 @@ import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
 import { humanReadableError, useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import { formatTimeSince } from "@/lib/utils/formatDate";
 import { formatPrice } from "@/lib/utils/formatNumber";
 import { formatNumber } from "@/lib/utils/formatNumber";
-import { formatTimeSince } from "@/lib/utils/formatTimeSince";
 import { convertToDecimal } from "@/lib/utils/priceFormat";
 
 const FALLBACK_IMAGE =

@@ -158,6 +158,9 @@ export const RenderProfile = (props: RenderProfileProps) => {
               <Button onClick={() => navigate("/keys")} variant="primary">
                 API Keys
               </Button>
+              <Button onClick={() => navigate("/orders")} variant="default">
+                Orders
+              </Button>
               <Button onClick={() => setIsEditing(true)} variant="outline">
                 Edit Profile
               </Button>

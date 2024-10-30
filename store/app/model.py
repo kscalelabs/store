@@ -607,6 +607,7 @@ class Order(StoreBaseModel):
     user_email: str
     stripe_checkout_session_id: str
     stripe_payment_intent_id: str
+    stripe_refund_id: str | None = None
     created_at: int
     updated_at: int
     status: OrderStatus
@@ -632,6 +633,7 @@ class Order(StoreBaseModel):
         amount: int,
         currency: str,
         quantity: int,
+        stripe_refund_id: str | None = None,
         product_id: str | None = None,
         status: OrderStatus = "processing",
         shipping_name: str | None = None,
@@ -649,6 +651,7 @@ class Order(StoreBaseModel):
             user_email=user_email,
             stripe_checkout_session_id=stripe_checkout_session_id,
             stripe_payment_intent_id=stripe_payment_intent_id,
+            stripe_refund_id=stripe_refund_id,
             created_at=now,
             updated_at=now,
             status=status,
@@ -663,4 +666,38 @@ class Order(StoreBaseModel):
             shipping_state=shipping_state,
             shipping_postal_code=shipping_postal_code,
             shipping_country=shipping_country,
+        )
+
+
+class Robot(StoreBaseModel):
+    """User registered robots. Associated with a robot listing.
+
+    Will eventually used for teleop and data collection/aggregation.
+    """
+
+    user_id: str
+    listing_id: str
+    name: str
+    description: str | None = None
+    created_at: int
+    updated_at: int
+    order_id: str | None = None
+
+    @classmethod
+    def create(
+        cls,
+        user_id: str,
+        listing_id: str,
+        name: str,
+        description: str | None = None,
+    ) -> Self:
+        now = int(time.time())
+        return cls(
+            id=new_uuid(),
+            user_id=user_id,
+            listing_id=listing_id,
+            name=name,
+            description=description,
+            created_at=now,
+            updated_at=now,
         )

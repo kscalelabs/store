@@ -22,3 +22,7 @@ export const formatTimeSince = (date: Date): string => {
     return `${minutesAgo} ${minutesAgo === 1 ? "minute" : "minutes"} ago`;
   }
 };
+
+export const formatDate = (date: Date): string => {
+  return format(date, "MMMM d, yyyy");
+};

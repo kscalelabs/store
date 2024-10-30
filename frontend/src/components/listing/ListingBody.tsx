@@ -24,7 +24,7 @@ type ListingResponse = {
   created_at: number;
   creator_name: string | null;
   uploaded_files?: { url: string }[];
-  price?: number;
+  price: number | null;
   artifacts?:
     | {
         artifact_id: string;

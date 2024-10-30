@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 
+import CancelOrderModal from "@/components/modals/CancelOrderModal";
 import EditAddressModal from "@/components/modals/EditAddressModal";
 import {
   DropdownMenu,
@@ -35,6 +36,7 @@ const activeStatuses = [
   "shipped",
 ];
 const redStatuses = ["cancelled", "refunded", "failed"];
+const canModifyStatuses = ["processing", "in_development", "being_assembled"];
 
 const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
   orderWithProduct: initialOrderWithProduct,
@@ -44,6 +46,7 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
   );
   const { order, product } = orderWithProduct;
   const [isEditAddressModalOpen, setIsEditAddressModalOpen] = useState(false);
+  const [isCancelOrderModalOpen, setIsCancelOrderModalOpen] = useState(false);
 
   const currentStatusIndex = orderStatuses.indexOf(order.status);
   const isRedStatus = redStatuses.includes(order.status);
@@ -69,6 +72,10 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
     setOrderWithProduct((prev) => ({ ...prev, order: updatedOrder }));
   };
 
+  const canModifyOrder = () => {
+    return canModifyStatuses.includes(order.status);
+  };
+
   return (
     <div className="bg-white shadow-md rounded-lg p-4 md:p-6 mb-4 w-full">
       <h2 className="text-gray-12 font-bold text-2xl mb-1">{product.name}</h2>
@@ -87,10 +94,18 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem
+                disabled={!canModifyOrder()}
                 onSelect={() => setIsEditAddressModalOpen(true)}
                 className="cursor-pointer hover:bg-gray-100"
               >
                 Change delivery address
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={!canModifyOrder()}
+                onSelect={() => setIsCancelOrderModalOpen(true)}
+                className="cursor-pointer hover:bg-gray-100"
+              >
+                Cancel Order
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -199,6 +214,12 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
       <EditAddressModal
         isOpen={isEditAddressModalOpen}
         onOpenChange={setIsEditAddressModalOpen}
+        order={order}
+        onOrderUpdate={handleOrderUpdate}
+      />
+      <CancelOrderModal
+        isOpen={isCancelOrderModalOpen}
+        onOpenChange={setIsCancelOrderModalOpen}
         order={order}
         onOrderUpdate={handleOrderUpdate}
       />
