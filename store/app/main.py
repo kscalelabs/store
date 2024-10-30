@@ -28,6 +28,7 @@ from store.app.routers.keys import keys_router
 from store.app.routers.listings import listings_router
 from store.app.routers.onshape import onshape_router
 from store.app.routers.orders import orders_router
+from store.app.routers.robots import robots_router
 from store.app.routers.stripe import stripe_router
 from store.app.routers.users import users_router
 from store.utils import get_cors_origins
@@ -251,15 +252,16 @@ async def validate_auth_token(auth_token: str = Depends(api_key_header)) -> str:
 
 
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
-app.include_router(email_router, prefix="/email", tags=["email"])
 app.include_router(artifacts_router, prefix="/artifacts", tags=["artifacts"])
+app.include_router(email_router, prefix="/email", tags=["email"])
+app.include_router(kernel_images_router, prefix="/kernel-images", tags=["kernel-images"])
 app.include_router(keys_router, prefix="/keys", tags=["keys"])
 app.include_router(listings_router, prefix="/listings", tags=["listings"])
 app.include_router(onshape_router, prefix="/onshape", tags=["onshape"])
-app.include_router(users_router, prefix="/users", tags=["users"])
-app.include_router(kernel_images_router, prefix="/kernel-images", tags=["kernel-images"])
-app.include_router(stripe_router, prefix="/stripe", tags=["stripe"])
 app.include_router(orders_router, prefix="/orders", tags=["orders"])
+app.include_router(robots_router, prefix="/robots", tags=["robots"])
+app.include_router(stripe_router, prefix="/stripe", tags=["stripe"])
+app.include_router(users_router, prefix="/users", tags=["users"])
 
 
 # For running with debugger

@@ -1,0 +1,146 @@
+import { useCallback, useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { ApiError } from "@/lib/types/api";
+import { Plus } from "lucide-react";
+
+interface RegisterRobotModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAdd: (robotData: {
+    name: string;
+    description: string | null;
+    listing_id: string;
+    order_id?: string | null;
+  }) => Promise<void>;
+}
+
+export function RegisterRobotModal({
+  isOpen,
+  onClose,
+  onAdd,
+}: RegisterRobotModalProps) {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [listingId, setListingId] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const resetModalData = useCallback(() => {
+    setName("");
+    setDescription("");
+    setListingId("");
+  }, []);
+
+  const handleAdd = useCallback(async () => {
+    if (name && listingId) {
+      setIsLoading(true);
+      setError(null);
+      try {
+        await onAdd({
+          listing_id: listingId,
+          name,
+          description: description || null,
+          order_id: null,
+        });
+        resetModalData();
+      } catch (error) {
+        console.error("Error adding robot:", error);
+        if (error && typeof error === "object" && "detail" in error) {
+          const apiError = error as ApiError;
+          const errorMessage =
+            typeof apiError.detail === "string"
+              ? apiError.detail
+              : apiError.detail?.[0]?.msg || "Unknown error";
+          setError(errorMessage);
+        } else {
+          setError("Failed to create robot. Please try again.");
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }, [name, description, listingId, onAdd, resetModalData]);
+
+  return (
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          resetModalData();
+        }
+        onClose();
+      }}
+    >
+      <DialogContent className="sm:max-w-[425px] bg-gray-1 text-gray-12 border border-gray-3 rounded-lg shadow-lg">
+        <DialogHeader>
+          <DialogTitle>Register New Robot</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="name" className="text-sm font-medium text-gray-12">
+              Name
+            </Label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="bg-gray-2 border-gray-3 text-gray-12"
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label
+              htmlFor="description"
+              className="text-sm font-medium text-gray-12"
+            >
+              Description
+            </Label>
+            <Textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="bg-gray-2 border-gray-3 text-gray-12"
+              rows={3}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label
+              htmlFor="listingId"
+              className="text-sm font-medium text-gray-12"
+            >
+              Listing ID
+            </Label>
+            <Input
+              id="listingId"
+              value={listingId}
+              onChange={(e) => setListingId(e.target.value)}
+              className="bg-gray-2 border-gray-3 text-gray-12"
+            />
+          </div>
+        </div>
+        {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
+        <div className="flex justify-end">
+          <Button
+            onClick={handleAdd}
+            disabled={!name || !listingId || isLoading}
+            variant="primary"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            <span className="mr-2">
+              {isLoading ? "Registering..." : "Register Robot"}
+            </span>
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

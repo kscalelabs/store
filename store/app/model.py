@@ -664,3 +664,37 @@ class Order(StoreBaseModel):
             shipping_postal_code=shipping_postal_code,
             shipping_country=shipping_country,
         )
+
+
+class Robot(StoreBaseModel):
+    """User registered robots. Associated with a robot listing.
+
+    Will eventually used for teleop and data collection/aggregation.
+    """
+
+    user_id: str
+    listing_id: str
+    name: str
+    description: str | None = None
+    created_at: int
+    updated_at: int
+    order_id: str | None = None
+
+    @classmethod
+    def create(
+        cls,
+        user_id: str,
+        listing_id: str,
+        name: str,
+        description: str | None = None,
+    ) -> Self:
+        now = int(time.time())
+        return cls(
+            id=new_uuid(),
+            user_id=user_id,
+            listing_id=listing_id,
+            name=name,
+            description=description,
+            created_at=now,
+            updated_at=now,
+        )

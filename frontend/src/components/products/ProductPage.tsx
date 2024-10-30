@@ -12,9 +12,9 @@ import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import { formatTimeSince } from "@/lib/utils/formatDate";
 import { formatPrice } from "@/lib/utils/formatNumber";
 import { formatNumber } from "@/lib/utils/formatNumber";
-import { formatTimeSince } from "@/lib/utils/formatTimeSince";
 
 const FALLBACK_IMAGE =
   "https://miro.medium.com/v2/resize:fit:720/format:webp/1*gTRwcZ8ZBLvFtWw9-fq9_w.png";
