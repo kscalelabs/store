@@ -9,7 +9,7 @@ import { Bot, ExternalLink, Pencil, Trash2 } from "lucide-react";
 
 import { DeleteRobotModal } from "../modals/DeleteRobotModal";
 import { EditRobotModal } from "../modals/EditRobotModal";
-import { Tooltip } from "../ui/Tooltip";
+import { Tooltip } from "../ui/ToolTip";
 
 type RobotType = components["schemas"]["Robot"];
 
