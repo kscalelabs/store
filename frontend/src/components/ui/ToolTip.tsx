@@ -40,7 +40,7 @@ const Tooltip: React.FC<TooltipProps> = ({
       {visible && (
         <div
           className={cn(
-            "absolute w-max max-w-xs bg-gray-11 text-gray-1 rounded-md shadow-md",
+            "absolute w-max max-w-xs bg-gray-12 text-gray-1 rounded-md shadow-md",
             positionClasses[position],
             sizeClasses[size],
           )}

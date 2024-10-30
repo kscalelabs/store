@@ -1,7 +1,9 @@
 """Defines the router endpoints for handling Robots."""
 
+from annotated_types import MaxLen
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ValidationError
+from typing_extensions import Annotated
 
 from store.app.crud.base import ItemNotFoundError
 from store.app.db import Crud
@@ -16,14 +18,14 @@ robots_router = APIRouter()
 
 class CreateRobotRequest(BaseModel):
     listing_id: str
-    name: str
-    description: str | None = None
+    name: Annotated[str, MaxLen(32)]
+    description: Annotated[str, MaxLen(2048)] | None = None
     order_id: str | None = None
 
 
 class UpdateRobotRequest(BaseModel):
-    name: str | None = None
-    description: str | None = None
+    name: Annotated[str, MaxLen(32)] | None = None
+    description: Annotated[str, MaxLen(2048)] | None = None
     order_id: str | None = None
 
 

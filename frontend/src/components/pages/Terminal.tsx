@@ -125,6 +125,98 @@ const TerminalPage: React.FC = () => {
     }
   };
 
+  const handleEditRobot = async (
+    robotId: string,
+    robotData: {
+      name: string;
+      description: string | null;
+    },
+  ) => {
+    try {
+      const { data, error } = await api.client.PUT(
+        `/robots/update/{robot_id}`,
+        {
+          params: {
+            path: { robot_id: robotId },
+          },
+          body: robotData,
+        },
+      );
+
+      if (error) {
+        console.error("API Error:", error);
+        const errorMessage =
+          typeof error.detail === "string"
+            ? error.detail
+            : error.detail?.[0]?.msg || "Unknown error";
+
+        addErrorAlert(`Failed to update robot: ${errorMessage}`);
+        throw error;
+      }
+
+      // Update the robots list with the edited robot
+      setRobots((prev) =>
+        prev
+          ? prev.map((robot) => (robot.id === robotId ? data : robot))
+          : prev,
+      );
+    } catch (error) {
+      console.error("Error updating robot:", error);
+      if (error && typeof error === "object" && "detail" in error) {
+        const apiError = error as ApiError;
+        const errorMessage =
+          typeof apiError.detail === "string"
+            ? apiError.detail
+            : apiError.detail?.[0]?.msg || "Unknown error";
+        addErrorAlert(`Failed to update robot: ${errorMessage}`);
+        throw error;
+      } else {
+        addErrorAlert("Failed to update robot. Please try again.");
+        throw error;
+      }
+    }
+  };
+
+  const handleDeleteRobot = async (robotId: string) => {
+    try {
+      const { error } = await api.client.DELETE("/robots/delete/{robot_id}", {
+        params: {
+          path: { robot_id: robotId },
+        },
+      });
+
+      if (error) {
+        console.error("API Error:", error);
+        const errorMessage =
+          typeof error.detail === "string"
+            ? error.detail
+            : error.detail?.[0]?.msg || "Unknown error";
+
+        addErrorAlert(`Failed to delete robot: ${errorMessage}`);
+        throw error;
+      }
+
+      // Remove the deleted robot from the list
+      setRobots((prev) =>
+        prev ? prev.filter((robot) => robot.id !== robotId) : prev,
+      );
+    } catch (error) {
+      console.error("Error deleting robot:", error);
+      if (error && typeof error === "object" && "detail" in error) {
+        const apiError = error as ApiError;
+        const errorMessage =
+          typeof apiError.detail === "string"
+            ? apiError.detail
+            : apiError.detail?.[0]?.msg || "Unknown error";
+        addErrorAlert(`Failed to delete robot: ${errorMessage}`);
+        throw error;
+      } else {
+        addErrorAlert("Failed to delete robot. Please try again.");
+        throw error;
+      }
+    }
+  };
+
   return (
     <div className="p-6 min-h-screen rounded-xl bg-gray-3">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-6">
@@ -155,6 +247,8 @@ const TerminalPage: React.FC = () => {
               key={robot.id}
               robot={robot}
               listingInfo={listingInfos[robot.listing_id]}
+              onEditRobot={handleEditRobot}
+              onDeleteRobot={handleDeleteRobot}
             />
           ))}
         </div>

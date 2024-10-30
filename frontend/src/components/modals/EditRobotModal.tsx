@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -11,38 +11,43 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ApiError } from "@/lib/types/api";
-import { Plus } from "lucide-react";
+import { Save } from "lucide-react";
 
-interface RegisterRobotModalProps {
+interface EditRobotModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (robotData: {
+  onEdit: (
+    robotId: string,
+    robotData: {
+      name: string;
+      description: string | null;
+    },
+  ) => Promise<void>;
+  robot: {
+    id: string;
     name: string;
-    description: string | null;
-    listing_id: string;
-    order_id?: string | null;
-  }) => Promise<void>;
+    description: string | null | undefined;
+  };
 }
 
-export function RegisterRobotModal({
+export function EditRobotModal({
   isOpen,
   onClose,
-  onAdd,
-}: RegisterRobotModalProps) {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [listingId, setListingId] = useState("");
+  onEdit,
+  robot,
+}: EditRobotModalProps) {
+  const [name, setName] = useState(robot.name);
+  const [description, setDescription] = useState(robot.description || "");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const resetModalData = useCallback(() => {
-    setName("");
-    setDescription("");
-    setListingId("");
-  }, []);
+  useEffect(() => {
+    setName(robot.name);
+    setDescription(robot.description || "");
+  }, [robot]);
 
-  const handleAdd = useCallback(async () => {
-    if (name && listingId) {
+  const handleEdit = useCallback(async () => {
+    if (name) {
       if (name.length > 32) {
         setError("Name must be 32 characters or less");
         return;
@@ -55,15 +60,13 @@ export function RegisterRobotModal({
       setIsLoading(true);
       setError(null);
       try {
-        await onAdd({
-          listing_id: listingId,
+        await onEdit(robot.id, {
           name,
           description: description || null,
-          order_id: null,
         });
-        resetModalData();
+        onClose();
       } catch (error) {
-        console.error("Error adding robot:", error);
+        console.error("Error editing robot:", error);
         if (error && typeof error === "object" && "detail" in error) {
           const apiError = error as ApiError;
           const errorMessage =
@@ -72,27 +75,19 @@ export function RegisterRobotModal({
               : apiError.detail?.[0]?.msg || "Unknown error";
           setError(errorMessage);
         } else {
-          setError("Failed to create robot. Please try again.");
+          setError("Failed to edit robot. Please try again.");
         }
       } finally {
         setIsLoading(false);
       }
     }
-  }, [name, description, listingId, onAdd, resetModalData]);
+  }, [name, description, robot.id, onEdit, onClose]);
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(open) => {
-        if (!open) {
-          resetModalData();
-        }
-        onClose();
-      }}
-    >
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] bg-gray-1 text-gray-12 border border-gray-3 rounded-lg shadow-lg">
         <DialogHeader>
-          <DialogTitle>Register New Robot</DialogTitle>
+          <DialogTitle>Edit Robot</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
@@ -129,31 +124,17 @@ export function RegisterRobotModal({
               {description.length}/2048 characters
             </div>
           </div>
-          <div className="grid gap-2">
-            <Label
-              htmlFor="listingId"
-              className="text-sm font-medium text-gray-12"
-            >
-              Listing ID
-            </Label>
-            <Input
-              id="listingId"
-              value={listingId}
-              onChange={(e) => setListingId(e.target.value)}
-              className="bg-gray-2 border-gray-3 text-gray-12"
-            />
-          </div>
         </div>
         {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
         <div className="flex justify-end">
           <Button
-            onClick={handleAdd}
-            disabled={!name || !listingId || isLoading}
+            onClick={handleEdit}
+            disabled={!name || isLoading}
             variant="primary"
           >
-            <Plus className="mr-2 h-4 w-4" />
+            <Save className="mr-2 h-4 w-4" />
             <span className="mr-2">
-              {isLoading ? "Registering..." : "Register Robot"}
+              {isLoading ? "Saving..." : "Save Changes"}
             </span>
           </Button>
         </div>

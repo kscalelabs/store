@@ -1,10 +1,14 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/button";
 import { components } from "@/gen/api";
 import { formatDate } from "@/lib/utils/formatDate";
-import { Bot, ExternalLink } from "lucide-react";
+import { Bot, ExternalLink, Pencil, Trash2 } from "lucide-react";
 
+import { DeleteRobotModal } from "../modals/DeleteRobotModal";
+import { EditRobotModal } from "../modals/EditRobotModal";
 import { Tooltip } from "../ui/Tooltip";
 
 type RobotType = components["schemas"]["Robot"];
@@ -16,9 +20,25 @@ interface RobotCardProps {
     slug: string | null;
     id: string;
   };
+  onEditRobot: (
+    robotId: string,
+    robotData: {
+      name: string;
+      description: string | null;
+    },
+  ) => Promise<void>;
+  onDeleteRobot: (robotId: string) => Promise<void>;
 }
 
-export default function RobotCard({ robot, listingInfo }: RobotCardProps) {
+export default function RobotCard({
+  robot,
+  listingInfo,
+  onEditRobot,
+  onDeleteRobot,
+}: RobotCardProps) {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
   return (
     <Card className="p-6 bg-gray-2 border-gray-4">
       <div className="flex items-start justify-between">
@@ -30,6 +50,26 @@ export default function RobotCard({ robot, listingInfo }: RobotCardProps) {
             <h3 className="text-lg font-semibold text-gray-12">{robot.name}</h3>
             <p className="text-sm text-gray-11">ID: {robot.id}</p>
           </div>
+        </div>
+        <div className="flex gap-2">
+          <Tooltip content="Edit robot">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditModalOpen(true)}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          </Tooltip>
+          <Tooltip content="Delete robot">
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setIsDeleteModalOpen(true)}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </Tooltip>
         </div>
       </div>
 
@@ -68,6 +108,24 @@ export default function RobotCard({ robot, listingInfo }: RobotCardProps) {
           </div>
         </div>
       </div>
+
+      <EditRobotModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onEdit={onEditRobot}
+        robot={{
+          id: robot.id,
+          name: robot.name,
+          description: robot.description || "",
+        }}
+      />
+
+      <DeleteRobotModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onDelete={onDeleteRobot}
+        robot={robot}
+      />
     </Card>
   );
 }
