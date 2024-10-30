@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import OrderCard from "@/components/orders/OrderCard";
 import Spinner from "@/components/ui/Spinner";
+import { Button } from "@/components/ui/button";
 import type { paths } from "@/gen/api";
 import { useAuthentication } from "@/hooks/useAuth";
 
@@ -9,6 +11,7 @@ type OrderWithProduct =
   paths["/orders/get_user_orders_with_products"]["get"]["responses"][200]["content"]["application/json"][0];
 
 const OrdersPage: React.FC = () => {
+  const navigate = useNavigate();
   const { api, currentUser, isAuthenticated, isLoading } = useAuthentication();
   const [orders, setOrders] = useState<OrderWithProduct[] | null>(null);
   const [loadingOrders, setLoadingOrders] = useState(true);
@@ -67,8 +70,11 @@ const OrdersPage: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="flex justify-center items-center bg-gray-4 p-4 md:p-10 rounded-lg max-w-md mx-auto">
-          <p className="text-gray-12">No orders yet.</p>
+        <div className="flex flex-col gap-4 justify-center items-center bg-gray-4 p-10 rounded-lg max-w-3xl mx-auto">
+          <p className="text-gray-12 font-medium sm:text-lg">No orders yet.</p>
+          <Button onClick={() => navigate("/browse")} variant="primary">
+            Browse Robots
+          </Button>
         </div>
       )}
     </div>
