@@ -167,6 +167,18 @@ const ProductPage: React.FC<ProductPageProps> = ({
     null,
   );
 
+  const extractArtifactId = (imageUrl: string) => {
+    // Try matching the production URL pattern
+    const prodMatch = imageUrl.match(/\/artifacts\/media\/([^/]+)\/([^/]+)/);
+    if (prodMatch) return prodMatch[2];
+
+    // Try matching the local development URL pattern
+    const localMatch = imageUrl.match(/\/uploads\/([^/]+)/);
+    if (localMatch) return localMatch[1];
+
+    return null;
+  };
+
   const handleDeleteImage = async (imageUrl: string, index: number) => {
     if (!creatorInfo?.can_edit) {
       addErrorAlert("You don't have permission to delete this image");
@@ -176,12 +188,10 @@ const ProductPage: React.FC<ProductPageProps> = ({
     setDeletingImageIndex(index);
 
     try {
-      const artifactId = imageUrl.match(
-        /\/artifacts\/media\/([^/]+)\/([^/]+)/,
-      )?.[2];
+      const artifactId = extractArtifactId(imageUrl);
 
       if (!artifactId) {
-        addErrorAlert("Invalid image URL format");
+        addErrorAlert("Could not extract artifact ID from image URL");
         setDeletingImageIndex(null);
         return;
       }
@@ -383,12 +393,10 @@ const ProductPage: React.FC<ProductPageProps> = ({
     }
 
     try {
-      const artifactId = imageUrl.match(
-        /\/artifacts\/media\/([^/]+)\/([^/]+)/,
-      )?.[2];
+      const artifactId = extractArtifactId(imageUrl);
 
       if (!artifactId) {
-        addErrorAlert("Invalid image URL format");
+        addErrorAlert("Could not extract artifact ID from image URL");
         return;
       }
 
