@@ -307,6 +307,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/artifacts/list/{listing_id}/main_image": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Main Image */
+        put: operations["set_main_image_artifacts_list__listing_id__main_image_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/keys/new": {
         parameters: {
             query?: never;
@@ -1074,6 +1091,29 @@ export interface components {
             /** Api Key */
             api_key: string;
         };
+        /** Body_add_listing_listings_add_post */
+        Body_add_listing_listings_add_post: {
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Child Ids
+             * @default
+             */
+            child_ids: string;
+            /**
+             * Slug
+             * @default
+             */
+            slug: string;
+            /** Stripe Link */
+            stripe_link?: string | null;
+            /** Price */
+            price?: number | null;
+            /** Photos */
+            photos?: string[];
+        };
         /** Body_pull_onshape_document_onshape_pull__listing_id__get */
         Body_pull_onshape_document_onshape_pull__listing_id__get: {
             /** Suffix To Joint Effort */
@@ -1167,6 +1207,10 @@ export interface components {
             creator_id: string;
             /** Creator Name */
             creator_name: string | null;
+            /** Price */
+            price: number | null;
+            /** Stripe Link */
+            stripe_link: string | null;
         };
         /** GetTokenResponse */
         GetTokenResponse: {
@@ -1304,6 +1348,15 @@ export interface components {
              * @default 0
              */
             score: number;
+            /** Stripe Link */
+            stripe_link?: string | null;
+            /**
+             * Uploaded Files
+             * @default []
+             */
+            uploaded_files: Record<string, never>[];
+            /** Price */
+            price?: string | null;
         };
         /** ListingInfo */
         ListingInfo: {
@@ -1392,17 +1445,6 @@ export interface components {
             /** User Id */
             user_id: string;
             key: components["schemas"]["KeysResponseItem"];
-        };
-        /** NewListingRequest */
-        NewListingRequest: {
-            /** Name */
-            name: string;
-            /** Description */
-            description: string | null;
-            /** Child Ids */
-            child_ids: string[];
-            /** Slug */
-            slug: string;
         };
         /** NewListingResponse */
         NewListingResponse: {
@@ -1535,6 +1577,11 @@ export interface components {
             /** Timestamp */
             timestamp: number;
             urls: components["schemas"]["ArtifactUrls"];
+            /**
+             * Is Main
+             * @default false
+             */
+            is_main: boolean;
         };
         /**
          * SortOption
@@ -1558,6 +1605,10 @@ export interface components {
             description?: string | null;
             /** Tags */
             tags?: string[] | null;
+            /** Stripe Link */
+            stripe_link?: string | null;
+            /** Price */
+            price?: number | null;
         };
         /** UpdateOrderAddressRequest */
         UpdateOrderAddressRequest: {
@@ -2173,6 +2224,39 @@ export interface operations {
             };
         };
     };
+    set_main_image_artifacts_list__listing_id__main_image_put: {
+        parameters: {
+            query: {
+                artifact_id: string;
+            };
+            header?: never;
+            path: {
+                listing_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": boolean;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     new_key_keys_new_post: {
         parameters: {
             query?: never;
@@ -2420,7 +2504,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["NewListingRequest"];
+                "multipart/form-data": components["schemas"]["Body_add_listing_listings_add_post"];
             };
         };
         responses: {

@@ -15,6 +15,7 @@ import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { NewListingSchema, NewListingType } from "@/lib/types";
 import { slugify } from "@/lib/utils/formatString";
+import { convertToCents, convertToDecimal } from "@/lib/utils/priceFormat";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const Create = () => {
@@ -90,12 +91,6 @@ const Create = () => {
     setImages(imageList);
   };
 
-  const convertToDecimal = (value: string) => {
-    const numericValue = parseFloat(value);
-    if (isNaN(numericValue)) return "";
-    return (numericValue / 100).toFixed(2);
-  };
-
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value.replace(/[^0-9]/g, "");
 
@@ -124,8 +119,7 @@ const Create = () => {
     formData.append("description", description || "");
     formData.append("slug", slug || slugify(name));
     formData.append("stripe_link", stripe_link || "");
-    const priceInCents = Math.round((price || 0) * 100);
-    formData.append("price", priceInCents.toString());
+    formData.append("price", convertToCents(price).toString());
 
     // Append photos to formData
     images.forEach((image) => {

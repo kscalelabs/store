@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useDropzone } from "react-dropzone";
 import { FaCheck, FaEye, FaPen, FaStar, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -16,6 +17,7 @@ import { useAuthentication } from "@/hooks/useAuth";
 import { formatPrice } from "@/lib/utils/formatNumber";
 import { formatNumber } from "@/lib/utils/formatNumber";
 import { formatTimeSince } from "@/lib/utils/formatTimeSince";
+import { convertToDecimal } from "@/lib/utils/priceFormat";
 
 const FALLBACK_IMAGE =
   "https://flowbite.com/docs/images/examples/image-1@2x.jpg";
@@ -57,6 +59,7 @@ const ProductPage: React.FC<ProductPageProps> = ({
     can_edit: boolean;
     score: number;
     user_vote: number | null;
+    stripe_link: string | null;
   } | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -80,6 +83,7 @@ const ProductPage: React.FC<ProductPageProps> = ({
           can_edit: data.can_edit,
           score: data.score,
           user_vote: data.user_vote as number | null,
+          stripe_link: data.stripe_link,
         });
       }
       setIsLoading(false);
@@ -328,17 +332,12 @@ const ProductPage: React.FC<ProductPageProps> = ({
 
   const [currentPrice, setCurrentPrice] = useState(price);
 
-  const convertToDecimal = (value: string) => {
-    const numericValue = parseFloat(value);
-    if (isNaN(numericValue)) return "";
-    return (numericValue / 100).toFixed(2);
-  };
-
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value.replace(/[^0-9]/g, "");
     const decimalValue = convertToDecimal(inputValue);
     setDisplayPrice(decimalValue);
-    setNewPrice(parseFloat(inputValue));
+    const numericPrice = parseInt(inputValue, 10);
+    setNewPrice(numericPrice);
     setPriceHasChanged(true);
   };
 
@@ -350,26 +349,31 @@ const ProductPage: React.FC<ProductPageProps> = ({
 
     setSubmitting(true);
 
-    const { error } = await auth.client.PUT("/listings/edit/{id}", {
-      params: {
-        path: { id: productId },
-      },
-      body: {
-        price: newPrice,
-      },
-    });
+    try {
+      const { error } = await auth.client.PUT("/listings/edit/{id}", {
+        params: {
+          path: { id: productId },
+        },
+        body: {
+          price: Number(newPrice),
+        },
+      });
 
-    if (error) {
-      addErrorAlert(error);
-    } else {
-      setCurrentPrice(newPrice);
-      if (onPriceChange) {
-        onPriceChange(newPrice);
+      if (error) {
+        addErrorAlert(error);
+      } else {
+        setCurrentPrice(newPrice);
+        if (onPriceChange) {
+          onPriceChange(newPrice);
+        }
+        addAlert("Price updated successfully", "success");
+        setIsEditingPrice(false);
       }
-      addAlert("Price updated successfully", "success");
-      setIsEditingPrice(false);
+    } catch (err) {
+      addErrorAlert(humanReadableError(err));
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   const handleSetMainImage = async (imageUrl: string, index: number) => {
@@ -420,6 +424,12 @@ const ProductPage: React.FC<ProductPageProps> = ({
   const [newStripeLink, setNewStripeLink] = useState("");
   const [stripeLinkHasChanged, setStripeLinkHasChanged] = useState(false);
 
+  useEffect(() => {
+    if (creatorInfo?.stripe_link) {
+      setNewStripeLink(creatorInfo.stripe_link);
+    }
+  }, [creatorInfo]);
+
   const handleSaveStripeLink = async () => {
     if (!stripeLinkHasChanged) {
       setIsEditingStripeLink(false);
@@ -444,6 +454,56 @@ const ProductPage: React.FC<ProductPageProps> = ({
     }
     setSubmitting(false);
   };
+
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
+  const handleImageUpload = async (files: File[]) => {
+    if (!creatorInfo?.can_edit) {
+      addErrorAlert("You don't have permission to upload images");
+      return;
+    }
+
+    setIsUploadingImage(true);
+
+    try {
+      const { data, error } = await auth.api.upload(files, productId);
+
+      if (error) {
+        const errorMessage =
+          typeof error === "object" && error.detail
+            ? error.detail[0]?.msg || JSON.stringify(error)
+            : String(error);
+        addErrorAlert(errorMessage);
+      } else if (data?.artifacts?.[0]?.urls?.large) {
+        const newImage = data.artifacts[0].urls.large;
+        const newImages = [...currentImages, newImage];
+        setCurrentImages(newImages);
+        if (onImagesChange) {
+          onImagesChange(newImages);
+        }
+        addAlert("Image uploaded successfully", "success");
+      } else {
+        console.error("Unexpected response format:", data);
+        addErrorAlert("Failed to process server response");
+      }
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred while uploading the image";
+      addErrorAlert(errorMessage);
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: {
+      "image/*": [".jpeg", ".jpg", ".png", ".gif", ".webp"],
+    },
+    multiple: false,
+    onDrop: handleImageUpload,
+  });
 
   return (
     <Container>
@@ -652,7 +712,9 @@ const ProductPage: React.FC<ProductPageProps> = ({
                               <Button
                                 onClick={() => {
                                   setIsEditingPrice(true);
-                                  setDisplayPrice(price.toString());
+                                  setDisplayPrice(
+                                    convertToDecimal(price.toString()),
+                                  );
                                   setNewPrice(price);
                                 }}
                                 variant="ghost"
@@ -885,6 +947,28 @@ const ProductPage: React.FC<ProductPageProps> = ({
           {currentImages.length > 0 && (
             <div className="mb-8">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {creatorInfo?.can_edit && (
+                  <div
+                    {...getRootProps()}
+                    className={`aspect-square overflow-hidden rounded-lg shadow-md cursor-pointer relative group border-2 border-dashed ${
+                      isDragActive ? "border-primary" : "border-gray-300"
+                    } flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors`}
+                  >
+                    <input {...getInputProps()} />
+                    <div className="text-center p-4">
+                      {isUploadingImage ? (
+                        <Spinner className="h-8 w-8 mx-auto" />
+                      ) : (
+                        <>
+                          <div className="text-4xl mb-2">+</div>
+                          <p className="text-sm text-gray-600">
+                            {isDragActive ? "Drop image here" : "Upload Image"}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
                 {currentImages.map((image, index) => (
                   <div
                     key={index}
