@@ -143,16 +143,22 @@ export const RenderProfile = (props: RenderProfileProps) => {
     <div className="space-y-8 mb-12">
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader className="flex flex-col items-center space-y-4">
-          <h1 className="text-3xl font-bold text-primary-9">
-            {user.first_name || user.last_name
-              ? `${user.first_name || ""} ${user.last_name || ""}`
-              : "No name set"}
-          </h1>
-          <p className="text-sm text-gray-11">
-            Joined on{" "}
-            {user.created_at ? formatJoinDate(user.created_at) : "Unknown date"}
-          </p>
-          <p className="text-sm text-gray-11">Username: {user.username}</p>
+          <div className="flex flex-col items-center space-y-2 mb-4">
+            <h1 className="text-3xl font-bold text-primary-9">
+              {user.first_name || user.last_name
+                ? `${user.first_name || ""} ${user.last_name || ""}`
+                : "No name set"}
+            </h1>
+            <p className="text-sm text-gray-1 bg-gray-10 px-3 py-1 rounded-md">
+              @{user.username}
+            </p>
+            <p className="text-sm text-gray-11">
+              Joined on{" "}
+              {user.created_at
+                ? formatJoinDate(user.created_at)
+                : "Unknown date"}
+            </p>
+          </div>
           {!isEditing && canEdit && (
             <div className="flex space-x-2">
               <Button onClick={() => navigate("/keys")} variant="primary">
@@ -166,7 +172,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
               </Button>
             </div>
           )}
-          {isAdmin && (
+          {isAdmin && !canEdit && (
             <Button onClick={handleSetModerator} variant="outline">
               {user.permissions?.includes("is_mod")
                 ? "Remove Moderator"
@@ -188,6 +194,10 @@ export const RenderProfile = (props: RenderProfileProps) => {
                   >
                     Username
                   </label>
+                  <p className="text-xs text-gray-10 italic">
+                    Changing your username will change the URL for all your
+                    posted listings.
+                  </p>
                   <Input
                     id="username"
                     type="text"
@@ -216,36 +226,38 @@ export const RenderProfile = (props: RenderProfileProps) => {
                   )}
                 </div>
 
-                <div>
-                  <label
-                    htmlFor="first_name"
-                    className="block text-lg font-medium"
-                  >
-                    First Name
-                  </label>
-                  <Input
-                    id="first_name"
-                    type="text"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    className="mt-1 block w-full"
-                  />
-                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="first_name"
+                      className="block text-lg font-medium"
+                    >
+                      First Name
+                    </label>
+                    <Input
+                      id="first_name"
+                      type="text"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="mt-1 block w-full"
+                    />
+                  </div>
 
-                <div>
-                  <label
-                    htmlFor="last_name"
-                    className="block text-lg font-medium"
-                  >
-                    Last Name
-                  </label>
-                  <Input
-                    id="last_name"
-                    type="text"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    className="mt-1 block w-full"
-                  />
+                  <div>
+                    <label
+                      htmlFor="last_name"
+                      className="block text-lg font-medium"
+                    >
+                      Last Name
+                    </label>
+                    <Input
+                      id="last_name"
+                      type="text"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="mt-1 block w-full"
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -256,8 +268,8 @@ export const RenderProfile = (props: RenderProfileProps) => {
                     id="bio"
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-11 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-                    rows={4}
+                    className="mt-1 block w-full rounded-md border-gray-11 shadow-sm focus:border-primary-9 focus:ring focus:ring-primary-9 focus:ring-opacity-50"
+                    rows={3}
                   />
                 </div>
 
@@ -316,13 +328,13 @@ export const RenderProfile = (props: RenderProfileProps) => {
               <TabsList className="flex justify-center space-x-4 mb-4">
                 <TabsTrigger
                   value="own"
-                  className="px-4 py-2 rounded-lg transition-colors duration-300 hover:bg-gray-8 data-[state=active]:bg-primary-9 data-[state=active]:text-white"
+                  className="px-3 py-1.5 rounded-md transition-colors duration-300 hover:bg-gray-11 hover:text-gray-1 data-[state=active]:bg-primary-9 data-[state=active]:text-gray-1"
                 >
                   Overview
                 </TabsTrigger>
                 <TabsTrigger
                   value="upvoted"
-                  className="px-4 py-2 rounded-lg transition-colors duration-300 hover:bg-gray-8 data-[state=active]:bg-primary-9 data-[state=active]:text-white"
+                  className="px-3 py-1.5 rounded-md transition-colors duration-300 hover:bg-gray-11 hover:text-gray-1 data-[state=active]:bg-primary-9 data-[state=active]:text-gray-1"
                 >
                   Upvoted
                 </TabsTrigger>

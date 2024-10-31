@@ -14,7 +14,7 @@ import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 
 type Order =
-  paths["/orders/get_user_orders"]["get"]["responses"][200]["content"]["application/json"][0];
+  paths["/orders/user-orders"]["get"]["responses"][200]["content"]["application/json"][0];
 
 interface EditAddressModalProps {
   isOpen: boolean;
@@ -50,7 +50,7 @@ const EditAddressModal: React.FC<EditAddressModalProps> = ({
     e.preventDefault();
     try {
       const { data, error } = await client.PUT(
-        "/orders/update_order_address/{order_id}",
+        "/orders/update-order-address/{order_id}",
         {
           params: { path: { order_id: order.id } },
           body: address,

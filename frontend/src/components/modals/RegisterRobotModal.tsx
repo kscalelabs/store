@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ApiError } from "@/lib/types/api";
-import { Plus } from "lucide-react";
+import { ExternalLink, Plus } from "lucide-react";
 
 interface RegisterRobotModalProps {
   isOpen: boolean;
@@ -145,7 +145,14 @@ export function RegisterRobotModal({
           </div>
         </div>
         {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
-        <div className="flex justify-end">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Button
+            onClick={() => window.open("/browse", "_blank")}
+            variant="default"
+          >
+            <span className="mr-2">Browse Listings</span>
+            <ExternalLink className="h-3 w-3" />
+          </Button>
           <Button
             onClick={handleAdd}
             disabled={!name || !listingId || isLoading}

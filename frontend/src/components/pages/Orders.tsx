@@ -8,7 +8,7 @@ import type { paths } from "@/gen/api";
 import { useAuthentication } from "@/hooks/useAuth";
 
 type OrderWithProduct =
-  paths["/orders/get_user_orders_with_products"]["get"]["responses"][200]["content"]["application/json"][0];
+  paths["/orders/user-orders-with-products"]["get"]["responses"][200]["content"]["application/json"][0];
 
 const OrdersPage: React.FC = () => {
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ const OrdersPage: React.FC = () => {
         setLoadingOrders(true);
         try {
           const { data, error } = await api.client.GET(
-            "/orders/get_user_orders_with_products",
+            "/orders/user-orders-with-products",
           );
           if (error) {
             console.error("Failed to fetch orders", error);

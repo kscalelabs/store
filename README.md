@@ -21,6 +21,11 @@
 
 # K-Scale Store
 
-This is the code for our online store. This is a simple store for buying and selling robots and robot parts.
+This is the codebase for our online store.
+
+This site contains:
+
+- a marketplace for buying and selling robots and robot parts
+- a developer terminal for managing and interacting with your robots
 
 If you would like to contribute, see the [CONTRIBUTING.md](CONTRIBUTING.md) file and check out the [project tracker](https://github.com/orgs/kscalelabs/projects/8/views/1).
