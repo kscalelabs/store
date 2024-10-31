@@ -7,6 +7,8 @@ import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 
+import ListingGridSkeleton from "./ListingGridSkeleton";
+
 type ListingInfo = {
   id: string;
   username: string;
@@ -64,13 +66,17 @@ const ListingGrid = (props: ListingGridProps) => {
       {listingInfos.map((info) => (
         <Link
           to={`/item/${info.username}/${info.slug || info.id}`}
-          key={info.id}
+          key={`${info.username}-${info.id}`}
         >
-          <ListingGridCard
-            listingId={info.id}
-            listing={listingDetails?.[info.id]}
-            showDescription={true}
-          />
+          {listingDetails === null ? (
+            <ListingGridSkeleton />
+          ) : (
+            <ListingGridCard
+              listingId={info.id}
+              listing={listingDetails[info.id]}
+              showDescription={true}
+            />
+          )}
         </Link>
       ))}
     </div>

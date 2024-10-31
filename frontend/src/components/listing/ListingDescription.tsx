@@ -14,6 +14,13 @@ interface RenderDescriptionProps {
   onImageClick?: (src: string, alt: string) => void;
 }
 
+const transformUrl = (url: string) => {
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  return `https://${url}`;
+};
+
 export const RenderDescription = ({
   description,
   onImageClick,
@@ -50,7 +57,7 @@ export const RenderDescription = ({
           ),
           a: ({ children, href }) => (
             <a
-              href={href}
+              href={transformUrl(href || "")}
               target="_blank"
               rel="noreferrer"
               className="text-blue-500"
