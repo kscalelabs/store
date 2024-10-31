@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
@@ -23,7 +22,6 @@ type ListingInfo = {
 };
 
 const TerminalPage: React.FC = () => {
-  const navigate = useNavigate();
   const { api, currentUser, isAuthenticated, isLoading } = useAuthentication();
   const [robots, setRobots] = useState<Robot[] | null>(null);
   const [loadingRobots, setLoadingRobots] = useState(true);
@@ -108,6 +106,26 @@ const TerminalPage: React.FC = () => {
 
         addErrorAlert(`Failed to create robot: ${errorMessage}`);
         throw error;
+      }
+
+      // Fetch the listing info for the newly created robot
+      const { data: listingData, error: listingError } = await api.client.GET(
+        "/listings/batch",
+        {
+          params: { query: { ids: [robotData.listing_id] } },
+        },
+      );
+
+      if (!listingError && listingData.listings.length > 0) {
+        const listing = listingData.listings[0];
+        setListingInfos((prev) => ({
+          ...prev,
+          [listing.id]: {
+            id: listing.id,
+            username: listing.username || "",
+            slug: listing.slug,
+          },
+        }));
       }
 
       setRobots((prev) => (prev ? [...prev, data] : [data]));
@@ -259,8 +277,13 @@ const TerminalPage: React.FC = () => {
           <p className="text-gray-12 font-medium sm:text-lg">
             No robots yet. Link your robot to a listing to get started.
           </p>
-          <Button onClick={() => navigate("/browse")} variant="default">
-            Browse Listings
+          <Button
+            variant="primary"
+            onClick={() => setIsRegisterModalOpen(true)}
+            className="flex items-center"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            <span className="mr-2">Register Robot</span>
           </Button>
         </div>
       )}

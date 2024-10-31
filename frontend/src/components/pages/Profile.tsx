@@ -328,13 +328,13 @@ export const RenderProfile = (props: RenderProfileProps) => {
               <TabsList className="flex justify-center space-x-4 mb-4">
                 <TabsTrigger
                   value="own"
-                  className="px-4 py-2 rounded-lg transition-colors duration-300 hover:bg-gray-8 data-[state=active]:bg-primary-9 data-[state=active]:text-white"
+                  className="px-3 py-1.5 rounded-md transition-colors duration-300 hover:bg-gray-11 hover:text-gray-1 data-[state=active]:bg-primary-9 data-[state=active]:text-gray-1"
                 >
                   Overview
                 </TabsTrigger>
                 <TabsTrigger
                   value="upvoted"
-                  className="px-4 py-2 rounded-lg transition-colors duration-300 hover:bg-gray-8 data-[state=active]:bg-primary-9 data-[state=active]:text-white"
+                  className="px-3 py-1.5 rounded-md transition-colors duration-300 hover:bg-gray-11 hover:text-gray-1 data-[state=active]:bg-primary-9 data-[state=active]:text-gray-1"
                 >
                   Upvoted
                 </TabsTrigger>
