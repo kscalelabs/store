@@ -22,6 +22,23 @@ import { convertToDecimal } from "@/lib/utils/priceFormat";
 const FALLBACK_IMAGE =
   "https://flowbite.com/docs/images/examples/image-1@2x.jpg";
 
+const MARKDOWN_PLACEHOLDER = [
+  "# Heading 1",
+  "## Heading 2",
+  "**Bold text**",
+  "*Italic text*",
+  "",
+  "- Bullet point",
+  "- Another point",
+  "",
+  "1. Numbered list",
+  "2. Second item",
+  "",
+  "[Link text](https://example.com)",
+  "",
+  "![Image alt text](image-url.jpg)",
+].join("\n");
+
 interface ProductPageProps {
   productId: string;
   checkoutLabel: string;
@@ -174,10 +191,8 @@ const ProductPage: React.FC<ProductPageProps> = ({
     }
 
     setDeletingImageIndex(index);
-    console.log("Attempting to delete image:", imageUrl); // Debug log
 
     try {
-      // Get the artifacts data to find the correct artifact_id
       const { data, error: fetchError } = await auth.client.GET(
         "/artifacts/list/{listing_id}",
         {
@@ -194,7 +209,6 @@ const ProductPage: React.FC<ProductPageProps> = ({
         return;
       }
 
-      // Find the artifact that matches our image URL
       const artifact = data.artifacts.find(
         (a: { urls: { large: string } }) => a.urls.large === imageUrl,
       );
@@ -206,8 +220,6 @@ const ProductPage: React.FC<ProductPageProps> = ({
         return;
       }
 
-      console.log("Found artifact ID:", artifact.artifact_id); // Debug log
-
       const { error } = await auth.client.DELETE(
         "/artifacts/delete/{artifact_id}",
         {
@@ -218,7 +230,6 @@ const ProductPage: React.FC<ProductPageProps> = ({
       );
 
       if (error) {
-        console.error("Delete request failed:", error); // Debug log
         addErrorAlert(error);
         setDeletingImageIndex(null);
       } else {
@@ -234,7 +245,6 @@ const ProductPage: React.FC<ProductPageProps> = ({
         }
       }
     } catch (err) {
-      console.error("Error in handleDeleteImage:", err); // Debug log
       addErrorAlert(humanReadableError(err));
       setDeletingImageIndex(null);
     }
@@ -406,8 +416,6 @@ const ProductPage: React.FC<ProductPageProps> = ({
       return;
     }
 
-    console.log("Attempting to set main image:", imageUrl); // Debug log
-
     try {
       const { data, error: fetchError } = await auth.client.GET(
         "/artifacts/list/{listing_id}",
@@ -435,9 +443,6 @@ const ProductPage: React.FC<ProductPageProps> = ({
         return;
       }
 
-      console.log("Found artifact ID:", artifact.artifact_id); // Debug log
-      console.log("Listing ID:", productId); // Additional debug log
-
       const { error } = await auth.client.PUT(
         "/artifacts/list/{listing_id}/main_image",
         {
@@ -449,10 +454,8 @@ const ProductPage: React.FC<ProductPageProps> = ({
       );
 
       if (error) {
-        console.error("Main image update request failed:", error); // Debug log
         addErrorAlert(error);
       } else {
-        console.log("Main image update successful, updating UI state"); // Debug log
         const newImages = [...currentImages];
         newImages.splice(index, 1);
         newImages.unshift(imageUrl);
@@ -464,7 +467,6 @@ const ProductPage: React.FC<ProductPageProps> = ({
         addAlert("Main image updated successfully", "success");
       }
     } catch (err) {
-      console.error("Error in handleSetMainImage:", err); // Debug log
       addErrorAlert(humanReadableError(err));
     }
   };
@@ -916,20 +918,7 @@ const ProductPage: React.FC<ProductPageProps> = ({
                                     setDescriptionHasChanged(true);
                                   }}
                                   className="min-h-[300px] font-mono text-sm p-4"
-                                  placeholder="# Heading 1
-                                    ## Heading 2
-                                    **Bold text**
-                                    *Italic text*
-
-                                    - Bullet point
-                                    - Another point
-
-                                    1. Numbered list
-                                    2. Second item
-
-                                    [Link text](https://example.com)
-
-                                    ![Image alt text](image-url.jpg)"
+                                  placeholder={MARKDOWN_PLACEHOLDER}
                                   autoFocus
                                 />
                               </div>
@@ -995,86 +984,85 @@ const ProductPage: React.FC<ProductPageProps> = ({
             </div>
           </div>
 
-          {currentImages.length > 0 && (
-            <div className="mb-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {creatorInfo?.can_edit && (
-                  <div
-                    {...getRootProps()}
-                    className={`aspect-square overflow-hidden rounded-lg shadow-md cursor-pointer relative group border-2 border-dashed ${
-                      isDragActive ? "border-primary" : "border-gray-300"
-                    } flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors`}
-                  >
-                    <input {...getInputProps()} />
-                    <div className="text-center p-4">
-                      {isUploadingImage ? (
-                        <Spinner className="h-8 w-8 mx-auto" />
-                      ) : (
-                        <>
-                          <div className="text-4xl mb-2">+</div>
-                          <p className="text-sm text-gray-600">
-                            {isDragActive ? "Drop image here" : "Upload Image"}
-                          </p>
-                        </>
-                      )}
-                    </div>
+          {/* Replace the current images section with this updated version */}
+          <div className="mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {creatorInfo?.can_edit && (
+                <div
+                  {...getRootProps()}
+                  className={`aspect-square overflow-hidden rounded-lg shadow-md cursor-pointer relative group border-2 border-dashed ${
+                    isDragActive ? "border-primary" : "border-gray-300"
+                  } flex items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors`}
+                >
+                  <input {...getInputProps()} />
+                  <div className="text-center p-4">
+                    {isUploadingImage ? (
+                      <Spinner className="h-8 w-8 mx-auto" />
+                    ) : (
+                      <>
+                        <div className="text-4xl mb-2">+</div>
+                        <p className="text-sm text-gray-600">
+                          {isDragActive ? "Drop image here" : "Upload Image"}
+                        </p>
+                      </>
+                    )}
                   </div>
-                )}
-                {currentImages.map((image, index) => (
-                  <div
-                    key={index}
-                    className="aspect-square overflow-hidden rounded-lg shadow-md cursor-pointer relative group"
-                    onClick={() => openModal(image)}
-                  >
-                    <img
-                      src={image}
-                      alt={`Product image ${index + 1}`}
-                      className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                    />
-                    {creatorInfo?.can_edit && (
-                      <div className="absolute top-2 right-2 flex gap-2">
-                        {index !== 0 && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSetMainImage(image, index);
-                            }}
-                            className="text-gray-500 hover:text-yellow-500 bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                            aria-label="Set as main image"
-                            title="Set as main image"
-                          >
-                            <FaStar className="h-4 w-4" />
-                          </button>
-                        )}
+                </div>
+              )}
+              {currentImages.map((image, index) => (
+                <div
+                  key={index}
+                  className="aspect-square overflow-hidden rounded-lg shadow-md cursor-pointer relative group"
+                  onClick={() => openModal(image)}
+                >
+                  <img
+                    src={image}
+                    alt={`Product image ${index + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                  {creatorInfo?.can_edit && (
+                    <div className="absolute top-2 right-2 flex gap-2">
+                      {index !== 0 && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDeleteImage(image, index);
+                            handleSetMainImage(image, index);
                           }}
-                          disabled={deletingImageIndex === index}
-                          className="text-gray-500 hover:text-red-500 bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                          aria-label="Delete image"
+                          className="text-gray-500 hover:text-yellow-500 bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                          aria-label="Set as main image"
+                          title="Set as main image"
                         >
-                          {deletingImageIndex === index ? (
-                            <Spinner className="h-4 w-4" />
-                          ) : (
-                            <FaTrash className="h-4 w-4" />
-                          )}
+                          <FaStar className="h-4 w-4" />
                         </button>
-                      </div>
-                    )}
-                    {index === 0 && (
-                      <div className="absolute top-2 left-2">
-                        <span className="bg-white/75 text-xs font-medium px-2 py-1 rounded-full">
-                          Main Image
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+                      )}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteImage(image, index);
+                        }}
+                        disabled={deletingImageIndex === index}
+                        className="text-gray-500 hover:text-red-500 bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                        aria-label="Delete image"
+                      >
+                        {deletingImageIndex === index ? (
+                          <Spinner className="h-4 w-4" />
+                        ) : (
+                          <FaTrash className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  )}
+                  {index === 0 && (
+                    <div className="absolute top-2 left-2">
+                      <span className="bg-white/75 text-xs font-medium px-2 py-1 rounded-full">
+                        Main Image
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-          )}
+          </div>
 
           {shouldShowCheckout && isFixed && (
             <div className="fixed bottom-0 left-0 right-0 bg-white shadow-md p-4 transition-all duration-300 ease-in-out z-10">
