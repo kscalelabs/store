@@ -344,6 +344,15 @@ async def set_moderator(
     admin_user: Annotated[User, Depends(get_session_user_with_admin_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UserPublic:
+    # Get the target user first to check their permissions
+    target_user = await crud.get_user(request.user_id, throw_if_missing=True)
+
+    # Prevent modifying admin users' moderator status
+    if target_user.permissions and "admin" in target_user.permissions:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Cannot modify moderator status of admin users"
+        )
+
     updated_user = await crud.set_moderator(request.user_id, request.is_mod)
     return UserPublic(**updated_user.model_dump())
 

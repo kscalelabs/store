@@ -13,10 +13,10 @@ import { formatPrice } from "@/lib/utils/formatNumber";
 import { normalizeStatus } from "@/lib/utils/formatString";
 
 type OrderWithProduct =
-  paths["/orders/get_user_orders_with_products"]["get"]["responses"][200]["content"]["application/json"][0];
+  paths["/orders/user-orders-with-products"]["get"]["responses"][200]["content"]["application/json"][0];
 
 type Order =
-  paths["/orders/get_user_orders"]["get"]["responses"][200]["content"]["application/json"][0];
+  paths["/orders/user-orders"]["get"]["responses"][200]["content"]["application/json"][0];
 
 const orderStatuses = [
   "processing",
@@ -77,9 +77,9 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
   };
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-4 md:p-6 mb-4 w-full">
+    <div className="bg-white shadow-md rounded-lg p-4 md:p-6 w-full">
       <h2 className="text-gray-12 font-bold text-2xl mb-1">{product.name}</h2>
-      <p className="text-gray-11 mb-2 text-lg sm:text-xl">
+      <p className="text-gray-11 mb-2 sm:text-lg">
         Status:{" "}
         <span className={`font-semibold ${getTextColor(order.status)}`}>
           {normalizeStatus(order.status)}
@@ -110,9 +110,11 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <p>Quantity: {order.quantity}x</p>
+        <p className="text-gray-12">Quantity: {order.quantity}</p>
         <p>
-          <span className="font-medium">{formatPrice(order.amount)}</span>{" "}
+          <span className="text-gray-12 font-medium">
+            {formatPrice(order.amount)}
+          </span>{" "}
           <span className="font-light">
             = {formatPrice(unitPrice)} x {order.quantity}
           </span>

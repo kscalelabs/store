@@ -286,7 +286,7 @@ async def create_checkout_session(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@stripe_router.get("/get_product/{product_id}")
+@stripe_router.get("/get-product/{product_id}")
 async def get_product(product_id: str) -> Dict[str, Any]:
     try:
         product = stripe.Product.retrieve(product_id)

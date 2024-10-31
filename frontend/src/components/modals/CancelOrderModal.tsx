@@ -13,7 +13,7 @@ import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 
 type Order =
-  paths["/orders/get_user_orders"]["get"]["responses"][200]["content"]["application/json"][0];
+  paths["/orders/user-orders"]["get"]["responses"][200]["content"]["application/json"][0];
 
 interface CancelOrderModalProps {
   isOpen: boolean;

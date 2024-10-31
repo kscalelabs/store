@@ -733,7 +733,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/orders/get_user_orders": {
+    "/orders/user-orders": {
         parameters: {
             query?: never;
             header?: never;
@@ -741,7 +741,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get User Orders */
-        get: operations["get_user_orders_orders_get_user_orders_get"];
+        get: operations["get_user_orders_orders_user_orders_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -750,7 +750,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/orders/get_order/{order_id}": {
+    "/orders/order/{order_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -758,7 +758,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Order */
-        get: operations["get_order_orders_get_order__order_id__get"];
+        get: operations["get_order_orders_order__order_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -767,7 +767,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/orders/get_order_with_product/{order_id}": {
+    "/orders/order-with-product/{order_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -775,7 +775,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Order With Product */
-        get: operations["get_order_with_product_orders_get_order_with_product__order_id__get"];
+        get: operations["get_order_with_product_orders_order_with_product__order_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -784,7 +784,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/orders/get_user_orders_with_products": {
+    "/orders/user-orders-with-products": {
         parameters: {
             query?: never;
             header?: never;
@@ -792,7 +792,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get User Orders With Products */
-        get: operations["get_user_orders_with_products_orders_get_user_orders_with_products_get"];
+        get: operations["get_user_orders_with_products_orders_user_orders_with_products_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -801,7 +801,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/orders/update_order_address/{order_id}": {
+    "/orders/update-order-address/{order_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -986,7 +986,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/stripe/get_product/{product_id}": {
+    "/stripe/get-product/{product_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -3193,7 +3193,7 @@ export interface operations {
             };
         };
     };
-    get_user_orders_orders_get_user_orders_get: {
+    get_user_orders_orders_user_orders_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -3213,7 +3213,7 @@ export interface operations {
             };
         };
     };
-    get_order_orders_get_order__order_id__get: {
+    get_order_orders_order__order_id__get: {
         parameters: {
             query?: never;
             header?: never;
@@ -3244,7 +3244,7 @@ export interface operations {
             };
         };
     };
-    get_order_with_product_orders_get_order_with_product__order_id__get: {
+    get_order_with_product_orders_order_with_product__order_id__get: {
         parameters: {
             query?: never;
             header?: never;
@@ -3275,7 +3275,7 @@ export interface operations {
             };
         };
     };
-    get_user_orders_with_products_orders_get_user_orders_with_products_get: {
+    get_user_orders_with_products_orders_user_orders_with_products_get: {
         parameters: {
             query?: never;
             header?: never;
