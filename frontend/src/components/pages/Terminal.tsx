@@ -261,7 +261,7 @@ const TerminalPage: React.FC = () => {
           <Spinner className="p-1" />
         </div>
       ) : robots && robots.length > 0 ? (
-        <div className="grid gap-2 md:gap-6 md:grid-cols-1 lg:grid-cols-2">
+        <div className="grid gap-2 md:gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {robots.map((robot) => (
             <RobotCard
               key={robot.id}
