@@ -238,7 +238,7 @@ const TerminalPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 min-h-screen rounded-xl bg-gray-3">
+    <div className="p-6 min-h-screen rounded-xl bg-gray-3 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-6">
         <div>
           <h1 className="text-3xl font-bold">Your Robots</h1>
@@ -261,7 +261,7 @@ const TerminalPage: React.FC = () => {
           <Spinner className="p-1" />
         </div>
       ) : robots && robots.length > 0 ? (
-        <div className="grid gap-2 md:gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+        <div className="grid gap-2 md:gap-6 md:grid-cols-1 lg:grid-cols-2">
           {robots.map((robot) => (
             <RobotCard
               key={robot.id}
