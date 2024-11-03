@@ -123,7 +123,7 @@ export const AlertQueue = (props: AlertQueueProps) => {
     <>
       {children}
       {/* Render the alerts coming up from the bottom-left corner. */}
-      <div className="fixed bottom-0 left-0 p-4 space-y-4">
+      <div className="fixed bottom-0 left-0 p-4 space-y-4 z-[9999]">
         {Array.from(alerts).map(([alertId, [alert, kind]]) => {
           return (
             <Toast
