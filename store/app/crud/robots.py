@@ -3,7 +3,7 @@
 import time
 
 from store.app.crud.base import BaseCrud, ItemNotFoundError
-from store.app.model import Listing, Robot
+from store.app.model import Listing, Order, Robot
 
 
 class RobotsCrud(BaseCrud):
@@ -16,11 +16,20 @@ class RobotsCrud(BaseCrud):
         if not listing:
             raise ItemNotFoundError(f"Listing with ID {robot_data['listing_id']} not found")
 
+        # Verify order exists if order_id is provided
+        if order_id := robot_data.get("order_id"):
+            order = await self._get_item(order_id, Order)
+            if not order:
+                raise ItemNotFoundError(f"Order with ID {order_id} not found")
+            if order.user_id != robot_data["user_id"]:
+                raise ItemNotFoundError(f"Order with ID {order_id} does not belong to this user")
+
         robot = Robot.create(
             user_id=robot_data["user_id"],
             listing_id=robot_data["listing_id"],
             name=robot_data["name"],
             description=robot_data.get("description"),
+            order_id=robot_data.get("order_id"),
         )
         await self._add_item(robot)
         return robot
@@ -47,6 +56,14 @@ class RobotsCrud(BaseCrud):
         robot = await self.get_robot(robot_id)
         if not robot:
             raise ItemNotFoundError("Robot not found")
+
+        # Verify order exists if order_id is being updated
+        if order_id := update_data.get("order_id"):
+            order = await self._get_item(order_id, Order)
+            if not order:
+                raise ItemNotFoundError(f"Order with ID {order_id} not found")
+            if order.user_id != robot.user_id:
+                raise ItemNotFoundError(f"Order with ID {order_id} does not belong to this user")
 
         update_data["updated_at"] = int(time.time())
         await self._update_item(robot_id, Robot, update_data)

@@ -21,12 +21,14 @@ interface EditRobotModalProps {
     robotData: {
       name: string;
       description: string | null;
+      order_id?: string | null;
     },
   ) => Promise<void>;
   robot: {
     id: string;
     name: string;
     description: string | null | undefined;
+    order_id?: string | null;
   };
 }
 
@@ -38,12 +40,14 @@ export function EditRobotModal({
 }: EditRobotModalProps) {
   const [name, setName] = useState(robot.name);
   const [description, setDescription] = useState(robot.description || "");
+  const [orderId, setOrderId] = useState(robot.order_id || "");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setName(robot.name);
     setDescription(robot.description || "");
+    setOrderId(robot.order_id || "");
   }, [robot]);
 
   const handleEdit = useCallback(async () => {
@@ -63,6 +67,7 @@ export function EditRobotModal({
         await onEdit(robot.id, {
           name,
           description: description || null,
+          order_id: orderId || null,
         });
         onClose();
       } catch (error) {
@@ -81,7 +86,7 @@ export function EditRobotModal({
         setIsLoading(false);
       }
     }
-  }, [name, description, robot.id, onEdit, onClose]);
+  }, [name, description, orderId, robot.id, onEdit, onClose]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -123,6 +128,20 @@ export function EditRobotModal({
             <div className="text-xs text-gray-11 text-right">
               {description.length}/2048 characters
             </div>
+          </div>
+          <div className="grid gap-2">
+            <Label
+              htmlFor="orderId"
+              className="text-sm font-medium text-gray-12"
+            >
+              Order ID (Optional)
+            </Label>
+            <Input
+              id="orderId"
+              value={orderId}
+              onChange={(e) => setOrderId(e.target.value)}
+              className="bg-gray-2 border-gray-3 text-gray-12"
+            />
           </div>
         </div>
         {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
