@@ -16,6 +16,7 @@ const ListingRenderer = ({
   creator_id: creatorId,
   creator_name: creatorName,
   creator_username: creatorUsername,
+  slug,
   views,
   created_at: createdAt,
   artifacts: initialArtifacts,
@@ -55,6 +56,7 @@ const ListingRenderer = ({
           {/* Metadata */}
           <ListingMetadata
             listingId={listingId}
+            listingSlug={slug}
             creatorId={creatorId}
             creatorName={creatorName}
             creatorUsername={creatorUsername}

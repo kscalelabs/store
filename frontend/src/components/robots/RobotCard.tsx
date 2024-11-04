@@ -5,10 +5,9 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/button";
 import { components } from "@/gen/api";
 import { formatDate } from "@/lib/utils/formatDate";
-import { Bot, ExternalLink, Pencil, Trash2 } from "lucide-react";
+import { Bot, ExternalLink, Trash2 } from "lucide-react";
 
 import { DeleteRobotModal } from "../modals/DeleteRobotModal";
-import { EditRobotModal } from "../modals/EditRobotModal";
 import { Tooltip } from "../ui/ToolTip";
 
 type RobotType = components["schemas"]["Robot"];
@@ -20,23 +19,14 @@ interface RobotCardProps {
     slug: string | null;
     id: string;
   };
-  onEditRobot: (
-    robotId: string,
-    robotData: {
-      name: string;
-      description: string | null;
-    },
-  ) => Promise<void>;
   onDeleteRobot: (robotId: string) => Promise<void>;
 }
 
 export default function RobotCard({
   robot,
   listingInfo,
-  onEditRobot,
   onDeleteRobot,
 }: RobotCardProps) {
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   return (
@@ -52,15 +42,6 @@ export default function RobotCard({
           </div>
         </div>
         <div className="flex gap-2">
-          <Tooltip content="Edit robot">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditModalOpen(true)}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-          </Tooltip>
           <Tooltip content="Delete robot">
             <Button
               variant="destructive"
@@ -80,18 +61,18 @@ export default function RobotCard({
       <div className="mt-4 pt-4 border-t border-gray-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
           <div>
-            <p className="text-gray-11">Listing ID</p>
+            <p className="text-gray-11">Listing</p>
             {listingInfo ? (
               <Tooltip
                 content="View listing associated with robot"
                 position="bottom"
               >
                 <Link
-                  to={`/item/${listingInfo.username}/${listingInfo.slug || listingInfo.id}`}
+                  to={`/item/${listingInfo.username}/${listingInfo.slug}`}
                   className="text-gray-12 underline hover:text-primary-9 flex items-center gap-1 group"
                 >
                   <span className="group-hover:underline">
-                    {robot.listing_id}
+                    {listingInfo.username}/{listingInfo.slug}
                   </span>
                   <ExternalLink className="h-3 w-3" />
                 </Link>
@@ -129,17 +110,6 @@ export default function RobotCard({
           </div>
         </div>
       </div>
-
-      <EditRobotModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        onEdit={onEditRobot}
-        robot={{
-          id: robot.id,
-          name: robot.name,
-          description: robot.description || "",
-        }}
-      />
 
       <DeleteRobotModal
         isOpen={isDeleteModalOpen}

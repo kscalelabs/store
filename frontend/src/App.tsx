@@ -84,6 +84,7 @@ const App = () => {
                       <Route path="/orders" element={<OrdersPage />} />
 
                       <Route path="/terminal" element={<TerminalPage />} />
+                      <Route path="/terminal/:id" element={<TerminalPage />} />
 
                       <Route path="/404" element={<NotFound />} />
                       <Route path="*" element={<NotFoundRedirect />} />

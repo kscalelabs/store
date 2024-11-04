@@ -4,11 +4,14 @@ import { FaArrowDown, FaArrowUp, FaEye } from "react-icons/fa";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 
+import ListingRegisterRobot from "./ListingRegisterRobot";
+
 interface Props {
   listingId: string;
   creatorId: string;
   creatorName: string | null;
   creatorUsername: string | null;
+  listingSlug: string | null;
   views: number;
   createdAt: number;
   userVote: boolean | null;
@@ -19,6 +22,7 @@ const ListingMetadata = ({
   creatorId,
   creatorName,
   creatorUsername,
+  listingSlug,
   views,
   createdAt,
   userVote: initialUserVote,
@@ -56,8 +60,9 @@ const ListingMetadata = ({
 
   return (
     <>
+      {/* Listed by */}
       <div className="flex items-center gap-2 text-sm mb-2">
-        <span>Listed by</span>
+        <span>Created by</span>
         <a
           href={`/profile/${creatorId}`}
           className="text-blue-500 hover:underline"
@@ -65,6 +70,16 @@ const ListingMetadata = ({
           {creatorName ?? creatorUsername ?? "Creator"}
         </a>
       </div>
+
+      {/* Listing slug */}
+      <div className="flex items-center gap-2 text-sm mb-2">
+        <span>Listing</span>
+        <span className="text-gray-12">
+          {creatorUsername}/{listingSlug}
+        </span>
+      </div>
+
+      {/* Voting and other metadata */}
       <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
         <div className="flex items-center gap-2">
           <button
@@ -89,6 +104,9 @@ const ListingMetadata = ({
         </span>
         <span>Posted {new Date(createdAt * 1000).toLocaleDateString()}</span>
       </div>
+
+      {/* Build this robot */}
+      <ListingRegisterRobot listingId={listingId} />
     </>
   );
 };

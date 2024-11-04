@@ -1,8 +1,8 @@
 import { useState } from "react";
+import { IconType } from "react-icons";
 import {
   FaCheck,
   FaCopy,
-  FaExternalLinkAlt,
   FaInfoCircle,
   FaPen,
   FaSync,
@@ -14,6 +14,7 @@ import { Artifact } from "@/components/listing/types";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
+import { Tooltip } from "@/components/ui/ToolTip";
 import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
@@ -42,119 +43,123 @@ const UrlInput = (props: UrlInputProps) => {
   );
 };
 
-interface UpdateButtonProps {
-  isEditing: boolean;
-  setIsEditing: (isEditing: boolean) => void;
-  handleSave: () => Promise<void>;
-  handleRemove?: () => Promise<void>;
-  handleReload?: () => Promise<void>;
-  toggleInstructions: () => void;
-  showInstructions: boolean;
+interface UrlDisplayProps {
   url: string | null;
-  disabled?: boolean;
+  onCopy: () => void;
+  disabled: boolean;
+  isEditable?: boolean;
 }
 
-const UpdateButtons = (props: UpdateButtonProps) => {
-  const {
-    isEditing,
-    setIsEditing,
-    handleSave,
-    handleRemove,
-    handleReload,
-    toggleInstructions,
-    showInstructions,
-    url,
-    disabled,
-  } = props;
+const UrlDisplay = ({
+  url,
+  onCopy,
+  disabled = false,
+  isEditable = true,
+}: UrlDisplayProps) => (
+  <div className="flex flex-col sm:flex-row gap-2 w-full">
+    <a
+      href={url || ""}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-800 rounded-md hover:underline truncate"
+    >
+      Linked Onshape Document
+    </a>
+    <Button
+      onClick={onCopy}
+      variant="secondary"
+      disabled={disabled}
+      className="flex items-center justify-center"
+    >
+      <Tooltip content="Copy URL">
+        <FaCopy />
+      </Tooltip>
+    </Button>
+  </div>
+);
 
-  const { addErrorAlert } = useAlertQueue();
+const IconButton = ({
+  icon: Icon,
+  label,
+  onClick,
+  variant = "secondary",
+  disabled = false,
+}: {
+  icon: IconType;
+  label: string;
+  onClick: () => void;
+  variant?: "primary" | "secondary" | "destructive";
+  disabled?: boolean;
+}) => (
+  <Button onClick={onClick} variant={variant} disabled={disabled}>
+    <Icon />
+    <span className="ml-2">{label}</span>
+  </Button>
+);
 
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(url || "");
-    } catch (error) {
-      addErrorAlert(error);
-    }
-  };
+const HelpButton = ({
+  showInstructions,
+  onToggle,
+}: {
+  showInstructions: boolean;
+  onToggle: () => void;
+}) => (
+  <Button onClick={onToggle} variant="secondary">
+    <FaInfoCircle />
+    <span className="ml-2">{showInstructions ? "Hide Help" : "Show Help"}</span>
+  </Button>
+);
 
-  return (
-    <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 pt-2 w-full">
-      {!isEditing && url && (
-        <div className="flex flex-col sm:flex-row gap-2 w-full">
-          <Input
-            type="text"
-            value={url}
-            readOnly
-            className="flex-1 bg-gray-50 dark:bg-gray-800"
-          />
-          <Button
-            onClick={copyToClipboard}
-            variant="secondary"
-            className="w-full sm:w-auto flex items-center justify-center"
-            disabled={disabled}
-          >
-            Copy URL
-            <FaCopy className="ml-2" />
-          </Button>
-        </div>
-      )}
-      <Button
-        onClick={async () => {
-          if (isEditing) {
-            await handleSave();
-          } else {
-            setIsEditing(true);
-          }
-        }}
-        variant="secondary"
-        className="w-full sm:w-auto flex items-center justify-center"
+const UpdateButtons = ({
+  isEditing,
+  onEdit,
+  onSave,
+  onRemove,
+  onReload,
+  onToggleInstructions,
+  showInstructions,
+  disabled = false,
+}: {
+  isEditing: boolean;
+  onEdit: () => void;
+  onSave: () => Promise<void>;
+  onRemove?: () => Promise<void>;
+  onReload?: () => Promise<void>;
+  onToggleInstructions: () => void;
+  showInstructions: boolean;
+  disabled?: boolean;
+}) => (
+  <div className="flex flex-wrap gap-2 pt-2">
+    <IconButton
+      icon={isEditing ? FaCheck : FaPen}
+      label={isEditing ? "Save" : "Edit"}
+      onClick={isEditing ? onSave : onEdit}
+      disabled={disabled}
+    />
+    {onRemove && (
+      <IconButton
+        icon={FaTimes}
+        label="Remove"
+        onClick={onRemove}
+        variant="destructive"
         disabled={disabled}
-      >
-        {isEditing ? (
-          <>
-            Save
-            <FaCheck className="ml-2" />
-          </>
-        ) : (
-          <>
-            Edit
-            <FaPen className="ml-2" />
-          </>
-        )}
-      </Button>
-      {handleRemove && (
-        <Button
-          onClick={handleRemove}
-          variant="destructive"
-          className="w-full sm:w-auto flex items-center justify-center"
-          disabled={disabled}
-        >
-          Remove
-          <FaTimes className="ml-2" />
-        </Button>
-      )}
-      {handleReload && (
-        <Button
-          onClick={handleReload}
-          variant="primary"
-          className="w-full sm:w-auto flex items-center justify-center"
-          disabled={disabled}
-        >
-          Sync URDF
-          <FaSync className="ml-2" />
-        </Button>
-      )}
-      <Button
-        onClick={toggleInstructions}
-        variant="secondary"
-        className="w-full sm:w-auto flex items-center justify-center"
-      >
-        <FaInfoCircle className="mr-2" />
-        {showInstructions ? "Hide URDF Instructions" : "Show URDF Instructions"}
-      </Button>
-    </div>
-  );
-};
+      />
+    )}
+    {onReload && (
+      <IconButton
+        icon={FaSync}
+        label="Sync"
+        onClick={onReload}
+        variant="primary"
+        disabled={disabled}
+      />
+    )}
+    <HelpButton
+      showInstructions={showInstructions}
+      onToggle={onToggleInstructions}
+    />
+  </div>
+);
 
 interface Props {
   listingId: string;
@@ -174,6 +179,15 @@ const ListingOnshape = (props: Props) => {
   const [permUrl, setPermUrl] = useState<string | null>(onshapeUrl);
   const [updateOnshape, setUpdateOnshape] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(url || "");
+      addAlert("URL copied", "success");
+    } catch (error) {
+      addErrorAlert(error);
+    }
+  };
 
   const handleRemove = async () => {
     setSubmitting(true);
@@ -272,90 +286,93 @@ const ListingOnshape = (props: Props) => {
     </div>
   );
 
-  return submitting ? (
-    <div className="flex justify-center items-center my-4">
-      <Spinner className="w-8 h-8" />
-    </div>
-  ) : (
+  const renderContent = () => {
+    if (isEditing) {
+      return (
+        <div className="flex flex-col items-start w-full">
+          <UrlInput url={url} setUrl={setUrl} handleSave={handleSave} />
+          {edit && (
+            <UpdateButtons
+              isEditing={true}
+              onEdit={() => {}}
+              onSave={handleSave}
+              onToggleInstructions={toggleInstructions}
+              showInstructions={showInstructions}
+            />
+          )}
+        </div>
+      );
+    }
+
+    if (!url) {
+      return (
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => setIsEditing(true)} variant="primary">
+            Add Onshape URL
+          </Button>
+          {edit && (
+            <HelpButton
+              showInstructions={showInstructions}
+              onToggle={toggleInstructions}
+            />
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col items-start w-full">
+        {edit ? (
+          <>
+            <UrlDisplay
+              url={url}
+              onCopy={handleCopy}
+              disabled={updateOnshape}
+            />
+            <UpdateButtons
+              isEditing={false}
+              onEdit={() => setIsEditing(true)}
+              onSave={handleSave}
+              onRemove={handleRemove}
+              onReload={handleReload}
+              onToggleInstructions={toggleInstructions}
+              showInstructions={showInstructions}
+              disabled={updateOnshape}
+            />
+          </>
+        ) : (
+          <UrlDisplay
+            url={url}
+            onCopy={handleCopy}
+            disabled={false}
+            isEditable={false}
+          />
+        )}
+        {updateOnshape && (
+          <ListingOnshapeUpdate
+            listingId={listingId}
+            onClose={() => setUpdateOnshape(false)}
+            addArtifacts={addArtifacts}
+          />
+        )}
+      </div>
+    );
+  };
+
+  return (
     <Card className="mt-6 border border-gray-200 dark:border-gray-700 shadow-lg">
       <CardHeader className="p-6">
         <CardTitle className="space-y-6">
-          <div className="flex flex-col w-full">
-            {isEditing ? (
-              <div className="flex flex-col items-start w-full">
-                <UrlInput url={url} setUrl={setUrl} handleSave={handleSave} />
-                {edit && (
-                  <UpdateButtons
-                    isEditing={isEditing}
-                    setIsEditing={setIsEditing}
-                    handleSave={handleSave}
-                    url={url}
-                    toggleInstructions={toggleInstructions}
-                    showInstructions={showInstructions}
-                  />
-                )}
-              </div>
-            ) : url === null ? (
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button
-                  onClick={() => setIsEditing(true)}
-                  variant="primary"
-                  className="flex-1 sm:flex-none px-6 py-2 rounded-lg hover:opacity-90 transition-opacity"
-                >
-                  Add Onshape URL
-                </Button>
-                {edit && (
-                  <Button
-                    onClick={toggleInstructions}
-                    variant="secondary"
-                    className="flex-1 sm:flex-none px-6 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    <FaInfoCircle className="mr-2" />
-                    {showInstructions
-                      ? "Hide Instructions"
-                      : "Show Instructions"}
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <div className="flex flex-col items-start w-full">
-                {edit ? (
-                  <UpdateButtons
-                    isEditing={isEditing}
-                    setIsEditing={setIsEditing}
-                    handleSave={handleSave}
-                    handleRemove={handleRemove}
-                    handleReload={handleReload}
-                    url={url}
-                    disabled={updateOnshape}
-                    toggleInstructions={toggleInstructions}
-                    showInstructions={showInstructions}
-                  />
-                ) : (
-                  <div className="flex items-center">
-                    <Button
-                      onClick={() =>
-                        window.open(url, "_blank", "noopener,noreferrer")
-                      }
-                      variant="secondary"
-                      className="flex items-center justify-center"
-                    >
-                      Visit Onshape
-                      <FaExternalLinkAlt className="ml-2" />
-                    </Button>
-                  </div>
-                )}
-                {updateOnshape && (
-                  <ListingOnshapeUpdate
-                    listingId={listingId}
-                    onClose={() => setUpdateOnshape(false)}
-                    addArtifacts={addArtifacts}
-                  />
-                )}
-              </div>
-            )}
-            {showInstructions && renderUrdfInstructions(listingId)}
-          </div>
+          {submitting ? (
+            <div className="flex justify-center">
+              <Spinner className="w-8 h-8" />
+            </div>
+          ) : (
+            <div className="flex flex-col w-full">
+              {renderContent()}
+              {showInstructions && renderUrdfInstructions(listingId)}
+            </div>
+          )}
         </CardTitle>
       </CardHeader>
     </Card>

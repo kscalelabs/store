@@ -63,9 +63,9 @@ export function DeleteRobotModal({
               <span>
                 Are you sure you want to delete robot{" "}
                 <span className="text-primary-9 font-medium">
-                  &quot;{robot.name}?&quot;
-                </span>{" "}
-                This action cannot be undone.
+                  &quot;{robot.name}&quot;
+                </span>
+                ? This action cannot be undone.
               </span>
               <span className="text-gray-11 font-light text-xs">
                 Data associated with this robot will be deleted and no longer

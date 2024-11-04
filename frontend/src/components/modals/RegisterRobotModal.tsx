@@ -1,4 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
+import { FaPlus } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -10,97 +12,59 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ApiError } from "@/lib/types/api";
-import { ExternalLink, Plus } from "lucide-react";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
+
+import Spinner from "../ui/Spinner";
 
 interface RegisterRobotModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (robotData: {
-    name: string;
-    description: string | null;
-    listing_id: string;
-    order_id?: string | null;
-  }) => Promise<void>;
-  initialValues?: {
-    order_id?: string;
-    listing_id?: string;
-  };
+  listingId: string;
 }
 
 export function RegisterRobotModal({
   isOpen,
   onClose,
-  onAdd,
-  initialValues,
+  listingId,
 }: RegisterRobotModalProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [listingId, setListingId] = useState(initialValues?.listing_id || "");
-  const [orderId, setOrderId] = useState(initialValues?.order_id || "");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (initialValues) {
-      if (initialValues.listing_id) setListingId(initialValues.listing_id);
-      if (initialValues.order_id) setOrderId(initialValues.order_id);
-    }
-  }, [initialValues]);
+  const { addErrorAlert, addAlert } = useAlertQueue();
+  const { api } = useAuthentication();
+  const navigate = useNavigate();
 
-  const resetModalData = useCallback(() => {
-    setName("");
-    setDescription("");
-    setListingId("");
-    setOrderId("");
-  }, []);
+  const handleAdd = async () => {
+    setIsLoading(true);
 
-  const handleAdd = useCallback(async () => {
-    if (name && listingId) {
-      if (name.length > 32) {
-        setError("Name must be 32 characters or less");
-        return;
-      }
-      if (description && description.length > 2048) {
-        setError("Description must be 2048 characters or less");
-        return;
-      }
-
-      setIsLoading(true);
-      setError(null);
-      try {
-        await onAdd({
-          listing_id: listingId,
+    try {
+      const { data, error } = await api.client.POST("/robots/create", {
+        body: {
           name,
-          description: description || null,
-          order_id: orderId || null,
-        });
-        resetModalData();
-      } catch (error) {
-        console.error("Error adding robot:", error);
-        if (error && typeof error === "object" && "detail" in error) {
-          const apiError = error as ApiError;
-          const errorMessage =
-            typeof apiError.detail === "string"
-              ? apiError.detail
-              : apiError.detail?.[0]?.msg || "Unknown error";
-          setError(errorMessage);
-        } else {
-          setError("Failed to create robot. Please try again.");
-        }
-      } finally {
-        setIsLoading(false);
+          description,
+          listing_id: listingId,
+        },
+      });
+
+      if (error) {
+        addErrorAlert(error);
+      } else {
+        addAlert("Robot registered successfully", "success");
+        navigate(`/terminal/${data.id}`);
       }
+    } catch (error) {
+      addErrorAlert(error);
+    } finally {
+      setIsLoading(false);
     }
-  }, [name, description, listingId, orderId, onAdd, resetModalData]);
+  };
 
   return (
     <Dialog
       open={isOpen}
-      onOpenChange={(open) => {
-        if (!open) {
-          resetModalData();
-        }
+      onOpenChange={() => {
         onClose();
       }}
     >
@@ -143,50 +107,19 @@ export function RegisterRobotModal({
               {description.length}/2048 characters
             </div>
           </div>
-          <div className="grid gap-2">
-            <Label
-              htmlFor="listingId"
-              className="text-sm font-medium text-gray-12"
-            >
-              Listing ID
-            </Label>
-            <Input
-              id="listingId"
-              value={listingId}
-              onChange={(e) => setListingId(e.target.value)}
-              className="bg-gray-2 border-gray-3 text-gray-12"
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label
-              htmlFor="orderId"
-              className="text-sm font-medium text-gray-12"
-            >
-              Order ID (Optional)
-            </Label>
-            <Input
-              id="orderId"
-              value={orderId}
-              onChange={(e) => setOrderId(e.target.value)}
-              className="bg-gray-2 border-gray-3 text-gray-12"
-            />
-          </div>
         </div>
-        {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Button
-            onClick={() => window.open("/browse", "_blank")}
-            variant="default"
-          >
-            <span className="mr-2">Browse Listings</span>
-            <ExternalLink className="h-3 w-3" />
-          </Button>
+        <div className="grid grid-cols-1 gap-4">
           <Button
             onClick={handleAdd}
-            disabled={!name || !listingId || isLoading}
+            disabled={!name || isLoading}
             variant="primary"
+            className="flex items-center"
           >
-            <Plus className="mr-2 h-4 w-4" />
+            {isLoading ? (
+              <Spinner className="mr-2" />
+            ) : (
+              <FaPlus className="mr-2 h-4 w-4" />
+            )}
             <span className="mr-2">
               {isLoading ? "Registering..." : "Register Robot"}
             </span>
