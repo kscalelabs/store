@@ -352,14 +352,6 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
 
         return listing_dicts, has_more
 
-    async def set_slug(self, listing_id: str, new_slug: str) -> Listing:
-        listing = await self.get_listing(listing_id)
-        if listing is None:
-            raise ItemNotFoundError("Listing not found")
-        listing.set_slug(new_slug)
-        await self._update_item(listing_id, Listing, {"slug": new_slug, "updated_at": listing.updated_at})
-        return listing
-
     async def is_slug_taken(self, user_id: str, slug: str) -> bool:
         existing_listings = await self._get_items_from_secondary_index("user_id", user_id, Listing)
         return any(listing.slug == slug for listing in existing_listings)

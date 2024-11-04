@@ -311,8 +311,8 @@ async def get_upvoted_listings(
 class GetListingResponse(BaseModel):
     id: str
     name: str
-    username: str | None
-    slug: str | None
+    username: str
+    slug: str
     description: str | None
     child_ids: list[str]
     artifacts: list[SingleArtifactResponse]
@@ -424,21 +424,3 @@ async def remove_vote(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
 ) -> None:
     await crud.handle_vote(user.id, id, None)
-
-
-@listings_router.put("/edit/{id}/slug", response_model=bool)
-async def update_listing_slug(
-    id: str,
-    new_slug: str,
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    listing = await crud.get_listing(id)
-    if listing is None:
-        raise HTTPException(status_code=404, detail="Listing not found")
-    if not await can_write_listing(user, listing):
-        raise HTTPException(status_code=403, detail="You don't have permission to edit this listing")
-    if await crud.is_slug_taken(user.id, new_slug):
-        raise HTTPException(status_code=400, detail="Slug is already taken for this user")
-    await crud.set_slug(id, new_slug)
-    return True

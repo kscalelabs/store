@@ -406,8 +406,8 @@ class Listing(StoreBaseModel):
     created_at: int
     updated_at: int
     name: str
-    username: str | None = None
-    slug: str | None = None
+    username: str
+    slug: str
     child_ids: list[str]
     description: str | None = None
     onshape_url: str | None = None
@@ -450,10 +450,6 @@ class Listing(StoreBaseModel):
             stripe_link=stripe_link,
             price=Decimal(str(price)) if price is not None else None,
         )
-
-    def set_slug(self, new_slug: str) -> None:
-        self.slug = new_slug
-        self.updated_at = int(time.time())
 
 
 class ListingTag(StoreBaseModel):
