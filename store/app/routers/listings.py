@@ -169,7 +169,6 @@ class NewListingRequest(BaseModel):
     child_ids: list[str]
     slug: str
     stripe_link: str | None
-    price: float | None
 
 
 class NewListingResponse(BaseModel):
@@ -187,12 +186,9 @@ async def add_listing(
     child_ids: str = Form(""),
     slug: str = Form(""),
     stripe_link: str | None = Form(None),
-    price: float | None = Form(None),
     photos: List[UploadFile] = File(None),
 ) -> NewListingResponse:
     logger.info(f"Received {len(photos) if photos else 0} photos")
-
-    float_price = float(price) if price is not None else None
 
     # Creates a new listing.
     listing = Listing.create(
@@ -203,7 +199,6 @@ async def add_listing(
         user_id=user.id,
         username=user.username,
         stripe_link=stripe_link,
-        price=float_price,
     )
     await crud.add_listing(listing)
 
@@ -247,8 +242,8 @@ class UpdateListingRequest(BaseModel):
     description: str | None = None
     tags: list[str] | None = None
     stripe_link: str | None = None
-    price: float | None = None
     onshape_url: str | None = None
+    slug: str | None = None
 
 
 @listings_router.put("/edit/{id}", response_model=bool)
@@ -276,6 +271,11 @@ async def edit_listing(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Listing description must be at least 6 characters long.",
         )
+    if listing.slug is not None and len(listing.slug) < 4:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Listing slug must be at least 4 characters long.",
+        )
     await crud.edit_listing(
         listing_id=id,
         name=listing.name,
@@ -284,7 +284,7 @@ async def edit_listing(
         tags=listing.tags,
         onshape_url=listing.onshape_url,
         stripe_link=listing.stripe_link,
-        price=listing.price,
+        slug=listing.slug,
     )
     return True
 
@@ -326,7 +326,6 @@ class GetListingResponse(BaseModel):
     creator_id: str
     creator_username: str | None
     creator_name: str | None
-    price: float | None
     stripe_link: str | None
 
 
@@ -345,8 +344,6 @@ async def get_listing_common(listing: Listing, user: User | None, crud: Crud) ->
     if (creator := await crud.get_user_public(listing.user_id)) is not None:
         creator_name = " ".join(filter(None, [creator.first_name, creator.last_name]))
         creator_username = creator.username
-
-    price = float(listing.price) if listing.price is not None else None
 
     raw_artifacts = await crud.get_listing_artifacts(listing.id)
     artifacts = [
@@ -372,7 +369,6 @@ async def get_listing_common(listing: Listing, user: User | None, crud: Crud) ->
         creator_id=listing.user_id,
         creator_name=creator_name,
         creator_username=creator_username,
-        price=price,
         stripe_link=listing.stripe_link,
     )
 

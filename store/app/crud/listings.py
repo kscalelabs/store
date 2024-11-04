@@ -353,8 +353,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         return listing_dicts, has_more
 
     async def is_slug_taken(self, user_id: str, slug: str) -> bool:
-        existing_listings = await self._get_items_from_secondary_index("user_id", user_id, Listing)
-        return any(listing.slug == slug for listing in existing_listings)
+        return await self.get_listing_by_username_and_slug(user_id, slug) is not None
 
     async def get_listing_by_username_and_slug(self, username: str, slug: str) -> Listing | None:
         user = await self._get_unique_item_from_secondary_index("username", username, User)
