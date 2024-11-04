@@ -38,7 +38,7 @@ const ListingName = (props: Props) => {
     });
     if (error) {
       addErrorAlert(error);
-  } else {
+    } else {
       addAlert("Listing updated successfully", "success");
       setIsEditing(false);
     }

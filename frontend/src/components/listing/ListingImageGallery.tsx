@@ -22,7 +22,6 @@ const ListingImageItem = ({
   index,
   currentImageIndex,
   canEdit,
-  addErrorAlert,
   artifacts,
   setArtifacts,
   setCurrentImageIndex,
@@ -33,7 +32,6 @@ const ListingImageItem = ({
   index: number;
   currentImageIndex: number;
   canEdit: boolean;
-  addErrorAlert: (error: any) => void;
   artifacts: Artifact[];
   setArtifacts: (artifacts: Artifact[]) => void;
   setCurrentImageIndex: React.Dispatch<React.SetStateAction<number>>;
@@ -44,12 +42,13 @@ const ListingImageItem = ({
   const [isUpdating, setIsUpdating] = useState(false);
 
   const auth = useAuthentication();
+  const { addErrorAlert } = useAlertQueue();
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsDeleting(true);
     try {
-      let response = await auth.client.DELETE(
+      const response = await auth.client.DELETE(
         "/artifacts/delete/{artifact_id}",
         {
           params: {
@@ -78,7 +77,7 @@ const ListingImageItem = ({
     e.stopPropagation();
     setIsUpdating(true);
     try {
-      let response = await auth.client.PUT(
+      const response = await auth.client.PUT(
         "/artifacts/list/{listing_id}/main",
         {
           params: {
@@ -148,8 +147,6 @@ const ListingImageGallery = ({ listingId, ...props }: Props) => {
     setCurrentImageIndex,
     canEdit,
   } = props;
-  const { addErrorAlert } = useAlertQueue();
-
   return (
     artifacts.length > 0 && (
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -161,7 +158,6 @@ const ListingImageGallery = ({ listingId, ...props }: Props) => {
             index={index}
             currentImageIndex={currentImageIndex}
             canEdit={canEdit}
-            addErrorAlert={addErrorAlert}
             artifacts={artifacts}
             setArtifacts={setArtifacts}
             setCurrentImageIndex={setCurrentImageIndex}

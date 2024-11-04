@@ -22,7 +22,7 @@ const Listing = () => {
 
     try {
       // Try to fetch the listing using the username/slug endpoint
-      let response = await auth.client.GET("/listings/{username}/{slug}", {
+      const response = await auth.client.GET("/listings/{username}/{slug}", {
         params: {
           path: { username, slug },
         },
