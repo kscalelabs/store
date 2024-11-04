@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FaBars,
   FaGithub,
@@ -30,6 +30,65 @@ const Navbar = () => {
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
   const location = useLocation();
   const [showDevelopersDropdown, setShowDevelopersDropdown] = useState(false);
+  const [featuredListings, setFeaturedListings] = useState<
+    { id: string; username: string; slug: string | null; name: string }[]
+  >([]);
+  const auth = useAuthentication();
+
+  const refreshFeaturedListings = async () => {
+    try {
+      const { data: featuredData } =
+        await auth.client.GET("/listings/featured");
+
+      if (!featuredData?.listing_ids?.length) {
+        setFeaturedListings([]);
+        return;
+      }
+
+      const { data: batchData } = await auth.client.GET("/listings/batch", {
+        params: {
+          query: { ids: featuredData.listing_ids },
+        },
+      });
+
+      if (batchData?.listings) {
+        const orderedListings = featuredData.listing_ids
+          .map((id) => batchData.listings.find((listing) => listing.id === id))
+          .filter(
+            (listing): listing is NonNullable<typeof listing> =>
+              listing !== undefined,
+          )
+          .map((listing) => ({
+            id: listing.id,
+            username: listing.username ?? "",
+            slug: listing.slug,
+            name: listing.name,
+          }));
+
+        setFeaturedListings(orderedListings);
+      }
+    } catch (error) {
+      console.error("Error refreshing featured listings:", error);
+    }
+  };
+
+  useEffect(() => {
+    refreshFeaturedListings();
+  }, []);
+
+  useEffect(() => {
+    const handleFeaturedChange = () => {
+      refreshFeaturedListings();
+    };
+
+    window.addEventListener("featuredListingsChanged", handleFeaturedChange);
+    return () => {
+      window.removeEventListener(
+        "featuredListingsChanged",
+        handleFeaturedChange,
+      );
+    };
+  }, []);
 
   let navItems: NavItem[] = [];
 
@@ -149,7 +208,23 @@ const Navbar = () => {
             </button>
           </div>
           <div className="hidden lg:flex items-center flex-grow justify-between ml-4">
-            <div className="flex space-x-1 bg-gray-12 rounded-lg p-2 flex-grow justify-end">
+            <div className="flex space-x-1 bg-gray-12 rounded-lg p-2 flex-grow">
+              {featuredListings?.length > 0 && (
+                <span className="px-2 xl:px-3 py-2 text-sm tracking-widest text-gray-1">
+                  Featured Listings:
+                </span>
+              )}
+              <div className="flex-grow flex space-x-1">
+                {featuredListings?.map((listing) => (
+                  <Link
+                    key={listing.id}
+                    to={`/item/${listing.username}/${listing.slug}`}
+                    className="px-2 xl:px-3 py-2 rounded-md text-sm tracking-widest text-gray-1 hover:bg-gray-1 hover:text-primary-9"
+                  >
+                    {listing.name}
+                  </Link>
+                ))}
+              </div>
               {navItems.map((item) =>
                 item.isExternal ? (
                   <a

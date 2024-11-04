@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { FaDiscord, FaGithub, FaTimes } from "react-icons/fa";
 import {
   FaDownload,
@@ -46,6 +47,65 @@ type NavItem = {
 const Sidebar = ({ show, onClose }: SidebarProps) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthentication();
+  const auth = useAuthentication();
+  const [featuredListings, setFeaturedListings] = useState<
+    { id: string; username: string; slug: string | null; name: string }[]
+  >([]);
+
+  const refreshFeaturedListings = async () => {
+    try {
+      const { data: featuredData } =
+        await auth.client.GET("/listings/featured");
+
+      if (!featuredData?.listing_ids?.length) {
+        setFeaturedListings([]);
+        return;
+      }
+
+      const { data: batchData } = await auth.client.GET("/listings/batch", {
+        params: {
+          query: { ids: featuredData.listing_ids },
+        },
+      });
+
+      if (batchData?.listings) {
+        const orderedListings = featuredData.listing_ids
+          .map((id) => batchData.listings.find((listing) => listing.id === id))
+          .filter(
+            (listing): listing is NonNullable<typeof listing> =>
+              listing !== undefined,
+          )
+          .map((listing) => ({
+            id: listing.id,
+            username: listing.username ?? "",
+            slug: listing.slug,
+            name: listing.name,
+          }));
+
+        setFeaturedListings(orderedListings);
+      }
+    } catch (error) {
+      console.error("Error fetching featured listings:", error);
+    }
+  };
+
+  useEffect(() => {
+    refreshFeaturedListings();
+  }, []);
+
+  useEffect(() => {
+    const handleFeaturedChange = () => {
+      refreshFeaturedListings();
+    };
+
+    window.addEventListener("featuredListingsChanged", handleFeaturedChange);
+    return () => {
+      window.removeEventListener(
+        "featuredListingsChanged",
+        handleFeaturedChange,
+      );
+    };
+  }, []);
 
   let navItems: NavItem[] = [];
 
@@ -106,6 +166,25 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
             <div className="border-t border-gray-1 my-2"></div>
             <nav>
               <ul className="space-y-1">
+                {featuredListings && featuredListings.length > 0 && (
+                  <>
+                    <div className="text-xl font-medium text-gray-1 px-3 py-2">
+                      Featured Listings:
+                    </div>
+                    {featuredListings.map((listing) => (
+                      <SidebarItem
+                        key={listing.id}
+                        title={listing.name}
+                        onClick={() =>
+                          handleItemClick(
+                            `/item/${listing.username}/${listing.slug}`,
+                          )
+                        }
+                      />
+                    ))}
+                    <div className="border-t border-gray-1 my-2"></div>
+                  </>
+                )}
                 {isAuthenticated && (
                   <>
                     {navItems.map((item) => (

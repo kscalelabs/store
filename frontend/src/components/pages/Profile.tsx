@@ -87,6 +87,29 @@ export const RenderProfile = (props: RenderProfileProps) => {
     }
   };
 
+  const handleSetContentManager = async () => {
+    try {
+      const response = await auth.client.POST("/users/set-content-manager", {
+        body: {
+          user_id: user.id,
+          is_content_manager: !user.permissions?.includes("content_manager"),
+        },
+      });
+
+      if (response.error) {
+        console.error("Failed to set content manager", response.error);
+        return;
+      }
+
+      if (response.data) {
+        const updatedUser = response.data;
+        props.onUpdateProfile(updatedUser);
+      }
+    } catch (error) {
+      console.error("Failed to set content manager", error);
+    }
+  };
+
   const handleTabChange = (tab: string) => {
     if (tab === "own") {
       setUpvotedPage(1);
@@ -143,15 +166,28 @@ export const RenderProfile = (props: RenderProfileProps) => {
     <div className="space-y-8 mb-12">
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader className="flex flex-col items-center space-y-4">
-          <div className="flex flex-col items-center space-y-2 mb-4">
+          <div className="flex flex-col items-center space-y-2 mb-2">
             <h1 className="text-3xl font-bold text-primary-9">
               {user.first_name || user.last_name
                 ? `${user.first_name || ""} ${user.last_name || ""}`
                 : "No name set"}
             </h1>
-            <p className="text-sm text-gray-1 bg-gray-10 px-3 py-1 rounded-md">
-              @{user.username}
-            </p>
+            <div className="flex gap-2">
+              <p className="text-sm text-gray-1 bg-gray-10 px-3 py-1 rounded-md">
+                @{user.username}
+              </p>
+              {user.permissions && (
+                <p className="text-sm text-primary-9 bg-primary-3 px-3 py-1 rounded-md">
+                  {user.permissions.includes("is_admin")
+                    ? "Admin"
+                    : user.permissions.includes("is_mod")
+                      ? "Moderator"
+                      : user.permissions.includes("content_manager")
+                        ? "Content Manager"
+                        : "Member"}
+                </p>
+              )}
+            </div>
             <p className="text-sm text-gray-11">
               Joined on{" "}
               {user.created_at
@@ -173,11 +209,18 @@ export const RenderProfile = (props: RenderProfileProps) => {
             </div>
           )}
           {isAdmin && !canEdit && (
-            <Button onClick={handleSetModerator} variant="outline">
-              {user.permissions?.includes("is_mod")
-                ? "Remove Moderator"
-                : "Set as Moderator"}
-            </Button>
+            <div className="flex space-x-2">
+              <Button onClick={handleSetModerator} variant="outline">
+                {user.permissions?.includes("is_mod")
+                  ? "Remove Moderator"
+                  : "Set as Moderator"}
+              </Button>
+              <Button onClick={handleSetContentManager} variant="outline">
+                {user.permissions?.includes("content_manager")
+                  ? "Remove Content Manager"
+                  : "Set as Content Manager"}
+              </Button>
+            </div>
           )}
         </CardHeader>
         <CardContent>

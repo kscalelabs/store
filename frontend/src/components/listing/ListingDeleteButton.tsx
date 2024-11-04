@@ -47,7 +47,7 @@ const ListingDeleteButton = (props: Props) => {
         onClick={() => setConfirmDelete(true)}
         variant={deleting ? "ghost" : "destructive"}
         disabled={deleting}
-        className="flex items-center space-x-2 px-3 py-1 rounded-lg transition-all duration-300 hover:bg-red-600 hover:text-white"
+        className="flex items-center space-x-2 !px-3 !py-1 !rounded-lg transition-all duration-300 bg-red-500 hover:bg-red-600 text-white"
       >
         <FaTrash className="text-lg" />
         <span>{deleting ? "Deleting..." : "Delete Listing"}</span>

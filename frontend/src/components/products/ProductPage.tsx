@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import Container from "@/components/Container";
 import ListingDeleteButton from "@/components/listing/ListingDeleteButton";
 import { RenderDescription } from "@/components/listing/ListingDescription";
+import ListingFeatureButton from "@/components/listing/ListingFeatureButton";
 import ListingVoteButtons from "@/components/listing/ListingVoteButtons";
 import ProductPageSkeleton from "@/components/products/ProductPageSkeleton";
 import CheckoutButton from "@/components/stripe/CheckoutButton";
@@ -78,6 +79,8 @@ const ProductPage: React.FC<ProductPageProps> = ({
     score: number;
     user_vote: number | null;
     stripe_link: string | null;
+    is_featured: boolean;
+    is_content_manager: boolean;
   } | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -92,6 +95,12 @@ const ProductPage: React.FC<ProductPageProps> = ({
       });
 
       if (!error && data) {
+        const { data: userData } = await auth.client.GET("/users/public/{id}", {
+          params: {
+            path: { id: data.creator_id },
+          },
+        });
+
         setCreatorInfo({
           name: data.creator_name,
           id: data.creator_id,
@@ -102,6 +111,9 @@ const ProductPage: React.FC<ProductPageProps> = ({
           score: data.score,
           user_vote: data.user_vote as number | null,
           stripe_link: data.stripe_link,
+          is_featured: data.is_featured,
+          is_content_manager:
+            userData?.permissions?.includes("content_manager") ?? false,
         });
       }
       setIsLoading(false);
@@ -558,6 +570,29 @@ const ProductPage: React.FC<ProductPageProps> = ({
 
   const shouldShowCheckout = currentPrice > 0 && checkoutLabel;
 
+  const handleFeatureToggle = () => {
+    setCreatorInfo((prevInfo) =>
+      prevInfo
+        ? {
+            ...prevInfo,
+            is_featured: !prevInfo.is_featured,
+          }
+        : null,
+    );
+  };
+
+  const [featuredCount, setFeaturedCount] = useState(0);
+
+  useEffect(() => {
+    const getFeaturedCount = async () => {
+      const { data } = await auth.client.GET("/listings/featured");
+      if (data?.listing_ids) {
+        setFeaturedCount(data.listing_ids.length);
+      }
+    };
+    getFeaturedCount();
+  }, [auth.client]);
+
   return (
     <Container>
       {isLoading ? (
@@ -662,24 +697,36 @@ const ProductPage: React.FC<ProductPageProps> = ({
                           {newTitle}
                         </h3>
                       )}
-                      {creatorInfo?.can_edit && (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            onClick={() => {
-                              if (isEditingTitle) {
-                                handleSaveTitle();
-                              } else {
-                                setIsEditingTitle(true);
-                              }
-                            }}
-                            variant="ghost"
-                            className="-ml-3"
-                          >
-                            {isEditingTitle ? <FaCheck /> : <FaPen />}
-                          </Button>
-                          <ListingDeleteButton listingId={productId} />
-                        </div>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {creatorInfo?.can_edit && (
+                          <>
+                            <Button
+                              onClick={() => {
+                                if (isEditingTitle) {
+                                  handleSaveTitle();
+                                } else {
+                                  setIsEditingTitle(true);
+                                }
+                              }}
+                              variant="ghost"
+                              className="-ml-3"
+                            >
+                              {isEditingTitle ? <FaCheck /> : <FaPen />}
+                            </Button>
+                            <div className="flex flex-col sm:flex-row gap-2">
+                              <ListingDeleteButton listingId={productId} />
+                              <ListingFeatureButton
+                                listingId={productId}
+                                initialFeatured={
+                                  creatorInfo?.is_featured ?? false
+                                }
+                                onFeatureToggle={handleFeatureToggle}
+                                currentFeaturedCount={featuredCount}
+                              />
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </>
                   )}
                 </div>

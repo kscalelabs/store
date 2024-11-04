@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import time
 from decimal import Decimal
 from enum import Enum
 from typing import Any, Callable, Type, TypeVar
@@ -377,3 +378,38 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         listings = await self._get_items_from_secondary_index("user_id", user_id, Listing)
         update_tasks = [self._update_item(listing.id, Listing, {"username": new_username}) for listing in listings]
         await asyncio.gather(*update_tasks)
+
+    async def get_featured_listings(self) -> list[str]:
+        """Get the list of featured listing IDs."""
+        try:
+            table = await self.db.Table(TABLE_NAME)
+            response = await table.get_item(
+                Key={"id": "featured_listings"},
+            )
+
+            if "Item" not in response:
+                logger.info("No featured listings found, returning empty list")
+                return []
+
+            listing_ids = response["Item"].get("listing_ids", [])
+            # Ensure we return a list of strings
+            if not isinstance(listing_ids, list):
+                return []
+
+            return [str(lid) for lid in listing_ids]
+
+        except Exception as e:
+            logger.error(f"Error retrieving featured listings: {str(e)}")
+            return []
+
+    async def set_featured_listings(self, listing_ids: list[str]) -> None:
+        """Set the list of featured listing IDs."""
+        table = await self.db.Table(TABLE_NAME)
+        await table.put_item(
+            Item={
+                "id": "featured_listings",
+                "type": "featured_listings",
+                "listing_ids": listing_ids,
+                "updated_at": int(time.time()),
+            }
+        )

@@ -29,7 +29,7 @@ class StoreBaseModel(BaseModel):
     id: str
 
 
-UserPermission = Literal["is_admin", "is_mod"]
+UserPermission = Literal["is_admin", "is_mod", "content_manager"]
 
 
 class User(StoreBaseModel):

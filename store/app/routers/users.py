@@ -365,3 +365,31 @@ async def check_username_availability(
     logger.info(f"Checking if username {username} is taken")
     is_taken = await crud.is_username_taken(username)
     return {"available": not is_taken}
+
+
+class SetContentManagerRequest(BaseModel):
+    user_id: str
+    is_content_manager: bool
+
+
+@users_router.post("/set-content-manager")
+async def set_content_manager(
+    request: SetContentManagerRequest,
+    admin_user: Annotated[User, Depends(get_session_user_with_admin_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> UserPublic:
+    target_user = await crud.get_user(request.user_id, throw_if_missing=True)
+
+    if target_user.permissions and "admin" in target_user.permissions:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Cannot modify content manager status of admin users"
+        )
+
+    try:
+        updated_user = await crud.set_content_manager(request.user_id, request.is_content_manager)
+        return UserPublic(**updated_user.model_dump())
+    except Exception as e:
+        logger.error(f"Error setting content manager status: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to modify content manager status"
+        )
