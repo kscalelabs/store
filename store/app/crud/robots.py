@@ -9,6 +9,10 @@ from store.app.model import Listing, Order, Robot
 class RobotsCrud(BaseCrud):
     """CRUD operations for Robots."""
 
+    @classmethod
+    def get_gsis(cls) -> set[str]:
+        return super().get_gsis().union({"listing_id", "order_id"})
+
     async def create_robot(self, robot_data: dict) -> Robot:
         """Create a new robot entry."""
         # Verify listing exists
@@ -74,3 +78,8 @@ class RobotsCrud(BaseCrud):
     async def delete_robot(self, robot: Robot) -> None:
         """Delete a robot."""
         await self._delete_item(robot)
+
+    async def get_robot_by_order_id(self, order_id: str) -> Robot | None:
+        """Get a robot associated with an order ID."""
+        robots = await self._get_items_from_secondary_index("order_id", order_id, Robot)
+        return robots[0] if robots else None

@@ -113,3 +113,23 @@ async def delete_robot(
         await crud.delete_robot(robot)
     except ItemNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Robot not found")
+
+
+@robots_router.get("/check-order/{order_id}", response_model=Robot | None)
+async def check_order_robot(
+    order_id: str,
+    user: User = Depends(get_session_user_with_read_permission),
+    crud: Crud = Depends(Crud.get),
+) -> Robot | None:
+    """Check if an order has an associated robot."""
+    try:
+        # First verify the order belongs to the user
+        order = await crud.get_order(order_id)
+        if not order or order.user_id != user.id:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+
+        # Then check for an associated robot
+        robot = await crud.get_robot_by_order_id(order_id)
+        return robot
+    except ItemNotFoundError:
+        return None

@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,19 +22,31 @@ interface RegisterRobotModalProps {
     listing_id: string;
     order_id?: string | null;
   }) => Promise<void>;
+  initialValues?: {
+    order_id?: string;
+    listing_id?: string;
+  };
 }
 
 export function RegisterRobotModal({
   isOpen,
   onClose,
   onAdd,
+  initialValues,
 }: RegisterRobotModalProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [listingId, setListingId] = useState("");
-  const [orderId, setOrderId] = useState("");
+  const [listingId, setListingId] = useState(initialValues?.listing_id || "");
+  const [orderId, setOrderId] = useState(initialValues?.order_id || "");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialValues) {
+      if (initialValues.listing_id) setListingId(initialValues.listing_id);
+      if (initialValues.order_id) setOrderId(initialValues.order_id);
+    }
+  }, [initialValues]);
 
   const resetModalData = useCallback(() => {
     setName("");
