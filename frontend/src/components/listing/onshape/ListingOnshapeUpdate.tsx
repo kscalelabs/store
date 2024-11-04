@@ -77,7 +77,7 @@ const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
     <div className="pt-4 flex flex-col max-w-full">
       <div
         ref={messageContainerRef}
-        className="p-4 rounded-lg border border-dashed max-h-96 overflow-auto bg-gray-12 w-full"
+        className="p-4 max-h-96 overflow-auto bg-gray-12 w-full"
       >
         <div className="whitespace-pre">
           {messages

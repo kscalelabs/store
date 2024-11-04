@@ -7,6 +7,8 @@ import Container from "@/components/Container";
 import ListingDeleteButton from "@/components/listing/ListingDeleteButton";
 import { RenderDescription } from "@/components/listing/ListingDescription";
 import ListingVoteButtons from "@/components/listing/ListingVoteButtons";
+import ListingOnshape from "@/components/listing/onshape/ListingOnshape";
+import ListingOnshapeUpdate from "@/components/listing/onshape/ListingOnshapeUpdate";
 import ProductPageSkeleton from "@/components/products/ProductPageSkeleton";
 import CheckoutButton from "@/components/stripe/CheckoutButton";
 import { Input, TextArea } from "@/components/ui/Input/Input";
@@ -15,8 +17,7 @@ import { Button } from "@/components/ui/button";
 import { humanReadableError, useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { formatTimeSince } from "@/lib/utils/formatDate";
-import { formatPrice } from "@/lib/utils/formatNumber";
-import { formatNumber } from "@/lib/utils/formatNumber";
+import { formatNumber, formatPrice } from "@/lib/utils/formatNumber";
 import { convertToDecimal } from "@/lib/utils/priceFormat";
 
 const FALLBACK_IMAGE =
@@ -50,9 +51,15 @@ interface ProductPageProps {
   creatorName?: string;
   creatorId?: string;
   onPriceChange?: (newPrice: number) => void;
-  onImagesChange?: (newImages: string[]) => void;
-  onImageClick?: (image: string) => void;
+  onshapeLink?: string;
 }
+
+// Add a utility function to check if a URL is an image
+const isImageUrl = (url: string): boolean => {
+  const imageExtensions = [".jpg", ".jpeg", ".png", ".gif", ".webp"];
+  const lowercaseUrl = url.toLowerCase();
+  return imageExtensions.some((ext) => lowercaseUrl.endsWith(ext));
+};
 
 const ProductPage: React.FC<ProductPageProps> = ({
   productId,
@@ -63,7 +70,6 @@ const ProductPage: React.FC<ProductPageProps> = ({
   price,
   images = [],
   onPriceChange,
-  onImagesChange,
 }) => {
   const navigate = useNavigate();
   const auth = useAuthentication();
@@ -81,6 +87,26 @@ const ProductPage: React.FC<ProductPageProps> = ({
   } | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
+
+  const [onshapeUrl, setOnshapeUrl] = useState<string | null>(null);
+  const [, setArtifactIds] = useState<string[]>([]);
+
+  const addArtifactId = async (artifactId: string) => {
+    setArtifactIds((prev) => [...prev, artifactId]);
+    // Optionally refresh the images if needed
+    if (onImagesChange) {
+      const { data } = await auth.client.GET("/artifacts/list/{listing_id}", {
+        params: {
+          path: { listing_id: productId },
+        },
+      });
+      if (data?.artifacts) {
+        const newImages = data.artifacts
+          .map((a: { urls: { large: string } }) => a.urls.large);
+        onImagesChange(newImages);
+      }
+    }
+  };
 
   useEffect(() => {
     const fetchCreatorInfo = async () => {
@@ -103,6 +129,7 @@ const ProductPage: React.FC<ProductPageProps> = ({
           user_vote: data.user_vote as number | null,
           stripe_link: data.stripe_link,
         });
+        setOnshapeUrl(data.onshape_url);
       }
       setIsLoading(false);
     };
@@ -174,7 +201,7 @@ const ProductPage: React.FC<ProductPageProps> = ({
   const [currentImages, setCurrentImages] = useState<string[]>(images);
 
   useEffect(() => {
-    setCurrentImages(images);
+    setCurrentImages(images.filter(isImageUrl));
   }, [images]);
 
   const [isEditingSlug, setIsEditingSlug] = useState(false);
@@ -557,6 +584,8 @@ const ProductPage: React.FC<ProductPageProps> = ({
   });
 
   const shouldShowCheckout = currentPrice > 0 && checkoutLabel;
+
+  const [isEditingOnshapeLink, setIsEditingOnshapeLink] = useState(false);
 
   return (
     <Container>
@@ -1009,7 +1038,7 @@ const ProductPage: React.FC<ProductPageProps> = ({
                   </div>
                 </div>
               )}
-              {currentImages.map((image, index) => (
+              {currentImages.filter(isImageUrl).map((image, index) => (
                 <div
                   key={index}
                   className="aspect-square overflow-hidden rounded-lg shadow-md cursor-pointer relative group"
@@ -1061,6 +1090,31 @@ const ProductPage: React.FC<ProductPageProps> = ({
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <div className="max-w-7xl mx-auto">
+              <div className="bg-gray-50 rounded-lg p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="text-lg font-medium">Onshape Model</h4>
+                </div>
+
+                {isEditingOnshapeLink ? (
+                  <ListingOnshapeUpdate
+                    listingId={productId}
+                    onClose={() => setIsEditingOnshapeLink(false)}
+                    addArtifactId={addArtifactId}
+                  />
+                ) : (
+                  <ListingOnshape
+                    listingId={productId}
+                    onshapeUrl={onshapeUrl}
+                    edit={creatorInfo?.can_edit ?? false}
+                    addArtifactId={addArtifactId}
+                  />
+                )}
+              </div>
             </div>
           </div>
 

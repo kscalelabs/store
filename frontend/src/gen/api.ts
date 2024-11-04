@@ -1798,6 +1798,8 @@ export interface components {
             stripe_link?: string | null;
             /** Price */
             price?: number | null;
+            /** Onshape Url */
+            onshape_url?: string | null;
         };
         /** UpdateOrderAddressRequest */
         UpdateOrderAddressRequest: {

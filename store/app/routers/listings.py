@@ -263,6 +263,7 @@ class UpdateListingRequest(BaseModel):
     tags: list[str] | None = None
     stripe_link: str | None = None
     price: float | None = None
+    onshape_url: str | None = None
 
 
 @listings_router.put("/edit/{id}", response_model=bool)
@@ -296,6 +297,7 @@ async def edit_listing(
         child_ids=listing.child_ids,
         description=listing.description,
         tags=listing.tags,
+        onshape_url=listing.onshape_url,
         stripe_link=listing.stripe_link,
         price=listing.price,
     )
