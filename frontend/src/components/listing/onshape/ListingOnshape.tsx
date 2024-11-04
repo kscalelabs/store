@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   FaCheck,
+  FaCopy,
   FaExternalLinkAlt,
   FaInfoCircle,
   FaPen,
@@ -9,6 +10,7 @@ import {
 } from "react-icons/fa";
 
 import ListingOnshapeUpdate from "@/components/listing/onshape/ListingOnshapeUpdate";
+import { Artifact } from "@/components/listing/types";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
@@ -29,15 +31,12 @@ const UrlInput = (props: UrlInputProps) => {
     <Input
       type="text"
       value={url || ""}
-      onChange={(e) => {
-        setUrl(e.target.value);
-      }}
+      onChange={(e) => setUrl(e.target.value)}
       onKeyDown={async (e) => {
-        if (e.key === "Enter") {
-          await handleSave();
-        }
+        if (e.key === "Enter") await handleSave();
       }}
-      className="border-b border-gray-6"
+      className="border border-gray-200 dark:border-gray-700 rounded-md px-4 py-2 w-full"
+      placeholder="Enter Onshape URL..."
       autoFocus
     />
   );
@@ -68,18 +67,36 @@ const UpdateButtons = (props: UpdateButtonProps) => {
     disabled,
   } = props;
 
+  const { addErrorAlert } = useAlertQueue();
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(url || "");
+    } catch (error) {
+      addErrorAlert(error);
+    }
+  };
+
   return (
     <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 pt-2 w-full">
       {!isEditing && url && (
-        <Button
-          onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
-          variant="secondary"
-          className="w-full sm:w-auto flex items-center justify-center"
-          disabled={disabled}
-        >
-          Visit Onshape
-          <FaExternalLinkAlt className="ml-2" />
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-2 w-full">
+          <Input
+            type="text"
+            value={url}
+            readOnly
+            className="flex-1 bg-gray-50 dark:bg-gray-800"
+          />
+          <Button
+            onClick={copyToClipboard}
+            variant="secondary"
+            className="w-full sm:w-auto flex items-center justify-center"
+            disabled={disabled}
+          >
+            Copy URL
+            <FaCopy className="ml-2" />
+          </Button>
+        </div>
       )}
       <Button
         onClick={async () => {
@@ -142,12 +159,12 @@ const UpdateButtons = (props: UpdateButtonProps) => {
 interface Props {
   listingId: string;
   onshapeUrl: string | null;
-  edit: boolean;
-  addArtifactId: (artifactId: string) => Promise<void>;
+  canEdit: boolean;
+  addArtifacts: (artifacts: Artifact[]) => void;
 }
 
 const ListingOnshape = (props: Props) => {
-  const { listingId, edit, onshapeUrl, addArtifactId } = props;
+  const { listingId, canEdit: edit, onshapeUrl, addArtifacts } = props;
   const auth = useAuthentication();
   const { addAlert, addErrorAlert } = useAlertQueue();
 
@@ -219,49 +236,51 @@ const ListingOnshape = (props: Props) => {
     setShowInstructions(!showInstructions);
   };
 
-  const renderUrdfInstructions = () => (
-    <div className="mt-4 p-6 bg-gray-800 rounded-lg shadow-md w-full">
-      <h4 className="text-xl font-semibold mb-4 text-blue-400">
+  const renderUrdfInstructions = (listingId: string) => (
+    <div className="mt-6 p-8 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg w-full border border-gray-200 dark:border-gray-700">
+      <h4 className="text-2xl font-semibold mb-6 text-blue-600 dark:text-blue-400">
         URDF Upload Instructions
       </h4>
-      <ol className="list-decimal list-inside space-y-4 text-sm text-gray-300">
-        <li>
-          Install the K-Scale CLI by running:
-          <pre className="bg-gray-700 text-green-400 p-3 rounded-md mt-2 overflow-x-auto font-mono text-sm">
+      <ol className="list-decimal list-outside ml-6 space-y-6 text-base">
+        <li className="leading-relaxed">
+          <span className="font-medium">Install the K-Scale CLI:</span>
+          <pre className="bg-gray-100 dark:bg-gray-900 text-green-600 dark:text-green-400 p-4 rounded-lg mt-3 font-mono text-sm border border-gray-200 dark:border-gray-700">
             pip install kscale
           </pre>
         </li>
-        <li>
-          To upload a URDF directly, use the following command:
-          <pre className="bg-gray-700 text-green-400 p-3 rounded-md mt-2 overflow-x-auto font-mono text-sm">
+        <li className="leading-relaxed">
+          <span className="font-medium">Upload your URDF file:</span>
+          <pre className="bg-gray-100 dark:bg-gray-900 text-green-600 dark:text-green-400 p-4 rounded-lg mt-3 font-mono text-sm border border-gray-200 dark:border-gray-700">
             kscale urdf upload {listingId}
           </pre>
         </li>
-        <li>
-          The source code for the K-Scale CLI is available on GitHub{" "}
-          <a
-            href="https://github.com/kscalelabs/kscale"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-400 hover:text-blue-300 hover:underline transition-colors duration-200"
-          >
-            here
-          </a>
-          .
+        <li className="leading-relaxed">
+          <span className="font-medium">View source code:</span>
+          <div className="mt-2">
+            The K-Scale CLI is open source and available on{" "}
+            <a
+              href="https://github.com/kscalelabs/kscale"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline transition-colors duration-200"
+            >
+              GitHub
+            </a>
+          </div>
         </li>
       </ol>
     </div>
   );
 
   return submitting ? (
-    <div className="flex justify-center items-center my-2 py-2">
-      <Spinner />
+    <div className="flex justify-center items-center my-4">
+      <Spinner className="w-8 h-8" />
     </div>
   ) : (
-    <Card className="mb-6">
-      <CardHeader>
-        <CardTitle>
-          <div className="flex flex-col my-2 py-2 w-full">
+    <Card className="mt-6 border border-gray-200 dark:border-gray-700 shadow-lg">
+      <CardHeader className="p-6">
+        <CardTitle className="space-y-6">
+          <div className="flex flex-col w-full">
             {isEditing ? (
               <div className="flex flex-col items-start w-full">
                 <UrlInput url={url} setUrl={setUrl} handleSave={handleSave} />
@@ -277,11 +296,11 @@ const ListingOnshape = (props: Props) => {
                 )}
               </div>
             ) : url === null ? (
-              <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 w-full">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Button
                   onClick={() => setIsEditing(true)}
                   variant="primary"
-                  className="w-full sm:w-auto flex items-center justify-center"
+                  className="flex-1 sm:flex-none px-6 py-2 rounded-lg hover:opacity-90 transition-opacity"
                 >
                   Add Onshape URL
                 </Button>
@@ -289,12 +308,12 @@ const ListingOnshape = (props: Props) => {
                   <Button
                     onClick={toggleInstructions}
                     variant="secondary"
-                    className="w-full sm:w-auto flex items-center justify-center"
+                    className="flex-1 sm:flex-none px-6 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   >
                     <FaInfoCircle className="mr-2" />
                     {showInstructions
-                      ? "Hide URDF Instructions"
-                      : "Show URDF Instructions"}
+                      ? "Hide Instructions"
+                      : "Show Instructions"}
                   </Button>
                 )}
               </div>
@@ -330,12 +349,12 @@ const ListingOnshape = (props: Props) => {
                   <ListingOnshapeUpdate
                     listingId={listingId}
                     onClose={() => setUpdateOnshape(false)}
-                    addArtifactId={addArtifactId}
+                    addArtifacts={addArtifacts}
                   />
                 )}
               </div>
             )}
-            {showInstructions && renderUrdfInstructions()}
+            {showInstructions && renderUrdfInstructions(listingId)}
           </div>
         </CardTitle>
       </CardHeader>

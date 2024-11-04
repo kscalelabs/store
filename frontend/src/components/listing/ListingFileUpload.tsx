@@ -8,8 +8,8 @@ import {
   FileUploaderContent,
   FileUploaderItem,
 } from "@/components/listing/FileUpload";
+import { Artifact } from "@/components/listing/types";
 import Spinner from "@/components/ui/Spinner";
-import { components } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { Paperclip } from "lucide-react";
@@ -18,11 +18,11 @@ interface Props {
   description: string;
   listingId: string;
   dropzoneOptions: DropzoneOptions;
-  onUpload: (artifact: components["schemas"]["UploadArtifactResponse"]) => void;
+  addArtifacts: (artifact: Artifact[]) => void;
 }
 
 const ListingFileUpload = (props: Props) => {
-  const { description, listingId, dropzoneOptions, onUpload } = props;
+  const { description, listingId, dropzoneOptions, addArtifacts } = props;
 
   const { addErrorAlert } = useAlertQueue();
   const auth = useAuthentication();
@@ -43,7 +43,7 @@ const ListingFileUpload = (props: Props) => {
         addErrorAlert(error);
       } else {
         setFiles(null);
-        onUpload(data);
+        addArtifacts(data.artifacts);
       }
       setUploading(false);
     })();

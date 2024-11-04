@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FaDownload, FaFileDownload, FaHome } from "react-icons/fa";
+import { FaFileDownload, FaHome } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 
 import FileRenderer from "@/components/files/FileRenderer";
@@ -46,6 +46,21 @@ const FileBrowser = () => {
           addErrorAlert(error);
         } else {
           setArtifact(data);
+          if (data.urls?.large) {
+            setUntarring(true);
+            try {
+              const response = await fetch(data.urls.large);
+              const arrayBuffer = await response.arrayBuffer();
+              const uint8Array = new Uint8Array(arrayBuffer);
+              const decompressed = pako.ungzip(uint8Array);
+              const files = parseTar(decompressed);
+              setUntarredFiles(files);
+            } catch (err) {
+              addErrorAlert(`Error loading file: ${humanReadableError(err)}`);
+            } finally {
+              setUntarring(false);
+            }
+          }
         }
       } catch (err) {
         addErrorAlert(humanReadableError(err));
@@ -53,40 +68,7 @@ const FileBrowser = () => {
         setLoading(false);
       }
     })();
-  }, [
-    artifactId,
-    auth.client,
-    addErrorAlert,
-    artifact,
-    setArtifact,
-    setLoading,
-  ]);
-
-  const handleLoadAndUntar = async () => {
-    if (!artifact?.urls?.large) {
-      addErrorAlert("Artifact URL not available.");
-      return;
-    }
-
-    setUntarring(true);
-    try {
-      const response = await fetch(artifact.urls.large);
-      const arrayBuffer = await response.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-
-      // Decompress gzip
-      const decompressed = pako.ungzip(uint8Array);
-
-      // Parse tar
-      const files = parseTar(decompressed);
-
-      setUntarredFiles(files);
-    } catch (err) {
-      addErrorAlert(`Error loading file: ${humanReadableError(err)}`);
-    } finally {
-      setUntarring(false);
-    }
-  };
+  }, [artifactId, auth.client, addErrorAlert, artifact]);
 
   const handleDownload = () => {
     if (!artifact?.urls.large) {
@@ -140,17 +122,13 @@ const FileBrowser = () => {
       <div className="flex flex-col lg:flex-row lg:space-x-4">
         <div className="w-full lg:w-1/3 mb-4 lg:mb-0">
           <div className="border border-gray-300 rounded-md p-6 relative lg:h-[600px] overflow-auto">
-            {untarredFiles.length === 0 ? (
+            {untarring ? (
               <div className="absolute inset-0 flex items-center justify-center">
-                <Button
-                  onClick={handleLoadAndUntar}
-                  variant="primary"
-                  disabled={untarring}
-                  className="w-full sm:w-auto"
-                >
-                  <FaDownload className="mr-2" />
-                  {untarring ? "Loading..." : "Load and Untar"}
-                </Button>
+                <Spinner />
+              </div>
+            ) : untarredFiles.length === 0 ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-gray-500">No files available</div>
               </div>
             ) : (
               <FileTreeViewer

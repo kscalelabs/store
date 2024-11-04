@@ -17,7 +17,7 @@ import Create from "@/components/pages/Create";
 import EmailSignup from "@/components/pages/EmailSignup";
 import FileBrowser from "@/components/pages/FileBrowser";
 import Home from "@/components/pages/Home";
-import ListingDetails from "@/components/pages/ListingDetails";
+import Listing from "@/components/pages/Listing";
 import Login from "@/components/pages/Login";
 import Logout from "@/components/pages/Logout";
 import NotFound from "@/components/pages/NotFound";
@@ -33,8 +33,6 @@ import OrderSuccess from "./components/pages/OrderSuccess";
 import OrdersPage from "./components/pages/Orders";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import ResearchPage from "./components/pages/ResearchPage";
-import StompyMini from "./components/pages/StompyMini";
-import StompyPro from "./components/pages/StompyPro";
 import TerminalPage from "./components/pages/Terminal";
 import TermsOfService from "./components/pages/TermsOfService";
 
@@ -74,16 +72,13 @@ const App = () => {
                       <Route path="/create" element={<Create />} />
                       <Route
                         path="/item/:username/:slug"
-                        element={<ListingDetails />}
+                        element={<Listing />}
                       />
                       <Route path="/keys" element={<APIKeys />} />
                       <Route path="/profile/:id?" element={<Profile />} />
 
                       <Route path="/tos" element={<TermsOfService />} />
                       <Route path="/privacy" element={<PrivacyPolicy />} />
-
-                      <Route path="/pro" element={<StompyPro />} />
-                      <Route path="/mini" element={<StompyMini />} />
 
                       <Route path="/success" element={<OrderSuccess />} />
                       <Route path="/orders" element={<OrdersPage />} />

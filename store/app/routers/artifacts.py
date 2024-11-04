@@ -3,7 +3,7 @@
 import asyncio
 import logging
 import os
-from typing import Annotated
+from typing import Annotated, Self
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.responses import RedirectResponse
@@ -89,6 +89,19 @@ class SingleArtifactResponse(BaseModel):
     timestamp: int
     urls: ArtifactUrls
     is_main: bool = False
+
+    @classmethod
+    def from_artifact(cls, artifact: Artifact) -> Self:
+        return cls(
+            artifact_id=artifact.id,
+            listing_id=artifact.listing_id,
+            name=artifact.name,
+            artifact_type=artifact.artifact_type,
+            description=artifact.description,
+            timestamp=artifact.timestamp,
+            urls=get_artifact_url_response(artifact=artifact),
+            is_main=artifact.is_main,
+        )
 
 
 class ListArtifactsResponse(BaseModel):
@@ -287,7 +300,7 @@ async def delete_artifact(
     return True
 
 
-@artifacts_router.put("/list/{listing_id}/main_image", response_model=bool)
+@artifacts_router.put("/list/{listing_id}/main", response_model=bool)
 async def set_main_image(
     listing_id: str,
     artifact_id: str,
