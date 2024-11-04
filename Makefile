@@ -27,10 +27,10 @@ all:
 # ------------------------ #
 
 start-backend:
-	@fastapi dev 'store/app/main.py' --port 8080
+	@if [ -f env.sh ]; then source env.sh; fi; fastapi dev 'store/app/main.py' --port 8080
 
 start-frontend:
-	@cd frontend && npm run dev
+	@if [ -f env.sh ]; then source env.sh; fi; cd frontend && npm run dev
 
 update-api:
 	@cd frontend && rm -rf src/gen/api.ts && openapi-typescript http://localhost:8080/openapi.json --output src/gen/api.ts
