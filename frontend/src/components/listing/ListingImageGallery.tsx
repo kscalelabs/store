@@ -147,25 +147,27 @@ const ListingImageGallery = ({ listingId, ...props }: Props) => {
     setCurrentImageIndex,
     canEdit,
   } = props;
-  return (
-    artifacts.length > 0 && (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        {artifacts.map((artifact, index) => (
-          <ListingImageItem
-            key={artifact.urls.large}
-            listingId={listingId}
-            artifact={artifact}
-            index={index}
-            currentImageIndex={currentImageIndex}
-            canEdit={canEdit}
-            artifacts={artifacts}
-            setArtifacts={setArtifacts}
-            setCurrentImageIndex={setCurrentImageIndex}
-            onClick={() => setCurrentImageIndex(index)}
-          />
-        ))}
-      </div>
-    )
+  return artifacts.length > 0 ? (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      {artifacts.map((artifact, index) => (
+        <ListingImageItem
+          key={artifact.urls.large}
+          listingId={listingId}
+          artifact={artifact}
+          index={index}
+          currentImageIndex={currentImageIndex}
+          canEdit={canEdit}
+          artifacts={artifacts}
+          setArtifacts={setArtifacts}
+          setCurrentImageIndex={setCurrentImageIndex}
+          onClick={() => setCurrentImageIndex(index)}
+        />
+      ))}
+    </div>
+  ) : (
+    <div className="flex justify-center items-center h-full">
+      <p className="text-gray-500">No images yet</p>
+    </div>
   );
 };
 
