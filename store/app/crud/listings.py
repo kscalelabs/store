@@ -185,8 +185,6 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         if price is not None:
             updates["price"] = Decimal(str(price))
 
-        print(f"Updating listing {listing_id} with updates: {updates}")  # Debug log
-
         coroutines = []
         if tags is not None:
             coroutines.append(self.set_listing_tags(listing, tags))

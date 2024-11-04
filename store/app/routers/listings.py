@@ -100,10 +100,10 @@ async def get_batch_listing_info(
     for listing, artifacts in zip(listings, artifacts):
         if listing is not None:
             try:
-                artifact_responses = sorted(
-                    [SingleArtifactResponse.from_artifact(artifact=artifact) for artifact in artifacts],
-                    key=lambda x: (not x.is_main, x.url),
-                )
+                artifact_responses = [
+                    SingleArtifactResponse.from_artifact(artifact=artifact)
+                    for artifact in sorted(artifacts, key=lambda x: (not x.is_main, -x.timestamp))
+                ]
                 listing_response = ListingInfoResponse(
                     id=listing.id,
                     name=listing.name,
@@ -122,7 +122,6 @@ async def get_batch_listing_info(
             except Exception as e:
                 logger.error(f"Error creating ListingInfoResponse for listing {listing.id}: {str(e)}")
 
-    logger.info(f"Returning {len(listing_responses)} listing responses")
     return GetBatchListingsResponse(listings=listing_responses)
 
 

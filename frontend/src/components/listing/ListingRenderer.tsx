@@ -1,13 +1,13 @@
 import { useState } from "react";
 
 import ListingDescription from "@/components/listing/ListingDescription";
-import { ListingResponse } from "@/components/listing/types";
-
-import ListingFileUpload from "./ListingFileUpload";
-import ListingImageFlipper from "./ListingImageFlipper";
-import ListingImageGallery from "./ListingImageGallery";
-import ListingMetadata from "./ListingMetadata";
-import ListingName from "./ListingName";
+import ListingFileUpload from "@/components/listing/ListingFileUpload";
+import ListingImageFlipper from "@/components/listing/ListingImageFlipper";
+import ListingImageGallery from "@/components/listing/ListingImageGallery";
+import ListingMetadata from "@/components/listing/ListingMetadata";
+import ListingName from "@/components/listing/ListingName";
+import ListingOnshape from "@/components/listing/onshape/ListingOnshape";
+import { Artifact, ListingResponse } from "@/components/listing/types";
 
 const ListingRenderer = ({
   id: listingId,
@@ -20,9 +20,20 @@ const ListingRenderer = ({
   created_at: createdAt,
   artifacts: initialArtifacts,
   can_edit: canEdit,
+  user_vote: userVote,
+  onshape_url: onshapeUrl,
 }: ListingResponse) => {
   const [artifacts, setArtifacts] = useState(initialArtifacts);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const addArtifacts = (newArtifacts: Artifact[]) => {
+    setArtifacts((prevArtifacts) =>
+      [...newArtifacts, ...prevArtifacts].sort((a, b) =>
+        a.is_main ? -1 : b.is_main ? 1 : 0,
+      ),
+    );
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-4 pt-12">
       {/* Main content area - flex column on mobile, row on desktop */}
@@ -43,11 +54,13 @@ const ListingRenderer = ({
 
           {/* Metadata */}
           <ListingMetadata
+            listingId={listingId}
             creatorId={creatorId}
             creatorName={creatorName}
             creatorUsername={creatorUsername}
             views={views}
             createdAt={createdAt}
+            userVote={userVote}
           />
 
           <hr className="border-gray-200 my-4" />
@@ -77,14 +90,16 @@ const ListingRenderer = ({
           dropzoneOptions={{
             accept: { "image/*": [".png", ".jpg", ".jpeg"] },
           }}
-          onUpload={(newArtifacts) => {
-            setArtifacts((prevArtifacts) => [
-              ...newArtifacts.artifacts,
-              ...prevArtifacts,
-            ]);
-          }}
+          addArtifacts={addArtifacts}
         />
       )}
+
+      <ListingOnshape
+        listingId={listingId}
+        onshapeUrl={onshapeUrl}
+        canEdit={canEdit}
+        addArtifacts={addArtifacts}
+      />
     </div>
   );
 };

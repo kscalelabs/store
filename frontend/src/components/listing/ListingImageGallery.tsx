@@ -6,6 +6,7 @@ import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 
 import { Button } from "../ui/button";
+import ListingArtifactRenderer from "./ListingArtifactRenderer";
 
 interface Props {
   artifacts: Artifact[];
@@ -113,14 +114,10 @@ const ListingImageItem = ({
       } ${artifact.is_main ? "ring-2 ring-green-500" : ""}`}
       onClick={onClick}
     >
-      <img
-        src={artifact.urls.large}
-        alt={`Image ${index + 1}`}
-        className="w-full h-full object-cover"
-      />
+      <ListingArtifactRenderer artifact={artifact} />
       {canEdit && (
         <div className="absolute top-2 right-2 flex gap-2">
-          {!artifact.is_main && (
+          {!artifact.is_main && artifact.artifact_type === "image" && (
             <Button
               variant="secondary"
               onClick={handleSetMain}

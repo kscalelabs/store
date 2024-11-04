@@ -3,6 +3,8 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import placeholder from "@/components/listing/pics/placeholder.jpg";
 import { Artifact } from "@/components/listing/types";
 
+import ListingArtifactRenderer from "./ListingArtifactRenderer";
+
 interface Props {
   artifacts: Artifact[];
   name: string;
@@ -13,21 +15,28 @@ interface Props {
 const ListingImageFlipper = (props: Props) => {
   const { artifacts, name, currentImageIndex, setCurrentImageIndex } = props;
 
-  const currentImageUrl =
-    artifacts.length > 0
-      ? artifacts[currentImageIndex].urls.large
-      : placeholder;
+  if (artifacts.length === 0) {
+    return (
+      <div className="w-full md:w-1/2 relative">
+        <div className="aspect-square bg-white rounded-lg overflow-hidden">
+          <img
+            src={placeholder}
+            alt={name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  const currentArtifact = artifacts[currentImageIndex];
 
   return (
     <>
       {/* Main image - full width on mobile, half width on desktop */}
       <div className="w-full md:w-1/2 relative">
         <div className="aspect-square bg-white rounded-lg overflow-hidden">
-          <img
-            src={currentImageUrl}
-            alt={name}
-            className="w-full h-full object-cover"
-          />
+          <ListingArtifactRenderer artifact={currentArtifact} />
         </div>
 
         {/* Navigation arrows */}

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 
+import { Artifact } from "@/components/listing/types";
 import { Button } from "@/components/ui/button";
-import { humanReadableError } from "@/hooks/useAlertQueue";
+import { humanReadableError, useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { BACKEND_URL } from "@/lib/constants/env";
 import { cx } from "class-variance-authority";
@@ -17,21 +18,41 @@ interface Message {
 interface ListingOnshapeUpdateProps {
   listingId: string;
   onClose: () => void;
-  addArtifactId: (artifactId: string) => Promise<void>;
+  addArtifacts: (artifacts: Artifact[]) => void;
 }
 
 const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
-  const { listingId, onClose, addArtifactId } = props;
-  const { apiKeyId } = useAuthentication();
+  const { listingId, onClose, addArtifacts } = props;
+  const auth = useAuthentication();
   const [messages, setMessages] = useState<Message[]>([]);
   const messageContainerRef = useRef<HTMLDivElement>(null);
+  const { addErrorAlert } = useAlertQueue();
 
   const addMessage = (message: string, level: Level) => {
     setMessages((prevMessages) => [...prevMessages, { message, level }]);
   };
 
+  const addArtifactId = async (artifactId: string) => {
+    try {
+      const response = await auth.client.GET("/artifacts/info/{artifact_id}", {
+        params: {
+          path: {
+            artifact_id: artifactId,
+          },
+        },
+      });
+      if (response.error) {
+        addErrorAlert(response.error);
+      } else {
+        addArtifacts([response.data]);
+      }
+    } catch (error) {
+      addErrorAlert(error);
+    }
+  };
+
   useEffect(() => {
-    const url = `${BACKEND_URL}/onshape/pull/${listingId}?token=${apiKeyId}`;
+    const url = `${BACKEND_URL}/onshape/pull/${listingId}?token=${auth.apiKeyId}`;
     const eventSource = new EventSource(url);
 
     eventSource.onopen = () => {
@@ -71,7 +92,7 @@ const ListingOnshapeUpdate = (props: ListingOnshapeUpdateProps) => {
     return () => {
       eventSource.close();
     };
-  }, [listingId, apiKeyId]);
+  }, [listingId, auth.apiKeyId]);
 
   return (
     <div className="pt-4 flex flex-col max-w-full">

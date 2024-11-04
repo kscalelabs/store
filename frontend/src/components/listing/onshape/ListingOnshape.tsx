@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 
 import ListingOnshapeUpdate from "@/components/listing/onshape/ListingOnshapeUpdate";
+import { Artifact } from "@/components/listing/types";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
@@ -142,12 +143,12 @@ const UpdateButtons = (props: UpdateButtonProps) => {
 interface Props {
   listingId: string;
   onshapeUrl: string | null;
-  edit: boolean;
-  addArtifactId: (artifactId: string) => Promise<void>;
+  canEdit: boolean;
+  addArtifacts: (artifacts: Artifact[]) => void;
 }
 
 const ListingOnshape = (props: Props) => {
-  const { listingId, edit, onshapeUrl, addArtifactId } = props;
+  const { listingId, canEdit: edit, onshapeUrl, addArtifacts } = props;
   const auth = useAuthentication();
   const { addAlert, addErrorAlert } = useAlertQueue();
 
@@ -258,7 +259,7 @@ const ListingOnshape = (props: Props) => {
       <Spinner />
     </div>
   ) : (
-    <Card className="mb-6">
+    <Card className="mt-6">
       <CardHeader>
         <CardTitle>
           <div className="flex flex-col my-2 py-2 w-full">
@@ -330,7 +331,7 @@ const ListingOnshape = (props: Props) => {
                   <ListingOnshapeUpdate
                     listingId={listingId}
                     onClose={() => setUpdateOnshape(false)}
-                    addArtifactId={addArtifactId}
+                    addArtifacts={addArtifacts}
                   />
                 )}
               </div>
