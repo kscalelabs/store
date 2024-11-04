@@ -101,6 +101,27 @@ export default function RobotCard({
             )}
           </div>
           <div>
+            <p className="text-gray-11">Order ID</p>
+            {robot.order_id ? (
+              <Tooltip
+                content="View order associated with robot"
+                position="bottom"
+              >
+                <Link
+                  to={`/orders`}
+                  className="text-gray-12 underline hover:text-primary-9 flex items-center gap-1 group"
+                >
+                  <span className="group-hover:underline">
+                    {robot.order_id}
+                  </span>
+                  <ExternalLink className="h-3 w-3" />
+                </Link>
+              </Tooltip>
+            ) : (
+              <p className="text-gray-12">No associated order</p>
+            )}
+          </div>
+          <div>
             <p className="text-gray-11">Registered</p>
             <p className="text-gray-12">
               {formatDate(new Date(robot.created_at * 1000))}

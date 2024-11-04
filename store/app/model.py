@@ -690,6 +690,7 @@ class Robot(StoreBaseModel):
         listing_id: str,
         name: str,
         description: str | None = None,
+        order_id: str | None = None,
     ) -> Self:
         now = int(time.time())
         return cls(
@@ -700,4 +701,5 @@ class Robot(StoreBaseModel):
             description=description,
             created_at=now,
             updated_at=now,
+            order_id=order_id,
         )

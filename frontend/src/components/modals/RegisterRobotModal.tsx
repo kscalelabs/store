@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,23 +22,37 @@ interface RegisterRobotModalProps {
     listing_id: string;
     order_id?: string | null;
   }) => Promise<void>;
+  initialValues?: {
+    order_id?: string;
+    listing_id?: string;
+  };
 }
 
 export function RegisterRobotModal({
   isOpen,
   onClose,
   onAdd,
+  initialValues,
 }: RegisterRobotModalProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [listingId, setListingId] = useState("");
+  const [listingId, setListingId] = useState(initialValues?.listing_id || "");
+  const [orderId, setOrderId] = useState(initialValues?.order_id || "");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (initialValues) {
+      if (initialValues.listing_id) setListingId(initialValues.listing_id);
+      if (initialValues.order_id) setOrderId(initialValues.order_id);
+    }
+  }, [initialValues]);
 
   const resetModalData = useCallback(() => {
     setName("");
     setDescription("");
     setListingId("");
+    setOrderId("");
   }, []);
 
   const handleAdd = useCallback(async () => {
@@ -59,7 +73,7 @@ export function RegisterRobotModal({
           listing_id: listingId,
           name,
           description: description || null,
-          order_id: null,
+          order_id: orderId || null,
         });
         resetModalData();
       } catch (error) {
@@ -78,7 +92,7 @@ export function RegisterRobotModal({
         setIsLoading(false);
       }
     }
-  }, [name, description, listingId, onAdd, resetModalData]);
+  }, [name, description, listingId, orderId, onAdd, resetModalData]);
 
   return (
     <Dialog
@@ -140,6 +154,20 @@ export function RegisterRobotModal({
               id="listingId"
               value={listingId}
               onChange={(e) => setListingId(e.target.value)}
+              className="bg-gray-2 border-gray-3 text-gray-12"
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label
+              htmlFor="orderId"
+              className="text-sm font-medium text-gray-12"
+            >
+              Order ID (Optional)
+            </Label>
+            <Input
+              id="orderId"
+              value={orderId}
+              onChange={(e) => setOrderId(e.target.value)}
               className="bg-gray-2 border-gray-3 text-gray-12"
             />
           </div>

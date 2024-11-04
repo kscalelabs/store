@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import CancelOrderModal from "@/components/modals/CancelOrderModal";
 import EditAddressModal from "@/components/modals/EditAddressModal";
+import { RegisterRobotModal } from "@/components/modals/RegisterRobotModal";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,14 +12,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { paths } from "@/gen/api";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
+import { ApiError } from "@/lib/types/api";
 import { formatPrice } from "@/lib/utils/formatNumber";
 import { normalizeStatus } from "@/lib/utils/formatString";
+import { Bot, Plus } from "lucide-react";
 
 type OrderWithProduct =
   paths["/orders/user-orders-with-products"]["get"]["responses"][200]["content"]["application/json"][0];
 
 type Order =
   paths["/orders/user-orders"]["get"]["responses"][200]["content"]["application/json"][0];
+
+type Robot =
+  paths["/robots/check-order/{order_id}"]["get"]["responses"][200]["content"]["application/json"];
 
 const orderStatuses = [
   "processing",
@@ -47,6 +57,12 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
   const { order, product } = orderWithProduct;
   const [isEditAddressModalOpen, setIsEditAddressModalOpen] = useState(false);
   const [isCancelOrderModalOpen, setIsCancelOrderModalOpen] = useState(false);
+  const [isRegisterRobotModalOpen, setIsRegisterRobotModalOpen] =
+    useState(false);
+  const { api } = useAuthentication();
+  const { addAlert, addErrorAlert } = useAlertQueue();
+  const [associatedRobot, setAssociatedRobot] = useState<Robot | null>(null);
+  const navigate = useNavigate();
 
   const currentStatusIndex = orderStatuses.indexOf(order.status);
   const isRedStatus = redStatuses.includes(order.status);
@@ -76,6 +92,66 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
     return canModifyStatuses.includes(order.status);
   };
 
+  const handleCreateRobot = async (robotData: {
+    name: string;
+    description: string | null;
+    listing_id: string;
+    order_id?: string | null;
+  }) => {
+    try {
+      const { data, error } = await api.client.POST("/robots/create", {
+        body: robotData,
+      });
+
+      if (error) {
+        const errorMessage =
+          typeof error.detail === "string"
+            ? error.detail
+            : error.detail?.[0]?.msg || "Unknown error";
+        addErrorAlert(`Failed to create robot: ${errorMessage}`);
+        throw error;
+      }
+      setAssociatedRobot(data);
+      setIsRegisterRobotModalOpen(false);
+      addAlert("Robot registered successfully!", "success");
+    } catch (error) {
+      console.error("Error creating robot:", error);
+      if (error && typeof error === "object" && "detail" in error) {
+        const apiError = error as ApiError;
+        const errorMessage =
+          typeof apiError.detail === "string"
+            ? apiError.detail
+            : apiError.detail?.[0]?.msg || "Unknown error";
+        throw new Error(errorMessage);
+      }
+      throw new Error("Failed to create robot. Please try again.");
+    }
+  };
+
+  useEffect(() => {
+    const checkForRobot = async () => {
+      try {
+        const { data: robot } = await api.client.GET(
+          `/robots/check-order/{order_id}`,
+          { params: { path: { order_id: order.id } } },
+        );
+        setAssociatedRobot(robot || null);
+      } catch (error) {
+        console.error("Error checking for robot:", error);
+      }
+    };
+
+    checkForRobot();
+  }, [api.client, order.id]);
+
+  const handleRobotAction = () => {
+    if (associatedRobot) {
+      navigate("/terminal");
+    } else {
+      setIsRegisterRobotModalOpen(true);
+    }
+  };
+
   return (
     <div className="bg-white shadow-md rounded-lg p-4 md:p-6 w-full">
       <h2 className="text-gray-12 font-bold text-2xl mb-1">{product.name}</h2>
@@ -85,27 +161,44 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
           {normalizeStatus(order.status)}
         </span>
       </p>
-      <div className="text-sm sm:text-base text-gray-10 flex flex-col mb-4">
+
+      <div className="mb-4">
+        <Button
+          onClick={handleRobotAction}
+          variant="primary"
+          className="w-full sm:w-auto"
+        >
+          {associatedRobot ? (
+            <Bot className="mr-2 h-4 w-4" />
+          ) : (
+            <Plus className="mr-2 h-4 w-4" />
+          )}
+          {associatedRobot ? "View Robot in Terminal" : "Register Robot"}
+        </Button>
+      </div>
+
+      <div className="text-sm sm:text-base text-gray-11 flex flex-col mb-4">
         <p>Order ID: {order.id}</p>
         <div className="mb-2">
           <DropdownMenu>
-            <DropdownMenuTrigger className="text-primary-9 underline cursor-pointer">
+            <DropdownMenuTrigger className="text-gray-12 underline cursor-pointer">
               Manage order
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem
                 disabled={!canModifyOrder()}
                 onSelect={() => setIsEditAddressModalOpen(true)}
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer"
               >
                 Change delivery address
               </DropdownMenuItem>
+              <div className="border-t border-gray-11 mx-1"></div>
               <DropdownMenuItem
                 disabled={!canModifyOrder()}
                 onSelect={() => setIsCancelOrderModalOpen(true)}
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer"
               >
-                Cancel Order
+                Cancel order
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -224,6 +317,15 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
         onOpenChange={setIsCancelOrderModalOpen}
         order={order}
         onOrderUpdate={handleOrderUpdate}
+      />
+      <RegisterRobotModal
+        isOpen={isRegisterRobotModalOpen}
+        onClose={() => setIsRegisterRobotModalOpen(false)}
+        onAdd={handleCreateRobot}
+        initialValues={{
+          order_id: order.id,
+          // listing_id: product.id, // change later once listing for stompy pro/mini is created
+        }}
       />
     </div>
   );

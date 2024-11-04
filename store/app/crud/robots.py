@@ -3,11 +3,15 @@
 import time
 
 from store.app.crud.base import BaseCrud, ItemNotFoundError
-from store.app.model import Listing, Robot
+from store.app.model import Listing, Order, Robot
 
 
 class RobotsCrud(BaseCrud):
     """CRUD operations for Robots."""
+
+    @classmethod
+    def get_gsis(cls) -> set[str]:
+        return super().get_gsis().union({"listing_id", "order_id"})
 
     async def create_robot(self, robot_data: dict) -> Robot:
         """Create a new robot entry."""
@@ -16,11 +20,20 @@ class RobotsCrud(BaseCrud):
         if not listing:
             raise ItemNotFoundError(f"Listing with ID {robot_data['listing_id']} not found")
 
+        # Verify order exists if order_id is provided
+        if order_id := robot_data.get("order_id"):
+            order = await self._get_item(order_id, Order)
+            if not order:
+                raise ItemNotFoundError(f"Order with ID {order_id} not found")
+            if order.user_id != robot_data["user_id"]:
+                raise ItemNotFoundError(f"Order with ID {order_id} does not belong to this user")
+
         robot = Robot.create(
             user_id=robot_data["user_id"],
             listing_id=robot_data["listing_id"],
             name=robot_data["name"],
             description=robot_data.get("description"),
+            order_id=robot_data.get("order_id"),
         )
         await self._add_item(robot)
         return robot
@@ -48,6 +61,14 @@ class RobotsCrud(BaseCrud):
         if not robot:
             raise ItemNotFoundError("Robot not found")
 
+        # Verify order exists if order_id is being updated
+        if order_id := update_data.get("order_id"):
+            order = await self._get_item(order_id, Order)
+            if not order:
+                raise ItemNotFoundError(f"Order with ID {order_id} not found")
+            if order.user_id != robot.user_id:
+                raise ItemNotFoundError(f"Order with ID {order_id} does not belong to this user")
+
         update_data["updated_at"] = int(time.time())
         await self._update_item(robot_id, Robot, update_data)
 
@@ -57,3 +78,8 @@ class RobotsCrud(BaseCrud):
     async def delete_robot(self, robot: Robot) -> None:
         """Delete a robot."""
         await self._delete_item(robot)
+
+    async def get_robot_by_order_id(self, order_id: str) -> Robot | None:
+        """Get a robot associated with an order ID."""
+        robots = await self._get_items_from_secondary_index("order_id", order_id, Robot)
+        return robots[0] if robots else None
