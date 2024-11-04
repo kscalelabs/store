@@ -1,6 +1,4 @@
-import React from "react";
-
-const ProductPageSkeleton = () => {
+const ListingLoadingSkeleton = () => {
   return (
     <div className="flex flex-col lg:flex-row items-start justify-between max-w-7xl mx-auto py-12 gap-12 mb-24">
       {/* Left side - Image section */}
@@ -53,4 +51,4 @@ const ProductPageSkeleton = () => {
   );
 };
 
-export default ProductPageSkeleton;
+export default ListingLoadingSkeleton;

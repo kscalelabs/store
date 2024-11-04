@@ -25,9 +25,9 @@ const ListingGridCard = ({
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1 h-auto flex flex-col">
       <div className="relative pb-[100%]">
-        {listing?.image_url ? (
+        {listing?.artifacts[0].urls.large ? (
           <img
-            src={listing.image_url}
+            src={listing.artifacts[0].urls.large}
             alt={listing.name}
             className="absolute top-0 left-0 w-full h-full object-cover"
           />

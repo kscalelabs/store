@@ -16,18 +16,15 @@ from fastapi import (
 )
 from pydantic import BaseModel
 
-"""Defines all listing related API endpoints."""
-
-
-from store.app.crud.listings import SortOption  # noqa: E402
-from store.app.db import Crud  # noqa: E402
-from store.app.model import (  # noqa: E402
+from store.app.crud.listings import SortOption
+from store.app.db import Crud
+from store.app.model import (
     Listing,
     User,
     can_write_listing,
-    get_artifact_url,
 )
-from store.app.routers.users import (  # noqa: E402
+from store.app.routers.artifacts import SingleArtifactResponse
+from store.app.routers.users import (
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
     maybe_get_user_from_api_key,
@@ -70,7 +67,7 @@ class ListingInfoResponse(BaseModel):
     username: str | None
     description: str | None
     child_ids: list[str]
-    image_url: str | None
+    artifacts: list[SingleArtifactResponse]
     onshape_url: str | None
     created_at: int
     views: int
@@ -103,29 +100,18 @@ async def get_batch_listing_info(
     for listing, artifacts in zip(listings, artifacts):
         if listing is not None:
             try:
-                image_url = next(
-                    (
-                        get_artifact_url(artifact=artifact, size="small")
-                        for artifact in artifacts
-                        if artifact.artifact_type == "image" and artifact.is_main
-                    ),
-                    next(
-                        (
-                            get_artifact_url(artifact=artifact, size="small")
-                            for artifact in artifacts
-                            if artifact.artifact_type == "image"
-                        ),
-                        "https://flowbite.com/docs/images/examples/image-1@2x.jpg",
-                    ),
+                artifact_responses = sorted(
+                    [SingleArtifactResponse.from_artifact(artifact=artifact) for artifact in artifacts],
+                    key=lambda x: (not x.is_main, x.url),
                 )
                 listing_response = ListingInfoResponse(
                     id=listing.id,
                     name=listing.name,
-                    slug=listing.slug,  # This can be None
+                    slug=listing.slug,
                     username=listing.username,
                     description=listing.description,
                     child_ids=listing.child_ids,
-                    image_url=image_url,
+                    artifacts=artifact_responses,
                     onshape_url=listing.onshape_url,
                     created_at=listing.created_at,
                     views=listing.views,
@@ -330,6 +316,7 @@ class GetListingResponse(BaseModel):
     slug: str | None
     description: str | None
     child_ids: list[str]
+    artifacts: list[SingleArtifactResponse]
     tags: list[str]
     onshape_url: str | None
     can_edit: bool
@@ -338,33 +325,35 @@ class GetListingResponse(BaseModel):
     score: int
     user_vote: bool | None
     creator_id: str
+    creator_username: str | None
     creator_name: str | None
     price: float | None
     stripe_link: str | None
 
 
-@listings_router.get("/{id}", response_model=GetListingResponse)
-async def get_listing(
-    id: str,
-    user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> GetListingResponse:
-    listing, listing_tags = await asyncio.gather(
-        crud.get_listing(id),
-        crud.get_tags_for_listing(id),
+async def get_listing_common(listing: Listing, user: User | None, crud: Crud) -> GetListingResponse:
+    listing_tags, _ = await asyncio.gather(
+        crud.get_tags_for_listing(listing.id),
+        crud.increment_view_count(listing),
     )
-    if listing is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
 
     user_vote = None
-    if user and (vote := await crud.get_user_vote(user.id, id)) is not None:
+    if user and (vote := await crud.get_user_vote(user.id, listing.id)) is not None:
         user_vote = vote.is_upvote
 
     creator_name = None
+    creator_username = None
     if (creator := await crud.get_user_public(listing.user_id)) is not None:
         creator_name = " ".join(filter(None, [creator.first_name, creator.last_name]))
+        creator_username = creator.username
 
     price = float(listing.price) if listing.price is not None else None
+
+    raw_artifacts = await crud.get_listing_artifacts(listing.id)
+    artifacts = [
+        SingleArtifactResponse.from_artifact(artifact=artifact)
+        for artifact in sorted(raw_artifacts, key=lambda x: (not x.is_main, -x.timestamp))
+    ]
 
     return GetListingResponse(
         id=listing.id,
@@ -373,6 +362,7 @@ async def get_listing(
         slug=listing.slug,
         description=listing.description,
         child_ids=listing.child_ids,
+        artifacts=artifacts,
         tags=listing_tags,
         onshape_url=listing.onshape_url,
         can_edit=user is not None and await can_write_listing(user, listing),
@@ -382,20 +372,35 @@ async def get_listing(
         user_vote=user_vote,
         creator_id=listing.user_id,
         creator_name=creator_name,
+        creator_username=creator_username,
         price=price,
         stripe_link=listing.stripe_link,
     )
 
 
-@listings_router.post("/{id}/view")
-async def increment_view_count(
-    id: str,
+@listings_router.get("/{listing_id}", response_model=GetListingResponse)
+async def get_listing(
+    listing_id: str,
+    user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> None:
-    listing = await crud.get_listing(id)
+) -> GetListingResponse:
+    listing = await crud.get_listing(listing_id)
     if listing is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
-    await crud.increment_view_count(id)
+    return await get_listing_common(listing, user, crud)
+
+
+@listings_router.get("/{username}/{slug}", response_model=GetListingResponse)
+async def get_listing_by_username_and_slug(
+    username: str,
+    slug: str,
+    user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> GetListingResponse:
+    listing = await crud.get_listing_by_username_and_slug(username, slug)
+    if listing is None:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    return await get_listing_common(listing, user, crud)
 
 
 class VoteListingResponse(BaseModel):
@@ -438,47 +443,3 @@ async def update_listing_slug(
         raise HTTPException(status_code=400, detail="Slug is already taken for this user")
     await crud.set_slug(id, new_slug)
     return True
-
-
-@listings_router.get("/{username}/{slug}", response_model=GetListingResponse)
-async def get_listing_by_username_and_slug(
-    username: str,
-    slug: str,
-    user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> GetListingResponse:
-    listing = await crud.get_listing_by_username_and_slug(username, slug)
-    if listing is None:
-        raise HTTPException(status_code=404, detail="Listing not found")
-
-    listing_tags = await crud.get_tags_for_listing(listing.id)
-
-    user_vote = None
-    if user and (vote := await crud.get_user_vote(user.id, listing.id)) is not None:
-        user_vote = vote.is_upvote
-
-    creator_name = None
-    if (creator := await crud.get_user_public(listing.user_id)) is not None:
-        creator_name = " ".join(filter(None, [creator.first_name, creator.last_name]))
-
-    price = float(listing.price) if listing.price is not None else None
-
-    return GetListingResponse(
-        id=listing.id,
-        name=listing.name,
-        username=listing.username,
-        slug=listing.slug,
-        description=listing.description,
-        child_ids=listing.child_ids,
-        tags=listing_tags,
-        onshape_url=listing.onshape_url,
-        can_edit=user is not None and await can_write_listing(user, listing),
-        created_at=listing.created_at,
-        views=listing.views,
-        score=listing.score,
-        user_vote=user_vote,
-        creator_id=listing.user_id,
-        creator_name=creator_name,
-        price=price,
-        stripe_link=listing.stripe_link,
-    )

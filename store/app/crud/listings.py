@@ -231,10 +231,10 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         listing_tags = await self._get_items_from_secondary_index("name", tag, ListingTag)
         return [t.listing_id for t in listing_tags]
 
-    async def increment_view_count(self, listing_id: str) -> None:
+    async def increment_view_count(self, listing: Listing) -> None:
         table = await self.db.Table(TABLE_NAME)
         await table.update_item(
-            Key={"id": listing_id},
+            Key={"id": listing.id},
             UpdateExpression="ADD #views :inc",
             ExpressionAttributeNames={"#views": "views"},
             ExpressionAttributeValues={":inc": 1},
@@ -370,8 +370,10 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         user = await self._get_unique_item_from_secondary_index("username", username, User)
         if user is None:
             return None
-        listings = await self._get_items_from_secondary_index("user_id", user.id, Listing)
-        return next((listing for listing in listings if listing.slug == slug), None)
+        listings = await self._get_items_from_secondary_index(
+            "user_id", user.id, Listing, additional_filter_expression=Attr("slug").eq(slug)
+        )
+        return listings[0] if listings else None
 
     async def update_username_for_user_listings(self, user_id: str, new_username: str) -> None:
         listings = await self._get_items_from_secondary_index("user_id", user_id, Listing)

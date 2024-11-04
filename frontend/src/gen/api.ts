@@ -253,7 +253,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/artifacts/list/{listing_id}/main_image": {
+    "/artifacts/list/{listing_id}/main": {
         parameters: {
             query?: never;
             header?: never;
@@ -262,7 +262,7 @@ export interface paths {
         };
         get?: never;
         /** Set Main Image */
-        put: operations["set_main_image_artifacts_list__listing_id__main_image_put"];
+        put: operations["set_main_image_artifacts_list__listing_id__main_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -630,7 +630,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/listings/{id}": {
+    "/listings/{listing_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -638,7 +638,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Listing */
-        get: operations["get_listing_listings__id__get"];
+        get: operations["get_listing_listings__listing_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -647,17 +647,17 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/listings/{id}/view": {
+    "/listings/{username}/{slug}": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Get Listing By Username And Slug */
+        get: operations["get_listing_by_username_and_slug_listings__username___slug__get"];
         put?: never;
-        /** Increment View Count */
-        post: operations["increment_view_count_listings__id__view_post"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -692,23 +692,6 @@ export interface paths {
         get?: never;
         /** Update Listing Slug */
         put: operations["update_listing_slug_listings_edit__id__slug_put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/listings/{username}/{slug}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Listing By Username And Slug */
-        get: operations["get_listing_by_username_and_slug_listings__username___slug__get"];
-        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -1352,6 +1335,8 @@ export interface components {
             description: string | null;
             /** Child Ids */
             child_ids: string[];
+            /** Artifacts */
+            artifacts: components["schemas"]["SingleArtifactResponse"][];
             /** Tags */
             tags: string[];
             /** Onshape Url */
@@ -1368,6 +1353,8 @@ export interface components {
             user_vote: boolean | null;
             /** Creator Id */
             creator_id: string;
+            /** Creator Username */
+            creator_username: string | null;
             /** Creator Name */
             creator_name: string | null;
             /** Price */
@@ -1544,8 +1531,8 @@ export interface components {
             description: string | null;
             /** Child Ids */
             child_ids: string[];
-            /** Image Url */
-            image_url: string | null;
+            /** Artifacts */
+            artifacts: components["schemas"]["SingleArtifactResponse"][];
             /** Onshape Url */
             onshape_url: string | null;
             /** Created At */
@@ -2329,7 +2316,7 @@ export interface operations {
             };
         };
     };
-    set_main_image_artifacts_list__listing_id__main_image_put: {
+    set_main_image_artifacts_list__listing_id__main_put: {
         parameters: {
             query: {
                 artifact_id: string;
@@ -3007,12 +2994,12 @@ export interface operations {
             };
         };
     };
-    get_listing_listings__id__get: {
+    get_listing_listings__listing_id__get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                id: string;
+                listing_id: string;
             };
             cookie?: never;
         };
@@ -3038,12 +3025,13 @@ export interface operations {
             };
         };
     };
-    increment_view_count_listings__id__view_post: {
+    get_listing_by_username_and_slug_listings__username___slug__get: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                id: string;
+                username: string;
+                slug: string;
             };
             cookie?: never;
         };
@@ -3055,7 +3043,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["GetListingResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3154,38 +3142,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": boolean;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_listing_by_username_and_slug_listings__username___slug__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                username: string;
-                slug: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["GetListingResponse"];
                 };
             };
             /** @description Validation Error */

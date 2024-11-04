@@ -28,7 +28,6 @@ const UploadContent: FC<UploadContentProps> = ({ images, onChange }) => {
             ...images,
             { file, data_url: URL.createObjectURL(file) },
           ];
-          console.log("Image pasted, updating image list:", newImageList);
           onChange(newImageList);
           addAlert("Image pasted from clipboard!", "success");
         }
@@ -51,7 +50,6 @@ const UploadContent: FC<UploadContentProps> = ({ images, onChange }) => {
         multiple
         value={images}
         onChange={(imageList) => {
-          console.log("Images updated:", imageList);
           onChange(imageList);
         }}
         maxNumber={maxNumber}

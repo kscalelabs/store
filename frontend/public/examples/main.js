@@ -299,12 +299,6 @@ export class MuJoCoDemo {
       cvel_slice !== -1 ? this.simulation.cvel.slice(cvel_slice) : [];
     const qfrc_actuator = this.simulation.qfrc_actuator;
 
-    // console.log('qpos length:', qpos.length);
-    // console.log('qvel length:', qvel.length);
-    // console.log('cinert length:', cinert.length);
-    // console.log('cvel length:', cvel.length);
-    // console.log('qfrc_actuator length:', qfrc_actuator.length);
-
     const obsComponents = [
       ...qpos,
       ...qvel,
