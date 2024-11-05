@@ -81,39 +81,27 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
     () =>
       createClient<paths>({
         baseUrl: BACKEND_URL,
+        headers: apiKeyId ? { Authorization: `Bearer ${apiKeyId}` } : {},
       }),
     [apiKeyId],
   );
 
-  // Add the API key to the request headers, if the user is authenticated.
-  useEffect(() => {
-    if (apiKeyId !== null) {
-      client.use({
-        async onRequest({ request }) {
-          request.headers.set("Authorization", `Bearer ${apiKeyId}`);
-          return request;
-        },
-        async onResponse({ response }) {
-          return response;
-        },
-      });
-    }
-  }, [apiKeyId, client]);
-
   const fetchCurrentUser = useCallback(async () => {
-    if (apiKeyId && !currentUser) {
+    if (apiKeyId) {
       setIsLoading(true);
       const { data, error } = await client.GET("/users/public/me");
       if (error) {
         console.error("Failed to fetch current user", error);
+        logout();
       } else {
         setCurrentUser(data);
       }
       setIsLoading(false);
-    } else if (!apiKeyId) {
+    } else {
+      setCurrentUser(null);
       setIsLoading(false);
     }
-  }, [apiKeyId, client, currentUser]);
+  }, [apiKeyId, client]);
 
   useEffect(() => {
     fetchCurrentUser();

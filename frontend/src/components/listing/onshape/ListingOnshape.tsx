@@ -12,6 +12,7 @@ import {
 import ListingOnshapeUpdate from "@/components/listing/onshape/ListingOnshapeUpdate";
 import { Artifact } from "@/components/listing/types";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
+import CopyableCode from "@/components/ui/CopyableCode";
 import { Input } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
 import { Tooltip } from "@/components/ui/ToolTip";
@@ -36,7 +37,7 @@ const UrlInput = (props: UrlInputProps) => {
       onKeyDown={async (e) => {
         if (e.key === "Enter") await handleSave();
       }}
-      className="border border-gray-200 dark:border-gray-700 rounded-md px-4 py-2 w-full"
+      className="border border-gray-200 rounded-md px-4 py-2 w-full"
       placeholder="Enter Onshape URL..."
       autoFocus
     />
@@ -47,21 +48,15 @@ interface UrlDisplayProps {
   url: string | null;
   onCopy: () => void;
   disabled: boolean;
-  isEditable?: boolean;
 }
 
-const UrlDisplay = ({
-  url,
-  onCopy,
-  disabled = false,
-  isEditable = true,
-}: UrlDisplayProps) => (
+const UrlDisplay = ({ url, onCopy, disabled = false }: UrlDisplayProps) => (
   <div className="flex flex-col sm:flex-row gap-2 w-full">
     <a
       href={url || ""}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-800 rounded-md hover:underline truncate"
+      className="flex-1 px-4 py-2 bg-gray-50 rounded-md hover:underline truncate"
     >
       Linked Onshape Document
     </a>
@@ -251,36 +246,24 @@ const ListingOnshape = (props: Props) => {
   };
 
   const renderUrdfInstructions = (listingId: string) => (
-    <div className="mt-6 p-8 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg w-full border border-gray-200 dark:border-gray-700">
-      <h4 className="text-2xl font-semibold mb-6 text-blue-600 dark:text-blue-400">
+    <div className="mt-6 p-8 bg-gray-50 rounded-xl shadow-lg w-full border border-gray-200">
+      <h4 className="text-2xl font-semibold mb-6 text-blue-600">
         URDF Upload Instructions
       </h4>
       <ol className="list-decimal list-outside ml-6 space-y-6 text-base">
         <li className="leading-relaxed">
-          <span className="font-medium">Install the K-Scale CLI:</span>
-          <pre className="bg-gray-100 dark:bg-gray-900 text-green-600 dark:text-green-400 p-4 rounded-lg mt-3 font-mono text-sm border border-gray-200 dark:border-gray-700">
-            pip install kscale
-          </pre>
+          Install the K-Scale CLI:
+          <CopyableCode
+            code="pip install kscale"
+            className="bg-gray-100 text-green-600 p-4 rounded-lg mt-3 font-mono text-sm border border-gray-200"
+          />
         </li>
         <li className="leading-relaxed">
-          <span className="font-medium">Upload your URDF file:</span>
-          <pre className="bg-gray-100 dark:bg-gray-900 text-green-600 dark:text-green-400 p-4 rounded-lg mt-3 font-mono text-sm border border-gray-200 dark:border-gray-700">
-            kscale urdf upload {listingId}
-          </pre>
-        </li>
-        <li className="leading-relaxed">
-          <span className="font-medium">View source code:</span>
-          <div className="mt-2">
-            The K-Scale CLI is open source and available on{" "}
-            <a
-              href="https://github.com/kscalelabs/kscale"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline transition-colors duration-200"
-            >
-              GitHub
-            </a>
-          </div>
+          Upload your URDF file:
+          <CopyableCode
+            code={`kscale urdf upload ${listingId}`}
+            className="bg-gray-100 text-green-600 p-4 rounded-lg mt-3 font-mono text-sm border border-gray-200"
+          />
         </li>
       </ol>
     </div>
@@ -341,12 +324,7 @@ const ListingOnshape = (props: Props) => {
             />
           </>
         ) : (
-          <UrlDisplay
-            url={url}
-            onCopy={handleCopy}
-            disabled={false}
-            isEditable={false}
-          />
+          <UrlDisplay url={url} onCopy={handleCopy} disabled={false} />
         )}
         {updateOnshape && (
           <ListingOnshapeUpdate
@@ -360,7 +338,7 @@ const ListingOnshape = (props: Props) => {
   };
 
   return (
-    <Card className="mt-6 border border-gray-200 dark:border-gray-700 shadow-lg">
+    <Card className="mt-6 border border-gray-200 shadow-lg">
       <CardHeader className="p-6">
         <CardTitle className="space-y-6">
           {submitting ? (

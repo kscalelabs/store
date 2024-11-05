@@ -147,7 +147,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
             <h1 className="text-3xl font-bold text-primary-9">
               {user.first_name || user.last_name
                 ? `${user.first_name || ""} ${user.last_name || ""}`
-                : "No name set"}
+                : "Anonymous Creator"}
             </h1>
             <p className="text-sm text-gray-1 bg-gray-10 px-3 py-1 rounded-md">
               @{user.username}

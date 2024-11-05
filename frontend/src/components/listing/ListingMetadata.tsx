@@ -1,10 +1,15 @@
 import { useState } from "react";
-import { FaArrowDown, FaArrowUp, FaEye } from "react-icons/fa";
+import {
+  FaArrowDown,
+  FaArrowUp,
+  FaClipboard,
+  FaEye,
+  FaUser,
+} from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
-
-import ListingRegisterRobot from "./ListingRegisterRobot";
 
 interface Props {
   listingId: string;
@@ -31,25 +36,42 @@ const ListingMetadata = ({
   const [voting, setVoting] = useState(false);
   const [userVote, setUserVote] = useState(initialUserVote);
   const { addErrorAlert, addAlert } = useAlertQueue();
+  const navigate = useNavigate();
 
   const handleVote = async (vote: boolean) => {
     setVoting(true);
     try {
-      const response = await auth.client.POST("/listings/{id}/vote", {
-        params: {
-          path: {
-            id: listingId,
+      if (userVote === vote) {
+        const response = await auth.client.DELETE("/listings/{id}/vote", {
+          params: {
+            path: {
+              id: listingId,
+            },
           },
-          query: {
-            upvote: vote,
-          },
-        },
-      });
-      if (response.error) {
-        addErrorAlert(response.error);
+        });
+        if (response.error) {
+          addErrorAlert(response.error);
+        } else {
+          addAlert("Vote removed", "success");
+          setUserVote(null);
+        }
       } else {
-        addAlert("Vote cast successfully", "success");
-        setUserVote(vote);
+        const response = await auth.client.POST("/listings/{id}/vote", {
+          params: {
+            path: {
+              id: listingId,
+            },
+            query: {
+              upvote: vote,
+            },
+          },
+        });
+        if (response.error) {
+          addErrorAlert(response.error);
+        } else {
+          addAlert("Vote added", "success");
+          setUserVote(vote);
+        }
       }
     } catch (error) {
       addErrorAlert(error);
@@ -58,30 +80,14 @@ const ListingMetadata = ({
     }
   };
 
+  const listingTag = `${creatorUsername}/${listingSlug}`;
+
   return (
     <>
-      {/* Listed by */}
-      <div className="flex items-center gap-2 text-sm mb-2">
-        <span>Created by</span>
-        <a
-          href={`/profile/${creatorId}`}
-          className="text-blue-500 hover:underline"
-        >
-          {creatorName ?? creatorUsername ?? "Creator"}
-        </a>
-      </div>
-
-      {/* Listing slug */}
-      <div className="flex items-center gap-2 text-sm mb-2">
-        <span>Listing</span>
-        <span className="text-gray-12">
-          {creatorUsername}/{listingSlug}
-        </span>
-      </div>
-
-      {/* Voting and other metadata */}
-      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-        <div className="flex items-center gap-2">
+      {/* Metadata container - all items aligned left */}
+      <div className="flex flex-wrap items-center gap-4 text-sm mb-2">
+        {/* Voting buttons */}
+        <div className="flex items-center gap-2 text-gray-600">
           <button
             className={`p-1 hover:bg-gray-100 rounded ${userVote === true && !voting ? "text-green-500" : ""}`}
             onClick={() => handleVote(true)}
@@ -99,14 +105,42 @@ const ListingMetadata = ({
             <FaArrowDown />
           </button>
         </div>
-        <span className="flex items-center gap-1">
+
+        {/* Creator button */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              navigate(`/profile/${creatorId}`);
+            }}
+            className="text-blue-500 hover:bg-gray-100 rounded px-1 flex items-center gap-1"
+          >
+            <FaUser className="text-xs" />
+            {creatorName ?? creatorUsername ?? "Creator"}
+          </button>
+        </div>
+
+        {/* Listing tag */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(`${listingTag}`);
+              addAlert("Copied to clipboard!", "success");
+            }}
+            className="text-blue-500 hover:bg-gray-100 rounded px-1 flex items-center gap-1"
+          >
+            <FaClipboard className="text-xs" />
+            {listingTag}
+          </button>
+        </div>
+
+        {/* Stats */}
+        <span className="flex items-center gap-1 text-gray-600">
           <FaEye /> {views} views
         </span>
-        <span>Posted {new Date(createdAt * 1000).toLocaleDateString()}</span>
+        <span className="text-gray-600">
+          Posted {new Date(createdAt * 1000).toLocaleDateString()}
+        </span>
       </div>
-
-      {/* Build this robot */}
-      <ListingRegisterRobot listingId={listingId} />
     </>
   );
 };

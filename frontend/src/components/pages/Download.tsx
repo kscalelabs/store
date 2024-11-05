@@ -79,7 +79,6 @@ export default function DownloadsPage() {
           `Upload failed: ${response.error instanceof Error ? response.error.message : String(response.error)}`,
         );
       } else {
-        console.log("Upload successful:", response.data);
         addAlert("Kernel image uploaded successfully", "success");
         setKernelImages((prevKernelImages) => [
           response.data as KernelImageResponse,

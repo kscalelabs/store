@@ -1334,10 +1334,8 @@ export interface components {
             user_vote: boolean | null;
             /** Creator Id */
             creator_id: string;
-            /** Creator Username */
-            creator_username: string;
             /** Creator Name */
-            creator_name: string;
+            creator_name: string | null;
             /** Stripe Link */
             stripe_link: string | null;
         };

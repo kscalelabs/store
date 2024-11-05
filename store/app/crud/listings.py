@@ -118,9 +118,6 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         return await self._list_items(Listing)
 
     async def add_listing(self, listing: Listing) -> None:
-        if listing.username is None:
-            user = await self._get_item(listing.user_id, User, throw_if_missing=True)
-            listing.username = user.username
         await self._add_item(listing)
 
     async def _delete_listing_artifacts(self, listing: Listing) -> None:
@@ -150,6 +147,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         onshape_url: str | None = None,
         stripe_link: str | None = None,
         price: float | None = None,
+        slug: str | None = None,
     ) -> None:
         listing = await self.get_listing(listing_id)
         if listing is None:
@@ -166,6 +164,8 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             updates["stripe_link"] = stripe_link
         if price is not None:
             updates["price"] = Decimal(str(price))
+        if slug is not None:
+            updates["slug"] = slug
 
         coroutines = []
         if tags is not None:
@@ -304,7 +304,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         votes = await self._get_items_from_secondary_index("user_id", user_id, ListingVote)
         return [vote for vote in votes if vote.listing_id in listing_ids]
 
-    async def get_upvoted_listings(self, user_id: str, page: int = 1) -> tuple[list[dict], bool]:
+    async def get_upvoted_listings(self, user_id: str, page: int = 1) -> tuple[list[Listing], bool]:
         user_votes = await self._get_items_from_secondary_index(
             secondary_index_name="user_id", secondary_index_value=user_id, item_class=ListingVote
         )
@@ -323,16 +323,8 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         start = (page - 1) * self.PAGE_SIZE
         end = start + self.PAGE_SIZE
         paginated_listings = listings[start:end]
-
         has_more = len(upvoted_listing_ids) > end
-
-        # Convert Listing objects to dictionaries with username and slug
-        listing_dicts = []
-        for listing in paginated_listings:
-            user = await self._get_item(listing.user_id, User)
-            listing_dicts.append({"id": listing.id, "username": user.username if user else None, "slug": listing.slug})
-
-        return listing_dicts, has_more
+        return paginated_listings, has_more
 
     async def is_slug_taken(self, user_id: str, slug: str) -> bool:
         return await self.get_listing_by_username_and_slug(user_id, slug) is not None

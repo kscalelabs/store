@@ -204,7 +204,6 @@ async def add_listing(
         child_ids=child_ids.split(",") if child_ids else [],
         slug=slug,
         user_id=user.id,
-        username=user.username,
         stripe_link=stripe_link,
     )
     await crud.add_listing(listing)
@@ -308,10 +307,7 @@ async def get_upvoted_listings(
     page: int = Query(1, description="Page number for pagination"),
 ) -> ListListingsResponse:
     listings, has_next = await crud.get_upvoted_listings(user.id, page)
-    listing_infos = [
-        ListingInfo(id=listing["id"], username=listing["username"] or "Unknown", slug=listing["slug"])
-        for listing in listings
-    ]
+    listing_infos = [ListingInfo(id=listing.id, username=user.username, slug=listing.slug) for listing in listings]
     return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
 
@@ -331,8 +327,7 @@ class GetListingResponse(BaseModel):
     score: int
     user_vote: bool | None
     creator_id: str
-    creator_username: str
-    creator_name: str
+    creator_name: str | None
     stripe_link: str | None
 
 
@@ -354,9 +349,6 @@ async def get_listing_common(listing: Listing, user: User | None, crud: Crud) ->
         for artifact in sorted(raw_artifacts, key=lambda x: (not x.is_main, -x.timestamp))
     ]
 
-    print("here")
-    print("can write:", await can_write_listing(user, listing))
-
     response = GetListingResponse(
         id=listing.id,
         name=listing.name,
@@ -376,8 +368,6 @@ async def get_listing_common(listing: Listing, user: User | None, crud: Crud) ->
         creator_name=creator.name,
         stripe_link=listing.stripe_link,
     )
-
-    print("response:", response)
 
     return response
 
