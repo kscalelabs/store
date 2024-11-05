@@ -30,7 +30,7 @@ const ListingArtifactRenderer = ({ artifact }: Props) => {
           <div className="text-center">
             <div className="font-medium">{artifact.name}</div>
             <div className="text-sm text-gray-600">
-              Created {new Date(artifact.timestamp * 1000).toLocaleDateString()}
+              {new Date(artifact.timestamp * 1000).toLocaleString()}
             </div>
           </div>
         </div>
