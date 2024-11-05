@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 
 import CancelOrderModal from "@/components/modals/CancelOrderModal";
 import EditAddressModal from "@/components/modals/EditAddressModal";
@@ -10,9 +9,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { paths } from "@/gen/api";
-import { useAlertQueue } from "@/hooks/useAlertQueue";
-import { useAuthentication } from "@/hooks/useAuth";
-import { ApiError } from "@/lib/types/api";
 import { formatPrice } from "@/lib/utils/formatNumber";
 import { normalizeStatus } from "@/lib/utils/formatString";
 
@@ -21,9 +17,6 @@ type OrderWithProduct =
 
 type Order =
   paths["/orders/user-orders"]["get"]["responses"][200]["content"]["application/json"][0];
-
-type Robot =
-  paths["/robots/check-order/{order_id}"]["get"]["responses"][200]["content"]["application/json"];
 
 const orderStatuses = [
   "processing",
@@ -55,10 +48,6 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
   const { order, product } = orderWithProduct;
   const [isEditAddressModalOpen, setIsEditAddressModalOpen] = useState(false);
   const [isCancelOrderModalOpen, setIsCancelOrderModalOpen] = useState(false);
-  const { api } = useAuthentication();
-  const { addAlert, addErrorAlert } = useAlertQueue();
-  const [associatedRobot, setAssociatedRobot] = useState<Robot | null>(null);
-  const navigate = useNavigate();
 
   const currentStatusIndex = orderStatuses.indexOf(order.status);
   const isRedStatus = redStatuses.includes(order.status);
@@ -87,57 +76,6 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
   const canModifyOrder = () => {
     return canModifyStatuses.includes(order.status);
   };
-
-  const handleCreateRobot = async (robotData: {
-    name: string;
-    description: string | null;
-    listing_id: string;
-    order_id?: string | null;
-  }) => {
-    try {
-      const { data, error } = await api.client.POST("/robots/create", {
-        body: robotData,
-      });
-
-      if (error) {
-        const errorMessage =
-          typeof error.detail === "string"
-            ? error.detail
-            : error.detail?.[0]?.msg || "Unknown error";
-        addErrorAlert(`Failed to create robot: ${errorMessage}`);
-        throw error;
-      }
-      setAssociatedRobot(data);
-      addAlert("Robot registered successfully!", "success");
-    } catch (error) {
-      console.error("Error creating robot:", error);
-      if (error && typeof error === "object" && "detail" in error) {
-        const apiError = error as ApiError;
-        const errorMessage =
-          typeof apiError.detail === "string"
-            ? apiError.detail
-            : apiError.detail?.[0]?.msg || "Unknown error";
-        throw new Error(errorMessage);
-      }
-      throw new Error("Failed to create robot. Please try again.");
-    }
-  };
-
-  useEffect(() => {
-    const checkForRobot = async () => {
-      try {
-        const { data: robot } = await api.client.GET(
-          `/robots/check-order/{order_id}`,
-          { params: { path: { order_id: order.id } } },
-        );
-        setAssociatedRobot(robot || null);
-      } catch (error) {
-        console.error("Error checking for robot:", error);
-      }
-    };
-
-    checkForRobot();
-  }, [api.client, order.id]);
 
   return (
     <div className="bg-white shadow-md rounded-lg p-4 md:p-6 w-full">
