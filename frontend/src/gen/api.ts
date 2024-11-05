@@ -921,6 +921,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/robots/urdf/{listing_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Robot Urdf
+         * @description Get the URDF for a robot.
+         */
+        get: operations["get_robot_urdf_robots_urdf__listing_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/stripe/create-payment-intent": {
         parameters: {
             query?: never;
@@ -1689,6 +1709,11 @@ export interface components {
             /** Robots */
             robots: components["schemas"]["SingleRobotResponse"][];
         };
+        /** RobotURDFResponse */
+        RobotURDFResponse: {
+            /** Urdf Url */
+            urdf_url: string | null;
+        };
         /** SetModeratorRequest */
         SetModeratorRequest: {
             /** User Id */
@@ -1725,6 +1750,11 @@ export interface components {
              * @default false
              */
             is_main: boolean;
+            /**
+             * Can Edit
+             * @default false
+             */
+            can_edit: boolean;
         };
         /** SingleRobotResponse */
         SingleRobotResponse: {
@@ -3490,6 +3520,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Robot"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_robot_urdf_robots_urdf__listing_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                listing_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RobotURDFResponse"];
                 };
             };
             /** @description Validation Error */

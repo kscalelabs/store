@@ -13,7 +13,7 @@ const TerminalAllRobots = ({ robots, onDeleteRobot }: Props) => {
   const navigate = useNavigate();
 
   return (
-    <div className="p-6 min-h-screen rounded-xl max-w-7xl mx-auto">
+    <div className="p-6 rounded-xl max-w-7xl mx-auto">
       {robots && robots.length > 0 ? (
         <div className="grid gap-2 md:gap-6 md:grid-cols-1 lg:grid-cols-2">
           {robots.map((robot) => (

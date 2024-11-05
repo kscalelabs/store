@@ -1,10 +1,13 @@
 import { useState } from "react";
+import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 import "@/components/terminal/Terminal.css";
 
 import AudioIcon from "@/components/icons/AudioIcon";
 import { SingleRobotResponse } from "@/components/terminal/types";
+
+import TerminalRobotModel from "./TerminalRobotModel";
 
 interface Props {
   robot: SingleRobotResponse;
@@ -28,10 +31,11 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
   const [description, setDescription] = useState(robot.description || "");
   const [isUpdatingName, setIsUpdatingName] = useState(false);
   const [isUpdatingDescription, setIsUpdatingDescription] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState(
-    ConnectionStatus.Disconnected,
-  );
-  const [terminalMessages, setTerminalMessages] = useState<string[]>([]);
+  const [terminalMessages, setTerminalMessages] = useState<string[]>([
+    "Welcome to the terminal!",
+    `Robot ID: ${robot.robot_id}`,
+    `Listing ID: ${robot.listing_id}`,
+  ]);
 
   const addTerminalMessage = (message: string) => {
     setTerminalMessages((prev) => [...prev, message]);
@@ -69,7 +73,6 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
 
   const handleConnectionChange = (status: ConnectionStatus) => {
     addTerminalMessage(`Connection status: ${status}`);
-    setConnectionStatus(status);
   };
 
   const handleConnect = () => {
@@ -82,13 +85,21 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
 
   return (
     <div className="min-h-screen bg-gray-900 p-4 font-mono text-green-500 rounded-xl">
-      {/* Back button */}
-      <button
-        onClick={() => navigate("/terminal")}
-        className="mb-4 border border-green-500 px-4 py-2 hover:bg-green-500 hover:text-black transition-colors"
-      >
-        ← Back to Terminal
-      </button>
+      {/* Navigation buttons */}
+      <div className="flex gap-4 mb-4">
+        <button
+          onClick={() => navigate("/terminal")}
+          className="border border-green-500 px-4 py-2 hover:bg-green-500 hover:text-black transition-colors flex items-center gap-2"
+        >
+          <FaArrowLeft /> All Robots
+        </button>
+        <button
+          onClick={() => navigate(`/item/${robot.username}/${robot.slug}`)}
+          className="border border-green-500 px-4 py-2 hover:bg-green-500 hover:text-black transition-colors"
+        >
+          Listing
+        </button>
+      </div>
 
       {/* Robot Details */}
       <div className="mb-4 space-y-4">
@@ -189,10 +200,7 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
       {/* Main grid layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[calc(100vh-8rem)]">
         {/* Video and Audio feed panel */}
-        <div className="border border-green-500 bg-black rounded-lg overflow-hidden flex flex-col">
-          <div className="bg-green-500 text-black px-4 py-2 font-bold">
-            Feed
-          </div>
+        <div className="border bg-black rounded-lg overflow-hidden flex flex-col">
           <div className="p-4 space-y-4 flex-1 flex flex-col justify-center">
             {/* Video container */}
             <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
@@ -213,12 +221,14 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
           </div>
         </div>
 
+        {/* 3D Mesh Visualization panel */}
+        <div className="border border-green-500 bg-black rounded-xl h-full w-full overflow-hidden">
+          <TerminalRobotModel listingId={robot.listing_id} />
+        </div>
+
         {/* Klang Input panel */}
-        <div className="border border-green-500 bg-black rounded-lg overflow-hidden min-h-[300px]">
-          <div className="bg-green-500 text-black px-4 py-2 font-bold">
-            Control
-          </div>
-          <div className="p-4 h-[calc(100%-3rem)] flex flex-col gap-4">
+        <div className="border bg-black rounded-lg overflow-hidden min-h-[300px]">
+          <div className="p-4 h-full flex flex-col gap-4">
             <textarea
               className="w-full h-full bg-black text-green-500 border border-green-500 p-2 font-mono resize-none focus:outline-none focus:ring-1 focus:ring-green-500"
               placeholder="Enter code here..."
@@ -229,23 +239,9 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
           </div>
         </div>
 
-        {/* Status and metrics panel */}
-        <div className="border border-green-500 bg-black rounded-lg overflow-hidden min-h-[200px]">
-          <div className="bg-green-500 text-black px-4 py-2 font-bold">
-            Status
-          </div>
-          <div className="p-4 space-y-2">
-            <div>Robot ID: {robot.robot_id}</div>
-            <div>Connection: {connectionStatus}</div>
-          </div>
-        </div>
-
         {/* Console output panel */}
-        <div className="border border-green-500 bg-black rounded-lg overflow-hidden min-h-[200px] max-h-[400px]">
-          <div className="bg-green-500 text-black px-4 py-2 font-bold">
-            Console
-          </div>
-          <div className="p-4 h-[calc(100%-3rem)] overflow-auto whitespace-pre-wrap">
+        <div className="border bg-black rounded-lg overflow-hidden min-h-[300px]">
+          <div className="p-4 h-full overflow-auto whitespace-pre-wrap">
             {[...terminalMessages].reverse().map((message, index) => (
               <div key={index}>{message}</div>
             ))}

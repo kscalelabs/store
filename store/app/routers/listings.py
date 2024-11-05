@@ -117,7 +117,8 @@ async def get_batch_listing_info(
                             artifact=artifact,
                             crud=crud,
                             listing=listing,
-                            user=user_id_to_user[listing.user_id],
+                            creator=user_id_to_user[listing.user_id],
+                            user=user,
                         )
                         for artifact in sorted(artifacts, key=lambda x: (not x.is_main, -x.timestamp))
                     )
@@ -364,7 +365,8 @@ async def get_listing_common(listing: Listing, user: User | None, crud: Crud) ->
                 artifact=artifact,
                 crud=crud,
                 listing=listing,
-                user=creator,
+                creator=creator,
+                user=user,
             )
             for artifact in sorted(raw_artifacts, key=lambda x: (not x.is_main, -x.timestamp))
         )
