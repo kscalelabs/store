@@ -59,6 +59,11 @@ class SingleRobotResponse(BaseModel):
                         detail="Could not find listing associated with the given robot",
                     )
                 listing = await crud.get_listing(robot.listing_id)
+            if listing is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Could not find listing associated with the given robot",
+                )
             return listing
 
         async def get_creator(creator: User | None) -> User:
@@ -69,6 +74,11 @@ class SingleRobotResponse(BaseModel):
                         detail="Could not find creator associated with the given robot",
                     )
                 creator = await crud.get_user(robot.user_id)
+            if creator is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Could not find creator associated with the given robot",
+                )
             return creator
 
         creator_non_null, listing_non_null = await asyncio.gather(get_creator(creator), get_listing(listing))
