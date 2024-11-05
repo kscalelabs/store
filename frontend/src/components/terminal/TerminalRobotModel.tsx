@@ -54,7 +54,10 @@ const TerminalRobotModel = ({ listingId }: Props) => {
 
   useEffect(() => {
     (async () => {
-      if (!urdfUrl) return;
+      if (!urdfUrl) {
+        setIsLoading(false);
+        return;
+      }
       const response = await fetch(urdfUrl);
       const arrayBuffer = await response.arrayBuffer();
       const uint8Array = new Uint8Array(arrayBuffer);
