@@ -31,10 +31,11 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
   const [description, setDescription] = useState(robot.description || "");
   const [isUpdatingName, setIsUpdatingName] = useState(false);
   const [isUpdatingDescription, setIsUpdatingDescription] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState(
-    ConnectionStatus.Disconnected,
-  );
-  const [terminalMessages, setTerminalMessages] = useState<string[]>([]);
+  const [terminalMessages, setTerminalMessages] = useState<string[]>([
+    "Welcome to the terminal!",
+    `Robot ID: ${robot.robot_id}`,
+    `Listing ID: ${robot.listing_id}`,
+  ]);
 
   const addTerminalMessage = (message: string) => {
     setTerminalMessages((prev) => [...prev, message]);
@@ -72,7 +73,6 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
 
   const handleConnectionChange = (status: ConnectionStatus) => {
     addTerminalMessage(`Connection status: ${status}`);
-    setConnectionStatus(status);
   };
 
   const handleConnect = () => {
