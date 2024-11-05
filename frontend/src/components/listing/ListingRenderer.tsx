@@ -7,9 +7,8 @@ import ListingImageGallery from "@/components/listing/ListingImageGallery";
 import ListingMetadata from "@/components/listing/ListingMetadata";
 import ListingName from "@/components/listing/ListingName";
 import ListingOnshape from "@/components/listing/ListingOnshape";
+import ListingRegisterRobot from "@/components/listing/ListingRegisterRobot";
 import { Artifact, ListingResponse } from "@/components/listing/types";
-
-import ListingRegisterRobot from "./ListingRegisterRobot";
 
 const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
   const {
