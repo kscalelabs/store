@@ -220,10 +220,20 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         return item_class.model_validate(data)
 
     @overload
-    async def _get_item(self, item_id: str, item_class: type[T], throw_if_missing: Literal[True]) -> T: ...
+    async def _get_item(
+        self,
+        item_id: str,
+        item_class: type[T],
+        throw_if_missing: Literal[True],
+    ) -> T: ...
 
     @overload
-    async def _get_item(self, item_id: str, item_class: type[T], throw_if_missing: bool = False) -> T | None: ...
+    async def _get_item(
+        self,
+        item_id: str,
+        item_class: type[T],
+        throw_if_missing: bool = False,
+    ) -> T | None: ...
 
     async def _get_item(self, item_id: str, item_class: type[T], throw_if_missing: bool = False) -> T | None:
         table = await self.db.Table(TABLE_NAME)

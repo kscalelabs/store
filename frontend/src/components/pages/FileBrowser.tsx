@@ -43,6 +43,8 @@ const FileBrowser = () => {
   const [editedDescription, setEditedDescription] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
+  const canEdit = false;
+
   if (!artifactId) {
     navigate("/");
     return null;
@@ -208,16 +210,18 @@ const FileBrowser = () => {
             </>
           ) : (
             <>
-              <Tooltip content="Edit Artifact Details" position="bottom">
-                <Button
-                  onClick={() => setIsEditing(true)}
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                >
-                  <FaPen />
-                </Button>
-              </Tooltip>
+              {canEdit && (
+                <Tooltip content="Edit Artifact Details" position="bottom">
+                  <Button
+                    onClick={() => setIsEditing(true)}
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                  >
+                    <FaPen />
+                  </Button>
+                </Tooltip>
+              )}
               <Tooltip content="View Listing" position="bottom">
                 <Button
                   onClick={() =>

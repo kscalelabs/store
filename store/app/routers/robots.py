@@ -69,9 +69,6 @@ async def create_robot(
 ) -> Robot:
     """Create a new robot."""
     try:
-        # Log the incoming request data for debugging
-        print("Received robot data:", robot_data.model_dump())
-
         robot = await crud.create_robot({"user_id": user.id, **robot_data.model_dump()})
         return robot
     except ItemNotFoundError as e:
@@ -79,7 +76,6 @@ async def create_robot(
     except ValidationError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        print("Error creating robot:", str(e))  # Log the error for debugging
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 

@@ -96,7 +96,12 @@ async def get_batch_listing_info(
     )
 
     users = await crud.get_user_batch(list(set(listing.user_id for listing in listings)))
-    user_id_to_username = {user.id: user.username for user in users}
+    user_id_to_user = {user.id: user for user in users}
+    if any(listing.user_id not in user_id_to_user for listing in listings):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Could not find user associated with the given listing",
+        )
 
     user_votes = {}
     if user:
@@ -106,22 +111,25 @@ async def get_batch_listing_info(
     for listing, artifacts in zip(listings, artifacts):
         if listing is not None:
             try:
-                artifact_responses = [
-                    SingleArtifactResponse.from_artifact_and_listing(
-                        artifact=artifact,
-                        listing=listing,
-                        username=user_id_to_username.get(listing.user_id, "Unknown"),
+                artifact_responses = await asyncio.gather(
+                    *(
+                        SingleArtifactResponse.from_artifact(
+                            artifact=artifact,
+                            crud=crud,
+                            listing=listing,
+                            user=user_id_to_user[listing.user_id],
+                        )
+                        for artifact in sorted(artifacts, key=lambda x: (not x.is_main, -x.timestamp))
                     )
-                    for artifact in sorted(artifacts, key=lambda x: (not x.is_main, -x.timestamp))
-                ]
+                )
                 listing_response = ListingInfoResponse(
                     id=listing.id,
                     name=listing.name,
                     slug=listing.slug,
-                    username=user_id_to_username.get(listing.user_id, "Unknown"),
+                    username=user_id_to_user[listing.user_id].username,
                     description=listing.description,
                     child_ids=listing.child_ids,
-                    artifacts=artifact_responses,
+                    artifacts=list(artifact_responses),
                     onshape_url=listing.onshape_url,
                     created_at=listing.created_at,
                     views=listing.views,
@@ -347,13 +355,20 @@ async def get_listing_common(listing: Listing, user: User | None, crud: Crud) ->
     if user and (vote := await crud.get_user_vote(user.id, listing.id)) is not None:
         user_vote = vote.is_upvote
 
-    creator = await crud.get_user_public(listing.user_id, throw_if_missing=True)
-
+    creator = await crud.get_user(listing.user_id, throw_if_missing=True)
     raw_artifacts = await crud.get_listing_artifacts(listing.id)
-    artifacts = [
-        SingleArtifactResponse.from_artifact_and_listing(artifact=artifact, listing=listing, username=creator.username)
-        for artifact in sorted(raw_artifacts, key=lambda x: (not x.is_main, -x.timestamp))
-    ]
+
+    artifacts = await asyncio.gather(
+        *(
+            SingleArtifactResponse.from_artifact(
+                artifact=artifact,
+                crud=crud,
+                listing=listing,
+                user=creator,
+            )
+            for artifact in sorted(raw_artifacts, key=lambda x: (not x.is_main, -x.timestamp))
+        )
+    )
 
     response = GetListingResponse(
         id=listing.id,
@@ -362,7 +377,7 @@ async def get_listing_common(listing: Listing, user: User | None, crud: Crud) ->
         slug=listing.slug,
         description=listing.description,
         child_ids=listing.child_ids,
-        artifacts=artifacts,
+        artifacts=list(artifacts),
         tags=listing_tags,
         onshape_url=listing.onshape_url,
         can_edit=user is not None and await can_write_listing(user, listing),
