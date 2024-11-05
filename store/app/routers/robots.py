@@ -1,5 +1,6 @@
 """Defines the router endpoints for handling Robots."""
 
+import asyncio
 from typing import Self
 
 from annotated_types import MaxLen
@@ -43,14 +44,42 @@ class SingleRobotResponse(BaseModel):
     created_at: int
 
     @classmethod
-    def from_robot(cls, robot: Robot, listing: Listing, user: User) -> Self:
+    async def from_robot(
+        cls,
+        robot: Robot,
+        crud: Crud | None = None,
+        listing: Listing | None = None,
+        creator: User | None = None,
+    ) -> Self:
+        async def get_listing(listing: Listing | None) -> Listing:
+            if listing is None:
+                if crud is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail="Could not find listing associated with the given robot",
+                    )
+                listing = await crud.get_listing(robot.listing_id)
+            return listing
+
+        async def get_creator(creator: User | None) -> User:
+            if creator is None:
+                if crud is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail="Could not find creator associated with the given robot",
+                    )
+                creator = await crud.get_user(robot.user_id)
+            return creator
+
+        creator_non_null, listing_non_null = await asyncio.gather(get_creator(creator), get_listing(listing))
+
         return cls(
             robot_id=robot.id,
             user_id=robot.user_id,
             listing_id=robot.listing_id,
             name=robot.name,
-            username=user.username,
-            slug=listing.slug,
+            username=creator_non_null.username,
+            slug=listing_non_null.slug,
             description=robot.description,
             order_id=robot.order_id,
             created_at=robot.created_at,
@@ -104,14 +133,25 @@ async def list_user_robots(
     robots = await crud.get_robots_by_user_id(user.id)
     if not robots:
         return RobotListResponse(robots=[])
+
     unique_listing_ids = list(set(robot.listing_id for robot in robots))
     listings = await crud.get_listings_by_ids(unique_listing_ids)
     listing_ids_to_listing = {listing.id: listing for listing in listings}
-    return RobotListResponse(
-        robots=[
-            SingleRobotResponse.from_robot(robot, listing_ids_to_listing[robot.listing_id], user) for robot in robots
-        ]
-    )
+    listing_creators = await crud.get_user_batch(list(set(listing.user_id for listing in listings)))
+    user_id_to_user = {user.id: user for user in listing_creators}
+
+    async def get_robot_response(robot: Robot) -> SingleRobotResponse:
+        listing = listing_ids_to_listing[robot.listing_id]
+        creator = user_id_to_user[listing.user_id]
+        return await SingleRobotResponse.from_robot(
+            robot,
+            crud=crud,
+            listing=listing,
+            creator=creator,
+        )
+
+    robot_responses = await asyncio.gather(*(get_robot_response(robot) for robot in robots))
+    return RobotListResponse(robots=list(robot_responses))
 
 
 @robots_router.put("/update/{robot_id}", response_model=Robot)
