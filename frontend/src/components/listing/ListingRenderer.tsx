@@ -9,20 +9,24 @@ import ListingName from "@/components/listing/ListingName";
 import ListingOnshape from "@/components/listing/onshape/ListingOnshape";
 import { Artifact, ListingResponse } from "@/components/listing/types";
 
-const ListingRenderer = ({
-  id: listingId,
-  name,
-  description,
-  creator_id: creatorId,
-  creator_name: creatorName,
-  creator_username: creatorUsername,
-  views,
-  created_at: createdAt,
-  artifacts: initialArtifacts,
-  can_edit: canEdit,
-  user_vote: userVote,
-  onshape_url: onshapeUrl,
-}: ListingResponse) => {
+import ListingRegisterRobot from "./ListingRegisterRobot";
+
+const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
+  const {
+    id: listingId,
+    name,
+    description,
+    creator_id: creatorId,
+    creator_name: creatorName,
+    username: creatorUsername,
+    slug,
+    views,
+    created_at: createdAt,
+    artifacts: initialArtifacts,
+    can_edit: canEdit,
+    user_vote: userVote,
+    onshape_url: onshapeUrl,
+  } = listing;
   const [artifacts, setArtifacts] = useState(initialArtifacts);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -55,6 +59,7 @@ const ListingRenderer = ({
           {/* Metadata */}
           <ListingMetadata
             listingId={listingId}
+            listingSlug={slug}
             creatorId={creatorId}
             creatorName={creatorName}
             creatorUsername={creatorUsername}
@@ -62,6 +67,11 @@ const ListingRenderer = ({
             createdAt={createdAt}
             userVote={userVote}
           />
+
+          <hr className="border-gray-200 my-4" />
+
+          {/* Build this robot */}
+          <ListingRegisterRobot listingId={listingId} />
 
           <hr className="border-gray-200 my-4" />
 

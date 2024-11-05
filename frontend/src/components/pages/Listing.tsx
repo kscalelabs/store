@@ -15,6 +15,10 @@ const Listing = () => {
   const [isFetched, setIsFetched] = useState(false);
 
   const fetchListing = useCallback(async () => {
+    if (listing !== null) {
+      return;
+    }
+
     if (!username || !slug) {
       addErrorAlert(new Error("Invalid URL parameters"));
       return;
@@ -30,14 +34,14 @@ const Listing = () => {
 
       if (response.error) {
         addErrorAlert(response.error);
-      } else if (response.data) {
+      } else if (response.data !== null) {
         setListing(response.data);
         setIsFetched(true);
       }
     } catch (err) {
       addErrorAlert(err);
     }
-  }, [username, slug, auth.client, addErrorAlert]);
+  }, [listing, username, slug, auth.client, addErrorAlert]);
 
   useEffect(() => {
     fetchListing();
@@ -54,7 +58,7 @@ const Listing = () => {
     <div className="max-w-7xl mx-auto px-4">
       <div className="flex-grow">
         {isFetched && listing !== null ? (
-          <ListingRenderer {...listing} />
+          <ListingRenderer listing={listing} />
         ) : (
           <ListingLoadingSkeleton />
         )}

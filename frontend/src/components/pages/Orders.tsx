@@ -8,7 +8,7 @@ import type { paths } from "@/gen/api";
 import { useAuthentication } from "@/hooks/useAuth";
 
 type OrderWithProduct =
-  paths["/orders/user-orders-with-products"]["get"]["responses"][200]["content"]["application/json"][0];
+  paths["/orders/user-orders-with-products"]["get"]["responses"][200]["content"]["application/json"][number];
 
 const OrdersPage: React.FC = () => {
   const navigate = useNavigate();

@@ -14,6 +14,7 @@ from store.app.model import (
     Artifact,
     ArtifactSize,
     ArtifactType,
+    Listing,
     User,
     can_write_artifact,
     can_write_listing,
@@ -83,6 +84,8 @@ def get_artifact_url_response(artifact: Artifact) -> ArtifactUrls:
 class SingleArtifactResponse(BaseModel):
     artifact_id: str
     listing_id: str
+    username: str
+    slug: str
     name: str
     artifact_type: ArtifactType
     description: str | None
@@ -91,10 +94,36 @@ class SingleArtifactResponse(BaseModel):
     is_main: bool = False
 
     @classmethod
-    def from_artifact(cls, artifact: Artifact) -> Self:
+    async def from_artifact(cls, artifact: Artifact, crud: Crud, user: User | None = None) -> Self:
+        if user is None:
+            listing, user = await asyncio.gather(
+                crud.get_listing(artifact.listing_id),
+                crud.get_user(artifact.user_id),
+            )
+        else:
+            listing = await crud.get_listing(artifact.listing_id)
+
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Could not find user associated with the given artifact",
+            )
+
+        if listing is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Could not find listing associated with the given artifact",
+            )
+
+        return cls.from_artifact_and_listing(artifact=artifact, listing=listing, username=user.username)
+
+    @classmethod
+    def from_artifact_and_listing(cls, artifact: Artifact, listing: Listing, username: str) -> Self:
         return cls(
             artifact_id=artifact.id,
             listing_id=artifact.listing_id,
+            username=username,
+            slug=listing.slug,
             name=artifact.name,
             artifact_type=artifact.artifact_type,
             description=artifact.description,
@@ -120,38 +149,19 @@ async def get_artifact_info(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Could not find artifact associated with the given id",
         )
-
-    return SingleArtifactResponse(
-        artifact_id=artifact.id,
-        listing_id=artifact.listing_id,
-        name=artifact.name,
-        artifact_type=artifact.artifact_type,
-        description=artifact.description,
-        timestamp=artifact.timestamp,
-        urls=get_artifact_url_response(artifact=artifact),
-        is_main=artifact.is_main,
-    )
+    return await SingleArtifactResponse.from_artifact(artifact=artifact, crud=crud)
 
 
 @artifacts_router.get("/list/{listing_id}", response_model=ListArtifactsResponse)
 async def list_artifacts(listing_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> ListArtifactsResponse:
     artifacts = await crud.get_listing_artifacts(listing_id)
+
     # Sort artifacts so that the main image comes first
     sorted_artifacts = sorted(artifacts, key=lambda x: not x.is_main)
 
     return ListArtifactsResponse(
         artifacts=[
-            SingleArtifactResponse(
-                artifact_id=artifact.id,
-                listing_id=artifact.listing_id,
-                name=artifact.name,
-                artifact_type=artifact.artifact_type,
-                description=artifact.description,
-                timestamp=artifact.timestamp,
-                urls=get_artifact_url_response(artifact=artifact),
-                is_main=artifact.is_main,
-            )
-            for artifact in sorted_artifacts
+            await SingleArtifactResponse.from_artifact(artifact=artifact, crud=crud) for artifact in sorted_artifacts
         ],
     )
 
@@ -240,18 +250,9 @@ async def upload(
 
     return UploadArtifactResponse(
         artifacts=[
-            SingleArtifactResponse(
-                artifact_id=artifact.id,
-                listing_id=artifact.listing_id,
-                name=artifact.name,
-                artifact_type=artifact.artifact_type,
-                description=artifact.description,
-                timestamp=artifact.timestamp,
-                urls=get_artifact_url_response(artifact=artifact),
-                is_main=artifact.is_main,
-            )
+            await SingleArtifactResponse.from_artifact(artifact=artifact, crud=crud, user=user)
             for artifact in artifacts
-        ]
+        ],
     )
 
 

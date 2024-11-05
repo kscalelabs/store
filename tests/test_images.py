@@ -22,7 +22,6 @@ def test_user_auth_functions(test_client: TestClient, tmpdir: Path) -> None:
             "description": "test description",
             "child_ids": "",
             "slug": "test-listing",
-            "price": "19.99",
             "username": "testuser",
             "stripe_link": "",
         },
@@ -31,11 +30,10 @@ def test_user_auth_functions(test_client: TestClient, tmpdir: Path) -> None:
     assert response.status_code == status.HTTP_200_OK, response.json()
     listing_id = response.json()["listing_id"]
 
-    # Verify the listing was created with the correct price
+    # Verify the listing was created.
     response = test_client.get(f"/listings/{listing_id}")
     assert response.status_code == status.HTTP_200_OK, response.json()
     listing_data = response.json()
-    assert listing_data["price"] == 19.99
     assert listing_data["name"] == "test listing"
     assert listing_data["description"] == "test description"
     assert listing_data["slug"] == "test-listing"

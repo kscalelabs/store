@@ -2,7 +2,6 @@
 
 import asyncio
 import logging
-from decimal import Decimal
 from enum import Enum
 from typing import Any, Callable, Type, TypeVar
 
@@ -42,17 +41,6 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         sort_key = self._get_sort_key(sort_by)
         try:
             listings, has_next = await self._list(Listing, page, sort_key, search_query)
-
-            # Fetch usernames for listings that don't have them
-            listings_without_username = [listing for listing in listings if listing.username is None]
-            if listings_without_username:
-                user_ids = list(set(listing.user_id for listing in listings_without_username))
-                users = await self._get_item_batch(user_ids, User)
-                user_map = {user.id: user.username for user in users if user is not None}
-
-                for listing in listings_without_username:
-                    listing.username = user_map.get(listing.user_id)
-
             logger.info(f"Retrieved {len(listings)} listings")
             return listings, has_next
         except Exception as e:
@@ -119,26 +107,22 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         sort_key = self._get_sort_key(sort_by)
         try:
             listings, has_next = await self._list_me(Listing, user_id, page, sort_key)
-
-            # Ensure username is set for all listings
-            for listing in listings:
-                if listing.username is None:
-                    user = await self._get_item(user_id, User)
-                    listing.username = user.username if user else "Unknown"
-
             logger.info(f"Retrieved {len(listings)} listings for user {user_id}")
             return listings, has_next
         except Exception as e:
             logger.error(f"Error in get_user_listings: {str(e)}")
             raise
 
+    async def get_listings_by_ids(self, listing_ids: list[str]) -> list[Listing]:
+        return await self._list_items(
+            Listing,
+            filter_expression=Attr("id").is_in(listing_ids),
+        )
+
     async def dump_listings(self) -> list[Listing]:
         return await self._list_items(Listing)
 
     async def add_listing(self, listing: Listing) -> None:
-        if listing.username is None:
-            user = await self._get_item(listing.user_id, User, throw_if_missing=True)
-            listing.username = user.username
         await self._add_item(listing)
 
     async def _delete_listing_artifacts(self, listing: Listing) -> None:
@@ -167,7 +151,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         tags: list[str] | None = None,
         onshape_url: str | None = None,
         stripe_link: str | None = None,
-        price: float | None = None,
+        slug: str | None = None,
     ) -> None:
         listing = await self.get_listing(listing_id)
         if listing is None:
@@ -182,8 +166,8 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             updates["description"] = description
         if stripe_link is not None:
             updates["stripe_link"] = stripe_link
-        if price is not None:
-            updates["price"] = Decimal(str(price))
+        if slug is not None:
+            updates["slug"] = slug
 
         coroutines = []
         if tags is not None:
@@ -322,7 +306,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         votes = await self._get_items_from_secondary_index("user_id", user_id, ListingVote)
         return [vote for vote in votes if vote.listing_id in listing_ids]
 
-    async def get_upvoted_listings(self, user_id: str, page: int = 1) -> tuple[list[dict], bool]:
+    async def get_upvoted_listings(self, user_id: str, page: int = 1) -> tuple[list[Listing], bool]:
         user_votes = await self._get_items_from_secondary_index(
             secondary_index_name="user_id", secondary_index_value=user_id, item_class=ListingVote
         )
@@ -333,36 +317,17 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             return [], False
 
         listings = await asyncio.gather(*(self.get_listing(listing_id) for listing_id in upvoted_listing_ids))
-
         listings = [listing for listing in listings if listing is not None]
-
         listings.sort(key=lambda x: x.created_at, reverse=True)
 
         start = (page - 1) * self.PAGE_SIZE
         end = start + self.PAGE_SIZE
         paginated_listings = listings[start:end]
-
         has_more = len(upvoted_listing_ids) > end
-
-        # Convert Listing objects to dictionaries with username and slug
-        listing_dicts = []
-        for listing in paginated_listings:
-            user = await self._get_item(listing.user_id, User)
-            listing_dicts.append({"id": listing.id, "username": user.username if user else None, "slug": listing.slug})
-
-        return listing_dicts, has_more
-
-    async def set_slug(self, listing_id: str, new_slug: str) -> Listing:
-        listing = await self.get_listing(listing_id)
-        if listing is None:
-            raise ItemNotFoundError("Listing not found")
-        listing.set_slug(new_slug)
-        await self._update_item(listing_id, Listing, {"slug": new_slug, "updated_at": listing.updated_at})
-        return listing
+        return paginated_listings, has_more
 
     async def is_slug_taken(self, user_id: str, slug: str) -> bool:
-        existing_listings = await self._get_items_from_secondary_index("user_id", user_id, Listing)
-        return any(listing.slug == slug for listing in existing_listings)
+        return await self.get_listing_by_username_and_slug(user_id, slug) is not None
 
     async def get_listing_by_username_and_slug(self, username: str, slug: str) -> Listing | None:
         user = await self._get_unique_item_from_secondary_index("username", username, User)

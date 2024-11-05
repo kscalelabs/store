@@ -33,7 +33,7 @@ import OrderSuccess from "./components/pages/OrderSuccess";
 import OrdersPage from "./components/pages/Orders";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import ResearchPage from "./components/pages/ResearchPage";
-import TerminalPage from "./components/pages/Terminal";
+import Terminal from "./components/pages/Terminal";
 import TermsOfService from "./components/pages/TermsOfService";
 
 const App = () => {
@@ -83,7 +83,8 @@ const App = () => {
                       <Route path="/success" element={<OrderSuccess />} />
                       <Route path="/orders" element={<OrdersPage />} />
 
-                      <Route path="/terminal" element={<TerminalPage />} />
+                      <Route path="/terminal" element={<Terminal />} />
+                      <Route path="/terminal/:id" element={<Terminal />} />
 
                       <Route path="/404" element={<NotFound />} />
                       <Route path="*" element={<NotFoundRedirect />} />

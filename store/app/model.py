@@ -7,7 +7,6 @@ expects (for example, converting a UUID into a string).
 
 import time
 from datetime import datetime, timedelta
-from decimal import Decimal
 from typing import Literal, Self, cast, get_args
 
 from pydantic import BaseModel
@@ -406,31 +405,24 @@ class Listing(StoreBaseModel):
     created_at: int
     updated_at: int
     name: str
-    username: str | None = None
-    slug: str | None = None
+    slug: str
     child_ids: list[str]
     description: str | None = None
     onshape_url: str | None = None
     views: int = 0
-    upvotes: int = 0
-    downvotes: int = 0
     score: int = 0
     stripe_link: str | None = None
-    uploaded_files: list[dict] = []
-    price: Decimal | None = None
 
     @classmethod
     def create(
         cls,
         user_id: str,
         name: str,
-        username: str,
         slug: str,
         child_ids: list[str],
         description: str | None = None,
         onshape_url: str | None = None,
         stripe_link: str | None = None,
-        price: float | None = None,
     ) -> Self:
         return cls(
             id=new_uuid(),
@@ -438,22 +430,14 @@ class Listing(StoreBaseModel):
             created_at=int(time.time()),
             updated_at=int(time.time()),
             name=name,
-            username=username,
             slug=slug,
             child_ids=child_ids,
             description=description,
             onshape_url=onshape_url,
             views=0,
-            upvotes=0,
-            downvotes=0,
             score=0,
             stripe_link=stripe_link,
-            price=Decimal(str(price)) if price is not None else None,
         )
-
-    def set_slug(self, new_slug: str) -> None:
-        self.slug = new_slug
-        self.updated_at = int(time.time())
 
 
 class ListingTag(StoreBaseModel):

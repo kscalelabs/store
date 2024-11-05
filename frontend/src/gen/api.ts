@@ -682,23 +682,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/listings/edit/{id}/slug": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /** Update Listing Slug */
-        put: operations["update_listing_slug_listings_edit__id__slug_put"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/onshape/set/{listing_id}": {
         parameters: {
             query?: never;
@@ -1229,8 +1212,6 @@ export interface components {
             slug: string;
             /** Stripe Link */
             stripe_link?: string | null;
-            /** Price */
-            price?: number | null;
             /** Photos */
             photos?: string[];
         };
@@ -1328,9 +1309,9 @@ export interface components {
             /** Name */
             name: string;
             /** Username */
-            username: string | null;
+            username: string;
             /** Slug */
-            slug: string | null;
+            slug: string;
             /** Description */
             description: string | null;
             /** Child Ids */
@@ -1353,12 +1334,8 @@ export interface components {
             user_vote: boolean | null;
             /** Creator Id */
             creator_id: string;
-            /** Creator Username */
-            creator_username: string | null;
             /** Creator Name */
             creator_name: string | null;
-            /** Price */
-            price: number | null;
             /** Stripe Link */
             stripe_link: string | null;
         };
@@ -1468,10 +1445,8 @@ export interface components {
             updated_at: number;
             /** Name */
             name: string;
-            /** Username */
-            username?: string | null;
             /** Slug */
-            slug?: string | null;
+            slug: string;
             /** Child Ids */
             child_ids: string[];
             /** Description */
@@ -1484,29 +1459,12 @@ export interface components {
              */
             views: number;
             /**
-             * Upvotes
-             * @default 0
-             */
-            upvotes: number;
-            /**
-             * Downvotes
-             * @default 0
-             */
-            downvotes: number;
-            /**
              * Score
              * @default 0
              */
             score: number;
             /** Stripe Link */
             stripe_link?: string | null;
-            /**
-             * Uploaded Files
-             * @default []
-             */
-            uploaded_files: Record<string, never>[];
-            /** Price */
-            price?: string | null;
         };
         /** ListingInfo */
         ListingInfo: {
@@ -1726,6 +1684,11 @@ export interface components {
             /** Order Id */
             order_id?: string | null;
         };
+        /** RobotListResponse */
+        RobotListResponse: {
+            /** Robots */
+            robots: components["schemas"]["SingleRobotResponse"][];
+        };
         /** SetModeratorRequest */
         SetModeratorRequest: {
             /** User Id */
@@ -1744,6 +1707,10 @@ export interface components {
             artifact_id: string;
             /** Listing Id */
             listing_id: string;
+            /** Username */
+            username: string;
+            /** Slug */
+            slug: string;
             /** Name */
             name: string;
             /** Artifact Type */
@@ -1758,6 +1725,27 @@ export interface components {
              * @default false
              */
             is_main: boolean;
+        };
+        /** SingleRobotResponse */
+        SingleRobotResponse: {
+            /** Robot Id */
+            robot_id: string;
+            /** User Id */
+            user_id: string;
+            /** Listing Id */
+            listing_id: string;
+            /** Name */
+            name: string;
+            /** Username */
+            username: string;
+            /** Slug */
+            slug: string;
+            /** Description */
+            description?: string | null;
+            /** Order Id */
+            order_id?: string | null;
+            /** Created At */
+            created_at: number;
         };
         /**
          * SortOption
@@ -1783,10 +1771,10 @@ export interface components {
             tags?: string[] | null;
             /** Stripe Link */
             stripe_link?: string | null;
-            /** Price */
-            price?: number | null;
             /** Onshape Url */
             onshape_url?: string | null;
+            /** Slug */
+            slug?: string | null;
         };
         /** UpdateOrderAddressRequest */
         UpdateOrderAddressRequest: {
@@ -3122,39 +3110,6 @@ export interface operations {
             };
         };
     };
-    update_listing_slug_listings_edit__id__slug_put: {
-        parameters: {
-            query: {
-                new_slug: string;
-            };
-            header?: never;
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": boolean;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     set_onshape_document_onshape_set__listing_id__post: {
         parameters: {
             query?: never;
@@ -3448,7 +3403,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Robot"][];
+                    "application/json": components["schemas"]["RobotListResponse"];
                 };
             };
         };
