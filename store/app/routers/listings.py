@@ -111,15 +111,17 @@ async def get_batch_listing_info(
     for listing, artifacts in zip(listings, artifacts):
         if listing is not None:
             try:
-                artifact_responses = [
-                    SingleArtifactResponse.from_artifact(
-                        artifact=artifact,
-                        crud=crud,
-                        listing=listing,
-                        user=user_id_to_user[listing.user_id],
+                artifact_responses = await asyncio.gather(
+                    *(
+                        SingleArtifactResponse.from_artifact(
+                            artifact=artifact,
+                            crud=crud,
+                            listing=listing,
+                            user=user_id_to_user[listing.user_id],
+                        )
+                        for artifact in sorted(artifacts, key=lambda x: (not x.is_main, -x.timestamp))
                     )
-                    for artifact in sorted(artifacts, key=lambda x: (not x.is_main, -x.timestamp))
-                ]
+                )
                 listing_response = ListingInfoResponse(
                     id=listing.id,
                     name=listing.name,
@@ -127,7 +129,7 @@ async def get_batch_listing_info(
                     username=user_id_to_user[listing.user_id].username,
                     description=listing.description,
                     child_ids=listing.child_ids,
-                    artifacts=artifact_responses,
+                    artifacts=list(artifact_responses),
                     onshape_url=listing.onshape_url,
                     created_at=listing.created_at,
                     views=listing.views,

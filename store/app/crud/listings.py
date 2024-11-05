@@ -3,7 +3,7 @@
 import asyncio
 import logging
 from enum import Enum
-from typing import Any, Callable, Type, TypeVar
+from typing import Any, Callable, Literal, Type, TypeVar, overload
 
 from boto3.dynamodb.conditions import Attr
 
@@ -29,8 +29,14 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
     def get_gsis(cls) -> set[str]:
         return super().get_gsis().union({"listing_id", "name"})
 
-    async def get_listing(self, listing_id: str) -> Listing | None:
-        return await self._get_item(listing_id, Listing, throw_if_missing=False)
+    @overload
+    async def get_listing(self, listing_id: str, throw_if_missing: Literal[True]) -> Listing: ...
+
+    @overload
+    async def get_listing(self, listing_id: str, throw_if_missing: bool = False) -> Listing | None: ...
+
+    async def get_listing(self, listing_id: str, throw_if_missing: bool = False) -> Listing | None:
+        return await self._get_item(listing_id, Listing, throw_if_missing=throw_if_missing)
 
     async def get_listings(
         self,

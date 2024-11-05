@@ -132,13 +132,13 @@ class SingleArtifactResponse(BaseModel):
                 )
             return listing
 
-        (user, can_edit), listing = await asyncio.gather(get_user(user), get_listing(listing))
+        (user_non_null, can_edit), listing_non_null = await asyncio.gather(get_user(user), get_listing(listing))
 
         return cls(
             artifact_id=artifact.id,
             listing_id=artifact.listing_id,
-            username=user.username,
-            slug=listing.slug,
+            username=user_non_null.username,
+            slug=listing_non_null.slug,
             name=artifact.name,
             artifact_type=artifact.artifact_type,
             description=artifact.description,
@@ -169,7 +169,10 @@ async def list_artifacts(
     listing_id: str,
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> ListArtifactsResponse:
-    listing, artifacts = await asyncio.gather(crud.get_listing(listing_id), crud.get_listing_artifacts(listing_id))
+    listing, artifacts = await asyncio.gather(
+        crud.get_listing(listing_id, throw_if_missing=True),
+        crud.get_listing_artifacts(listing_id),
+    )
     user = await crud.get_user(listing.user_id)
 
     # Sort artifacts so that the main image comes first
