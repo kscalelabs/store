@@ -249,9 +249,9 @@ declare namespace FS {
   ): FSNode;
 }
 
-declare var MEMFS: Emscripten.FileSystemType;
-declare var NODEFS: Emscripten.FileSystemType;
-declare var IDBFS: Emscripten.FileSystemType;
+declare let MEMFS: Emscripten.FileSystemType;
+declare let NODEFS: Emscripten.FileSystemType;
+declare let IDBFS: Emscripten.FileSystemType;
 
 // https://emscripten.org/docs/porting/connecting_cpp_and_javascript/Interacting-with-code.html
 type StringToType<R extends any> = R extends Emscripten.JSType
@@ -1868,5 +1868,5 @@ export interface mujoco extends EmscriptenModule {
   State : State;
   Simulation : Simulation;
 }
-declare var load_mujoco: EmscriptenModuleFactory<mujoco>;
+declare let load_mujoco: EmscriptenModuleFactory<mujoco>;
 export default load_mujoco;

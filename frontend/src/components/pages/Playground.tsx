@@ -1,16 +1,16 @@
 // Import necessary dependencies
 import { useEffect, useRef, useState } from "react";
 
-import load_mujoco from "@/lib/mujoco/mujoco_wasm.js";
+import load_mujoco, { mujoco } from "@/lib/mujoco/mujoco_wasm.js";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 const Playground = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mujocoRef = useRef<any>(null);
-  const modelRef = useRef<any>(null);
-  const stateRef = useRef<any>(null);
-  const simulationRef = useRef<any>(null);
+  const mujocoRef = useRef<mujoco | null>(null);
+  const modelRef = useRef<InstanceType<mujoco["Model"]> | null>(null);
+  const stateRef = useRef<InstanceType<mujoco["State"]> | null>(null);
+  const simulationRef = useRef<InstanceType<mujoco["Simulation"]> | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
@@ -23,7 +23,6 @@ const Playground = () => {
   const [rightLegAngle, setRightLegAngle] = useState(0);
 
   // Add new refs for physics simulation
-  const physicsIntervalRef = useRef<number | null>(null);
   const isSimulatingRef = useRef(false);
 
   // Add simulation state
@@ -331,7 +330,13 @@ const Playground = () => {
 
   // Add physics simulation loop
   const startPhysicsSimulation = () => {
-    if (!simulationRef.current || isSimulatingRef.current) return;
+    if (
+      !simulationRef.current ||
+      isSimulatingRef.current ||
+      !mujocoRef.current ||
+      !modelRef.current
+    )
+      return;
 
     try {
       // Create a new state to reset the simulation
