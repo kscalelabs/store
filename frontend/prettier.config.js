@@ -14,4 +14,5 @@ module.exports = {
   ],
   importOrderSeparation: true,
   importOrderSortSpecifiers: true,
+  excludeFiles: ["**/frontend/src/lib/mujoco/**"],
 };
