@@ -25,7 +25,6 @@ from store.app.model import (
 )
 from store.app.routers.users import (
     get_session_user_with_write_permission,
-    maybe_get_user_from_api_key,
 )
 from store.settings import settings
 
@@ -92,33 +91,44 @@ class SingleArtifactResponse(BaseModel):
     timestamp: int
     urls: ArtifactUrls
     is_main: bool = False
+    can_edit: bool = False
 
     @classmethod
-    async def from_artifact(cls, artifact: Artifact, crud: Crud, user: User | None = None) -> Self:
-        if user is None:
-            listing, user = await asyncio.gather(
-                crud.get_listing(artifact.listing_id),
-                crud.get_user(artifact.user_id),
-            )
-        else:
-            listing = await crud.get_listing(artifact.listing_id)
+    async def from_artifact(
+        cls,
+        artifact: Artifact,
+        crud: Crud | None = None,
+        listing: Listing | None = None,
+        user: User | None = None,
+        username: str | None = None,
+    ) -> Self:
 
-        if user is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Could not find user associated with the given artifact",
-            )
+        async def get_user(user: User | None) -> User:
+            if user is None:
+                if crud is None:
+                    raise ValueError("crud must be provided if user is not provided")
+                user = await crud.get_user(artifact.user_id)
+            if user is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Could not find user associated with the given artifact",
+                )
+            return user
 
-        if listing is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Could not find listing associated with the given artifact",
-            )
+        async def get_listing(listing: Listing | None) -> Listing:
+            if listing is None:
+                if crud is None:
+                    raise ValueError("crud must be provided if listing is not provided")
+                listing = await crud.get_listing(artifact.listing_id)
+            if listing is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Could not find listing associated with the given artifact",
+                )
+            return listing
 
-        return cls.from_artifact_and_listing(artifact=artifact, listing=listing, username=user.username)
+        user, listing = await asyncio.gather(get_user(user), get_listing(listing))
 
-    @classmethod
-    def from_artifact_and_listing(cls, artifact: Artifact, listing: Listing, username: str) -> Self:
         return cls(
             artifact_id=artifact.id,
             listing_id=artifact.listing_id,
@@ -130,6 +140,7 @@ class SingleArtifactResponse(BaseModel):
             timestamp=artifact.timestamp,
             urls=get_artifact_url_response(artifact=artifact),
             is_main=artifact.is_main,
+            can_edit=await can_write_artifact(user, artifact),
         )
 
 
@@ -138,11 +149,7 @@ class ListArtifactsResponse(BaseModel):
 
 
 @artifacts_router.get("/info/{artifact_id}")
-async def get_artifact_info(
-    artifact_id: str,
-    crud: Annotated[Crud, Depends(Crud.get)],
-    user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
-) -> SingleArtifactResponse:
+async def get_artifact_info(artifact_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> SingleArtifactResponse:
     artifact = await crud.get_raw_artifact(artifact_id)
     if artifact is None:
         raise HTTPException(
@@ -153,17 +160,29 @@ async def get_artifact_info(
 
 
 @artifacts_router.get("/list/{listing_id}", response_model=ListArtifactsResponse)
-async def list_artifacts(listing_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> ListArtifactsResponse:
-    artifacts = await crud.get_listing_artifacts(listing_id)
+async def list_artifacts(
+    listing_id: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> ListArtifactsResponse:
+    listing, artifacts = await asyncio.gather(crud.get_listing(listing_id), crud.get_listing_artifacts(listing_id))
+    user = await crud.get_user(listing.user_id)
 
     # Sort artifacts so that the main image comes first
     sorted_artifacts = sorted(artifacts, key=lambda x: not x.is_main)
 
-    return ListArtifactsResponse(
-        artifacts=[
-            await SingleArtifactResponse.from_artifact(artifact=artifact, crud=crud) for artifact in sorted_artifacts
-        ],
+    artifacts = await asyncio.gather(
+        *(
+            SingleArtifactResponse.from_artifact(
+                artifact=artifact,
+                crud=crud,
+                listing=listing,
+                user=user,
+            )
+            for artifact in sorted_artifacts
+        )
     )
+
+    return ListArtifactsResponse(artifacts=list(artifacts))
 
 
 def validate_file(file: UploadFile) -> tuple[str, ArtifactType]:
@@ -250,7 +269,12 @@ async def upload(
 
     return UploadArtifactResponse(
         artifacts=[
-            await SingleArtifactResponse.from_artifact(artifact=artifact, crud=crud, user=user)
+            await SingleArtifactResponse.from_artifact(
+                artifact=artifact,
+                crud=crud,
+                listing=listing,
+                user=user,
+            )
             for artifact in artifacts
         ],
     )
