@@ -3,8 +3,9 @@
 import asyncio
 import logging
 import os
-from typing import Annotated
+from typing import Annotated, Self
 
+from boto3.dynamodb.conditions import Key
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.responses import RedirectResponse
 from pydantic.main import BaseModel
@@ -14,6 +15,7 @@ from store.app.model import (
     Artifact,
     ArtifactSize,
     ArtifactType,
+    Listing,
     User,
     can_write_artifact,
     can_write_listing,
@@ -42,14 +44,17 @@ async def artifact_url(
     size: ArtifactSize = "large",
 ) -> RedirectResponse:
     # First, get the artifact to retrieve its ID
-    artifacts = await crud.get_listing_artifacts(listing_id)
-    artifact = next((a for a in artifacts if a.name == name and a.artifact_type == artifact_type), None)
+    artifacts = await crud.get_listing_artifacts(
+        listing_id,
+        additional_filter_expression=Key("name").eq(name) & Key("artifact_type").eq(artifact_type),
+    )
 
-    if artifact is None:
+    if len(artifacts) == 0:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Could not find artifact associated with the given name and type",
         )
+    artifact = artifacts[0]
 
     # Construct the S3 filename using the artifact ID
     _, file_extension = os.path.splitext(name)
@@ -83,12 +88,80 @@ def get_artifact_url_response(artifact: Artifact) -> ArtifactUrls:
 class SingleArtifactResponse(BaseModel):
     artifact_id: str
     listing_id: str
+    username: str
+    slug: str
     name: str
     artifact_type: ArtifactType
     description: str | None
     timestamp: int
     urls: ArtifactUrls
     is_main: bool = False
+    can_edit: bool = False
+
+    @classmethod
+    async def from_artifact(
+        cls,
+        artifact: Artifact,
+        crud: Crud | None = None,
+        listing: Listing | None = None,
+        creator: User | None = None,
+        user: User | None = None,
+    ) -> Self:
+
+        async def get_creator(creator: User | None) -> User:
+            if creator is None:
+                if crud is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail="Could not find user associated with the given artifact",
+                    )
+                creator = await crud.get_user(artifact.user_id)
+            if creator is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Could not find user associated with the given artifact",
+                )
+            return creator
+
+        async def get_can_edit(user: User | None) -> bool:
+            if user is None:
+                return False
+            return await can_write_artifact(user, artifact)
+
+        async def get_listing(listing: Listing | None) -> Listing:
+            if listing is None:
+                if crud is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail="Could not find listing associated with the given artifact",
+                    )
+                listing = await crud.get_listing(artifact.listing_id)
+            if listing is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Could not find listing associated with the given artifact",
+                )
+            return listing
+
+        creator_non_null, can_edit, listing_non_null = await asyncio.gather(
+            get_creator(creator),
+            get_can_edit(user),
+            get_listing(listing),
+        )
+
+        return cls(
+            artifact_id=artifact.id,
+            listing_id=artifact.listing_id,
+            username=creator_non_null.username,
+            slug=listing_non_null.slug,
+            name=artifact.name,
+            artifact_type=artifact.artifact_type,
+            description=artifact.description,
+            timestamp=artifact.timestamp,
+            urls=get_artifact_url_response(artifact=artifact),
+            is_main=artifact.is_main,
+            can_edit=can_edit,
+        )
 
 
 class ListArtifactsResponse(BaseModel):
@@ -98,8 +171,8 @@ class ListArtifactsResponse(BaseModel):
 @artifacts_router.get("/info/{artifact_id}")
 async def get_artifact_info(
     artifact_id: str,
-    crud: Annotated[Crud, Depends(Crud.get)],
     user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> SingleArtifactResponse:
     artifact = await crud.get_raw_artifact(artifact_id)
     if artifact is None:
@@ -107,40 +180,36 @@ async def get_artifact_info(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Could not find artifact associated with the given id",
         )
-
-    return SingleArtifactResponse(
-        artifact_id=artifact.id,
-        listing_id=artifact.listing_id,
-        name=artifact.name,
-        artifact_type=artifact.artifact_type,
-        description=artifact.description,
-        timestamp=artifact.timestamp,
-        urls=get_artifact_url_response(artifact=artifact),
-        is_main=artifact.is_main,
-    )
+    return await SingleArtifactResponse.from_artifact(artifact=artifact, crud=crud, user=user)
 
 
 @artifacts_router.get("/list/{listing_id}", response_model=ListArtifactsResponse)
-async def list_artifacts(listing_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> ListArtifactsResponse:
-    artifacts = await crud.get_listing_artifacts(listing_id)
+async def list_artifacts(
+    listing_id: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> ListArtifactsResponse:
+    listing, artifacts = await asyncio.gather(
+        crud.get_listing(listing_id, throw_if_missing=True),
+        crud.get_listing_artifacts(listing_id),
+    )
+    creator = await crud.get_user(listing.user_id)
+
     # Sort artifacts so that the main image comes first
     sorted_artifacts = sorted(artifacts, key=lambda x: not x.is_main)
 
-    return ListArtifactsResponse(
-        artifacts=[
-            SingleArtifactResponse(
-                artifact_id=artifact.id,
-                listing_id=artifact.listing_id,
-                name=artifact.name,
-                artifact_type=artifact.artifact_type,
-                description=artifact.description,
-                timestamp=artifact.timestamp,
-                urls=get_artifact_url_response(artifact=artifact),
-                is_main=artifact.is_main,
+    artifacts = await asyncio.gather(
+        *(
+            SingleArtifactResponse.from_artifact(
+                artifact=artifact,
+                crud=crud,
+                listing=listing,
+                creator=creator,
             )
             for artifact in sorted_artifacts
-        ],
+        )
     )
+
+    return ListArtifactsResponse(artifacts=list(artifacts))
 
 
 def validate_file(file: UploadFile) -> tuple[str, ArtifactType]:
@@ -225,21 +294,19 @@ async def upload(
         )
     )
 
-    return UploadArtifactResponse(
-        artifacts=[
-            SingleArtifactResponse(
-                artifact_id=artifact.id,
-                listing_id=artifact.listing_id,
-                name=artifact.name,
-                artifact_type=artifact.artifact_type,
-                description=artifact.description,
-                timestamp=artifact.timestamp,
-                urls=get_artifact_url_response(artifact=artifact),
-                is_main=artifact.is_main,
+    artifact_responses = await asyncio.gather(
+        *(
+            SingleArtifactResponse.from_artifact(
+                artifact=artifact,
+                crud=crud,
+                listing=listing,
+                creator=user,
             )
             for artifact in artifacts
-        ]
+        )
     )
+
+    return UploadArtifactResponse(artifacts=list(artifact_responses))
 
 
 class UpdateArtifactRequest(BaseModel):
@@ -287,7 +354,7 @@ async def delete_artifact(
     return True
 
 
-@artifacts_router.put("/list/{listing_id}/main_image", response_model=bool)
+@artifacts_router.put("/list/{listing_id}/main", response_model=bool)
 async def set_main_image(
     listing_id: str,
     artifact_id: str,

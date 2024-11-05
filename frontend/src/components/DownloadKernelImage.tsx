@@ -49,15 +49,11 @@ const DownloadKernelImage = ({ kernelImage, onEdit, onDelete }: Props) => {
 
     setIsDownloading(true);
     try {
-      console.log(
-        `Requesting download URL for kernel image ID: ${kernelImage.id}`,
-      );
       const response = await axios.get(
         `/api/kernel-images/download/${kernelImage.id}`,
       );
 
       const presignedUrl = response.data;
-      console.log(`Received presigned URL: ${presignedUrl}`);
 
       // Open the URL in a new tab
       window.open(presignedUrl, "_blank");

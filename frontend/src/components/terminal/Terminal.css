@@ -1,0 +1,99 @@
+.terminal-container {
+  background-color: #1e1e1e;
+  color: #00ff66;
+  padding: 1rem;
+  height: 100vh;
+  font-family: "Courier New", monospace;
+}
+
+.terminal-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: 2fr 1fr;
+  gap: 1rem;
+  height: calc(100% - 60px);
+}
+
+.terminal-panel {
+  border: 1px solid #00ff66;
+  background-color: #000000;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.panel-header {
+  background-color: #00ff66;
+  color: #000000;
+  padding: 0.5rem;
+  font-weight: bold;
+}
+
+.panel-content {
+  padding: 1rem;
+  height: calc(100% - 40px);
+  overflow: auto;
+}
+
+.video-panel {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.status-panel {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.code-panel {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.console-panel {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.video-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #00ff66;
+}
+
+.code-input {
+  width: 100%;
+  height: calc(100% - 40px);
+  background-color: #000000;
+  color: #00ff66;
+  border: 1px solid #00ff66;
+  padding: 0.5rem;
+  font-family: "Courier New", monospace;
+  resize: none;
+}
+
+.console-output {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.terminal-controls {
+  margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.terminal-button {
+  background-color: #000000;
+  color: #00ff66;
+  border: 1px solid #00ff66;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-family: "Courier New", monospace;
+}
+
+.terminal-button:hover {
+  background-color: #00ff66;
+  color: #000000;
+}

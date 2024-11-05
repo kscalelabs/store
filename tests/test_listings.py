@@ -24,7 +24,6 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
             "description": "test description",
             "child_ids": "",
             "slug": "test-listing",
-            "price": "19.99",
             "username": "testuser",
             "stripe_link": "",
         },
@@ -143,7 +142,6 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
 
     # Verify the listing was created with the correct details
     listing_data = response.json()
-    assert listing_data["price"] == 19.99
     assert listing_data["name"] == "test listing"
     assert listing_data["description"] == "test description"
     assert listing_data["slug"] == "test-listing"

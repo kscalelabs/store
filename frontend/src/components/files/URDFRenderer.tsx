@@ -1,11 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import {
-  FaArrowsAlt,
-  FaChevronLeft,
-  FaChevronRight,
-  FaPlay,
-  FaUndo,
-} from "react-icons/fa";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { FaChevronLeft, FaChevronRight, FaPlay, FaUndo } from "react-icons/fa";
 
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -13,6 +7,10 @@ import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
 import URDFLoader, { URDFJoint, URDFLink } from "urdf-loader";
 
 import { UntarredFile } from "./Tarfile";
+
+type Orientation = "Z-up" | "Y-up" | "X-up";
+
+type VisualizationTheme = "default" | "terminal" | "dark";
 
 interface JointControl {
   name: string;
@@ -26,12 +24,19 @@ interface URDFInfo {
   linkCount: number;
 }
 
-type Orientation = "Z-up" | "Y-up" | "X-up";
-
-const URDFRenderer: React.FC<{
+interface Props {
   urdfContent: string;
   files: UntarredFile[];
-}> = ({ urdfContent, files }) => {
+  useControls?: boolean;
+  visualTheme?: VisualizationTheme | null;
+}
+
+const URDFRenderer = ({
+  urdfContent,
+  files,
+  useControls = true,
+  visualTheme = null,
+}: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const robotRef = useRef<THREE.Object3D | null>(null);
@@ -42,7 +47,49 @@ const URDFRenderer: React.FC<{
   const [isInStartPosition, setIsInStartPosition] = useState(true);
   const [urdfInfo, setUrdfInfo] = useState<URDFInfo | null>(null);
   const [orientation, setOrientation] = useState<Orientation>("Z-up");
-  const gridHelperRef = useRef<THREE.GridHelper | null>(null);
+
+  const applyTheme = useCallback((theme: VisualizationTheme) => {
+    if (!sceneRef.current) return;
+    const scene = sceneRef.current;
+
+    switch (theme) {
+      case "terminal":
+        scene.background = new THREE.Color(0x000000);
+        robotRef.current?.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            child.material = new THREE.MeshBasicMaterial({
+              color: 0x00aa00,
+              wireframe: true,
+              wireframeLinewidth: 1,
+            });
+          }
+        });
+        break;
+
+      case "dark":
+        scene.background = new THREE.Color(0x222222);
+        robotRef.current?.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            child.material = new THREE.MeshPhongMaterial({
+              color: 0x4444ff,
+              emissive: 0x000044,
+            });
+          }
+        });
+        break;
+
+      default:
+        scene.background = new THREE.Color(0xf0f0f0);
+        robotRef.current?.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            child.material = new THREE.MeshPhongMaterial({
+              color: 0xaaaaaa,
+            });
+          }
+        });
+        break;
+    }
+  }, []);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -129,22 +176,19 @@ const URDFRenderer: React.FC<{
     camera.lookAt(new THREE.Vector3(0, 0, 0));
     controls.update();
 
-    // Add a grid for reference
-    const gridHelper = new THREE.GridHelper(10, 10);
-    gridHelperRef.current = gridHelper;
-    scene.add(gridHelper);
-
     // Collect joint information
     const joints: JointControl[] = [];
     robot.traverse((child) => {
       if ("isURDFJoint" in child && child.isURDFJoint) {
         const joint = child as URDFJoint;
-        const initialValue =
-          (Number(joint.limit.lower) + Number(joint.limit.upper)) / 2;
+        const min = Number(joint.limit.lower);
+        const max = Number(joint.limit.upper);
+        // Initialize to 0 if it's within the joint limits, otherwise use midpoint
+        const initialValue = min <= 0 && max >= 0 ? 0 : (min + max) / 2;
         joints.push({
           name: joint.name,
-          min: Number(joint.limit.lower),
-          max: Number(joint.limit.upper),
+          min: min,
+          max: max,
           value: initialValue,
         });
         joint.setJointValue(initialValue);
@@ -162,6 +206,11 @@ const URDFRenderer: React.FC<{
         links.push(link);
       }
     });
+
+    // Apply visual theme if specified
+    if (visualTheme !== null) {
+      applyTheme(visualTheme);
+    }
 
     const animate = () => {
       requestAnimationFrame(animate);
@@ -308,95 +357,111 @@ const URDFRenderer: React.FC<{
     });
   }, []);
 
+  // Add this helper function before the return statement
+  const getOrientationButtonColors = (theme: VisualizationTheme | null) => {
+    switch (theme) {
+      case "terminal":
+        return "bg-green-600 hover:bg-green-700";
+      case "dark":
+        return "bg-blue-600 hover:bg-blue-700";
+      default:
+        return "bg-purple-500 hover:bg-purple-600";
+    }
+  };
+
   return (
     <div className="flex flex-col lg:flex-row h-full relative">
       <div ref={containerRef} className="flex-grow h-[60vh] lg:h-auto" />
-      <div
-        className={`absolute right-0 top-0 bottom-0 w-64 bg-gray-100 transition-transform duration-300 ease-in-out ${
-          showControls ? "translate-x-0" : "translate-x-full"
-        }`}
+
+      <button
+        onClick={toggleOrientation}
+        className={`absolute bottom-4 left-4 z-20 ${getOrientationButtonColors(visualTheme)} text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center`}
       >
-        <div className="p-4 overflow-y-auto h-full">
-          <h3 className="text-lg font-semibold mb-4">Joint Controls</h3>
-          <div className="space-y-2 mb-4">
-            <button
-              onClick={cycleAllJoints}
-              disabled={isCycling}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-            >
-              <FaPlay className="inline-block mr-2" />
-              {isCycling ? "Cycling..." : "Cycle All Joints"}
-            </button>
-            <button
-              onClick={resetJoints}
-              disabled={isCycling || isInStartPosition}
-              className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-            >
-              <FaUndo className="inline-block mr-2" />
-              Reset Joints
-            </button>
-            <button
-              onClick={toggleOrientation}
-              className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded"
-            >
-              <FaArrowsAlt className="inline-block mr-2" />
-              {`Orientation: ${orientation}`}
-            </button>
-            <button
-              onClick={() => setShowControls(false)}
-              className="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-            >
-              <FaChevronRight className="inline-block mr-2" />
-              Hide Controls
-            </button>
-          </div>
-          {urdfInfo && (
-            <div className="p-4 rounded-lg shadow-md mb-4 bg-grey-100 font-mono">
-              <ul className="text-sm text-gray-800">
-                <li>Joint Count: {urdfInfo.jointCount}</li>
-                <li>Link Count: {urdfInfo.linkCount}</li>
-              </ul>
-            </div>
-          )}
-          <div className="space-y-2">
-            {jointControls.map((joint, index) => (
-              <div key={joint.name} className="text-sm">
-                <div className="flex justify-between items-center mb-1">
-                  <label className="font-medium text-gray-700">
-                    {joint.name}
-                  </label>
-                  <span className="text-xs text-gray-500">
-                    {joint.value.toFixed(2)}
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={joint.min}
-                  max={joint.max}
-                  step={(joint.max - joint.min) / 100}
-                  value={joint.value}
-                  onChange={(e) =>
-                    handleJointChange(index, parseFloat(e.target.value))
-                  }
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        {orientation.charAt(0)}
+      </button>
+
+      {useControls && (
+        <>
+          <div
+            className={`absolute right-0 top-0 bottom-0 w-64 bg-gray-100 transition-transform duration-300 ease-in-out ${
+              showControls ? "translate-x-0" : "translate-x-full"
+            }`}
+          >
+            <div className="p-4 overflow-y-auto h-full">
+              <div className="space-y-2 mb-4">
+                <button
+                  onClick={cycleAllJoints}
                   disabled={isCycling}
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>{joint.min.toFixed(2)}</span>
-                  <span>{joint.max.toFixed(2)}</span>
-                </div>
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+                >
+                  <FaPlay className="inline-block mr-2" />
+                  {isCycling ? "Cycling..." : "Cycle All Joints"}
+                </button>
+                <button
+                  onClick={resetJoints}
+                  disabled={isCycling || isInStartPosition}
+                  className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+                >
+                  <FaUndo className="inline-block mr-2" />
+                  Reset Joints
+                </button>
+                <button
+                  onClick={() => setShowControls(false)}
+                  className="w-full bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                >
+                  <FaChevronRight className="inline-block mr-2" />
+                  Hide Controls
+                </button>
               </div>
-            ))}
+              {urdfInfo && (
+                <div className="p-4 rounded-lg shadow-md mb-4 bg-grey-100 font-mono">
+                  <ul className="text-sm text-gray-800">
+                    <li>Joint Count: {urdfInfo.jointCount}</li>
+                    <li>Link Count: {urdfInfo.linkCount}</li>
+                  </ul>
+                </div>
+              )}
+              <div className="space-y-2">
+                {jointControls.map((joint, index) => (
+                  <div key={joint.name} className="text-sm">
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="font-medium text-gray-700">
+                        {joint.name}
+                      </label>
+                      <span className="text-xs text-gray-500">
+                        {joint.value.toFixed(2)}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={joint.min}
+                      max={joint.max}
+                      step={(joint.max - joint.min) / 100}
+                      value={joint.value}
+                      onChange={(e) =>
+                        handleJointChange(index, parseFloat(e.target.value))
+                      }
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      disabled={isCycling}
+                    />
+                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <span>{joint.min.toFixed(2)}</span>
+                      <span>{joint.max.toFixed(2)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-      {!showControls && (
-        <button
-          onClick={() => setShowControls(true)}
-          className="absolute bottom-4 right-4 z-20 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full shadow-md"
-        >
-          <FaChevronLeft />
-        </button>
+          {!showControls && (
+            <button
+              onClick={() => setShowControls(true)}
+              className="absolute bottom-4 right-4 z-20 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full shadow-md"
+            >
+              <FaChevronLeft />
+            </button>
+          )}
+        </>
       )}
     </div>
   );

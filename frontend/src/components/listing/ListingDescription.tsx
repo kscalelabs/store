@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { FaFile, FaPen } from "react-icons/fa";
+import { useState } from "react";
+import { FaCheck, FaPen, FaTimes } from "react-icons/fa";
 import Markdown from "react-markdown";
 
 import { TextArea } from "@/components/ui/Input/Input";
@@ -11,7 +11,6 @@ import remarkGfm from "remark-gfm";
 
 interface RenderDescriptionProps {
   description: string;
-  onImageClick?: (src: string, alt: string) => void;
 }
 
 const transformUrl = (url: string) => {
@@ -21,10 +20,7 @@ const transformUrl = (url: string) => {
   return `https://${url}`;
 };
 
-export const RenderDescription = ({
-  description,
-  onImageClick,
-}: RenderDescriptionProps) => {
+export const RenderDescription = ({ description }: RenderDescriptionProps) => {
   return (
     <div className="w-full">
       <Markdown
@@ -75,15 +71,6 @@ export const RenderDescription = ({
           h4: ({ children }) => (
             <h4 className="text-md mb-2 font-bold">{children}</h4>
           ),
-          img: ({ src, alt }) => (
-            <span
-              className="flex flex-col justify-center w-full mx-auto gap-2 my-4 md:w-2/3 lg:w-1/2 cursor-pointer"
-              onClick={() => src && onImageClick?.(src, alt ?? "")}
-            >
-              <img src={src} alt={alt} className="rounded-lg" />
-              {alt && <span className="text-sm text-center">{alt}</span>}
-            </span>
-          ),
         }}
       >
         {description}
@@ -110,21 +97,6 @@ const ListingDescription = (props: Props) => {
   );
   const [hasChanged, setHasChanged] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [debouncedDescription, setDebouncedDescription] = useState(
-    initialDescription ?? "",
-  );
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [imageModal, setImageModal] = useState<[string, string] | null>(null);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedDescription(newDescription);
-    }, 300);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [newDescription]);
 
   const handleSave = async () => {
     if (!hasChanged) {
@@ -149,61 +121,83 @@ const ListingDescription = (props: Props) => {
     } else {
       addAlert("Listing updated successfully", "success");
       setIsEditing(false);
+      setNewDescription(newDescription);
+      setHasChanged(false);
     }
     setSubmitting(false);
   };
 
+  const handleCancel = () => {
+    setIsEditing(false);
+    setNewDescription(initialDescription ?? "");
+    setHasChanged(false);
+  };
+
   return (
-    <div className="mb-3">
+    <div className="mb-3 relative">
       {submitting ? (
         <Spinner />
       ) : (
         <>
-          {isEditing && (
-            <TextArea
-              placeholder="Description"
-              rows={4}
-              value={newDescription}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && e.ctrlKey) {
-                  handleSave();
-                }
-              }}
-              onChange={(e) => {
-                setNewDescription(e.target.value);
-                setHasChanged(true);
-              }}
-              className="border-b border-gray-5 mb-2"
-              autoFocus
-            />
+          {!isEditing && (
+            <div className="pr-10">
+              <RenderDescription description={newDescription} />
+            </div>
           )}
-          <RenderDescription
-            description={debouncedDescription}
-            onImageClick={(src, alt) => setImageModal([src, alt])}
-          />
-          {edit && (
-            <Button
-              onClick={() => {
-                if (isEditing) {
-                  handleSave();
-                } else {
-                  setIsEditing(true);
-                }
-              }}
-              variant="outline"
-              className="mt-2"
-              disabled={submitting}
-            >
-              {isEditing ? (
-                <>
-                  <FaFile className="mr-2" /> Save
-                </>
-              ) : (
-                <>
-                  <FaPen className="mr-2" /> Edit
-                </>
-              )}
-            </Button>
+          {edit && !isEditing && (
+            <div className="absolute top-0 right-0">
+              <Button
+                onClick={() => setIsEditing(true)}
+                variant="ghost"
+                size="icon"
+                disabled={submitting}
+              >
+                <FaPen />
+              </Button>
+            </div>
+          )}
+          {isEditing && (
+            <>
+              <TextArea
+                placeholder="Description"
+                value={newDescription}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && e.ctrlKey) {
+                    handleSave();
+                  }
+                }}
+                onChange={(e) => {
+                  setNewDescription(e.target.value);
+                  setHasChanged(true);
+                }}
+                className="border-b border-gray-5 mb-2 font-mono min-h-[200px] h-auto resize-none"
+                style={{
+                  height: `${Math.max(200, newDescription.split("\n").length * 24)}px`,
+                }}
+                autoFocus
+              />
+              <RenderDescription description={newDescription} />
+              <div className="flex gap-2 justify-end mt-4">
+                <Button
+                  onClick={handleCancel}
+                  variant="ghost"
+                  size="icon"
+                  disabled={submitting}
+                  className="text-red-500 hover:text-red-700 hover:bg-transparent"
+                >
+                  <FaTimes />
+                </Button>
+                <Button
+                  onClick={handleSave}
+                  variant="ghost"
+                  size="icon"
+                  disabled={submitting || !hasChanged}
+                  className="text-green-500 hover:text-green-700 hover:bg-transparent"
+                >
+                  <FaCheck />
+                </Button>
+              </div>
+            </>
           )}
         </>
       )}

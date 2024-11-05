@@ -1,12 +1,20 @@
 import { useEffect, useState } from "react";
-import { FaDownload, FaFileDownload, FaHome } from "react-icons/fa";
+import {
+  FaCheck,
+  FaFileDownload,
+  FaList,
+  FaPen,
+  FaTimes,
+} from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 
 import FileRenderer from "@/components/files/FileRenderer";
 import FileTreeViewer from "@/components/files/FileTreeViewer";
 import { parseTar } from "@/components/files/Tarfile";
 import Spinner from "@/components/ui/Spinner";
+import { Tooltip } from "@/components/ui/ToolTip";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { components } from "@/gen/api";
 import { humanReadableError, useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
@@ -29,6 +37,14 @@ const FileBrowser = () => {
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
   const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedDescription, setEditedDescription] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  if (!artifactId) {
+    navigate("/");
+    return null;
+  }
 
   useEffect(() => {
     (async () => {
@@ -46,6 +62,21 @@ const FileBrowser = () => {
           addErrorAlert(error);
         } else {
           setArtifact(data);
+          if (data.urls?.large) {
+            setUntarring(true);
+            try {
+              const response = await fetch(data.urls.large);
+              const arrayBuffer = await response.arrayBuffer();
+              const uint8Array = new Uint8Array(arrayBuffer);
+              const decompressed = pako.ungzip(uint8Array);
+              const files = parseTar(decompressed);
+              setUntarredFiles(files);
+            } catch (err) {
+              addErrorAlert(`Error loading file: ${humanReadableError(err)}`);
+            } finally {
+              setUntarring(false);
+            }
+          }
         }
       } catch (err) {
         addErrorAlert(humanReadableError(err));
@@ -53,40 +84,13 @@ const FileBrowser = () => {
         setLoading(false);
       }
     })();
-  }, [
-    artifactId,
-    auth.client,
-    addErrorAlert,
-    artifact,
-    setArtifact,
-    setLoading,
-  ]);
+  }, [artifactId, auth.client, addErrorAlert, artifact]);
 
-  const handleLoadAndUntar = async () => {
-    if (!artifact?.urls?.large) {
-      addErrorAlert("Artifact URL not available.");
-      return;
+  useEffect(() => {
+    if (artifact) {
+      setEditedDescription(artifact.description || "");
     }
-
-    setUntarring(true);
-    try {
-      const response = await fetch(artifact.urls.large);
-      const arrayBuffer = await response.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-
-      // Decompress gzip
-      const decompressed = pako.ungzip(uint8Array);
-
-      // Parse tar
-      const files = parseTar(decompressed);
-
-      setUntarredFiles(files);
-    } catch (err) {
-      addErrorAlert(`Error loading file: ${humanReadableError(err)}`);
-    } finally {
-      setUntarring(false);
-    }
-  };
+  }, [artifact]);
 
   const handleDownload = () => {
     if (!artifact?.urls.large) {
@@ -106,6 +110,33 @@ const FileBrowser = () => {
     setSelectedFile(file);
   };
 
+  const handleSaveEdit = async () => {
+    setIsSaving(true);
+    try {
+      const { error } = await auth.client.PUT("/artifacts/edit/{artifact_id}", {
+        params: {
+          query: { id: artifactId },
+        },
+        body: {
+          description: editedDescription,
+        },
+      });
+
+      if (error) {
+        addErrorAlert(error);
+      } else {
+        setArtifact((prev) =>
+          prev ? { ...prev, description: editedDescription } : null,
+        );
+        setIsEditing(false);
+      }
+    } catch (err) {
+      addErrorAlert(humanReadableError(err));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center pt-8">
@@ -116,41 +147,108 @@ const FileBrowser = () => {
 
   return artifact?.urls.large ? (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-4">{artifact.name}</h1>
-      <p className="text-gray-600 mb-4">{artifact.description}</p>
-      <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0 mb-6">
-        <Button
-          onClick={() => navigate("/")}
-          variant="secondary"
-          className="w-full sm:w-auto"
-        >
-          <FaHome className="mr-2" />
-          Home
-        </Button>
-        <Button
-          onClick={handleDownload}
-          variant="secondary"
-          disabled={!artifact.urls?.large}
-          className="w-full sm:w-auto"
-        >
-          <FaFileDownload className="mr-2" />
-          Download
-        </Button>
+      <div className="flex items-center justify-between mb-2 min-w-0">
+        {isEditing ? (
+          <div className="flex-1 mr-4 min-w-0">
+            <h1 className="text-2xl font-semibold break-all overflow-wrap-anywhere">
+              {artifact.name}
+            </h1>
+            <Textarea
+              value={editedDescription}
+              onChange={(e) => setEditedDescription(e.target.value)}
+              className="w-full break-words mt-2"
+              placeholder="Description (optional)"
+            />
+          </div>
+        ) : (
+          <div className="flex-1 min-w-0 overflow-hidden">
+            <h1 className="text-2xl font-semibold break-all overflow-wrap-anywhere">
+              {artifact.name}
+            </h1>
+            {artifact.description && (
+              <p className="text-sm text-gray-600 mt-2 break-words whitespace-pre-wrap overflow-wrap-anywhere">
+                {artifact.description}
+              </p>
+            )}
+          </div>
+        )}
+        <div className="flex space-x-2 pl-4">
+          {isEditing ? (
+            <>
+              <Tooltip content="Save Changes" position="bottom">
+                <Button
+                  onClick={handleSaveEdit}
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  disabled={isSaving}
+                >
+                  {isSaving ? <Spinner className="h-4 w-4" /> : <FaCheck />}
+                </Button>
+              </Tooltip>
+              <Tooltip content="Cancel" position="bottom">
+                <Button
+                  onClick={() => setIsEditing(false)}
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  disabled={isSaving}
+                >
+                  <FaTimes />
+                </Button>
+              </Tooltip>
+            </>
+          ) : (
+            <>
+              {artifact.can_edit && (
+                <Tooltip content="Edit Artifact Details" position="bottom">
+                  <Button
+                    onClick={() => setIsEditing(true)}
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                  >
+                    <FaPen />
+                  </Button>
+                </Tooltip>
+              )}
+              <Tooltip content="View Listing" position="bottom">
+                <Button
+                  onClick={() =>
+                    navigate(`/item/${artifact.username}/${artifact.slug}`)
+                  }
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                >
+                  <FaList />
+                </Button>
+              </Tooltip>
+              <Tooltip content="Download Files" position="bottom">
+                <Button
+                  onClick={handleDownload}
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  disabled={!artifact.urls?.large}
+                >
+                  <FaFileDownload />
+                </Button>
+              </Tooltip>
+            </>
+          )}
+        </div>
       </div>
       <div className="flex flex-col lg:flex-row lg:space-x-4">
         <div className="w-full lg:w-1/3 mb-4 lg:mb-0">
           <div className="border border-gray-300 rounded-md p-6 relative lg:h-[600px] overflow-auto">
-            {untarredFiles.length === 0 ? (
+            {untarring ? (
               <div className="absolute inset-0 flex items-center justify-center">
-                <Button
-                  onClick={handleLoadAndUntar}
-                  variant="primary"
-                  disabled={untarring}
-                  className="w-full sm:w-auto"
-                >
-                  <FaDownload className="mr-2" />
-                  {untarring ? "Loading..." : "Load and Untar"}
-                </Button>
+                <Spinner />
+              </div>
+            ) : untarredFiles.length === 0 ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-gray-500">No files available</div>
               </div>
             ) : (
               <FileTreeViewer
@@ -163,20 +261,18 @@ const FileBrowser = () => {
         </div>
         <div className="w-full lg:w-2/3">
           <div className="border border-gray-300 rounded-md overflow-hidden relative h-[600px]">
-            {selectedFile && (
-              <div className="absolute top-0 left-0 right-0 bg-gray-100 text-gray-800 p-2 border-b border-gray-300 break-all z-10">
-                {selectedFile.name}
+            {selectedFile ? (
+              <>
+                <div className="absolute top-2 left-2 z-10 bg-black/50 text-white px-2 py-1 rounded max-w-[80%] truncate">
+                  {selectedFile.name}
+                </div>
+                <FileRenderer file={selectedFile} allFiles={untarredFiles} />
+              </>
+            ) : (
+              <div className="h-full flex items-center justify-center text-gray-500">
+                Select a file to view its 3D model
               </div>
             )}
-            <div className="h-full">
-              {selectedFile ? (
-                <FileRenderer file={selectedFile} allFiles={untarredFiles} />
-              ) : (
-                <div className="h-full flex items-center justify-center text-gray-500">
-                  Select a file to view its 3D model
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>

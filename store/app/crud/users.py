@@ -53,9 +53,17 @@ class UserCrud(BaseCrud):
     async def get_user(self, id: str, throw_if_missing: bool = False) -> User | None:
         return await self._get_item(id, User, throw_if_missing=throw_if_missing)
 
+    @overload
+    async def get_user_public(self, id: str, throw_if_missing: Literal[True]) -> UserPublic: ...
+
+    @overload
+    async def get_user_public(self, id: str, throw_if_missing: bool = False) -> UserPublic | None: ...
+
     async def get_user_public(self, id: str, throw_if_missing: bool = False) -> UserPublic | None:
         user = await self.get_user(id, throw_if_missing=throw_if_missing)
         if user is None:
+            if throw_if_missing:
+                raise UserNotFoundError(f"User with id {id} not found")
             return None
         return UserPublic(**user.model_dump())
 
