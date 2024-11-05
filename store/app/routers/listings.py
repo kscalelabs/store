@@ -355,15 +355,18 @@ async def get_listing_common(listing: Listing, user: User | None, crud: Crud) ->
 
     creator = await crud.get_user(listing.user_id, throw_if_missing=True)
     raw_artifacts = await crud.get_listing_artifacts(listing.id)
-    artifacts = [
-        SingleArtifactResponse.from_artifact(
-            artifact=artifact,
-            crud=crud,
-            listing=listing,
-            user=creator,
+
+    artifacts = await asyncio.gather(
+        *(
+            SingleArtifactResponse.from_artifact(
+                artifact=artifact,
+                crud=crud,
+                listing=listing,
+                user=creator,
+            )
+            for artifact in sorted(raw_artifacts, key=lambda x: (not x.is_main, -x.timestamp))
         )
-        for artifact in sorted(raw_artifacts, key=lambda x: (not x.is_main, -x.timestamp))
-    ]
+    )
 
     response = GetListingResponse(
         id=listing.id,
@@ -372,7 +375,7 @@ async def get_listing_common(listing: Listing, user: User | None, crud: Crud) ->
         slug=listing.slug,
         description=listing.description,
         child_ids=listing.child_ids,
-        artifacts=artifacts,
+        artifacts=list(artifacts),
         tags=listing_tags,
         onshape_url=listing.onshape_url,
         can_edit=user is not None and await can_write_listing(user, listing),
