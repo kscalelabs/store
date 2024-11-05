@@ -42,7 +42,7 @@ class UserNotFoundError(Exception):
 class UserCrud(BaseCrud):
     @classmethod
     def get_gsis(cls) -> set[str]:
-        return super().get_gsis().union({"user_id", "email", "user_token", "username"})
+        return super().get_gsis().union({"user_id", "email", "user_token", "username", "stripe_connect_account_id"})
 
     @overload
     async def get_user(self, id: str, throw_if_missing: Literal[True]) -> User: ...
@@ -260,6 +260,15 @@ class UserCrud(BaseCrud):
             random_suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
             username = f"{base}{random_suffix}"
         return username
+
+    async def update_stripe_connect_status(self, user_id: str, account_id: str, is_completed: bool) -> User:
+        """Update user's Stripe Connect status."""
+        updates = {"stripe_connect_account_id": account_id, "stripe_connect_onboarding_completed": is_completed}
+        return await self.update_user(user_id, updates)
+
+    async def get_users_by_stripe_connect_id(self, connect_account_id: str) -> list[User]:
+        """Get users by their Stripe Connect account ID."""
+        return await self._get_items_from_secondary_index("stripe_connect_account_id", connect_account_id, User)
 
 
 async def test_adhoc() -> None:

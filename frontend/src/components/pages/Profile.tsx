@@ -143,14 +143,15 @@ export const RenderProfile = (props: RenderProfileProps) => {
     <div className="space-y-8 mb-12">
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader className="flex flex-col items-center space-y-4">
-          <div className="flex flex-col items-center space-y-2 mb-4">
+          <div className="flex flex-col items-center space-y-2">
             <h1 className="text-3xl font-bold text-primary-9">
               {user.first_name || user.last_name
                 ? `${user.first_name || ""} ${user.last_name || ""}`
                 : "No name set"}
             </h1>
             <p className="text-sm text-gray-1 bg-gray-10 px-3 py-1 rounded-md">
-              @{user.username}
+              <span className="font-semibold mr-0.5 select-none">@</span>
+              {user.username}
             </p>
             <p className="text-sm text-gray-11">
               Joined on{" "}
@@ -160,16 +161,40 @@ export const RenderProfile = (props: RenderProfileProps) => {
             </p>
           </div>
           {!isEditing && canEdit && (
-            <div className="flex space-x-2">
-              <Button onClick={() => navigate("/keys")} variant="primary">
-                API Keys
-              </Button>
-              <Button onClick={() => navigate("/orders")} variant="default">
-                Orders
-              </Button>
+            <div className="flex flex-col items-center space-y-2">
               <Button onClick={() => setIsEditing(true)} variant="outline">
                 Edit Profile
               </Button>
+              <div className="flex flex-wrap gap-2 justify-center">
+                <Button onClick={() => navigate("/keys")} variant="primary">
+                  API Keys
+                </Button>
+                <Button onClick={() => navigate("/orders")} variant="default">
+                  Orders
+                </Button>
+                {!user.stripe_connect_account_id ? (
+                  <Button
+                    onClick={() => navigate("/start-selling")}
+                    variant="default"
+                  >
+                    Become a Seller
+                  </Button>
+                ) : !user.stripe_connect_onboarding_completed ? (
+                  <Button
+                    onClick={() => navigate("/start-selling")}
+                    variant="default"
+                  >
+                    Complete Seller Setup
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => navigate("/start-selling")}
+                    variant="default"
+                  >
+                    Seller Dashboard
+                  </Button>
+                )}
+              </div>
             </div>
           )}
           {isAdmin && !canEdit && (

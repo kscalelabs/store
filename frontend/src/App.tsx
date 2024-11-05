@@ -33,6 +33,7 @@ import OrderSuccess from "./components/pages/OrderSuccess";
 import OrdersPage from "./components/pages/Orders";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import ResearchPage from "./components/pages/ResearchPage";
+import SellerOnboarding from "./components/pages/SellerOnboarding";
 import StompyMini from "./components/pages/StompyMini";
 import StompyPro from "./components/pages/StompyPro";
 import TerminalPage from "./components/pages/Terminal";
@@ -84,6 +85,10 @@ const App = () => {
 
                       <Route path="/pro" element={<StompyPro />} />
                       <Route path="/mini" element={<StompyMini />} />
+                      <Route
+                        path="/start-selling"
+                        element={<SellerOnboarding />}
+                      />
 
                       <Route path="/success" element={<OrderSuccess />} />
                       <Route path="/orders" element={<OrdersPage />} />

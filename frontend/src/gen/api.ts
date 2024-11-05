@@ -1040,6 +1040,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/stripe/create-connect-account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Connect Account */
+        post: operations["create_connect_account_stripe_create_connect_account_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stripe/connect-account/update-onboarding-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Update Connect Account Onboarding Status */
+        post: operations["update_connect_account_onboarding_status_stripe_connect_account_update_onboarding_status_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stripe/connect-account/create-session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Connect Account Session */
+        post: operations["create_connect_account_session_stripe_connect_account_create_session_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/me": {
         parameters: {
             query?: never;
@@ -1889,6 +1940,13 @@ export interface components {
             name?: string | null;
             /** Bio */
             bio?: string | null;
+            /** Stripe Connect Account Id */
+            stripe_connect_account_id?: string | null;
+            /**
+             * Stripe Connect Onboarding Completed
+             * @default false
+             */
+            stripe_connect_onboarding_completed: boolean;
         };
         /** UserSignup */
         UserSignup: {
@@ -3727,6 +3785,83 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_connect_account_stripe_create_connect_account_post: {
+        parameters: {
+            query?: {
+                existing_account?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_connect_account_onboarding_status_stripe_connect_account_update_onboarding_status_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+        };
+    };
+    create_connect_account_session_stripe_connect_account_create_session_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
                 };
             };
         };

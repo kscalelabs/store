@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from store.app.crud.base import ItemNotFoundError
 from store.app.db import Crud
 from store.app.model import Order, User
-from store.app.routers.stripe import get_product
+from store.app.routers import stripe
 from store.app.routers.users import get_session_user_with_read_permission
 
 orders_router = APIRouter()
@@ -59,7 +59,7 @@ async def get_order_with_product(
     if order.product_id is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Order has no associated product")
 
-    product = await get_product(order.product_id)
+    product = await stripe.get_product(order.product_id)
     return OrderWithProduct(order=order, product=ProductInfo(**product))
 
 
@@ -73,7 +73,7 @@ async def get_user_orders_with_products(
         for order in orders:
             if order.product_id is None:
                 continue  # Skip orders without a product_id
-            product = await get_product(order.product_id)
+            product = await stripe.get_product(order.product_id)
             orders_with_products.append(OrderWithProduct(order=order, product=ProductInfo(**product)))
         return orders_with_products
     except ItemNotFoundError:

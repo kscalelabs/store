@@ -115,7 +115,24 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
         raise HTTPException(status_code=400, detail="Invalid payload")
 
     # Handle the event
-    if event["type"] == "checkout.session.completed":
+    if event["type"] == "account.updated":
+        account = event["data"]["object"]
+        logger.info(f"Account updated: {account['id']}")
+
+        # Check if this is a Connect account becoming fully onboarded
+        if account["details_submitted"] and account["payouts_enabled"]:
+            try:
+                # Find user with this Connect account ID
+                users = await crud.get_users_by_stripe_connect_id(account["id"])
+                if users:
+                    user = users[0]  # Assume one user per Connect account
+                    # Update user's onboarding status
+                    await crud.update_stripe_connect_status(user.id, account["id"], is_completed=True)
+                    logger.info(f"Updated user {user.id} Connect onboarding status to completed")
+            except Exception as e:
+                logger.error(f"Error updating user Connect status: {str(e)}")
+
+    elif event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
         logger.info(f"Checkout session completed: {session['id']}")
         await handle_checkout_session_completed(session, crud)
@@ -299,3 +316,110 @@ async def get_product(product_id: str) -> Dict[str, Any]:
         }
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@stripe_router.post("/create-connect-account")
+async def create_connect_account(
+    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+    existing_account: bool = False,
+) -> Dict[str, str]:
+    try:
+        if existing_account:
+            if not user.stripe_connect_account_id:
+                raise HTTPException(status_code=400, detail="No Stripe Connect account ID found")
+
+            account_link = stripe.AccountLink.create(
+                type="account_onboarding",
+                account=user.stripe_connect_account_id,
+                refresh_url=f"{settings.site.homepage}/seller-onboarding",
+                return_url=f"{settings.site.homepage}/account",
+                collect="eventually_due",
+            )
+            return {"url": account_link.url}
+        else:
+            # Create new account with correct settings
+            account = stripe.Account.create(
+                type="express",
+                country="US",
+                email=user.email,
+                capabilities={
+                    "card_payments": {"requested": True},
+                    "transfers": {"requested": True},
+                },
+                business_type="individual",
+                settings={
+                    "payouts": {"schedule": {"interval": "manual"}},
+                },
+            )
+
+            logger.info(f"Created Connect account: {account.id} for user: {user.id}")
+
+            await crud.update_user(
+                user.id,
+                {
+                    "stripe_connect_account_id": account.id,
+                    "stripe_connect_onboarding_completed": False,
+                },
+            )
+
+            return {"accountId": account.id}
+    except Exception as e:
+        logger.error(f"Error creating Connect account: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@stripe_router.post("/connect-account/update-onboarding-status")
+async def update_connect_account_onboarding_status(
+    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> Dict[str, bool]:
+    try:
+        if not user.stripe_connect_account_id:
+            raise HTTPException(status_code=400, detail="No Stripe Connect account found")
+
+        # Retrieve the account to check its status
+        account = stripe.Account.retrieve(user.stripe_connect_account_id)
+
+        # Safely access capabilities
+        capabilities = getattr(account, "capabilities", {})
+        card_payments_status = capabilities.get("card_payments") if capabilities else None
+        transfers_status = capabilities.get("transfers") if capabilities else None
+
+        # Check if the account has completed onboarding
+        is_completed = bool(
+            account.details_submitted
+            and account.payouts_enabled
+            and card_payments_status == "active"
+            and transfers_status == "active"
+        )
+
+        # Update the user record if the status has changed
+        if is_completed != user.stripe_connect_onboarding_completed:
+            await crud.update_user(user.id, {"stripe_connect_onboarding_completed": is_completed})
+
+        return {"onboarding_completed": is_completed}
+    except Exception as e:
+        logger.error(f"Error updating Connect account onboarding status: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@stripe_router.post("/connect-account/create-session")
+async def create_connect_account_session(
+    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+) -> Dict[str, str]:
+    try:
+        if not user.stripe_connect_account_id:
+            raise HTTPException(status_code=400, detail="No Stripe Connect account found")
+
+        account_session = stripe.AccountSession.create(
+            account=user.stripe_connect_account_id,
+            components={
+                "account_onboarding": {"enabled": True},
+            },
+        )
+
+        return {"client_secret": account_session.client_secret}
+    except Exception as e:
+        logger.error(f"Error creating Connect account session: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
