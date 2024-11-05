@@ -25,17 +25,18 @@ const ListingFeatureButton = (props: Props) => {
   const { addAlert, addErrorAlert } = useAlertQueue();
   const auth = useAuthentication();
 
+  const hasPermission = auth.currentUser?.permissions?.some(
+    (permission) =>
+      permission === "content_manager" || permission === "is_admin",
+  );
+
+  if (!hasPermission) {
+    return null;
+  }
+
   useEffect(() => {
     setIsFeatured(initialFeatured);
   }, [initialFeatured]);
-
-  if (!auth.currentUser?.permissions?.includes("content_manager")) {
-    return null;
-  }
-
-  if (currentFeaturedCount >= 3 && !isFeatured) {
-    return null;
-  }
 
   const handleFeatureToggle = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -82,28 +83,26 @@ const ListingFeatureButton = (props: Props) => {
   };
 
   return (
-    <Button
-      onClick={handleFeatureToggle}
-      variant={isFeatured ? "default" : "outline"}
-      disabled={isUpdating}
-      title={
-        currentFeaturedCount >= 3 && !isFeatured
-          ? "Maximum of 3 featured listings allowed. Unfeature another listing first."
-          : isFeatured
-            ? "Remove from featured"
-            : "Add to featured"
-      }
-      className={`flex items-center space-x-2 px-3 py-1 rounded-lg transition-all duration-300 ${
-        isFeatured
-          ? "bg-yellow-500 hover:bg-yellow-600 text-white"
-          : "bg-primary-9 hover:bg-primary-10 text-white"
-      }`}
-    >
-      <FaStar className="text-lg" />
-      <span>
-        {isUpdating ? "Updating..." : isFeatured ? "Unfeature" : "Feature"}
-      </span>
-    </Button>
+    <div className="flex items-center gap-2 mt-2">
+      <Button
+        onClick={handleFeatureToggle}
+        variant="primary"
+        disabled={isUpdating}
+        title={
+          currentFeaturedCount >= 3 && !isFeatured
+            ? "Maximum of 3 featured listings allowed. Unfeature another listing first."
+            : isFeatured
+              ? "Remove from featured"
+              : "Add to featured"
+        }
+        className="flex items-center"
+      >
+        <FaStar className="mr-2 h-4 w-4" />
+        <span className="mr-2">
+          {isUpdating ? "Updating..." : isFeatured ? "Unfeature" : "Feature"}
+        </span>
+      </Button>
+    </div>
   );
 };
 

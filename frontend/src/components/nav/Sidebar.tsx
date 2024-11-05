@@ -143,8 +143,16 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
     if (isExternal) {
       window.open(path, "_blank");
     } else {
-      navigate(path);
-      onClose();
+      if (path.startsWith("/item/")) {
+        navigate("/");
+        setTimeout(() => {
+          navigate(path);
+          onClose();
+        }, 0);
+      } else {
+        navigate(path);
+        onClose();
+      }
     }
   };
 
@@ -177,7 +185,7 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
                         title={listing.name}
                         onClick={() =>
                           handleItemClick(
-                            `/item/${listing.username}/${listing.slug}`,
+                            `/item/${listing.username}/${listing.slug || listing.id}`,
                           )
                         }
                       />

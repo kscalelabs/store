@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import ListingDescription from "@/components/listing/ListingDescription";
+import ListingFeatureButton from "@/components/listing/ListingFeatureButton";
 import ListingFileUpload from "@/components/listing/ListingFileUpload";
 import ListingImageFlipper from "@/components/listing/ListingImageFlipper";
 import ListingImageGallery from "@/components/listing/ListingImageGallery";
@@ -25,6 +26,7 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
     can_edit: canEdit,
     user_vote: userVote,
     onshape_url: onshapeUrl,
+    is_featured: isFeatured,
   } = listing;
   const [artifacts, setArtifacts] = useState(initialArtifacts);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -35,6 +37,10 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
         a.is_main ? -1 : b.is_main ? 1 : 0,
       ),
     );
+  };
+
+  const handleFeatureToggle = () => {
+    window.dispatchEvent(new CustomEvent("featuredListingsChanged"));
   };
 
   return (
@@ -70,7 +76,14 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
           <hr className="border-gray-200 my-4" />
 
           {/* Build this robot */}
-          <ListingRegisterRobot listingId={listingId} />
+          <div className="flex items-center gap-4">
+            <ListingRegisterRobot listingId={listingId} />
+            <ListingFeatureButton
+              listingId={listingId}
+              initialFeatured={isFeatured}
+              onFeatureToggle={handleFeatureToggle}
+            />
+          </div>
 
           <hr className="border-gray-200 my-4" />
 

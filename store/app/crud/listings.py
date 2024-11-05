@@ -363,7 +363,6 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
                 return []
 
             listing_ids = response["Item"].get("listing_ids", [])
-            # Ensure we return a list of strings
             if not isinstance(listing_ids, list):
                 return []
 

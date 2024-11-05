@@ -6,7 +6,7 @@ import {
   FaRobot,
   FaWpexplorer,
 } from "react-icons/fa6";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import Logo from "@/components/Logo";
 import Sidebar from "@/components/nav/Sidebar";
@@ -29,6 +29,7 @@ const Navbar = () => {
   const { isAuthenticated } = useAuthentication();
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const [showDevelopersDropdown, setShowDevelopersDropdown] = useState(false);
   const [featuredListings, setFeaturedListings] = useState<
     { id: string; username: string; slug: string | null; name: string }[]
@@ -181,6 +182,18 @@ const Navbar = () => {
     );
   };
 
+  const handleFeaturedClick = (
+    username: string,
+    slug: string | null,
+    id: string,
+  ) => {
+    const path = `/item/${username}/${slug || id}`;
+    if (location.pathname !== path) {
+      navigate("/");
+      setTimeout(() => navigate(path), 0);
+    }
+  };
+
   return (
     <>
       <nav className="fixed w-full z-30 top-0 start-0 bg-gray-1/30 backdrop-blur-lg">
@@ -216,13 +229,19 @@ const Navbar = () => {
               )}
               <div className="flex-grow flex space-x-1">
                 {featuredListings?.map((listing) => (
-                  <Link
+                  <button
                     key={listing.id}
-                    to={`/item/${listing.username}/${listing.slug}`}
+                    onClick={() =>
+                      handleFeaturedClick(
+                        listing.username,
+                        listing.slug,
+                        listing.id,
+                      )
+                    }
                     className="px-2 xl:px-3 py-2 rounded-md text-sm tracking-widest text-gray-1 hover:bg-gray-1 hover:text-primary-9"
                   >
                     {listing.name}
-                  </Link>
+                  </button>
                 ))}
               </div>
               {navItems.map((item) =>
