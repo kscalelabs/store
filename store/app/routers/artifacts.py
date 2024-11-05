@@ -117,7 +117,7 @@ class SingleArtifactResponse(BaseModel):
                 )
             return user, await can_write_artifact(user, artifact)
 
-        async def get_listing(listing: Listing | None) -> tuple[Listing, bool]:
+        async def get_listing(listing: Listing | None) -> Listing:
             if listing is None:
                 if crud is None:
                     raise HTTPException(
