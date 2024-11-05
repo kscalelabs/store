@@ -337,7 +337,7 @@ const ListingOnshape = (props: Props) => {
     );
   };
 
-  return (
+  return edit ? (
     <Card className="mt-6 border border-gray-200 shadow-lg">
       <CardHeader className="p-6">
         <CardTitle className="space-y-6">
@@ -354,7 +354,7 @@ const ListingOnshape = (props: Props) => {
         </CardTitle>
       </CardHeader>
     </Card>
-  );
+  ) : null;
 };
 
 export default ListingOnshape;
