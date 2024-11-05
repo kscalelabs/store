@@ -14,6 +14,12 @@ interface Props {
   ) => Promise<void>;
 }
 
+enum ConnectionStatus {
+  Disconnected = "Disconnected",
+  Connecting = "Connecting...",
+  Connected = "Connected",
+}
+
 const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
   const navigate = useNavigate();
   const [isEditingName, setIsEditingName] = useState(false);
@@ -22,7 +28,9 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
   const [description, setDescription] = useState(robot.description || "");
   const [isUpdatingName, setIsUpdatingName] = useState(false);
   const [isUpdatingDescription, setIsUpdatingDescription] = useState(false);
-
+  const [connectionStatus, setConnectionStatus] = useState(
+    ConnectionStatus.Disconnected,
+  );
   const [terminalMessages, setTerminalMessages] = useState<string[]>([]);
 
   const addTerminalMessage = (message: string) => {
@@ -57,6 +65,19 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
       setIsUpdatingDescription(false);
       setIsEditingDescription(false);
     }
+  };
+
+  const handleConnectionChange = (status: ConnectionStatus) => {
+    addTerminalMessage(`Connection status: ${status}`);
+    setConnectionStatus(status);
+  };
+
+  const handleConnect = () => {
+    handleConnectionChange(ConnectionStatus.Connecting);
+  };
+
+  const handleDisconnect = () => {
+    handleConnectionChange(ConnectionStatus.Disconnected);
   };
 
   return (
@@ -151,14 +172,17 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
 
       {/* Connection controls */}
       <div className="mb-4 flex flex-wrap gap-4">
-        <button className="flex-1 border border-green-500 px-4 py-2 hover:bg-green-500 hover:text-black transition-colors">
+        <button
+          onClick={handleConnect}
+          className="flex-1 border border-green-500 px-4 py-2 hover:bg-green-500 hover:text-black transition-colors"
+        >
           Connect
         </button>
-        <button className="flex-1 border border-green-500 px-4 py-2 hover:bg-green-500 hover:text-black transition-colors">
+        <button
+          onClick={handleDisconnect}
+          className="flex-1 border border-green-500 px-4 py-2 hover:bg-green-500 hover:text-black transition-colors"
+        >
           Disconnect
-        </button>
-        <button className="flex-1 border border-green-500 px-4 py-2 hover:bg-green-500 hover:text-black transition-colors">
-          Reset Connection
         </button>
       </div>
 
@@ -212,15 +236,12 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
           </div>
           <div className="p-4 space-y-2">
             <div>Robot ID: {robot.robot_id}</div>
-            <div>Connection: Disconnected</div>
-            <div>Battery: ---%</div>
-            <div>CPU: ---%</div>
-            {/* Proprioception data will go here */}
+            <div>Connection: {connectionStatus}</div>
           </div>
         </div>
 
         {/* Console output panel */}
-        <div className="border border-green-500 bg-black rounded-lg overflow-hidden min-h-[200px]">
+        <div className="border border-green-500 bg-black rounded-lg overflow-hidden min-h-[200px] max-h-[400px]">
           <div className="bg-green-500 text-black px-4 py-2 font-bold">
             Console
           </div>
