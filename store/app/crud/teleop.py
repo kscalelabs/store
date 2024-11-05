@@ -79,7 +79,9 @@ class TeleopCrud(BaseCrud):
         return room
 
     async def update_connection_status(
-        self, room: TeleopRoom, status: Literal["disconnected", "connecting", "connected"]
+        self,
+        room: TeleopRoom,
+        status: Literal["disconnected", "connecting", "connected"],
     ) -> TeleopRoom:
         """Updates the connection status of the room."""
         await self._update_item(
