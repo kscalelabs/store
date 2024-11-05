@@ -505,16 +505,10 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /**
-         * Toggle Featured Listing
-         * @description Toggle a listing's featured status. Only content managers can do this.
-         */
+        /** Toggle Featured Listing */
         put: operations["toggle_featured_listing_listings_featured__listing_id__put"];
         post?: never;
-        /**
-         * Remove Featured Listing
-         * @description Remove a listing from the featured listings list. Only content managers can do this.
-         */
+        /** Remove Featured Listing */
         delete: operations["remove_featured_listing_listings_featured__listing_id__delete"];
         options?: never;
         head?: never;
@@ -1394,34 +1388,28 @@ export interface components {
             id: string;
             /** Name */
             name: string;
-            /** Username */
-            username: string;
-            /** Slug */
-            slug: string;
             /** Description */
             description: string | null;
-            /** Child Ids */
-            child_ids: string[];
-            /** Artifacts */
-            artifacts: components["schemas"]["SingleArtifactResponse"][];
-            /** Tags */
-            tags: string[];
-            /** Onshape Url */
-            onshape_url: string | null;
-            /** Can Edit */
-            can_edit: boolean;
-            /** Created At */
-            created_at: number;
-            /** Views */
-            views: number;
-            /** Score */
-            score: number;
-            /** User Vote */
-            user_vote: boolean | null;
             /** Creator Id */
-            creator_id: string;
+            creator_id: string | null;
             /** Creator Name */
             creator_name: string | null;
+            /** Username */
+            username: string | null;
+            /** Slug */
+            slug: string | null;
+            /** Views */
+            views: number;
+            /** Created At */
+            created_at: number;
+            /** Artifacts */
+            artifacts: components["schemas"]["SingleArtifactResponse"][];
+            /** Can Edit */
+            can_edit: boolean;
+            /** User Vote */
+            user_vote: boolean | null;
+            /** Onshape Url */
+            onshape_url: string | null;
             /** Stripe Link */
             stripe_link: string | null;
             /** Is Featured */
@@ -1618,7 +1606,7 @@ export interface components {
             /** Google Id */
             google_id: string | null;
             /** Permissions */
-            permissions: ("is_admin" | "is_mod" | "content_manager")[] | null;
+            permissions: ("is_admin" | "is_mod" | "is_content_manager")[] | null;
             /** First Name */
             first_name: string | null;
             /** Last Name */
@@ -1729,7 +1717,7 @@ export interface components {
             /** Username */
             username: string;
             /** Permissions */
-            permissions?: ("is_admin" | "is_mod" | "content_manager")[] | null;
+            permissions?: ("is_admin" | "is_mod" | "is_content_manager")[] | null;
             /** Created At */
             created_at?: number | null;
             /** Updated At */
@@ -1781,6 +1769,13 @@ export interface components {
         RobotURDFResponse: {
             /** Urdf Url */
             urdf_url: string | null;
+        };
+        /** SetContentManagerRequest */
+        SetContentManagerRequest: {
+            /** User Id */
+            user_id: string;
+            /** Is Content Manager */
+            is_content_manager: boolean;
         };
         /** SetModeratorRequest */
         SetModeratorRequest: {
@@ -1951,7 +1946,7 @@ export interface components {
             /** Username */
             username: string;
             /** Permissions */
-            permissions?: ("is_admin" | "is_mod" | "content_manager")[] | null;
+            permissions?: ("is_admin" | "is_mod" | "is_content_manager")[] | null;
             /** Created At */
             created_at: number;
             /** Updated At */

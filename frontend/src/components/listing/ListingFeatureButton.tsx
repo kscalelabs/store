@@ -27,7 +27,7 @@ const ListingFeatureButton = (props: Props) => {
 
   const hasPermission = auth.currentUser?.permissions?.some(
     (permission) =>
-      permission === "content_manager" || permission === "is_admin",
+      permission === "is_content_manager" || permission === "is_admin",
   );
 
   if (!hasPermission) {

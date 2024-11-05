@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { FaDiscord, FaGithub, FaTimes } from "react-icons/fa";
 import {
   FaDownload,
@@ -12,6 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import Logo from "@/components/Logo";
+import { useFeaturedListings } from "@/components/listing/FeaturedListings";
 import { useAuthentication } from "@/hooks/useAuth";
 
 interface SidebarItemProps {
@@ -47,65 +47,7 @@ type NavItem = {
 const Sidebar = ({ show, onClose }: SidebarProps) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthentication();
-  const auth = useAuthentication();
-  const [featuredListings, setFeaturedListings] = useState<
-    { id: string; username: string; slug: string | null; name: string }[]
-  >([]);
-
-  const refreshFeaturedListings = async () => {
-    try {
-      const { data: featuredData } =
-        await auth.client.GET("/listings/featured");
-
-      if (!featuredData?.listing_ids?.length) {
-        setFeaturedListings([]);
-        return;
-      }
-
-      const { data: batchData } = await auth.client.GET("/listings/batch", {
-        params: {
-          query: { ids: featuredData.listing_ids },
-        },
-      });
-
-      if (batchData?.listings) {
-        const orderedListings = featuredData.listing_ids
-          .map((id) => batchData.listings.find((listing) => listing.id === id))
-          .filter(
-            (listing): listing is NonNullable<typeof listing> =>
-              listing !== undefined,
-          )
-          .map((listing) => ({
-            id: listing.id,
-            username: listing.username ?? "",
-            slug: listing.slug,
-            name: listing.name,
-          }));
-
-        setFeaturedListings(orderedListings);
-      }
-    } catch (error) {
-      console.error("Error fetching featured listings:", error);
-    }
-  };
-
-  useEffect(() => {
-    refreshFeaturedListings();
-  }, []);
-
-  useEffect(() => {
-    const handleFeaturedChange = () => {
-      refreshFeaturedListings();
-    };
-
-    window.addEventListener("featuredListingsChanged", handleFeaturedChange);
-    return () => {
-      window.removeEventListener(
-        "featuredListingsChanged",
-        handleFeaturedChange,
-      );
-    };
-  }, []);
+  const { featuredListings } = useFeaturedListings();
 
   let navItems: NavItem[] = [];
 
@@ -143,16 +85,8 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
     if (isExternal) {
       window.open(path, "_blank");
     } else {
-      if (path.startsWith("/item/")) {
-        navigate("/");
-        setTimeout(() => {
-          navigate(path);
-          onClose();
-        }, 0);
-      } else {
-        navigate(path);
-        onClose();
-      }
+      onClose();
+      navigate(path, { replace: true });
     }
   };
 

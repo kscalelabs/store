@@ -369,8 +369,16 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             return [str(lid) for lid in listing_ids]
 
         except Exception as e:
-            logger.error(f"Error retrieving featured listings: {str(e)}")
-            return []
+            error_msg = f"Failed to retrieve featured listings: {type(e).__name__} - {str(e)}"
+            logger.error(
+                error_msg,
+                extra={
+                    "error_type": type(e).__name__,
+                    "error_details": str(e),
+                },
+                exc_info=True,
+            )
+            raise ValueError(error_msg) from e
 
     async def set_featured_listings(self, listing_ids: list[str]) -> None:
         """Set the list of featured listing IDs."""

@@ -51,7 +51,7 @@ async def toggle_featured_listing(
     crud: Annotated[Crud, Depends(Crud.get)],
     featured: bool = Query(...),
 ) -> bool:
-    if not user.permissions or ("content_manager" not in user.permissions and "is_admin" not in user.permissions):
+    if not user.permissions or ("is_content_manager" not in user.permissions and "is_admin" not in user.permissions):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only content managers and admins can set featured listings",

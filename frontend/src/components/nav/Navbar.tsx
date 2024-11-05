@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   FaBars,
   FaGithub,
@@ -19,6 +19,8 @@ import {
   MagnifyingGlassIcon,
 } from "@radix-ui/react-icons";
 
+import { useFeaturedListings } from "../../components/listing/FeaturedListings";
+
 type NavItem = {
   name: string;
   path: string;
@@ -31,65 +33,7 @@ const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [showDevelopersDropdown, setShowDevelopersDropdown] = useState(false);
-  const [featuredListings, setFeaturedListings] = useState<
-    { id: string; username: string; slug: string | null; name: string }[]
-  >([]);
-  const auth = useAuthentication();
-
-  const refreshFeaturedListings = async () => {
-    try {
-      const { data: featuredData } =
-        await auth.client.GET("/listings/featured");
-
-      if (!featuredData?.listing_ids?.length) {
-        setFeaturedListings([]);
-        return;
-      }
-
-      const { data: batchData } = await auth.client.GET("/listings/batch", {
-        params: {
-          query: { ids: featuredData.listing_ids },
-        },
-      });
-
-      if (batchData?.listings) {
-        const orderedListings = featuredData.listing_ids
-          .map((id) => batchData.listings.find((listing) => listing.id === id))
-          .filter(
-            (listing): listing is NonNullable<typeof listing> =>
-              listing !== undefined,
-          )
-          .map((listing) => ({
-            id: listing.id,
-            username: listing.username ?? "",
-            slug: listing.slug,
-            name: listing.name,
-          }));
-
-        setFeaturedListings(orderedListings);
-      }
-    } catch (error) {
-      console.error("Error refreshing featured listings:", error);
-    }
-  };
-
-  useEffect(() => {
-    refreshFeaturedListings();
-  }, []);
-
-  useEffect(() => {
-    const handleFeaturedChange = () => {
-      refreshFeaturedListings();
-    };
-
-    window.addEventListener("featuredListingsChanged", handleFeaturedChange);
-    return () => {
-      window.removeEventListener(
-        "featuredListingsChanged",
-        handleFeaturedChange,
-      );
-    };
-  }, []);
+  const { featuredListings } = useFeaturedListings();
 
   let navItems: NavItem[] = [];
 
@@ -189,8 +133,7 @@ const Navbar = () => {
   ) => {
     const path = `/item/${username}/${slug || id}`;
     if (location.pathname !== path) {
-      navigate("/");
-      setTimeout(() => navigate(path), 0);
+      navigate(path, { replace: true });
     }
   };
 

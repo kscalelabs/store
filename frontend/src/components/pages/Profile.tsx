@@ -43,6 +43,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [isUsernameChanged, setIsUsernameChanged] = useState(false);
   const [usernameError, setUsernameError] = useState<string | null>(null);
+  const { addErrorAlert, addAlert } = useAlertQueue();
   const debouncedUsername = useDebounce(username, 500);
 
   const formatJoinDate = (timestamp: number) => {
@@ -92,21 +93,28 @@ export const RenderProfile = (props: RenderProfileProps) => {
       const response = await auth.client.POST("/users/set-content-manager", {
         body: {
           user_id: user.id,
-          is_content_manager: !user.permissions?.includes("content_manager"),
+          is_content_manager: !user.permissions?.includes("is_content_manager"),
         },
       });
 
       if (response.error) {
-        console.error("Failed to set content manager", response.error);
+        addErrorAlert({
+          message: "Failed to set content manager status",
+          detail: response.error,
+        });
         return;
       }
 
       if (response.data) {
         const updatedUser = response.data;
         props.onUpdateProfile(updatedUser);
+        addAlert("Content manager status updated successfully!", "success");
       }
     } catch (error) {
-      console.error("Failed to set content manager", error);
+      addErrorAlert({
+        message: "Failed to set content manager status",
+        detail: error,
+      });
     }
   };
 
@@ -182,7 +190,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
                     ? "Admin"
                     : user.permissions.includes("is_mod")
                       ? "Moderator"
-                      : user.permissions.includes("content_manager")
+                      : user.permissions.includes("is_content_manager")
                         ? "Content Manager"
                         : "Member"}
                 </p>
@@ -216,7 +224,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
                   : "Set as Moderator"}
               </Button>
               <Button onClick={handleSetContentManager} variant="outline">
-                {user.permissions?.includes("content_manager")
+                {user.permissions?.includes("is_content_manager")
                   ? "Remove Content Manager"
                   : "Set as Content Manager"}
               </Button>

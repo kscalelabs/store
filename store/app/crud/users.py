@@ -275,9 +275,9 @@ class UserCrud(BaseCrud):
             user.permissions = set()
 
         if is_content_manager:
-            user.permissions.add("content_manager")
+            user.permissions.add("is_content_manager")
         else:
-            user.permissions.discard("content_manager")
+            user.permissions.discard("is_content_manager")
 
         await self._update_item(user_id, User, {"permissions": list(user.permissions)})
         return user
