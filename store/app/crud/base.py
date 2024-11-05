@@ -362,24 +362,23 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             raise InternalError(f"Multiple items found with {secondary_index_name} {secondary_index_value}")
         return items[0]
 
-    async def _update_item(
-        self,
-        id: str,
-        model_type: type[T],
-        updates: dict[str, Any],
-    ) -> None:
+    async def _update_item(self, id: str, model_type: type[T], updates: dict[str, Any]) -> None:
         table_name = TABLE_NAME
         key = {"id": id}
 
+        # Add condition to ensure we're updating the correct type
+        condition_expression = "#type = :type"
         update_expression = "SET " + ", ".join(f"#{k} = :{k}" for k in updates.keys())
-        expression_attribute_values = {f":{k}": v for k, v in updates.items()}
-        expression_attribute_names = {f"#{k}": k for k in updates.keys()}
+
+        expression_attribute_values = {":type": model_type.__name__, **{f":{k}": v for k, v in updates.items()}}
+        expression_attribute_names = {"#type": "type", **{f"#{k}": k for k in updates.keys()}}
 
         try:
             await self.db.meta.client.update_item(
                 TableName=table_name,
                 Key=key,
                 UpdateExpression=update_expression,
+                ConditionExpression=condition_expression,
                 ExpressionAttributeValues=expression_attribute_values,
                 ExpressionAttributeNames=expression_attribute_names,
                 ReturnValues="NONE",
@@ -387,6 +386,8 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         except ClientError as e:
             if e.response["Error"]["Code"] == "ValidationException":
                 raise ValueError(f"Invalid update: {str(e)}")
+            elif e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+                raise ItemNotFoundError(f"Item not found or is not of type {model_type.__name__}")
             raise
 
     async def _upload_to_s3(self, data: IO[bytes], name: str, filename: str, content_type: str) -> None:

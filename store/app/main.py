@@ -2,6 +2,7 @@
 
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import AsyncGenerator
 
 import uvicorn
@@ -30,6 +31,7 @@ from store.app.routers.onshape import onshape_router
 from store.app.routers.orders import orders_router
 from store.app.routers.robots import robots_router
 from store.app.routers.stripe import stripe_router
+from store.app.routers.teleop import teleop_router
 from store.app.routers.users import users_router
 from store.utils import get_cors_origins
 
@@ -170,79 +172,8 @@ async def get_documentation() -> HTMLResponse:
 
 @app.get("/docs/oauth2-redirect", include_in_schema=False)
 async def get_oauth2_redirect() -> str:
-    return """
-    <!DOCTYPE html>
-    <html lang="en-US">
-    <body onload="run()">
-    <script>
-        'use strict';
-        function run () {
-            var oauth2 = window.opener.swaggerUIRedirectOauth2;
-            var sentState = oauth2.state;
-            var redirectUrl = oauth2.redirectUrl;
-            var isValid, qp, arr;
-
-            if (/code|token|error/.test(window.location.hash)) {
-                qp = window.location.hash.substring(1);
-            } else {
-                qp = location.search.substring(1);
-            }
-
-            arr = qp.split("&");
-            arr.forEach(function (v,i,_arr) { _arr[i] = '"' + v.replace('=', '":"') + '"';});
-            qp = qp ? JSON.parse('{' + arr.join() + '}',
-                    function (key, value) {
-                        return key === "" ? value : decodeURIComponent(value);
-                    }
-            ) : {};
-
-            isValid = qp.state === sentState;
-
-            if ((
-              oauth2.auth.schema.get("flow") === "accessCode" ||
-              oauth2.auth.schema.get("flow") === "authorizationCode" ||
-              oauth2.auth.schema.get("type") === "oauth2") && !oauth2.auth.code) {
-                if (!isValid) {
-                    oauth2.errCb({
-                        authId: oauth2.auth.name,
-                        source: "auth",
-                        level: "warning",
-                        message: "Authorization may be unsafe, passed state was changed in server. " +
-                                "The passed state wasn't returned from auth server."
-                    });
-                }
-
-                if (qp.code) {
-                    delete oauth2.state;
-                    oauth2.auth.code = qp.code;
-                    oauth2.callback({auth: oauth2.auth, redirectUrl: redirectUrl});
-                } else {
-                    let oauthErrorMsg;
-                    if (qp.error) {
-                        oauthErrorMsg = "["+qp.error+"]: " +
-                            (qp.error_description
-                                ? qp.error_description + ". "
-                                : "no accessCode received from the server. "
-                            ) +
-                            (qp.error_uri ? "More info: "+qp.error_uri : "");
-                    }
-
-                    oauth2.errCb({
-                        authId: oauth2.auth.name,
-                        source: "auth",
-                        level: "error",
-                        message: oauthErrorMsg || "[Authorization failed]: no accessCode received from the server."
-                    });
-                }
-            } else {
-                oauth2.callback({auth: oauth2.auth, token: qp, isValid: isValid, redirectUrl: redirectUrl});
-            }
-            window.close();
-        }
-    </script>
-    </body>
-    </html>
-    """
+    template_path = Path(__file__).parent / "templates" / "oauth2_redirect.html"
+    return template_path.read_text()
 
 
 async def validate_auth_token(auth_token: str = Depends(api_key_header)) -> str:
@@ -262,6 +193,7 @@ app.include_router(orders_router, prefix="/orders", tags=["orders"])
 app.include_router(robots_router, prefix="/robots", tags=["robots"])
 app.include_router(stripe_router, prefix="/stripe", tags=["stripe"])
 app.include_router(users_router, prefix="/users", tags=["users"])
+app.include_router(teleop_router, prefix="/teleop", tags=["teleop"])
 
 
 # For running with debugger

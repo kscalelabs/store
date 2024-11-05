@@ -702,3 +702,30 @@ class FeaturedListings(BaseModel):
     type: str = "featured_listings"
     listing_ids: list[str]
     updated_at: int
+
+
+class TeleopRoom(StoreBaseModel):
+    """Tracks teleoperation rooms and their WebRTC connection details."""
+
+    robot_id: str
+    created_at: int
+    updated_at: int
+    ice_servers: list[dict] | None = None  # STUN/TURN server configurations
+    sdp_offer: str | None = None  # WebRTC SDP offer from robot
+    sdp_answer: str | None = None  # WebRTC SDP answer from client
+    ice_candidates: list[dict] | None = None  # ICE candidates for connection
+    connection_status: str = "disconnected"  # Status: disconnected, connecting, connected
+    ttl: int | None = None
+
+    @classmethod
+    def create(cls, robot_id: str, expire_after_n_minutes: int = 10) -> Self:
+        now = int(time.time())
+        ttl_timestamp = int((datetime.utcnow() + timedelta(minutes=expire_after_n_minutes)).timestamp())
+        return cls(
+            id=new_uuid(),
+            robot_id=robot_id,
+            created_at=now,
+            updated_at=now,
+            ice_candidates=[],
+            ttl=ttl_timestamp,
+        )
