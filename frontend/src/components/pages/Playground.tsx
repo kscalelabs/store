@@ -374,14 +374,14 @@ const Playground = () => {
 
   // Add simulation controls to the UI
   return (
-    <div className="w-full h-[80vh] flex">
+    <div className="w-full h-[80vh] flex flex-col lg:flex-row">
       {/* 3D Viewer */}
-      <div className="w-2/3">
+      <div className="w-full lg:w-2/3 h-1/2 lg:h-full">
         <div ref={containerRef} className="w-full h-full" />
       </div>
 
       {/* Control Panel */}
-      <div className="w-1/3 p-4 bg-gray-100">
+      <div className="w-full lg:w-1/3 h-1/2 lg:h-full p-4 bg-gray-100">
         <h2 className="text-xl font-bold mb-4">Joint Controls</h2>
 
         {!isMujocoReady ? (
