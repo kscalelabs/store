@@ -45,12 +45,15 @@ const ListingFeatureButton = (props: Props) => {
     setIsUpdating(true);
 
     try {
-      const response = await auth.client.PUT("/listings/featured/{id}", {
-        params: {
-          path: { id: listingId },
-          query: { featured: !isFeatured },
+      const response = await auth.client.PUT(
+        "/listings/featured/{listing_id}",
+        {
+          params: {
+            path: { listing_id: listingId },
+            query: { featured: !isFeatured },
+          },
         },
-      });
+      );
 
       if (response.error) {
         addErrorAlert(response.error);
