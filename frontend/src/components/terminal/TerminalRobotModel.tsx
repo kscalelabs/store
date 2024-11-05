@@ -54,6 +54,7 @@ const TerminalRobotModel = ({ listingId }: Props) => {
 
   useEffect(() => {
     (async () => {
+      setIsLoading(true);
       if (!urdfUrl) {
         setIsLoading(false);
         return;
