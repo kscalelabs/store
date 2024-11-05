@@ -6,7 +6,7 @@ import ListingImageFlipper from "@/components/listing/ListingImageFlipper";
 import ListingImageGallery from "@/components/listing/ListingImageGallery";
 import ListingMetadata from "@/components/listing/ListingMetadata";
 import ListingName from "@/components/listing/ListingName";
-import ListingOnshape from "@/components/listing/onshape/ListingOnshape";
+import ListingOnshape from "@/components/listing/ListingOnshape";
 import { Artifact, ListingResponse } from "@/components/listing/types";
 
 import ListingRegisterRobot from "./ListingRegisterRobot";
@@ -104,12 +104,15 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
         />
       )}
 
-      <ListingOnshape
-        listingId={listingId}
-        onshapeUrl={onshapeUrl}
-        canEdit={canEdit}
-        addArtifacts={addArtifacts}
-      />
+      {/* Only show if there's a URL or user can edit */}
+      {(onshapeUrl || canEdit) && (
+        <ListingOnshape
+          listingId={listingId}
+          onshapeUrl={onshapeUrl}
+          canEdit={canEdit}
+          addArtifacts={addArtifacts}
+        />
+      )}
     </div>
   );
 };
