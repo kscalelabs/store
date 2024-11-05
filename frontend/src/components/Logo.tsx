@@ -5,7 +5,7 @@ const Logo = () => {
     <div className="flex items-center space-x-2 select-none">
       <img src={smallLogo} alt="K Scale Logo" className="h-6 invert" />
       <span className="text-lg font-bold text-gray-1 font-orbitron tracking-wider">
-        K-Scale Labs
+        K-Scale
       </span>
     </div>
   );

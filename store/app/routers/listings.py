@@ -107,7 +107,11 @@ async def get_batch_listing_info(
         if listing is not None:
             try:
                 artifact_responses = [
-                    SingleArtifactResponse.from_artifact_and_listing(artifact=artifact, listing=listing, user=user)
+                    SingleArtifactResponse.from_artifact_and_listing(
+                        artifact=artifact,
+                        listing=listing,
+                        username=user_id_to_username.get(listing.user_id, "Unknown"),
+                    )
                     for artifact in sorted(artifacts, key=lambda x: (not x.is_main, -x.timestamp))
                 ]
                 listing_response = ListingInfoResponse(
@@ -152,6 +156,11 @@ async def get_user_listings(
         crud.get_user_listings(user_id, page),
         crud.get_user(user_id),
     )
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Could not find user associated with the given id",
+        )
     listing_infos = [ListingInfo(id=listing.id, username=user.username, slug=listing.slug) for listing in listings]
     return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
@@ -162,10 +171,7 @@ async def get_my_listings(
     crud: Annotated[Crud, Depends(Crud.get)],
     page: int = Query(1, description="Page number for pagination"),
 ) -> ListListingsResponse:
-    (listings, has_next), user = await asyncio.gather(
-        crud.get_user_listings(user.id, page),
-        crud.get_user(user.id),
-    )
+    listings, has_next = await crud.get_user_listings(user.id, page)
     listing_infos = [ListingInfo(id=listing.id, username=user.username, slug=listing.slug) for listing in listings]
     return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
@@ -345,7 +351,7 @@ async def get_listing_common(listing: Listing, user: User | None, crud: Crud) ->
 
     raw_artifacts = await crud.get_listing_artifacts(listing.id)
     artifacts = [
-        SingleArtifactResponse.from_artifact_and_listing(artifact=artifact, listing=listing, user=creator)
+        SingleArtifactResponse.from_artifact_and_listing(artifact=artifact, listing=listing, username=creator.username)
         for artifact in sorted(raw_artifacts, key=lambda x: (not x.is_main, -x.timestamp))
     ]
 

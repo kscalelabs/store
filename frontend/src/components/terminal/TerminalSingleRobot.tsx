@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import "@/components/terminal/Terminal.css";
 
+import AudioIcon from "@/components/icons/AudioIcon";
 import { SingleRobotResponse } from "@/components/terminal/types";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 
@@ -154,26 +155,51 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
 
       {/* Main grid layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[calc(100vh-8rem)]">
-        {/* Video feed panel */}
-        <div className="border border-green-500 bg-black rounded-lg overflow-hidden">
+        {/* Video and Audio feed panel */}
+        <div className="border border-green-500 bg-black rounded-lg overflow-hidden flex flex-col">
           <div className="bg-green-500 text-black px-4 py-2 font-bold">
-            Robot Video Feed
+            Feed
           </div>
-          <div className="p-4">
+          <div className="p-4 space-y-4 flex-1 flex flex-col justify-center">
+            {/* Video container */}
             <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
-              {" "}
-              {/* 56.25% = 9/16 */}
-              <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center border-2 border-dashed border-green-500">
+              <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center border-2 border-dashed border-green-500 p-4">
                 Waiting for video connection...
               </div>
             </div>
+
+            {/* Audio indicator */}
+            <div className="flex items-center gap-2">
+              <div className="flex-shrink-0">
+                <AudioIcon />
+              </div>
+              <div className="flex-1 h-2 bg-green-900 rounded-full overflow-hidden">
+                <div className="h-full w-0 bg-green-500 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Klang Input panel */}
+        <div className="border border-green-500 bg-black rounded-lg overflow-hidden min-h-[300px]">
+          <div className="bg-green-500 text-black px-4 py-2 font-bold">
+            Control
+          </div>
+          <div className="p-4 h-[calc(100%-3rem)] flex flex-col gap-4">
+            <textarea
+              className="w-full h-full bg-black text-green-500 border border-green-500 p-2 font-mono resize-none focus:outline-none focus:ring-1 focus:ring-green-500"
+              placeholder="Enter code here..."
+            />
+            <button className="w-full border border-green-500 px-4 py-2 hover:bg-green-500 hover:text-black transition-colors">
+              Execute
+            </button>
           </div>
         </div>
 
         {/* Status and metrics panel */}
         <div className="border border-green-500 bg-black rounded-lg overflow-hidden min-h-[200px]">
           <div className="bg-green-500 text-black px-4 py-2 font-bold">
-            Robot Status
+            Status
           </div>
           <div className="p-4 space-y-2">
             <div>Robot ID: {robot.robot_id}</div>
@@ -184,26 +210,10 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
           </div>
         </div>
 
-        {/* Code input panel */}
-        <div className="border border-green-500 bg-black rounded-lg overflow-hidden min-h-[300px]">
-          <div className="bg-green-500 text-black px-4 py-2 font-bold">
-            Code Input
-          </div>
-          <div className="p-4 h-[calc(100%-3rem)] flex flex-col gap-4">
-            <textarea
-              className="w-full h-full bg-black text-green-500 border border-green-500 p-2 font-mono resize-none focus:outline-none focus:ring-1 focus:ring-green-500"
-              placeholder="Enter code here..."
-            />
-            <button className="w-full border border-green-500 px-4 py-2 hover:bg-green-500 hover:text-black transition-colors">
-              Execute Code
-            </button>
-          </div>
-        </div>
-
         {/* Console output panel */}
         <div className="border border-green-500 bg-black rounded-lg overflow-hidden min-h-[200px]">
           <div className="bg-green-500 text-black px-4 py-2 font-bold">
-            Console Output
+            Console
           </div>
           <div className="p-4 h-[calc(100%-3rem)] overflow-auto whitespace-pre-wrap">
             <p>{`>`} Robot terminal initialized</p>

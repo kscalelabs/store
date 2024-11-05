@@ -106,8 +106,9 @@ async def list_user_robots(
 ) -> RobotListResponse:
     """List all robots for the current user."""
     robots = await crud.get_robots_by_user_id(user.id)
+    if not robots:
+        return RobotListResponse(robots=[])
     unique_listing_ids = list(set(robot.listing_id for robot in robots))
-    print(f"unique_listing_ids: {unique_listing_ids}")
     listings = await crud.get_listings_by_ids(unique_listing_ids)
     listing_ids_to_listing = {listing.id: listing for listing in listings}
     return RobotListResponse(

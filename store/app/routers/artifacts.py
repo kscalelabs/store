@@ -103,20 +103,26 @@ class SingleArtifactResponse(BaseModel):
         else:
             listing = await crud.get_listing(artifact.listing_id)
 
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Could not find user associated with the given artifact",
+            )
+
         if listing is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Could not find listing associated with the given artifact",
             )
 
-        return cls.from_artifact_and_listing(artifact=artifact, listing=listing, user=user)
+        return cls.from_artifact_and_listing(artifact=artifact, listing=listing, username=user.username)
 
     @classmethod
-    def from_artifact_and_listing(cls, artifact: Artifact, listing: Listing, user: User) -> Self:
+    def from_artifact_and_listing(cls, artifact: Artifact, listing: Listing, username: str) -> Self:
         return cls(
             artifact_id=artifact.id,
             listing_id=artifact.listing_id,
-            username=user.username,
+            username=username,
             slug=listing.slug,
             name=artifact.name,
             artifact_type=artifact.artifact_type,
