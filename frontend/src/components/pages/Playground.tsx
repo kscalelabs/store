@@ -38,6 +38,10 @@ const Playground = () => {
   // Add a constant for the default timestep
   const DEFAULT_TIMESTEP = 0.002;
 
+  // Add these constants near the top of the component
+  const SWING_FREQUENCY = 2.0; // Hz
+  const SWING_AMPLITUDE = 0.8; // radians
+
   // Initialize Three.js and MuJoCo only once
   useEffect(() => {
     const initializeMuJoCo = async () => {
@@ -55,34 +59,34 @@ const Playground = () => {
 
         // Create a simple test model with two hinge joints
         const xmlContent = `
-<?xml version="1.0" ?>
-<mujoco>
-  <option gravity="0 0 -9.81" timestep="${DEFAULT_TIMESTEP}"/>
-  <default>
-    <joint damping="0.1"/>
-    <geom density="1000"/>
-  </default>
-  <worldbody>
-    <light diffuse=".5 .5 .5" pos="0 0 3" dir="0 0 -1"/>
-    <geom type="plane" size="2 2 0.1" rgba="0.9 0.9 0.9 1"/>
-    <body name="torso" pos="0 0 0.5">
-      <freejoint name="root"/>
-      <geom type="box" size="0.15 0.1 0.1" rgba="0.5 0.5 1 1"/>
-      <body name="left_leg" pos="-0.1 0 0">
-        <joint name="left_hip" type="hinge" axis="1 0 0" pos="0 0 0"/>
-        <geom type="box" pos="0 0 -0.15" size="0.05 0.05 0.15" rgba="0.5 0.5 0.5 1"/>
-      </body>
-      <body name="right_leg" pos="0.1 0 0">
-        <joint name="right_hip" type="hinge" axis="1 0 0" pos="0 0 0"/>
-        <geom type="box" pos="0 0 -0.15" size="0.05 0.05 0.15" rgba="0.5 0.5 0.5 1"/>
-      </body>
-    </body>
-  </worldbody>
-  <actuator>
-    <motor joint="left_hip" gear="1"/>
-    <motor joint="right_hip" gear="1"/>
-  </actuator>
-</mujoco>`;
+        <mujoco>
+          <option gravity="0 0 -9.81"/>
+          <worldbody>
+            <light diffuse=".5 .5 .5" pos="0 0 3" dir="0 0 -1"/>
+            <geom type="plane" size="5 5 0.1" rgba=".9 .9 .9 1"/>
+            <body name="torso" pos="0 0 0.5">
+              <freejoint name="root"/>
+              <inertial pos="0 0 0" mass="1" diaginertia="0.1 0.1 0.1"/>
+              <geom type="box" size="0.15 0.1 0.1" rgba="0.5 0.5 1 1"/>
+
+              <body name="left_leg" pos="-0.1 0 0">
+                <inertial pos="0 0 -0.15" mass="0.2" diaginertia="0.01 0.01 0.01"/>
+                <joint name="left_leg" type="hinge" axis="1 0 0" pos="0 0 0"/>
+                <geom type="box" pos="0 0 -0.15" size="0.05 0.05 0.15" rgba="0.5 0.5 0.5 1"/>
+              </body>
+
+              <body name="right_leg" pos="0.1 0 0">
+                <inertial pos="0 0 -0.15" mass="0.2" diaginertia="0.01 0.01 0.01"/>
+                <joint name="right_leg" type="hinge" axis="1 0 0" pos="0 0 0"/>
+                <geom type="box" pos="0 0 -0.15" size="0.05 0.05 0.15" rgba="0.5 0.5 0.5 1"/>
+              </body>
+            </body>
+          </worldbody>
+          <actuator>
+            <motor joint="left_leg" name="left_motor"/>
+            <motor joint="right_leg" name="right_motor"/>
+          </actuator>
+        </mujoco>`;
 
         mujocoRef.current.FS.writeFile("/working/model.xml", xmlContent);
 
@@ -198,22 +202,29 @@ const Playground = () => {
             modelRef.current
           ) {
             try {
-              // Use a fixed timestep instead of trying to get it from the model
-              const timestep = DEFAULT_TIMESTEP;
-
               if (timeMS - mujocoTimeRef.current > 35.0) {
                 mujocoTimeRef.current = timeMS;
               }
 
               while (mujocoTimeRef.current < timeMS) {
-                simulationRef.current.step();
-                mujocoTimeRef.current += timestep * 1000.0;
+                // Add oscillating control signals
+                const time = mujocoTimeRef.current / 1000.0;
+                const ctrl = simulationRef.current.ctrl;
 
-                // Safety check for qpos
+                // Left leg leads by π radians (180 degrees)
+                ctrl[0] =
+                  SWING_AMPLITUDE *
+                  Math.sin(2 * Math.PI * SWING_FREQUENCY * time);
+                // Right leg follows
+                ctrl[1] =
+                  SWING_AMPLITUDE *
+                  Math.sin(2 * Math.PI * SWING_FREQUENCY * time + Math.PI);
+
+                simulationRef.current.step();
+                mujocoTimeRef.current += DEFAULT_TIMESTEP * 1000.0;
+
                 if (simulationRef.current.qpos) {
                   const qpos = simulationRef.current.qpos;
-
-                  // Update leg angles
                   if (leftLegRef.current) {
                     leftLegRef.current.userData.angle = qpos[7];
                   }
@@ -223,7 +234,8 @@ const Playground = () => {
                 }
               }
             } catch (error) {
-              isSimulatingRef.current = false; // Stop simulation on error
+              console.error("Simulation error:", error);
+              isSimulatingRef.current = false;
             }
           }
 
@@ -233,10 +245,11 @@ const Playground = () => {
           rightLegRef.current.rotation.x =
             rightLegRef.current.userData.angle || 0;
 
+          // Update leg positions
           leftLegRef.current.position.z =
-            Math.sin(leftLegRef.current.userData.angle || 0) * 0.1;
+            Math.sin(leftLegRef.current.userData.angle || 0) * 0.15;
           rightLegRef.current.position.z =
-            Math.sin(rightLegRef.current.userData.angle || 0) * 0.1;
+            Math.sin(rightLegRef.current.userData.angle || 0) * 0.15;
         }
 
         controlsRef.current?.update();
