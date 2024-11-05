@@ -400,6 +400,7 @@ class GetListingResponse(BaseModel):
     creator_name: str | None
     username: str | None
     slug: str | None
+    score: int
     views: int
     created_at: int
     artifacts: list[SingleArtifactResponse]
@@ -459,6 +460,7 @@ async def get_listing_common(
         onshape_url=listing.onshape_url,
         stripe_link=listing.stripe_link,
         is_featured=is_featured,
+        score=listing.score,
     )
 
     return response
