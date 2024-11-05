@@ -1,5 +1,7 @@
 import { useCallback, useState } from "react";
+import { FaTrash } from "react-icons/fa";
 
+import { SingleRobotResponse } from "@/components/terminal/types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,16 +11,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ApiError } from "@/lib/types/api";
-import { Trash2 } from "lucide-react";
 
 interface DeleteRobotModalProps {
   isOpen: boolean;
   onClose: () => void;
   onDelete: (robotId: string) => Promise<void>;
-  robot: {
-    id: string;
-    name: string;
-  };
+  robot: SingleRobotResponse;
 }
 
 export function DeleteRobotModal({
@@ -34,7 +32,7 @@ export function DeleteRobotModal({
     setIsLoading(true);
     setError(null);
     try {
-      await onDelete(robot.id);
+      await onDelete(robot.robot_id);
       onClose();
     } catch (error) {
       console.error("Error deleting robot:", error);
@@ -51,7 +49,7 @@ export function DeleteRobotModal({
     } finally {
       setIsLoading(false);
     }
-  }, [robot.id, onDelete, onClose]);
+  }, [robot.robot_id, onDelete, onClose]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -84,7 +82,7 @@ export function DeleteRobotModal({
             disabled={isLoading}
             variant="destructive"
           >
-            <Trash2 className="mr-2 h-4 w-4" />
+            <FaTrash className="mr-2 h-4 w-4" />
             <span>{isLoading ? "Deleting..." : "Delete Robot"}</span>
           </Button>
         </div>

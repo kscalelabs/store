@@ -20,13 +20,19 @@ const ListingArtifactRenderer = ({ artifact }: Props) => {
       );
     case "tgz":
       return (
-        <div className="w-full h-full bg-gray-3 flex items-center justify-center">
+        <div className="w-full h-full bg-gray-3 flex flex-col items-center justify-center gap-2">
           <Link
             to={`/file/${artifact.artifact_id}`}
             className="p-4 hover:bg-gray-4 rounded-lg transition-colors"
           >
             <FaFileArchive className="w-16 h-16" />
           </Link>
+          <div className="text-center">
+            <div className="font-medium">{artifact.name}</div>
+            <div className="text-sm text-gray-600">
+              Created {new Date(artifact.timestamp * 1000).toLocaleDateString()}
+            </div>
+          </div>
         </div>
       );
     default:

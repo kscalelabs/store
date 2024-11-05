@@ -1,12 +1,21 @@
 import { useEffect, useState } from "react";
-import { FaFileDownload, FaHome } from "react-icons/fa";
+import {
+  FaCheck,
+  FaFileDownload,
+  FaList,
+  FaPen,
+  FaTimes,
+} from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 
 import FileRenderer from "@/components/files/FileRenderer";
 import FileTreeViewer from "@/components/files/FileTreeViewer";
 import { parseTar } from "@/components/files/Tarfile";
 import Spinner from "@/components/ui/Spinner";
+import { Tooltip } from "@/components/ui/ToolTip";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { components } from "@/gen/api";
 import { humanReadableError, useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
@@ -29,6 +38,15 @@ const FileBrowser = () => {
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
   const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState("");
+  const [editedDescription, setEditedDescription] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  if (!artifactId) {
+    navigate("/");
+    return null;
+  }
 
   useEffect(() => {
     (async () => {
@@ -70,6 +88,13 @@ const FileBrowser = () => {
     })();
   }, [artifactId, auth.client, addErrorAlert, artifact]);
 
+  useEffect(() => {
+    if (artifact) {
+      setEditedName(artifact.name);
+      setEditedDescription(artifact.description || "");
+    }
+  }, [artifact]);
+
   const handleDownload = () => {
     if (!artifact?.urls.large) {
       addErrorAlert("Artifact URL not available.");
@@ -88,6 +113,36 @@ const FileBrowser = () => {
     setSelectedFile(file);
   };
 
+  const handleSaveEdit = async () => {
+    setIsSaving(true);
+    try {
+      const { error } = await auth.client.PUT("/artifacts/edit/{artifact_id}", {
+        params: {
+          query: { id: artifactId },
+        },
+        body: {
+          name: editedName,
+          description: editedDescription,
+        },
+      });
+
+      if (error) {
+        addErrorAlert(error);
+      } else {
+        setArtifact((prev) =>
+          prev
+            ? { ...prev, name: editedName, description: editedDescription }
+            : null,
+        );
+        setIsEditing(false);
+      }
+    } catch (err) {
+      addErrorAlert(humanReadableError(err));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center pt-8">
@@ -98,26 +153,97 @@ const FileBrowser = () => {
 
   return artifact?.urls.large ? (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-4">{artifact.name}</h1>
-      <p className="text-gray-600 mb-4">{artifact.description}</p>
-      <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-2 sm:space-y-0 mb-6">
-        <Button
-          onClick={() => navigate("/")}
-          variant="secondary"
-          className="w-full sm:w-auto"
-        >
-          <FaHome className="mr-2" />
-          Home
-        </Button>
-        <Button
-          onClick={handleDownload}
-          variant="secondary"
-          disabled={!artifact.urls?.large}
-          className="w-full sm:w-auto"
-        >
-          <FaFileDownload className="mr-2" />
-          Download
-        </Button>
+      <div className="flex items-center justify-between mb-2 min-w-0">
+        {isEditing ? (
+          <div className="flex-1 mr-4 min-w-0">
+            <Input
+              value={editedName}
+              onChange={(e) => setEditedName(e.target.value)}
+              className="text-2xl font-semibold mb-2 break-all w-full"
+            />
+            <Textarea
+              value={editedDescription}
+              onChange={(e) => setEditedDescription(e.target.value)}
+              className="w-full break-words"
+              placeholder="Description (optional)"
+            />
+          </div>
+        ) : (
+          <div className="flex-1 min-w-0 overflow-hidden">
+            <h1 className="text-2xl font-semibold break-all overflow-wrap-anywhere">
+              {artifact.name}
+            </h1>
+            {artifact.description && (
+              <p className="text-sm text-gray-600 mt-2 break-words whitespace-pre-wrap overflow-wrap-anywhere">
+                {artifact.description}
+              </p>
+            )}
+          </div>
+        )}
+        <div className="flex space-x-2 pl-4">
+          {isEditing ? (
+            <>
+              <Tooltip content="Save Changes" position="bottom">
+                <Button
+                  onClick={handleSaveEdit}
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  disabled={isSaving}
+                >
+                  {isSaving ? <Spinner className="h-4 w-4" /> : <FaCheck />}
+                </Button>
+              </Tooltip>
+              <Tooltip content="Cancel" position="bottom">
+                <Button
+                  onClick={() => setIsEditing(false)}
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  disabled={isSaving}
+                >
+                  <FaTimes />
+                </Button>
+              </Tooltip>
+            </>
+          ) : (
+            <>
+              <Tooltip content="Edit Artifact Details" position="bottom">
+                <Button
+                  onClick={() => setIsEditing(true)}
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                >
+                  <FaPen />
+                </Button>
+              </Tooltip>
+              <Tooltip content="View Listing" position="bottom">
+                <Button
+                  onClick={() =>
+                    navigate(`/item/${artifact.username}/${artifact.slug}`)
+                  }
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                >
+                  <FaList />
+                </Button>
+              </Tooltip>
+              <Tooltip content="Download Files" position="bottom">
+                <Button
+                  onClick={handleDownload}
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  disabled={!artifact.urls?.large}
+                >
+                  <FaFileDownload />
+                </Button>
+              </Tooltip>
+            </>
+          )}
+        </div>
       </div>
       <div className="flex flex-col lg:flex-row lg:space-x-4">
         <div className="w-full lg:w-1/3 mb-4 lg:mb-0">

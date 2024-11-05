@@ -1,5 +1,7 @@
 """Defines the router endpoints for handling Robots."""
 
+from typing import Self
+
 from annotated_types import MaxLen
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ValidationError
@@ -7,7 +9,7 @@ from typing_extensions import Annotated
 
 from store.app.crud.base import ItemNotFoundError
 from store.app.db import Crud
-from store.app.model import Robot, User
+from store.app.model import Listing, Robot, User
 from store.app.routers.users import (
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
@@ -27,6 +29,36 @@ class UpdateRobotRequest(BaseModel):
     name: Annotated[str, MaxLen(32)] | None = None
     description: Annotated[str, MaxLen(2048)] | None = None
     order_id: str | None = None
+
+
+class SingleRobotResponse(BaseModel):
+    robot_id: str
+    user_id: str
+    listing_id: str
+    name: str
+    username: str
+    slug: str
+    description: str | None = None
+    order_id: str | None = None
+    created_at: int
+
+    @classmethod
+    def from_robot(cls, robot: Robot, listing: Listing, user: User) -> Self:
+        return cls(
+            robot_id=robot.id,
+            user_id=robot.user_id,
+            listing_id=robot.listing_id,
+            name=robot.name,
+            username=user.username,
+            slug=listing.slug,
+            description=robot.description,
+            order_id=robot.order_id,
+            created_at=robot.created_at,
+        )
+
+
+class RobotListResponse(BaseModel):
+    robots: list[SingleRobotResponse]
 
 
 @robots_router.post("/create", response_model=Robot)
@@ -67,14 +99,22 @@ async def get_robot(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Robot not found")
 
 
-@robots_router.get("/list", response_model=list[Robot])
+@robots_router.get("/list", response_model=RobotListResponse)
 async def list_user_robots(
     user: User = Depends(get_session_user_with_read_permission),
     crud: Crud = Depends(Crud.get),
-) -> list[Robot]:
+) -> RobotListResponse:
     """List all robots for the current user."""
     robots = await crud.get_robots_by_user_id(user.id)
-    return robots
+    unique_listing_ids = list(set(robot.listing_id for robot in robots))
+    print(f"unique_listing_ids: {unique_listing_ids}")
+    listings = await crud.get_listings_by_ids(unique_listing_ids)
+    listing_ids_to_listing = {listing.id: listing for listing in listings}
+    return RobotListResponse(
+        robots=[
+            SingleRobotResponse.from_robot(robot, listing_ids_to_listing[robot.listing_id], user) for robot in robots
+        ]
+    )
 
 
 @robots_router.put("/update/{robot_id}", response_model=Robot)

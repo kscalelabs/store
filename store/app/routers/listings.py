@@ -107,7 +107,7 @@ async def get_batch_listing_info(
         if listing is not None:
             try:
                 artifact_responses = [
-                    SingleArtifactResponse.from_artifact(artifact=artifact)
+                    SingleArtifactResponse.from_artifact_and_listing(artifact=artifact, listing=listing, user=user)
                     for artifact in sorted(artifacts, key=lambda x: (not x.is_main, -x.timestamp))
                 ]
                 listing_response = ListingInfoResponse(
@@ -345,7 +345,7 @@ async def get_listing_common(listing: Listing, user: User | None, crud: Crud) ->
 
     raw_artifacts = await crud.get_listing_artifacts(listing.id)
     artifacts = [
-        SingleArtifactResponse.from_artifact(artifact=artifact)
+        SingleArtifactResponse.from_artifact_and_listing(artifact=artifact, listing=listing, user=creator)
         for artifact in sorted(raw_artifacts, key=lambda x: (not x.is_main, -x.timestamp))
     ]
 

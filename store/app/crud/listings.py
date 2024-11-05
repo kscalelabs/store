@@ -114,6 +114,12 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             logger.error(f"Error in get_user_listings: {str(e)}")
             raise
 
+    async def get_listings_by_ids(self, listing_ids: list[str]) -> list[Listing]:
+        return await self._list_items(
+            Listing,
+            filter_expression=Attr("id").is_in(listing_ids),
+        )
+
     async def dump_listings(self) -> list[Listing]:
         return await self._list_items(Listing)
 
@@ -315,9 +321,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             return [], False
 
         listings = await asyncio.gather(*(self.get_listing(listing_id) for listing_id in upvoted_listing_ids))
-
         listings = [listing for listing in listings if listing is not None]
-
         listings.sort(key=lambda x: x.created_at, reverse=True)
 
         start = (page - 1) * self.PAGE_SIZE

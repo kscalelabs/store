@@ -1684,6 +1684,11 @@ export interface components {
             /** Order Id */
             order_id?: string | null;
         };
+        /** RobotListResponse */
+        RobotListResponse: {
+            /** Robots */
+            robots: components["schemas"]["SingleRobotResponse"][];
+        };
         /** SetModeratorRequest */
         SetModeratorRequest: {
             /** User Id */
@@ -1702,6 +1707,10 @@ export interface components {
             artifact_id: string;
             /** Listing Id */
             listing_id: string;
+            /** Username */
+            username: string;
+            /** Slug */
+            slug: string;
             /** Name */
             name: string;
             /** Artifact Type */
@@ -1716,6 +1725,27 @@ export interface components {
              * @default false
              */
             is_main: boolean;
+        };
+        /** SingleRobotResponse */
+        SingleRobotResponse: {
+            /** Robot Id */
+            robot_id: string;
+            /** User Id */
+            user_id: string;
+            /** Listing Id */
+            listing_id: string;
+            /** Name */
+            name: string;
+            /** Username */
+            username: string;
+            /** Slug */
+            slug: string;
+            /** Description */
+            description?: string | null;
+            /** Order Id */
+            order_id?: string | null;
+            /** Created At */
+            created_at: number;
         };
         /**
          * SortOption
@@ -3373,7 +3403,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Robot"][];
+                    "application/json": components["schemas"]["RobotListResponse"];
                 };
             };
         };

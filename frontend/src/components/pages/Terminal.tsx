@@ -1,89 +1,63 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
+import TerminalAllRobots from "@/components/terminal/TerminalAllRobots";
+import TerminalSingleRobot from "@/components/terminal/TerminalSingleRobot";
+import { SingleRobotResponse } from "@/components/terminal/types";
 import Spinner from "@/components/ui/Spinner";
-import { Button } from "@/components/ui/button";
-import { components, paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
-import { ApiError } from "@/lib/types/api";
 
-import RobotCard from "../robots/RobotCard";
+import RequireAuthentication from "../auth/RequireAuthentication";
 
-type Robot = components["schemas"]["Robot"];
-type ListingDetails =
-  paths["/listings/batch"]["get"]["responses"][200]["content"]["application/json"]["listings"][number];
+interface TerminalInnerRouterProps {
+  robots: SingleRobotResponse[];
+  onDeleteRobot: (robotId: string) => Promise<void>;
+  onUpdateRobot: (
+    robotId: string,
+    updates: { name?: string; description?: string },
+  ) => Promise<void>;
+}
 
-type ListingInfo = {
-  username: string;
-  slug: string | null;
-  id: string;
+const TerminalInnerRouter = ({
+  robots,
+  onDeleteRobot,
+  onUpdateRobot,
+}: TerminalInnerRouterProps) => {
+  const { id: robotId } = useParams();
+  const robot = robots.find((robot) => robot.robot_id === robotId);
+
+  return robot ? (
+    <TerminalSingleRobot robot={robot} onUpdateRobot={onUpdateRobot} />
+  ) : (
+    <TerminalAllRobots robots={robots} onDeleteRobot={onDeleteRobot} />
+  );
 };
 
-const TerminalPage: React.FC = () => {
-  const { api, currentUser, isAuthenticated, isLoading } = useAuthentication();
-  const [robots, setRobots] = useState<Robot[] | null>(null);
-  const [loadingRobots, setLoadingRobots] = useState(true);
+const TerminalInner = () => {
+  const { api, currentUser, isAuthenticated } = useAuthentication();
+
+  const [robots, setRobots] = useState<SingleRobotResponse[] | null>(null);
   const { addErrorAlert } = useAlertQueue();
-  const navigate = useNavigate();
-  const [listingInfos, setListingInfos] = useState<Record<string, ListingInfo>>(
-    {},
-  );
 
   useEffect(() => {
     const fetchRobots = async () => {
       if (isAuthenticated && currentUser) {
-        setLoadingRobots(true);
         try {
-          const { data: robotsData, error } =
-            await api.client.GET("/robots/list");
+          const { data, error } = await api.client.GET("/robots/list");
           if (error) {
-            console.error("Failed to fetch robots", error);
+            addErrorAlert(error);
           } else {
-            setRobots(robotsData);
-
-            // Get unique listing IDs
-            const uniqueListingIds = Array.from(
-              new Set(robotsData.map((robot) => robot.listing_id)),
-            );
-
-            if (uniqueListingIds.length > 0) {
-              const { data: listingsData, error: listingsError } =
-                await api.client.GET("/listings/batch", {
-                  params: { query: { ids: uniqueListingIds } },
-                });
-
-              if (!listingsError) {
-                const infos: Record<string, ListingInfo> = {};
-                listingsData.listings.forEach((listing: ListingDetails) => {
-                  infos[listing.id] = {
-                    id: listing.id,
-                    username: listing.username || "",
-                    slug: listing.slug,
-                  };
-                });
-                setListingInfos(infos);
-              }
-            }
+            setRobots(data.robots);
           }
         } catch (error) {
-          console.error("Error fetching robots", error);
-        } finally {
-          setLoadingRobots(false);
+          addErrorAlert(error);
         }
       }
     };
 
     fetchRobots();
   }, [api, currentUser, isAuthenticated]);
-
-  if (!isAuthenticated) {
-    return (
-      <div className="pt-8 min-h-screen">
-        Please log in to view robots associated with your account.
-      </div>
-    );
-  }
 
   const handleDeleteRobot = async (robotId: string) => {
     try {
@@ -106,62 +80,59 @@ const TerminalPage: React.FC = () => {
 
       // Remove the deleted robot from the list
       setRobots((prev) =>
-        prev ? prev.filter((robot) => robot.id !== robotId) : prev,
+        prev ? prev.filter((robot) => robot.robot_id !== robotId) : prev,
       );
     } catch (error) {
-      console.error("Error deleting robot:", error);
-      if (error && typeof error === "object" && "detail" in error) {
-        const apiError = error as ApiError;
-        const errorMessage =
-          typeof apiError.detail === "string"
-            ? apiError.detail
-            : apiError.detail?.[0]?.msg || "Unknown error";
-        addErrorAlert(`Failed to delete robot: ${errorMessage}`);
-        throw error;
-      } else {
-        addErrorAlert("Failed to delete robot. Please try again.");
-        throw error;
-      }
+      addErrorAlert(error);
     }
   };
 
-  return (
-    <div className="p-6 min-h-screen rounded-xl bg-gray-3 max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Terminal</h1>
-        </div>
-      </div>
+  const handleUpdateRobot = async (
+    robotId: string,
+    updates: { name?: string; description?: string },
+  ) => {
+    try {
+      const { error } = await api.client.PUT("/robots/update/{robot_id}", {
+        params: {
+          path: { robot_id: robotId },
+        },
+        body: updates,
+      });
 
-      {isLoading || loadingRobots ? (
-        <div className="flex justify-center items-center bg-gray-4 p-4 md:p-10 rounded-lg max-w-md mx-auto">
-          <Spinner className="p-1" />
-        </div>
-      ) : robots && robots.length > 0 ? (
-        <div className="grid gap-2 md:gap-6 md:grid-cols-1 lg:grid-cols-2">
-          {robots.map((robot) => (
-            <RobotCard
-              key={robot.id}
-              robot={robot}
-              listingInfo={listingInfos[robot.listing_id]}
-              onDeleteRobot={handleDeleteRobot}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="flex flex-col gap-4 justify-center items-center bg-gray-4 p-10 rounded-lg max-w-3xl mx-auto">
-          <p className="text-gray-12 font-medium sm:text-lg">No robots yet.</p>
-          <Button
-            variant="primary"
-            onClick={() => navigate("/browse")}
-            className="flex items-center"
-          >
-            <span className="mr-2">Browse Listings</span>
-          </Button>
-        </div>
-      )}
+      if (error) {
+        addErrorAlert(error);
+      } else {
+        setRobots(
+          (prev) =>
+            prev?.map((robot) =>
+              robot.robot_id === robotId ? { ...robot, ...updates } : robot,
+            ) ?? null,
+        );
+      }
+    } catch (error) {
+      addErrorAlert(error);
+    }
+  };
+
+  return robots === null ? (
+    <div className="min-h-screen flex justify-center items-center">
+      <Spinner />
     </div>
+  ) : (
+    <TerminalInnerRouter
+      robots={robots}
+      onDeleteRobot={handleDeleteRobot}
+      onUpdateRobot={handleUpdateRobot}
+    />
   );
 };
 
-export default TerminalPage;
+const Terminal: React.FC = () => {
+  return (
+    <RequireAuthentication>
+      <TerminalInner />
+    </RequireAuthentication>
+  );
+};
+
+export default Terminal;
