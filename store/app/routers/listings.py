@@ -54,8 +54,11 @@ async def list_listings(
     sort_by: SortOption = Query(SortOption.NEWEST, description="Sort option for listings"),
 ) -> ListListingsResponse:
     listings, has_next = await crud.get_listings(page, search_query=search_query, sort_by=sort_by)
+    users = await crud.get_user_batch(list(set(listing.user_id for listing in listings)))
+    user_id_to_username = {user.id: user.username for user in users}
     listing_infos = [
-        ListingInfo(id=listing.id, username=listing.username or "Unknown", slug=listing.slug) for listing in listings
+        ListingInfo(id=listing.id, username=user_id_to_username.get(listing.user_id, "Unknown"), slug=listing.slug)
+        for listing in listings
     ]
     return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
@@ -92,6 +95,9 @@ async def get_batch_listing_info(
         crud.get_listings_artifacts(ids),
     )
 
+    users = await crud.get_user_batch(list(set(listing.user_id for listing in listings)))
+    user_id_to_username = {user.id: user.username for user in users}
+
     user_votes = {}
     if user:
         user_votes = {vote.listing_id: vote.is_upvote for vote in await crud.get_user_votes(user.id, ids)}
@@ -108,7 +114,7 @@ async def get_batch_listing_info(
                     id=listing.id,
                     name=listing.name,
                     slug=listing.slug,
-                    username=listing.username,
+                    username=user_id_to_username.get(listing.user_id, "Unknown"),
                     description=listing.description,
                     child_ids=listing.child_ids,
                     artifacts=artifact_responses,
@@ -142,10 +148,11 @@ async def get_user_listings(
     crud: Annotated[Crud, Depends(Crud.get)],
     page: int = Query(1, description="Page number for pagination"),
 ) -> ListListingsResponse:
-    listings, has_next = await crud.get_user_listings(user_id, page)
-    listing_infos = [
-        ListingInfo(id=listing.id, username=listing.username or "Unknown", slug=listing.slug) for listing in listings
-    ]
+    (listings, has_next), user = await asyncio.gather(
+        crud.get_user_listings(user_id, page),
+        crud.get_user(user_id),
+    )
+    listing_infos = [ListingInfo(id=listing.id, username=user.username, slug=listing.slug) for listing in listings]
     return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
 
@@ -155,11 +162,11 @@ async def get_my_listings(
     crud: Annotated[Crud, Depends(Crud.get)],
     page: int = Query(1, description="Page number for pagination"),
 ) -> ListListingsResponse:
-    listings, has_next = await crud.get_user_listings(user.id, page)
-    listing_infos = [
-        ListingInfo(id=listing.id, username=listing.username or user.username, slug=listing.slug)
-        for listing in listings
-    ]
+    (listings, has_next), user = await asyncio.gather(
+        crud.get_user_listings(user.id, page),
+        crud.get_user(user.id),
+    )
+    listing_infos = [ListingInfo(id=listing.id, username=user.username, slug=listing.slug) for listing in listings]
     return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
 
@@ -324,8 +331,8 @@ class GetListingResponse(BaseModel):
     score: int
     user_vote: bool | None
     creator_id: str
-    creator_username: str | None
-    creator_name: str | None
+    creator_username: str
+    creator_name: str
     stripe_link: str | None
 
 
@@ -339,11 +346,7 @@ async def get_listing_common(listing: Listing, user: User | None, crud: Crud) ->
     if user and (vote := await crud.get_user_vote(user.id, listing.id)) is not None:
         user_vote = vote.is_upvote
 
-    creator_name = None
-    creator_username = None
-    if (creator := await crud.get_user_public(listing.user_id)) is not None:
-        creator_name = " ".join(filter(None, [creator.first_name, creator.last_name]))
-        creator_username = creator.username
+    creator = await crud.get_user_public(listing.user_id, throw_if_missing=True)
 
     raw_artifacts = await crud.get_listing_artifacts(listing.id)
     artifacts = [
@@ -351,10 +354,13 @@ async def get_listing_common(listing: Listing, user: User | None, crud: Crud) ->
         for artifact in sorted(raw_artifacts, key=lambda x: (not x.is_main, -x.timestamp))
     ]
 
-    return GetListingResponse(
+    print("here")
+    print("can write:", await can_write_listing(user, listing))
+
+    response = GetListingResponse(
         id=listing.id,
         name=listing.name,
-        username=listing.username,
+        username=creator.username,
         slug=listing.slug,
         description=listing.description,
         child_ids=listing.child_ids,
@@ -367,10 +373,13 @@ async def get_listing_common(listing: Listing, user: User | None, crud: Crud) ->
         score=listing.score,
         user_vote=user_vote,
         creator_id=listing.user_id,
-        creator_name=creator_name,
-        creator_username=creator_username,
+        creator_name=creator.name,
         stripe_link=listing.stripe_link,
     )
+
+    print("response:", response)
+
+    return response
 
 
 @listings_router.get("/{listing_id}", response_model=GetListingResponse)

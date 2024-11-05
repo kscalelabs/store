@@ -7,7 +7,6 @@ expects (for example, converting a UUID into a string).
 
 import time
 from datetime import datetime, timedelta
-from decimal import Decimal
 from typing import Literal, Self, cast, get_args
 
 from pydantic import BaseModel

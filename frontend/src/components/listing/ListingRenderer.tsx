@@ -15,7 +15,7 @@ const ListingRenderer = ({
   description,
   creator_id: creatorId,
   creator_name: creatorName,
-  creator_username: creatorUsername,
+  username: creatorUsername,
   slug,
   views,
   created_at: createdAt,

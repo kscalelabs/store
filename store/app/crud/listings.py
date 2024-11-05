@@ -42,17 +42,6 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         sort_key = self._get_sort_key(sort_by)
         try:
             listings, has_next = await self._list(Listing, page, sort_key, search_query)
-
-            # Fetch usernames for listings that don't have them
-            listings_without_username = [listing for listing in listings if listing.username is None]
-            if listings_without_username:
-                user_ids = list(set(listing.user_id for listing in listings_without_username))
-                users = await self._get_item_batch(user_ids, User)
-                user_map = {user.id: user.username for user in users if user is not None}
-
-                for listing in listings_without_username:
-                    listing.username = user_map.get(listing.user_id)
-
             logger.info(f"Retrieved {len(listings)} listings")
             return listings, has_next
         except Exception as e:
@@ -119,13 +108,6 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         sort_key = self._get_sort_key(sort_by)
         try:
             listings, has_next = await self._list_me(Listing, user_id, page, sort_key)
-
-            # Ensure username is set for all listings
-            for listing in listings:
-                if listing.username is None:
-                    user = await self._get_item(user_id, User)
-                    listing.username = user.username if user else "Unknown"
-
             logger.info(f"Retrieved {len(listings)} listings for user {user_id}")
             return listings, has_next
         except Exception as e:
