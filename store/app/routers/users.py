@@ -391,5 +391,6 @@ async def set_content_manager(
     except Exception as e:
         logger.error(f"Error setting content manager status: {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to modify content manager status"
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Unable to update content manager status. Please verify the user exists and try again.",
         )

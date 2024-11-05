@@ -170,6 +170,19 @@ export const RenderProfile = (props: RenderProfileProps) => {
     checkUsernameAvailability();
   }, [debouncedUsername, user.username, auth.client]);
 
+  const getRoleName = (permissions: string[]) => {
+    switch (true) {
+      case permissions.includes("is_admin"):
+        return "Admin";
+      case permissions.includes("is_mod"):
+        return "Moderator";
+      case permissions.includes("is_content_manager"):
+        return "Content Manager";
+      default:
+        return "Member";
+    }
+  };
+
   return (
     <div className="space-y-8 mb-12">
       <Card className="w-full max-w-4xl mx-auto">
@@ -186,13 +199,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
               </p>
               {user.permissions && (
                 <p className="text-sm text-primary-9 bg-primary-3 px-3 py-1 rounded-md">
-                  {user.permissions.includes("is_admin")
-                    ? "Admin"
-                    : user.permissions.includes("is_mod")
-                      ? "Moderator"
-                      : user.permissions.includes("is_content_manager")
-                        ? "Content Manager"
-                        : "Member"}
+                  {getRoleName(user.permissions)}
                 </p>
               )}
             </div>

@@ -9,6 +9,7 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import Logo from "@/components/Logo";
+import { useFeaturedListings } from "@/components/listing/FeaturedListings";
 import Sidebar from "@/components/nav/Sidebar";
 import { useAuthentication } from "@/hooks/useAuth";
 import {
@@ -18,8 +19,6 @@ import {
   ExternalLinkIcon,
   MagnifyingGlassIcon,
 } from "@radix-ui/react-icons";
-
-import { useFeaturedListings } from "../../components/listing/FeaturedListings";
 
 type NavItem = {
   name: string;
@@ -126,12 +125,8 @@ const Navbar = () => {
     );
   };
 
-  const handleFeaturedClick = (
-    username: string,
-    slug: string | null,
-    id: string,
-  ) => {
-    const path = `/item/${username}/${slug || id}`;
+  const handleFeaturedClick = (username: string, slug: string | null) => {
+    const path = `/item/${username}/${slug}`;
     if (location.pathname !== path) {
       navigate(path, { replace: true });
     }
@@ -175,11 +170,7 @@ const Navbar = () => {
                   <button
                     key={listing.id}
                     onClick={() =>
-                      handleFeaturedClick(
-                        listing.username,
-                        listing.slug,
-                        listing.id,
-                      )
+                      handleFeaturedClick(listing.username, listing.slug)
                     }
                     className="px-2 xl:px-3 py-2 rounded-md text-sm tracking-widest text-gray-1 hover:bg-gray-1 hover:text-primary-9"
                   >

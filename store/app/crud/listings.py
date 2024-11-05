@@ -351,34 +351,10 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         await asyncio.gather(*update_tasks)
 
     async def get_featured_listings(self) -> list[str]:
-        """Get the list of featured listing IDs."""
-        try:
-            table = await self.db.Table(TABLE_NAME)
-            response = await table.get_item(
-                Key={"id": "featured_listings"},
-            )
-
-            if "Item" not in response:
-                logger.info("No featured listings found, returning empty list")
-                return []
-
-            listing_ids = response["Item"].get("listing_ids", [])
-            if not isinstance(listing_ids, list):
-                return []
-
-            return [str(lid) for lid in listing_ids]
-
-        except Exception as e:
-            error_msg = f"Failed to retrieve featured listings: {type(e).__name__} - {str(e)}"
-            logger.error(
-                error_msg,
-                extra={
-                    "error_type": type(e).__name__,
-                    "error_details": str(e),
-                },
-                exc_info=True,
-            )
-            raise ValueError(error_msg) from e
+        featured = await self._get_by_known_id("featured_listings")
+        if not featured:
+            return []
+        return list(featured["listing_ids"])
 
     async def set_featured_listings(self, listing_ids: list[str]) -> None:
         """Set the list of featured listing IDs."""

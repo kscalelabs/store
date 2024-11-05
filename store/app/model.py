@@ -687,3 +687,10 @@ class Robot(StoreBaseModel):
             updated_at=now,
             order_id=order_id,
         )
+
+
+class FeaturedListings(BaseModel):
+    id: str = "featured_listings"
+    type: str = "featured_listings"
+    listing_ids: list[str]
+    updated_at: int

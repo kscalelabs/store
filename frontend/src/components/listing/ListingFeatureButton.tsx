@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FaStar } from "react-icons/fa";
 
+import { useFeaturedListings } from "@/components/listing/FeaturedListings";
 import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
@@ -8,22 +9,17 @@ import { useAuthentication } from "@/hooks/useAuth";
 interface Props {
   listingId: string;
   initialFeatured: boolean;
-  onFeatureToggle?: () => void;
   currentFeaturedCount?: number;
 }
 
 const ListingFeatureButton = (props: Props) => {
-  const {
-    listingId,
-    initialFeatured,
-    onFeatureToggle,
-    currentFeaturedCount = 0,
-  } = props;
+  const { listingId, initialFeatured, currentFeaturedCount = 0 } = props;
   const [isFeatured, setIsFeatured] = useState(initialFeatured);
   const [isUpdating, setIsUpdating] = useState(false);
 
   const { addAlert, addErrorAlert } = useAlertQueue();
   const auth = useAuthentication();
+  const { refreshFeaturedListings } = useFeaturedListings();
 
   const hasPermission = auth.currentUser?.permissions?.some(
     (permission) =>
@@ -65,18 +61,7 @@ const ListingFeatureButton = (props: Props) => {
           "success",
         );
 
-        window.dispatchEvent(
-          new CustomEvent("featuredListingsChanged", {
-            detail: {
-              listingId,
-              isFeatured: newFeaturedState,
-            },
-          }),
-        );
-
-        if (onFeatureToggle) {
-          onFeatureToggle();
-        }
+        refreshFeaturedListings();
       }
     } catch {
       addErrorAlert("Failed to update featured status");
