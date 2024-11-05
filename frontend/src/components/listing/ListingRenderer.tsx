@@ -65,7 +65,7 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
           <ListingMetadata
             listingId={listingId}
             listingSlug={slug}
-            creatorId={creatorId}
+            creatorId={creatorId || ""}
             creatorName={creatorName}
             creatorUsername={creatorUsername}
             views={views}
