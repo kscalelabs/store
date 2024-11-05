@@ -28,9 +28,9 @@ import { AuthenticationProvider } from "@/hooks/useAuth";
 
 import GDPRBanner from "./components/gdpr/gdprbanner";
 import DownloadsPage from "./components/pages/Download";
-import PlaygroundPage from "./components/pages/MujocoPlayground";
 import OrderSuccess from "./components/pages/OrderSuccess";
 import OrdersPage from "./components/pages/Orders";
+import Playground from "./components/pages/Playground";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import ResearchPage from "./components/pages/ResearchPage";
 import Terminal from "./components/pages/Terminal";
@@ -53,7 +53,7 @@ const App = () => {
                     <Routes>
                       <Route path="/" element={<Home />} />
 
-                      <Route path="/playground" element={<PlaygroundPage />} />
+                      <Route path="/playground" element={<Playground />} />
 
                       <Route path="/about" element={<About />} />
                       <Route path="/downloads" element={<DownloadsPage />} />

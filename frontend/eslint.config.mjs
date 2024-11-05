@@ -18,6 +18,8 @@ export default [
       "**/__tests__/**/*",
       "*.config.ts",
       "*.config.js",
+      "src/lib/mujoco/**/*",
+      "src/lib/klang/**/*",
     ],
   },
   pluginJs.configs.recommended,
