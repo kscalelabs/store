@@ -5,6 +5,7 @@ import logging
 import os
 from typing import Annotated, Self
 
+from boto3.dynamodb.conditions import Key
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.responses import RedirectResponse
 from pydantic.main import BaseModel
@@ -43,14 +44,17 @@ async def artifact_url(
     size: ArtifactSize = "large",
 ) -> RedirectResponse:
     # First, get the artifact to retrieve its ID
-    artifacts = await crud.get_listing_artifacts(listing_id)
-    artifact = next((a for a in artifacts if a.name == name and a.artifact_type == artifact_type), None)
+    artifacts = await crud.get_listing_artifacts(
+        listing_id,
+        additional_filter_expression=Key("name").eq(name) & Key("artifact_type").eq(artifact_type),
+    )
 
-    if artifact is None:
+    if len(artifacts) == 0:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Could not find artifact associated with the given name and type",
         )
+    artifact = artifacts[0]
 
     # Construct the S3 filename using the artifact ID
     _, file_extension = os.path.splitext(name)

@@ -261,20 +261,18 @@ const FileBrowser = () => {
         </div>
         <div className="w-full lg:w-2/3">
           <div className="border border-gray-300 rounded-md overflow-hidden relative h-[600px]">
-            {selectedFile && (
-              <div className="absolute top-0 left-0 right-0 bg-gray-100 text-gray-800 p-2 border-b border-gray-300 break-all z-10">
-                {selectedFile.name}
+            {selectedFile ? (
+              <>
+                <div className="absolute top-2 left-2 z-10 bg-black/50 text-white px-2 py-1 rounded max-w-[80%] truncate">
+                  {selectedFile.name}
+                </div>
+                <FileRenderer file={selectedFile} allFiles={untarredFiles} />
+              </>
+            ) : (
+              <div className="h-full flex items-center justify-center text-gray-500">
+                Select a file to view its 3D model
               </div>
             )}
-            <div className="h-full">
-              {selectedFile ? (
-                <FileRenderer file={selectedFile} allFiles={untarredFiles} />
-              ) : (
-                <div className="h-full flex items-center justify-center text-gray-500">
-                  Select a file to view its 3D model
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>

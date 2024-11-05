@@ -4,13 +4,14 @@ import asyncio
 from typing import Self
 
 from annotated_types import MaxLen
+from boto3.dynamodb.conditions import Key
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ValidationError
 from typing_extensions import Annotated
 
 from store.app.crud.base import ItemNotFoundError
 from store.app.db import Crud
-from store.app.model import Listing, Robot, User
+from store.app.model import Listing, Robot, User, get_artifact_url
 from store.app.routers.users import (
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
@@ -220,3 +221,23 @@ async def check_order_robot(
         return robot
     except ItemNotFoundError:
         return None
+
+
+class RobotURDFResponse(BaseModel):
+    urdf_url: str | None
+
+
+@robots_router.get("/urdf/{listing_id}", response_model=RobotURDFResponse)
+async def get_robot_urdf(
+    listing_id: str,
+    crud: Crud = Depends(Crud.get),
+) -> RobotURDFResponse:
+    """Get the URDF for a robot."""
+    artifacts = await crud.get_listing_artifacts(
+        listing_id,
+        additional_filter_expression=Key("artifact_type").eq("tgz"),
+    )
+    if len(artifacts) == 0:
+        return RobotURDFResponse(urdf_url=None)
+    first_artifact = min(artifacts, key=lambda a: a.timestamp)
+    return RobotURDFResponse(urdf_url=get_artifact_url(artifact=first_artifact))
