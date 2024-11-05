@@ -5,7 +5,6 @@ import "@/components/terminal/Terminal.css";
 
 import AudioIcon from "@/components/icons/AudioIcon";
 import { SingleRobotResponse } from "@/components/terminal/types";
-import { useAlertQueue } from "@/hooks/useAlertQueue";
 
 interface Props {
   robot: SingleRobotResponse;
@@ -24,15 +23,22 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
   const [isUpdatingName, setIsUpdatingName] = useState(false);
   const [isUpdatingDescription, setIsUpdatingDescription] = useState(false);
 
-  const { addErrorAlert } = useAlertQueue();
+  const [terminalMessages, setTerminalMessages] = useState<string[]>([]);
+
+  const addTerminalMessage = (message: string) => {
+    setTerminalMessages((prev) => [...prev, message]);
+  };
 
   const handleNameSave = async () => {
     try {
       setIsUpdatingName(true);
       await onUpdateRobot(robot.robot_id, { name });
     } catch (error) {
-      addErrorAlert(error);
+      addTerminalMessage(`Error: ${error}`);
     } finally {
+      addTerminalMessage(
+        `Name updated to "${name.length > 20 ? name.slice(0, 20) + "..." : name}"`,
+      );
       setIsUpdatingName(false);
       setIsEditingName(false);
     }
@@ -43,8 +49,11 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
       setIsUpdatingDescription(true);
       await onUpdateRobot(robot.robot_id, { description });
     } catch (error) {
-      addErrorAlert(error);
+      addTerminalMessage(`Error: ${error}`);
     } finally {
+      addTerminalMessage(
+        `Description updated to "${description.length > 20 ? description.slice(0, 20) + "..." : description}"`,
+      );
       setIsUpdatingDescription(false);
       setIsEditingDescription(false);
     }
@@ -216,8 +225,9 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
             Console
           </div>
           <div className="p-4 h-[calc(100%-3rem)] overflow-auto whitespace-pre-wrap">
-            <p>{`>`} Robot terminal initialized</p>
-            <p>{`>`} Waiting for connection...</p>
+            {[...terminalMessages].reverse().map((message, index) => (
+              <div key={index}>{message}</div>
+            ))}
           </div>
         </div>
       </div>

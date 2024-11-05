@@ -2,7 +2,6 @@
 
 import asyncio
 import logging
-from decimal import Decimal
 from enum import Enum
 from typing import Any, Callable, Type, TypeVar
 
@@ -152,7 +151,6 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         tags: list[str] | None = None,
         onshape_url: str | None = None,
         stripe_link: str | None = None,
-        price: float | None = None,
         slug: str | None = None,
     ) -> None:
         listing = await self.get_listing(listing_id)
@@ -168,8 +166,6 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             updates["description"] = description
         if stripe_link is not None:
             updates["stripe_link"] = stripe_link
-        if price is not None:
-            updates["price"] = Decimal(str(price))
         if slug is not None:
             updates["slug"] = slug
 
