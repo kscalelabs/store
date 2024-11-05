@@ -14,7 +14,6 @@ import { parseTar } from "@/components/files/Tarfile";
 import Spinner from "@/components/ui/Spinner";
 import { Tooltip } from "@/components/ui/ToolTip";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { components } from "@/gen/api";
 import { humanReadableError, useAlertQueue } from "@/hooks/useAlertQueue";
@@ -39,11 +38,8 @@ const FileBrowser = () => {
   const { addErrorAlert } = useAlertQueue();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
-  const [editedName, setEditedName] = useState("");
   const [editedDescription, setEditedDescription] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-
-  const canEdit = false;
 
   if (!artifactId) {
     navigate("/");
@@ -92,7 +88,6 @@ const FileBrowser = () => {
 
   useEffect(() => {
     if (artifact) {
-      setEditedName(artifact.name);
       setEditedDescription(artifact.description || "");
     }
   }, [artifact]);
@@ -123,7 +118,6 @@ const FileBrowser = () => {
           query: { id: artifactId },
         },
         body: {
-          name: editedName,
           description: editedDescription,
         },
       });
@@ -132,9 +126,7 @@ const FileBrowser = () => {
         addErrorAlert(error);
       } else {
         setArtifact((prev) =>
-          prev
-            ? { ...prev, name: editedName, description: editedDescription }
-            : null,
+          prev ? { ...prev, description: editedDescription } : null,
         );
         setIsEditing(false);
       }
@@ -158,15 +150,13 @@ const FileBrowser = () => {
       <div className="flex items-center justify-between mb-2 min-w-0">
         {isEditing ? (
           <div className="flex-1 mr-4 min-w-0">
-            <Input
-              value={editedName}
-              onChange={(e) => setEditedName(e.target.value)}
-              className="text-2xl font-semibold mb-2 break-all w-full"
-            />
+            <h1 className="text-2xl font-semibold break-all overflow-wrap-anywhere">
+              {artifact.name}
+            </h1>
             <Textarea
               value={editedDescription}
               onChange={(e) => setEditedDescription(e.target.value)}
-              className="w-full break-words"
+              className="w-full break-words mt-2"
               placeholder="Description (optional)"
             />
           </div>
@@ -210,7 +200,7 @@ const FileBrowser = () => {
             </>
           ) : (
             <>
-              {canEdit && (
+              {artifact.can_edit && (
                 <Tooltip content="Edit Artifact Details" position="bottom">
                   <Button
                     onClick={() => setIsEditing(true)}

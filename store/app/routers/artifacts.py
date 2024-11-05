@@ -25,6 +25,7 @@ from store.app.model import (
 )
 from store.app.routers.users import (
     get_session_user_with_write_permission,
+    maybe_get_user_from_api_key,
 )
 from store.settings import settings
 
@@ -99,23 +100,29 @@ class SingleArtifactResponse(BaseModel):
         artifact: Artifact,
         crud: Crud | None = None,
         listing: Listing | None = None,
+        creator: User | None = None,
         user: User | None = None,
     ) -> Self:
 
-        async def get_user(user: User | None) -> tuple[User, bool]:
-            if user is None:
+        async def get_creator(creator: User | None) -> User:
+            if creator is None:
                 if crud is None:
                     raise HTTPException(
                         status_code=status.HTTP_404_NOT_FOUND,
                         detail="Could not find user associated with the given artifact",
                     )
-                user = await crud.get_user(artifact.user_id)
-            if user is None:
+                creator = await crud.get_user(artifact.user_id)
+            if creator is None:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="Could not find user associated with the given artifact",
                 )
-            return user, await can_write_artifact(user, artifact)
+            return creator
+
+        async def get_can_edit(user: User | None) -> bool:
+            if user is None:
+                return False
+            return await can_write_artifact(user, artifact)
 
         async def get_listing(listing: Listing | None) -> Listing:
             if listing is None:
@@ -132,12 +139,16 @@ class SingleArtifactResponse(BaseModel):
                 )
             return listing
 
-        (user_non_null, can_edit), listing_non_null = await asyncio.gather(get_user(user), get_listing(listing))
+        creator_non_null, can_edit, listing_non_null = await asyncio.gather(
+            get_creator(creator),
+            get_can_edit(user),
+            get_listing(listing),
+        )
 
         return cls(
             artifact_id=artifact.id,
             listing_id=artifact.listing_id,
-            username=user_non_null.username,
+            username=creator_non_null.username,
             slug=listing_non_null.slug,
             name=artifact.name,
             artifact_type=artifact.artifact_type,
@@ -154,14 +165,18 @@ class ListArtifactsResponse(BaseModel):
 
 
 @artifacts_router.get("/info/{artifact_id}")
-async def get_artifact_info(artifact_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> SingleArtifactResponse:
+async def get_artifact_info(
+    artifact_id: str,
+    user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> SingleArtifactResponse:
     artifact = await crud.get_raw_artifact(artifact_id)
     if artifact is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Could not find artifact associated with the given id",
         )
-    return await SingleArtifactResponse.from_artifact(artifact=artifact, crud=crud)
+    return await SingleArtifactResponse.from_artifact(artifact=artifact, crud=crud, user=user)
 
 
 @artifacts_router.get("/list/{listing_id}", response_model=ListArtifactsResponse)
@@ -173,7 +188,7 @@ async def list_artifacts(
         crud.get_listing(listing_id, throw_if_missing=True),
         crud.get_listing_artifacts(listing_id),
     )
-    user = await crud.get_user(listing.user_id)
+    creator = await crud.get_user(listing.user_id)
 
     # Sort artifacts so that the main image comes first
     sorted_artifacts = sorted(artifacts, key=lambda x: not x.is_main)
@@ -184,7 +199,7 @@ async def list_artifacts(
                 artifact=artifact,
                 crud=crud,
                 listing=listing,
-                user=user,
+                creator=creator,
             )
             for artifact in sorted_artifacts
         )
@@ -281,7 +296,7 @@ async def upload(
                 artifact=artifact,
                 crud=crud,
                 listing=listing,
-                user=user,
+                creator=user,
             )
             for artifact in artifacts
         )

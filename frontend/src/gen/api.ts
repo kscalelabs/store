@@ -1725,6 +1725,11 @@ export interface components {
              * @default false
              */
             is_main: boolean;
+            /**
+             * Can Edit
+             * @default false
+             */
+            can_edit: boolean;
         };
         /** SingleRobotResponse */
         SingleRobotResponse: {
