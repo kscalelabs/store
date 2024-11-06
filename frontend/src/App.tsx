@@ -8,6 +8,7 @@ import PendoInitializer from "@/components/PendoInitializer";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import SprigInitializer from "@/components/SprigInitializer";
 import Footer from "@/components/footer/Footer";
+import { FeaturedListingsProvider } from "@/components/listing/FeaturedListings";
 import Navbar from "@/components/nav/Navbar";
 import APIKeys from "@/components/pages/APIKeys";
 import About from "@/components/pages/About";
@@ -40,62 +41,64 @@ const App = () => {
   return (
     <Router>
       <AuthenticationProvider>
-        <AlertQueueProvider>
-          <AlertQueue>
-            <ScrollToTop>
-              <div className="flex flex-col bg-gray-1 text-gray-12 min-h-screen">
-                <Navbar />
-                <GDPRBanner />
-                <PendoInitializer />
-                <SprigInitializer />
-                <div className="flex-grow">
-                  <Container>
-                    <Routes>
-                      <Route path="/" element={<Home />} />
+        <FeaturedListingsProvider>
+          <AlertQueueProvider>
+            <AlertQueue>
+              <ScrollToTop>
+                <div className="flex flex-col bg-gray-1 text-gray-12 min-h-screen">
+                  <Navbar />
+                  <GDPRBanner />
+                  <PendoInitializer />
+                  <SprigInitializer />
+                  <div className="flex-grow">
+                    <Container>
+                      <Routes>
+                        <Route path="/" element={<Home />} />
 
-                      <Route path="/playground" element={<Playground />} />
+                        <Route path="/playground" element={<Playground />} />
 
-                      <Route path="/about" element={<About />} />
-                      <Route path="/downloads" element={<DownloadsPage />} />
-                      <Route path="/research" element={<ResearchPage />} />
-                      <Route path="/browse/:page?" element={<Browse />} />
-                      <Route
-                        path="/file/:artifactId"
-                        element={<FileBrowser />}
-                      />
-                      <Route path="/account" element={<Account />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/logout" element={<Logout />} />
-                      <Route path="/signup/" element={<Signup />} />
-                      <Route path="/signup/:id" element={<EmailSignup />} />
+                        <Route path="/about" element={<About />} />
+                        <Route path="/downloads" element={<DownloadsPage />} />
+                        <Route path="/research" element={<ResearchPage />} />
+                        <Route path="/browse/:page?" element={<Browse />} />
+                        <Route
+                          path="/file/:artifactId"
+                          element={<FileBrowser />}
+                        />
+                        <Route path="/account" element={<Account />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/logout" element={<Logout />} />
+                        <Route path="/signup/" element={<Signup />} />
+                        <Route path="/signup/:id" element={<EmailSignup />} />
 
-                      <Route path="/create" element={<Create />} />
-                      <Route
-                        path="/item/:username/:slug"
-                        element={<Listing />}
-                      />
-                      <Route path="/keys" element={<APIKeys />} />
-                      <Route path="/profile/:id?" element={<Profile />} />
+                        <Route path="/create" element={<Create />} />
+                        <Route
+                          path="/item/:username/:slug"
+                          element={<Listing />}
+                        />
+                        <Route path="/keys" element={<APIKeys />} />
+                        <Route path="/profile/:id?" element={<Profile />} />
 
-                      <Route path="/tos" element={<TermsOfService />} />
-                      <Route path="/privacy" element={<PrivacyPolicy />} />
+                        <Route path="/tos" element={<TermsOfService />} />
+                        <Route path="/privacy" element={<PrivacyPolicy />} />
 
-                      <Route path="/success" element={<OrderSuccess />} />
-                      <Route path="/orders" element={<OrdersPage />} />
+                        <Route path="/success" element={<OrderSuccess />} />
+                        <Route path="/orders" element={<OrdersPage />} />
 
-                      <Route path="/terminal" element={<Terminal />} />
-                      <Route path="/terminal/:id" element={<Terminal />} />
+                        <Route path="/terminal" element={<Terminal />} />
+                        <Route path="/terminal/:id" element={<Terminal />} />
 
-                      <Route path="/404" element={<NotFound />} />
-                      <Route path="*" element={<NotFoundRedirect />} />
-                    </Routes>
-                  </Container>
+                        <Route path="/404" element={<NotFound />} />
+                        <Route path="*" element={<NotFoundRedirect />} />
+                      </Routes>
+                    </Container>
+                  </div>
+                  <Footer />
                 </div>
-                <Footer />
-              </div>
-            </ScrollToTop>
-          </AlertQueue>
-        </AlertQueueProvider>
+              </ScrollToTop>
+            </AlertQueue>
+          </AlertQueueProvider>
+        </FeaturedListingsProvider>
       </AuthenticationProvider>
     </Router>
   );

@@ -269,6 +269,19 @@ class UserCrud(BaseCrud):
             username = f"{base}{random_suffix}"
         return username
 
+    async def set_content_manager(self, user_id: str, is_content_manager: bool) -> User:
+        user = await self.get_user(user_id, throw_if_missing=True)
+        if user.permissions is None:
+            user.permissions = set()
+
+        if is_content_manager:
+            user.permissions.add("is_content_manager")
+        else:
+            user.permissions.discard("is_content_manager")
+
+        await self._update_item(user_id, User, {"permissions": list(user.permissions)})
+        return user
+
 
 async def test_adhoc() -> None:
     async with UserCrud() as crud:

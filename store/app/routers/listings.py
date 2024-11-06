@@ -18,11 +18,7 @@ from pydantic import BaseModel
 
 from store.app.crud.listings import SortOption
 from store.app.db import Crud
-from store.app.model import (
-    Listing,
-    User,
-    can_write_listing,
-)
+from store.app.model import Listing, User, can_write_listing
 from store.app.routers.artifacts import SingleArtifactResponse
 from store.app.routers.users import (
     get_session_user_with_read_permission,
@@ -33,6 +29,76 @@ from store.app.routers.users import (
 listings_router = APIRouter()
 
 logger = logging.getLogger(__name__)
+
+
+class FeaturedListingsResponse(BaseModel):
+    listing_ids: list[str]
+
+
+@listings_router.get("/featured", response_model=FeaturedListingsResponse)
+async def get_featured_listings(
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> FeaturedListingsResponse:
+    """Get the current list of featured listing IDs."""
+    featured_ids = await crud.get_featured_listings()
+    return FeaturedListingsResponse(listing_ids=featured_ids)
+
+
+@listings_router.put("/featured/{listing_id}", response_model=bool)
+async def toggle_featured_listing(
+    listing_id: str,
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+    featured: bool = Query(...),
+) -> bool:
+    if not user.permissions or ("is_content_manager" not in user.permissions and "is_admin" not in user.permissions):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only content managers and admins can set featured listings",
+        )
+
+    listing = await crud.get_listing(listing_id)
+    if listing is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Listing ID does not exist",
+        )
+
+    current_featured = await crud.get_featured_listings()
+
+    if featured and listing_id not in current_featured and len(current_featured) >= 3:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Maximum of 3 featured listings allowed. Unfeature another listing first.",
+        )
+
+    if featured and listing_id not in current_featured:
+        current_featured.append(listing_id)
+    elif not featured and listing_id in current_featured:
+        current_featured.remove(listing_id)
+
+    await crud.set_featured_listings(current_featured)
+    return featured
+
+
+@listings_router.delete("/featured/{listing_id}", response_model=bool)
+async def remove_featured_listing(
+    listing_id: str,
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> bool:
+    if not user.permissions or ("content_manager" not in user.permissions and "is_admin" not in user.permissions):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only content managers can modify featured listings",
+        )
+
+    current_featured = await crud.get_featured_listings()
+    if listing_id in current_featured:
+        current_featured.remove(listing_id)
+        await crud.set_featured_listings(current_featured)
+
+    return True
 
 
 class ListingInfo(BaseModel):
@@ -329,24 +395,27 @@ async def get_upvoted_listings(
 class GetListingResponse(BaseModel):
     id: str
     name: str
-    username: str
-    slug: str
     description: str | None
-    child_ids: list[str]
-    artifacts: list[SingleArtifactResponse]
-    tags: list[str]
-    onshape_url: str | None
-    can_edit: bool
-    created_at: int
-    views: int
-    score: int
-    user_vote: bool | None
-    creator_id: str
+    creator_id: str | None
     creator_name: str | None
+    username: str | None
+    slug: str | None
+    score: int
+    views: int
+    created_at: int
+    artifacts: list[SingleArtifactResponse]
+    can_edit: bool
+    user_vote: bool | None
+    onshape_url: str | None
     stripe_link: str | None
+    is_featured: bool
 
 
-async def get_listing_common(listing: Listing, user: User | None, crud: Crud) -> GetListingResponse:
+async def get_listing_common(
+    listing: Listing,
+    user: User | None,
+    crud: Crud,
+) -> GetListingResponse:
     listing_tags, _ = await asyncio.gather(
         crud.get_tags_for_listing(listing.id),
         crud.increment_view_count(listing),
@@ -372,24 +441,26 @@ async def get_listing_common(listing: Listing, user: User | None, crud: Crud) ->
         )
     )
 
+    featured_listings = await crud.get_featured_listings()
+    is_featured = listing.id in featured_listings
+
     response = GetListingResponse(
         id=listing.id,
         name=listing.name,
-        username=creator.username,
-        slug=listing.slug,
         description=listing.description,
-        child_ids=listing.child_ids,
-        artifacts=list(artifacts),
-        tags=listing_tags,
-        onshape_url=listing.onshape_url,
-        can_edit=user is not None and await can_write_listing(user, listing),
-        created_at=listing.created_at,
-        views=listing.views,
-        score=listing.score,
-        user_vote=user_vote,
-        creator_id=listing.user_id,
+        creator_id=creator.id if creator else None,
         creator_name=creator.name,
+        username=creator.username if creator else None,
+        slug=listing.slug,
+        views=listing.views,
+        created_at=listing.created_at,
+        artifacts=list(artifacts),
+        can_edit=user is not None and await can_write_listing(user, listing),
+        user_vote=user_vote,
+        onshape_url=listing.onshape_url,
         stripe_link=listing.stripe_link,
+        is_featured=is_featured,
+        score=listing.score,
     )
 
     return response

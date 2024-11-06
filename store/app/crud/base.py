@@ -534,3 +534,8 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             logger.info("Deleted table %s", name)
         except ClientError:
             logger.info("Table %s does not exist", name)
+
+    async def _get_by_known_id(self, record_id: str) -> dict[str, Any] | None:
+        table = await self.db.Table(TABLE_NAME)
+        response = await table.get_item(Key={"id": record_id})
+        return response.get("Item")
