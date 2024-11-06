@@ -1091,23 +1091,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/stripe/connect-account/delete-test-accounts": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Delete Test Accounts */
-        post: operations["delete_test_accounts_stripe_connect_account_delete_test_accounts_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/stripe/connect-account/status": {
         parameters: {
             query?: never;
@@ -3901,26 +3884,6 @@ export interface operations {
                     "application/json": {
                         [key: string]: string;
                     };
-                };
-            };
-        };
-    };
-    delete_test_accounts_stripe_connect_account_delete_test_accounts_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
                 };
             };
         };

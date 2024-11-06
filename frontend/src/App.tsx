@@ -28,7 +28,7 @@ import { AlertQueue, AlertQueueProvider } from "@/hooks/useAlertQueue";
 import { AuthenticationProvider } from "@/hooks/useAuth";
 
 import GDPRBanner from "./components/gdpr/gdprbanner";
-import DeleteConnect from "./components/pages/DeleteConnect";
+// import DeleteConnect from "./components/pages/DeleteConnect";
 import DownloadsPage from "./components/pages/Download";
 import PlaygroundPage from "./components/pages/MujocoPlayground";
 import OrderSuccess from "./components/pages/OrderSuccess";
@@ -36,6 +36,7 @@ import OrdersPage from "./components/pages/Orders";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import ResearchPage from "./components/pages/ResearchPage";
 import SellerOnboarding from "./components/pages/SellerOnboarding";
+import SellerOnboardingContinued from "./components/pages/SellerOnboardingContinued";
 import StompyMini from "./components/pages/StompyMini";
 import StompyPro from "./components/pages/StompyPro";
 import TerminalPage from "./components/pages/Terminal";
@@ -92,13 +93,17 @@ const App = () => {
                         element={<SellerOnboarding />}
                       />
                       <Route
+                        path="/seller-onboarding-continued"
+                        element={<SellerOnboardingContinued />}
+                      />
+                      <Route
                         path="/seller-dashboard"
                         element={<SellerDashboard />}
                       />
-                      <Route
+                      {/* <Route
                         path="/delete-connect"
                         element={<DeleteConnect />}
-                      />
+                      /> */}
 
                       <Route path="/success" element={<OrderSuccess />} />
                       <Route path="/orders" element={<OrdersPage />} />

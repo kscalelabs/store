@@ -101,7 +101,7 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
   }, [apiKeyId, client]);
 
   const fetchCurrentUser = useCallback(async () => {
-    if (apiKeyId && !currentUser) {
+    if (apiKeyId) {
       setIsLoading(true);
       const { data, error } = await client.GET("/users/public/me");
       if (error) {
@@ -113,7 +113,7 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
     } else if (!apiKeyId) {
       setIsLoading(false);
     }
-  }, [apiKeyId, client, currentUser]);
+  }, [apiKeyId, client]);
 
   useEffect(() => {
     fetchCurrentUser();

@@ -13,7 +13,7 @@ import {
 type AccountStatus =
   paths["/stripe/connect-account/status"]["get"]["responses"]["200"]["content"]["application/json"];
 
-export default function SellerOnboarding() {
+export default function SellerOnboardingContinued() {
   const navigate = useNavigate();
   const auth = useAuthentication();
   const { addErrorAlert, addAlert } = useAlertQueue();
@@ -104,15 +104,22 @@ export default function SellerOnboarding() {
   };
 
   useEffect(() => {
+    if (auth.isLoading) return;
+
     if (auth.currentUser?.stripe_connect_onboarding_completed) {
       navigate("/seller-dashboard");
+      return;
+    }
+
+    if (!auth.currentUser?.stripe_connect_account_id) {
+      navigate("/seller-onboarding");
       return;
     }
 
     if (connectedAccountId && !accountStatus) {
       checkAccountStatus();
     }
-  }, [connectedAccountId, auth.currentUser]);
+  }, [connectedAccountId, auth.currentUser, auth.isLoading]);
 
   if (auth.isLoading) {
     return (
@@ -133,14 +140,23 @@ export default function SellerOnboarding() {
     <div className="container mx-auto px-4 py-8 min-h-screen">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">
-          Start Selling Robots on K-Scale
+          Continue Setting Up Your Seller Account
         </h1>
+
+        {connectedAccountId && (
+          <p className="text-gray-11 text-sm">
+            This usually takes a few steps/submissions. It may take some time
+            for Stripe to process your info between submissions. Continue
+            through your account page or refresh this page to check/update your
+            application status.
+          </p>
+        )}
 
         {!connectedAccountId && (
           <div className="mb-8">
             <p className="mb-4">
-              Set up your K-Scale connected Stripe account. You can use an
-              existing Stripe account or create a new one.
+              Set up your K-Scale connected Stripe account to start selling
+              robots and receiving payments.
             </p>
 
             <div className="space-y-4">
@@ -151,7 +167,7 @@ export default function SellerOnboarding() {
               >
                 {accountCreatePending
                   ? "Creating account..."
-                  : "Start Seller Onboarding"}
+                  : "Create New Stripe Account"}
               </button>
             </div>
           </div>

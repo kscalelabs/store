@@ -8,6 +8,10 @@ export default function SellerDashboard() {
   const auth = useAuthentication();
 
   useEffect(() => {
+    auth.fetchCurrentUser();
+  }, []);
+
+  useEffect(() => {
     if (auth.isLoading) return;
 
     if (!auth.isAuthenticated) {
@@ -40,7 +44,8 @@ export default function SellerDashboard() {
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-xl font-semibold mb-4">Account Status</h2>
           <p className="text-green-600 mb-4">
-            ✓ Your seller account is active and ready to receive payments
+            ✓ Your K-Scale seller account is active and ready to receive
+            payments.
           </p>
 
           <div className="mt-6">

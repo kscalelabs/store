@@ -299,7 +299,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
           ) : (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-semibold mb-2">Bio</h2>
+                <h2 className="text-lg font-medium mb-2">Bio</h2>
                 {user.bio ? (
                   <p>{user.bio}</p>
                 ) : (
@@ -318,6 +318,20 @@ export const RenderProfile = (props: RenderProfileProps) => {
           <h2 className="text-2xl font-bold">Store</h2>
         </CardHeader>
         <CardContent>
+          <div className="mb-4">
+            {user.stripe_connect_account_id &&
+            !user.stripe_connect_onboarding_completed ? (
+              <p className="text-gray-11 text-sm">
+                Your Stripe account setup is not complete. Please resolve
+                outstanding requirements to begin selling robots. It may take
+                some time for Stripe to process your info between submissions.
+              </p>
+            ) : user.stripe_connect_onboarding_completed ? (
+              <p className="text-gray-11 text-sm">
+                Stripe account setup complete.
+              </p>
+            ) : null}
+          </div>
           <div className="flex gap-2">
             <Button onClick={() => navigate("/orders")} variant="primary">
               Orders
@@ -332,12 +346,14 @@ export const RenderProfile = (props: RenderProfileProps) => {
                 </Button>
               </Tooltip>
             ) : !user.stripe_connect_onboarding_completed ? (
-              <Button
-                onClick={() => navigate("/seller-onboarding")}
-                variant="outline"
-              >
-                Complete Seller Setup
-              </Button>
+              <Tooltip content="Continue seller onboarding" position="bottom">
+                <Button
+                  onClick={() => navigate("/seller-onboarding-continued")}
+                  variant="outline"
+                >
+                  Complete Seller Setup
+                </Button>
+              </Tooltip>
             ) : (
               <Button
                 onClick={() => navigate("/seller-dashboard")}
