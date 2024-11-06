@@ -476,10 +476,21 @@ const URDFRenderer = ({
     }
   }, []);
 
+  const getBackgroundColor = useCallback(() => {
+    switch (visualTheme) {
+      case "terminal":
+        return "bg-black";
+      case "dark":
+        return "bg-[#222222]";
+      default:
+        return "bg-[#f0f0f0]";
+    }
+  }, [visualTheme]);
+
   return (
     <div
       ref={parentRef}
-      className={`flex flex-col lg:flex-row ${isFullScreen ? "h-screen" : "h-full"} relative`}
+      className={`flex flex-col lg:flex-row ${isFullScreen ? "h-screen" : "h-full"} relative ${getBackgroundColor()}`}
     >
       <div ref={containerRef} className="flex-grow h-[60vh] lg:h-auto relative">
         <div className="absolute bottom-4 left-4 z-20 flex gap-2">
@@ -503,7 +514,7 @@ const URDFRenderer = ({
           <div
             className={`${
               showControls ? "translate-x-0" : "translate-x-full"
-            } relative lg:relative right-0 top-0 bottom-0 w-64 bg-gray-100 transition-transform duration-300 ease-in-out z-30`}
+            } relative lg:relative right-0 top-0 bottom-0 w-64 ${getBackgroundColor()} transition-transform duration-300 ease-in-out z-30`}
           >
             <div className="p-4 overflow-y-auto h-full">
               <div className="space-y-2 mb-4">
@@ -574,7 +585,9 @@ const URDFRenderer = ({
           {!showControls && (
             <button
               onClick={() => setShowControls(true)}
-              className="absolute bottom-4 right-4 z-30 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full shadow-md"
+              className={`${
+                isFullScreen ? "fixed" : "absolute"
+              } bottom-4 right-4 z-30 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full shadow-md`}
             >
               <FaChevronLeft />
             </button>
