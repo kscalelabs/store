@@ -160,11 +160,6 @@ const Navbar = () => {
           </div>
           <div className="hidden lg:flex items-center flex-grow justify-between ml-4">
             <div className="flex space-x-1 bg-gray-12 rounded-lg p-2 flex-grow">
-              {featuredListings?.length > 0 && (
-                <span className="px-2 xl:px-3 py-2 text-sm tracking-widest text-gray-1">
-                  Featured Listings:
-                </span>
-              )}
               <div className="flex-grow flex space-x-1">
                 {featuredListings?.map((listing) => (
                   <button
