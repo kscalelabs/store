@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FaChevronLeft, FaChevronRight, FaPlay, FaUndo } from "react-icons/fa";
+import {
+  FaChevronLeft,
+  FaChevronRight,
+  FaCompress,
+  FaExpand,
+  FaPlay,
+  FaUndo,
+} from "react-icons/fa";
 
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -47,6 +54,11 @@ const URDFRenderer = ({
   const [isInStartPosition, setIsInStartPosition] = useState(true);
   const [urdfInfo, setUrdfInfo] = useState<URDFInfo | null>(null);
   const [orientation, setOrientation] = useState<Orientation>("Z-up");
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const parentRef = useRef<HTMLDivElement>(null);
+  const [forceRerender, setForceRerender] = useState(0);
+  const jointPositionsRef = useRef<{ name: string; value: number }[]>([]);
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
 
   const applyTheme = useCallback((theme: VisualizationTheme) => {
     if (!sceneRef.current) return;
@@ -90,6 +102,27 @@ const URDFRenderer = ({
         break;
     }
   }, []);
+
+  useEffect(() => {
+    const handleFullScreenChange = () => {
+      const isNowFullScreen = !!document.fullscreenElement;
+
+      if (isNowFullScreen) {
+        setIsFullScreen(true);
+      } else {
+        jointPositionsRef.current = jointControls.map((joint) => ({
+          name: joint.name,
+          value: joint.value,
+        }));
+        setIsFullScreen(false);
+        setForceRerender((prev) => prev + 1);
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleFullScreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullScreenChange);
+  }, [jointControls]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -183,8 +216,15 @@ const URDFRenderer = ({
         const joint = child as URDFJoint;
         const min = Number(joint.limit.lower);
         const max = Number(joint.limit.upper);
-        // Initialize to 0 if it's within the joint limits, otherwise use midpoint
-        const initialValue = min <= 0 && max >= 0 ? 0 : (min + max) / 2;
+        const storedPosition = jointPositionsRef.current.find(
+          (pos) => pos.name === joint.name,
+        );
+        const initialValue = storedPosition
+          ? storedPosition.value
+          : min <= 0 && max >= 0
+            ? 0
+            : (min + max) / 2;
+
         joints.push({
           name: joint.name,
           min: min,
@@ -194,6 +234,7 @@ const URDFRenderer = ({
         joint.setJointValue(initialValue);
       }
     });
+
     // Sort joints alphabetically by name
     joints.sort((a, b) => a.name.localeCompare(b.name));
     setJointControls(joints);
@@ -260,7 +301,7 @@ const URDFRenderer = ({
       window.removeEventListener("resize", handleResize);
       updateOrientation("Z-up"); // Reset orientation on unmount
     };
-  }, [urdfContent, files, orientation]);
+  }, [urdfContent, files, orientation, forceRerender]);
 
   const handleJointChange = (index: number, value: number) => {
     setJointControls((prevControls) => {
@@ -369,23 +410,100 @@ const URDFRenderer = ({
     }
   };
 
-  return (
-    <div className="flex flex-col lg:flex-row h-full relative">
-      <div ref={containerRef} className="flex-grow h-[60vh] lg:h-auto" />
+  const resetViewerState = useCallback(() => {
+    if (
+      !containerRef.current ||
+      !robotRef.current ||
+      !sceneRef.current ||
+      !rendererRef.current
+    )
+      return;
 
-      <button
-        onClick={toggleOrientation}
-        className={`absolute bottom-4 left-4 z-20 ${getOrientationButtonColors(visualTheme)} text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center`}
-      >
-        {orientation.charAt(0)}
-      </button>
+    const renderer = rendererRef.current;
+    renderer.setSize(
+      containerRef.current.clientWidth,
+      containerRef.current.clientHeight,
+    );
+
+    const camera = new THREE.PerspectiveCamera(
+      50,
+      containerRef.current.clientWidth / containerRef.current.clientHeight,
+      0.1,
+      1000,
+    );
+    const distance = 10;
+    camera.position.set(0, distance / 2, -distance);
+    camera.lookAt(0, 0, 0);
+
+    const robot = robotRef.current;
+    const box = new THREE.Box3().setFromObject(robot);
+    const center = box.getCenter(new THREE.Vector3());
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+    const scale = 5 / maxDim;
+    robot.scale.setScalar(scale);
+    robot.position.sub(center.multiplyScalar(scale));
+
+    renderer.render(sceneRef.current, camera);
+  }, []);
+
+  useEffect(() => {
+    const handleFullScreenChange = () => {
+      const isNowFullScreen = !!document.fullscreenElement;
+      setIsFullScreen(isNowFullScreen);
+
+      if (!isNowFullScreen) {
+        setTimeout(() => {
+          resetViewerState();
+        }, 100);
+      }
+    };
+
+    document.addEventListener("fullscreenchange", handleFullScreenChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFullScreenChange);
+  }, [resetViewerState]);
+
+  const toggleFullScreen = useCallback(() => {
+    if (!parentRef.current) return;
+
+    if (!document.fullscreenElement) {
+      parentRef.current.requestFullscreen();
+      setIsFullScreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullScreen(false);
+    }
+  }, []);
+
+  return (
+    <div
+      ref={parentRef}
+      className={`flex flex-col lg:flex-row ${isFullScreen ? "h-screen" : "h-full"} relative`}
+    >
+      <div ref={containerRef} className="flex-grow h-[60vh] lg:h-auto relative">
+        <div className="absolute bottom-4 left-4 z-20 flex gap-2">
+          <button
+            onClick={toggleOrientation}
+            className={`${getOrientationButtonColors(visualTheme)} text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center`}
+          >
+            {orientation.charAt(0)}
+          </button>
+          <button
+            onClick={toggleFullScreen}
+            className={`${getOrientationButtonColors(visualTheme)} text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center`}
+          >
+            {isFullScreen ? <FaCompress /> : <FaExpand />}
+          </button>
+        </div>
+      </div>
 
       {useControls && (
         <>
           <div
-            className={`absolute right-0 top-0 bottom-0 w-64 bg-gray-100 transition-transform duration-300 ease-in-out ${
+            className={`${
               showControls ? "translate-x-0" : "translate-x-full"
-            }`}
+            } relative lg:relative right-0 top-0 bottom-0 w-64 bg-gray-100 transition-transform duration-300 ease-in-out z-30`}
           >
             <div className="p-4 overflow-y-auto h-full">
               <div className="space-y-2 mb-4">
@@ -456,7 +574,7 @@ const URDFRenderer = ({
           {!showControls && (
             <button
               onClick={() => setShowControls(true)}
-              className="absolute bottom-4 right-4 z-20 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full shadow-md"
+              className="absolute bottom-4 right-4 z-30 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full shadow-md"
             >
               <FaChevronLeft />
             </button>
