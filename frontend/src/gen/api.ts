@@ -1091,6 +1091,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/stripe/connect-account/delete-test-accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Delete Test Accounts */
+        post: operations["delete_test_accounts_stripe_connect_account_delete_test_accounts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stripe/connect-account/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Connect Account Status */
+        get: operations["get_connect_account_status_stripe_connect_account_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/me": {
         parameters: {
             query?: never;
@@ -1330,6 +1364,19 @@ export interface components {
             /** Client Id */
             client_id: string;
         };
+        /** ConnectAccountStatusResponse */
+        ConnectAccountStatusResponse: {
+            /** Status */
+            status: string;
+            /** Message */
+            message: string;
+            /** Missing Requirements */
+            missing_requirements?: string[] | null;
+            /** Account Link */
+            account_link?: string | null;
+            /** Dashboard Url */
+            dashboard_url?: string | null;
+        };
         /** CreateCheckoutSessionRequest */
         CreateCheckoutSessionRequest: {
             /** Product Id */
@@ -1341,6 +1388,11 @@ export interface components {
         CreateCheckoutSessionResponse: {
             /** Session Id */
             session_id: string;
+        };
+        /** CreateConnectAccountResponse */
+        CreateConnectAccountResponse: {
+            /** Account Id */
+            account_id: string;
         };
         /** CreateRefundsRequest */
         CreateRefundsRequest: {
@@ -3791,9 +3843,7 @@ export interface operations {
     };
     create_connect_account_stripe_create_connect_account_post: {
         parameters: {
-            query?: {
-                existing_account?: boolean;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -3806,18 +3856,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: string;
-                    };
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["CreateConnectAccountResponse"];
                 };
             };
         };
@@ -3862,6 +3901,46 @@ export interface operations {
                     "application/json": {
                         [key: string]: string;
                     };
+                };
+            };
+        };
+    };
+    delete_test_accounts_stripe_connect_account_delete_test_accounts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+        };
+    };
+    get_connect_account_status_stripe_connect_account_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConnectAccountStatusResponse"];
                 };
             };
         };

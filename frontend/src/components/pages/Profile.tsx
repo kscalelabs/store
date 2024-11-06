@@ -5,6 +5,7 @@ import UpvotedGrid from "@/components/listings/UpvotedGrid";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Input, TextArea } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
+import { Tooltip } from "@/components/ui/ToolTip";
 import { Button } from "@/components/ui/button";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
@@ -161,40 +162,13 @@ export const RenderProfile = (props: RenderProfileProps) => {
             </p>
           </div>
           {!isEditing && canEdit && (
-            <div className="flex flex-col items-center space-y-2">
+            <div className="flex flex-wrap gap-2 justify-center">
+              <Button onClick={() => navigate("/keys")} variant="primary">
+                API Keys
+              </Button>
               <Button onClick={() => setIsEditing(true)} variant="outline">
                 Edit Profile
               </Button>
-              <div className="flex flex-wrap gap-2 justify-center">
-                <Button onClick={() => navigate("/keys")} variant="primary">
-                  API Keys
-                </Button>
-                <Button onClick={() => navigate("/orders")} variant="default">
-                  Orders
-                </Button>
-                {!user.stripe_connect_account_id ? (
-                  <Button
-                    onClick={() => navigate("/start-selling")}
-                    variant="default"
-                  >
-                    Become a Seller
-                  </Button>
-                ) : !user.stripe_connect_onboarding_completed ? (
-                  <Button
-                    onClick={() => navigate("/start-selling")}
-                    variant="default"
-                  >
-                    Complete Seller Setup
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => navigate("/start-selling")}
-                    variant="default"
-                  >
-                    Seller Dashboard
-                  </Button>
-                )}
-              </div>
             </div>
           )}
           {isAdmin && !canEdit && (
@@ -329,7 +303,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
                 {user.bio ? (
                   <p>{user.bio}</p>
                 ) : (
-                  <p className="text-gray-11">
+                  <p className="text-gray-11 text-sm">
                     No bio set. Edit your profile to add a bio.
                   </p>
                 )}
@@ -341,9 +315,38 @@ export const RenderProfile = (props: RenderProfileProps) => {
 
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader>
-          <h2 className="text-2xl font-bold">Listings</h2>
+          <h2 className="text-2xl font-bold">Store</h2>
         </CardHeader>
         <CardContent>
+          <div className="flex gap-2">
+            <Button onClick={() => navigate("/orders")} variant="primary">
+              Orders
+            </Button>
+            {!user.stripe_connect_account_id ? (
+              <Tooltip content="Start seller onboarding" position="bottom">
+                <Button
+                  onClick={() => navigate("/seller-onboarding")}
+                  variant="outline"
+                >
+                  Sell Robots
+                </Button>
+              </Tooltip>
+            ) : !user.stripe_connect_onboarding_completed ? (
+              <Button
+                onClick={() => navigate("/seller-onboarding")}
+                variant="outline"
+              >
+                Complete Seller Setup
+              </Button>
+            ) : (
+              <Button
+                onClick={() => navigate("/seller-dashboard")}
+                variant="outline"
+              >
+                Seller Dashboard
+              </Button>
+            )}
+          </div>
           <div className="flex flex-col items-center space-y-4">
             <Tabs
               defaultValue="own"
@@ -353,13 +356,13 @@ export const RenderProfile = (props: RenderProfileProps) => {
               <TabsList className="flex justify-center space-x-4 mb-4">
                 <TabsTrigger
                   value="own"
-                  className="px-3 py-1.5 rounded-md transition-colors duration-300 hover:bg-gray-11 hover:text-gray-1 data-[state=active]:bg-primary-9 data-[state=active]:text-gray-1"
+                  className="text-sm px-3 py-1.5 rounded-md transition-colors duration-300 hover:bg-gray-9 hover:text-gray-1 data-[state=active]:bg-gray-12 data-[state=active]:text-gray-1"
                 >
-                  Overview
+                  Your Listings
                 </TabsTrigger>
                 <TabsTrigger
                   value="upvoted"
-                  className="px-3 py-1.5 rounded-md transition-colors duration-300 hover:bg-gray-11 hover:text-gray-1 data-[state=active]:bg-primary-9 data-[state=active]:text-gray-1"
+                  className="text-sm px-3 py-1.5 rounded-md transition-colors duration-300 hover:bg-gray-9 hover:text-gray-1 data-[state=active]:bg-gray-12 data-[state=active]:text-gray-1"
                 >
                   Upvoted
                 </TabsTrigger>

@@ -15,33 +15,52 @@ export const useStripeConnect = (connectedAccountId: string | null) => {
   >();
 
   useEffect(() => {
-    if (connectedAccountId) {
-      const fetchClientSecret = async () => {
-        const { data, error } = await auth.client.POST(
-          "/stripe/connect-account/create-session",
-          {},
-        );
+    let mounted = true;
 
-        if (error) {
-          throw new Error(`Failed to create account session: ${error}`);
-        }
+    const initializeStripeConnect = async () => {
+      if (!connectedAccountId) {
+        return;
+      }
 
-        return data.client_secret;
-      };
-
-      setStripeConnectInstance(
-        loadConnectAndInitialize({
+      try {
+        const instance = await loadConnectAndInitialize({
           publishableKey: STRIPE_PUBLISHABLE_KEY,
-          fetchClientSecret,
+          async fetchClientSecret() {
+            const { data, error } = await auth.client.POST(
+              "/stripe/connect-account/create-session",
+              {},
+            );
+
+            if (error) {
+              throw new Error(`Failed to create account session: ${error}`);
+            }
+
+            return data.client_secret;
+          },
           appearance: {
             overlays: "dialog",
             variables: {
               colorPrimary: "#ff4f00",
             },
           },
-        }),
-      );
-    }
+        });
+
+        if (mounted) {
+          setStripeConnectInstance(instance);
+        }
+      } catch (error) {
+        console.error("Failed to initialize Stripe Connect:", error);
+        if (mounted) {
+          setStripeConnectInstance(undefined);
+        }
+      }
+    };
+
+    initializeStripeConnect();
+
+    return () => {
+      mounted = false;
+    };
   }, [connectedAccountId, auth.client]);
 
   return stripeConnectInstance;

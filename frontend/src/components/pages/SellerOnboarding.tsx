@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { useStripeConnect } from "@/hooks/useStripeConnect";
@@ -9,6 +10,9 @@ import {
   ConnectComponentsProvider,
 } from "@stripe/react-connect-js";
 
+type AccountStatus =
+  paths["/stripe/connect-account/status"]["get"]["responses"]["200"]["content"]["application/json"];
+
 export default function SellerOnboarding() {
   const navigate = useNavigate();
   const auth = useAuthentication();
@@ -16,32 +20,44 @@ export default function SellerOnboarding() {
   const [accountCreatePending, setAccountCreatePending] = useState(false);
   const [onboardingExited, setOnboardingExited] = useState(false);
   const [connectedAccountId, setConnectedAccountId] = useState<string | null>(
-    null,
+    auth.currentUser?.stripe_connect_account_id || null,
   );
   const stripeConnectInstance = useStripeConnect(connectedAccountId);
+  const [accountStatus, setAccountStatus] = useState<AccountStatus | null>(
+    null,
+  );
 
-  const handleCreateAccount = async (isExisting: boolean = false) => {
+  const handleCreateNewAccount = async () => {
     try {
       setAccountCreatePending(true);
+      console.log("Creating new Stripe Connect account...");
 
       const { data, error } = await auth.client.POST(
         "/stripe/create-connect-account",
-        { existing_account: isExisting },
+        {},
       );
 
       if (error) {
+        console.error("Error creating Connect account:", error);
         addErrorAlert(error);
         return;
       }
 
-      if (isExisting && data.url) {
-        // Redirect to Stripe's account linking flow
-        window.location.href = data.url;
-      } else {
-        setConnectedAccountId(data.accountId);
-        addAlert("Seller account created successfully!", "success");
+      if (data) {
+        const accountId = data.account_id;
+        if (accountId) {
+          console.log("Account created successfully:", accountId);
+          setConnectedAccountId(accountId);
+
+          setTimeout(() => {
+            checkAccountStatus();
+          }, 1000);
+        } else {
+          addErrorAlert("No account ID received from server");
+        }
       }
     } catch (error) {
+      console.error("Failed to create seller account:", error);
       addErrorAlert(`Failed to create seller account: ${error}`);
     } finally {
       setAccountCreatePending(false);
@@ -76,6 +92,32 @@ export default function SellerOnboarding() {
     }
   };
 
+  const checkAccountStatus = async () => {
+    try {
+      const { data, error } = await auth.client.GET(
+        "/stripe/connect-account/status",
+      );
+      if (error) {
+        addErrorAlert(error);
+        return;
+      }
+      setAccountStatus(data);
+    } catch (error) {
+      addErrorAlert(`Failed to check account status: ${error}`);
+    }
+  };
+
+  useEffect(() => {
+    if (auth.currentUser?.stripe_connect_onboarding_completed) {
+      navigate("/seller-dashboard");
+      return;
+    }
+
+    if (connectedAccountId && !accountStatus) {
+      checkAccountStatus();
+    }
+  }, [connectedAccountId, auth.currentUser]);
+
   if (auth.isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -99,13 +141,13 @@ export default function SellerOnboarding() {
         {!connectedAccountId && (
           <div className="mb-8">
             <p className="mb-4">
-              Set up your Stripe account to start selling robots and receiving
-              payments.
+              Set up your K-Scale connected Stripe account to start selling
+              robots and receiving payments.
             </p>
 
             <div className="space-y-4">
               <button
-                onClick={() => handleCreateAccount(false)}
+                onClick={handleCreateNewAccount}
                 disabled={accountCreatePending}
                 className="w-full bg-primary-9 text-white px-6 py-3 rounded-lg hover:bg-primary-9/80 disabled:opacity-50"
               >
@@ -113,31 +155,71 @@ export default function SellerOnboarding() {
                   ? "Creating account..."
                   : "Create New Stripe Account"}
               </button>
+            </div>
+          </div>
+        )}
 
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
+        {connectedAccountId && !stripeConnectInstance && (
+          <div className="mb-8">
+            {accountStatus?.status === "incomplete" && (
+              <div className="space-y-4">
+                <div className="p-4 bg-yellow-50 rounded-lg">
+                  <h3 className="font-semibold text-yellow-800">
+                    Account Setup Incomplete
+                  </h3>
+                  <ul className="mt-2 list-disc list-inside text-yellow-700">
+                    {accountStatus?.missing_requirements?.map((req: string) => (
+                      <li key={req}>{req}</li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">OR</span>
+
+                <div className="flex gap-4">
+                  {accountStatus.account_link && (
+                    <a
+                      href={accountStatus.account_link}
+                      className="flex-1 bg-primary-9 text-white px-6 py-3 rounded-lg hover:bg-primary-9/80 text-center"
+                    >
+                      Complete Setup in Stripe
+                    </a>
+                  )}
+                  <a
+                    href={
+                      accountStatus?.dashboard_url ||
+                      "https://dashboard.stripe.com/"
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 text-center"
+                  >
+                    Open Stripe Dashboard
+                  </a>
                 </div>
               </div>
+            )}
 
-              <button
-                onClick={() => handleCreateAccount(true)}
-                disabled={accountCreatePending}
-                className="w-full border-2 border-primary-9 text-primary-9 px-6 py-3 rounded-lg hover:bg-primary-9/10 disabled:opacity-50"
-              >
-                {accountCreatePending
-                  ? "Connecting account..."
-                  : "Connect Existing Stripe Account"}
-              </button>
-            </div>
-
-            <p className="mt-4 text-sm text-gray-600">
-              Already have a Stripe account? You can connect it to our platform
-              and start selling right away.
-            </p>
+            {accountStatus?.status === "complete" && (
+              <div className="p-4 bg-green-50 rounded-lg">
+                <h3 className="font-semibold text-green-800">
+                  Account Setup Complete
+                </h3>
+                <p className="mt-2 text-green-700">
+                  Your Stripe account is fully set up and ready to accept
+                  payments.
+                </p>
+                <a
+                  href={
+                    accountStatus?.dashboard_url ||
+                    "https://dashboard.stripe.com/"
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-block bg-green-100 text-green-700 px-6 py-3 rounded-lg hover:bg-green-200"
+                >
+                  Open Stripe Dashboard
+                </a>
+              </div>
+            )}
           </div>
         )}
 

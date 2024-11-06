@@ -22,11 +22,13 @@ import Login from "@/components/pages/Login";
 import Logout from "@/components/pages/Logout";
 import NotFound from "@/components/pages/NotFound";
 import Profile from "@/components/pages/Profile";
+import SellerDashboard from "@/components/pages/SellerDashboard";
 import Signup from "@/components/pages/Signup";
 import { AlertQueue, AlertQueueProvider } from "@/hooks/useAlertQueue";
 import { AuthenticationProvider } from "@/hooks/useAuth";
 
 import GDPRBanner from "./components/gdpr/gdprbanner";
+import DeleteConnect from "./components/pages/DeleteConnect";
 import DownloadsPage from "./components/pages/Download";
 import PlaygroundPage from "./components/pages/MujocoPlayground";
 import OrderSuccess from "./components/pages/OrderSuccess";
@@ -86,8 +88,16 @@ const App = () => {
                       <Route path="/pro" element={<StompyPro />} />
                       <Route path="/mini" element={<StompyMini />} />
                       <Route
-                        path="/start-selling"
+                        path="/seller-onboarding"
                         element={<SellerOnboarding />}
+                      />
+                      <Route
+                        path="/seller-dashboard"
+                        element={<SellerDashboard />}
+                      />
+                      <Route
+                        path="/delete-connect"
+                        element={<DeleteConnect />}
                       />
 
                       <Route path="/success" element={<OrderSuccess />} />

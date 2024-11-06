@@ -1,6 +1,7 @@
 """Stripe integration router for handling payments and webhooks."""
 
 import logging
+from enum import Enum
 from typing import Annotated, Any, Dict
 
 import stripe
@@ -12,12 +13,19 @@ from store.app.model import Order, User
 from store.app.routers.users import get_session_user_with_read_permission
 from store.settings import settings
 
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 stripe_router = APIRouter()
 
 # Initialize Stripe with your secret key
 stripe.api_key = settings.stripe.secret_key
+
+
+class ConnectAccountStatus(str, Enum):
+    NOT_CREATED = "not_created"
+    INCOMPLETE = "incomplete"
+    COMPLETE = "complete"
 
 
 @stripe_router.post("/create-payment-intent")
@@ -117,10 +125,18 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
     # Handle the event
     if event["type"] == "account.updated":
         account = event["data"]["object"]
-        logger.info(f"Account updated: {account['id']}")
+        logger.info(f"[WEBHOOK] Account updated: {account['id']}")
 
         # Check if this is a Connect account becoming fully onboarded
-        if account["details_submitted"] and account["payouts_enabled"]:
+        capabilities = account.get("capabilities", {})
+        is_fully_onboarded = bool(
+            account.get("details_submitted")
+            and account.get("payouts_enabled")
+            and capabilities.get("card_payments") == "active"
+            and capabilities.get("transfers") == "active"
+        )
+
+        if is_fully_onboarded:
             try:
                 # Find user with this Connect account ID
                 users = await crud.get_users_by_stripe_connect_id(account["id"])
@@ -128,9 +144,13 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
                     user = users[0]  # Assume one user per Connect account
                     # Update user's onboarding status
                     await crud.update_stripe_connect_status(user.id, account["id"], is_completed=True)
-                    logger.info(f"Updated user {user.id} Connect onboarding status to completed")
+                    logger.info(f"[WEBHOOK] Updated user {user.id} Connect onboarding status to completed")
+                else:
+                    logger.warning(f"[WEBHOOK] No user found for Connect account: {account['id']}")
             except Exception as e:
-                logger.error(f"Error updating user Connect status: {str(e)}")
+                logger.error(f"[WEBHOOK] Error updating user Connect status: {str(e)}")
+        else:
+            logger.info(f"[WEBHOOK] Account {account['id']} not fully onboarded yet. Capabilities: {capabilities}")
 
     elif event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
@@ -288,8 +308,8 @@ async def create_checkout_session(
                         "fixed_amount": {"amount": 2500, "currency": "usd"},
                         "display_name": "Ground - Express",
                         "delivery_estimate": {
-                            "minimum": {"unit": "business_day", "value": 2},
-                            "maximum": {"unit": "business_day", "value": 5},
+                            "minimum": {"unit": "business_day", "value": 3},
+                            "maximum": {"unit": "business_day", "value": 7},
                         },
                     },
                 },
@@ -318,54 +338,45 @@ async def get_product(product_id: str) -> Dict[str, Any]:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@stripe_router.post("/create-connect-account")
+class CreateConnectAccountResponse(BaseModel):
+    account_id: str
+
+
+@stripe_router.post("/create-connect-account", response_model=CreateConnectAccountResponse)
 async def create_connect_account(
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
-    existing_account: bool = False,
-) -> Dict[str, str]:
+) -> CreateConnectAccountResponse:
     try:
-        if existing_account:
-            if not user.stripe_connect_account_id:
-                raise HTTPException(status_code=400, detail="No Stripe Connect account ID found")
+        logger.info(f"[CREATE-CONNECT] Starting new account creation for user {user.id}")
 
-            account_link = stripe.AccountLink.create(
-                type="account_onboarding",
-                account=user.stripe_connect_account_id,
-                refresh_url=f"{settings.site.homepage}/seller-onboarding",
-                return_url=f"{settings.site.homepage}/account",
-                collect="eventually_due",
-            )
-            return {"url": account_link.url}
-        else:
-            # Create new account with correct settings
-            account = stripe.Account.create(
-                type="express",
-                country="US",
-                email=user.email,
-                capabilities={
-                    "card_payments": {"requested": True},
-                    "transfers": {"requested": True},
-                },
-                business_type="individual",
-                settings={
-                    "payouts": {"schedule": {"interval": "manual"}},
-                },
-            )
+        # Create a Standard Connect account
+        account = stripe.Account.create(
+            type="standard",
+            country="US",
+            email=user.email,
+            capabilities={
+                "card_payments": {"requested": True},
+                "transfers": {"requested": True},
+            },
+            business_type="individual",
+        )
 
-            logger.info(f"Created Connect account: {account.id} for user: {user.id}")
+        logger.info(f"[CREATE-CONNECT] Created new Connect account: {account.id} for user: {user.id}")
 
-            await crud.update_user(
-                user.id,
-                {
-                    "stripe_connect_account_id": account.id,
-                    "stripe_connect_onboarding_completed": False,
-                },
-            )
+        # Update user record with new Connect account ID
+        logger.info("[CREATE-CONNECT] Updating user record with new Connect account ID")
+        await crud.update_user(
+            user.id,
+            {
+                "stripe_connect_account_id": account.id,
+                "stripe_connect_onboarding_completed": False,
+            },
+        )
 
-            return {"accountId": account.id}
+        return CreateConnectAccountResponse(account_id=account.id)
     except Exception as e:
-        logger.error(f"Error creating Connect account: {str(e)}")
+        logger.error(f"[CREATE-CONNECT] Error creating Connect account: {str(e)}", exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -422,4 +433,101 @@ async def create_connect_account_session(
         return {"client_secret": account_session.client_secret}
     except Exception as e:
         logger.error(f"Error creating Connect account session: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# @stripe_router.post("/connect-account/delete-test-accounts")
+# async def delete_test_accounts(
+#     user: Annotated[User, Depends(get_session_user_with_read_permission)],
+#     crud: Annotated[Crud, Depends(Crud.get)],
+# ) -> Dict[str, Any]:
+#     try:
+#         # Only allow in test mode
+#         if not settings.stripe.secret_key.startswith("sk_test_"):
+#             raise HTTPException(status_code=400, detail="This operation is only allowed in test mode")
+
+#         deleted_accounts = []
+#         accounts = stripe.Account.list(limit=100)
+
+#         for account in accounts:
+#             try:
+#                 stripe.Account.delete(account.id)
+#                 deleted_accounts.append(account.id)
+#                 # Update any users that had this account
+#                 await crud.update_user_stripe_connect_reset(account.id)
+#             except Exception as e:
+#                 logger.error(f"Failed to delete account {account.id}: {str(e)}")
+
+#         return {"success": True, "deleted_accounts": deleted_accounts, "count": len(deleted_accounts)}
+#     except Exception as e:
+#         logger.error(f"Error deleting test accounts: {str(e)}")
+#         raise HTTPException(status_code=400, detail=str(e))
+
+
+class ConnectAccountStatusResponse(BaseModel):
+    status: str
+    message: str
+    missing_requirements: list[str] | None = None
+    account_link: str | None = None
+    dashboard_url: str | None = None
+
+
+@stripe_router.get("/connect-account/status", response_model=ConnectAccountStatusResponse)
+async def get_connect_account_status(
+    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+) -> ConnectAccountStatusResponse:
+    try:
+        if not user.stripe_connect_account_id:
+            return ConnectAccountStatusResponse(
+                status=ConnectAccountStatus.NOT_CREATED,
+                message="No Stripe Connect account found",
+                missing_requirements=["Create a new Stripe Connect account"],
+            )
+
+        account = stripe.Account.retrieve(user.stripe_connect_account_id)
+        capabilities = account.get("capabilities", {})
+        dashboard_url = f"https://dashboard.stripe.com/{account.id}"
+
+        is_fully_onboarded = bool(
+            account.get("details_submitted")
+            and account.get("payouts_enabled")
+            and capabilities.get("card_payments") == "active"
+            and capabilities.get("transfers") == "active"
+        )
+
+        if is_fully_onboarded:
+            return ConnectAccountStatusResponse(
+                status=ConnectAccountStatus.COMPLETE,
+                message="Your Stripe account is fully set up",
+                dashboard_url=dashboard_url,
+            )
+
+        # If not fully onboarded, create an account link for completing setup
+        account_link = stripe.AccountLink.create(
+            account=user.stripe_connect_account_id,
+            refresh_url=f"{settings.site.homepage}/seller-onboarding",
+            return_url=f"{settings.site.homepage}/seller-onboarding",
+            type="account_onboarding",
+        )
+
+        missing_requirements = []
+        if not account.get("details_submitted"):
+            missing_requirements.append("Complete business details")
+        if not account.get("payouts_enabled"):
+            missing_requirements.append("Set up payouts")
+        if capabilities.get("card_payments") != "active":
+            missing_requirements.append("Enable card payments")
+        if capabilities.get("transfers") != "active":
+            missing_requirements.append("Enable transfers")
+
+        return ConnectAccountStatusResponse(
+            status=ConnectAccountStatus.INCOMPLETE,
+            message="Your Stripe account setup is incomplete",
+            missing_requirements=missing_requirements,
+            account_link=account_link.url,
+            dashboard_url=dashboard_url,
+        )
+
+    except Exception as e:
+        logger.error(f"Error getting Connect account status: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
