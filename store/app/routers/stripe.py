@@ -434,32 +434,33 @@ async def create_connect_account_session(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# @stripe_router.post("/connect-account/delete-test-accounts")
-# async def delete_test_accounts(
-#     user: Annotated[User, Depends(get_session_user_with_read_permission)],
-#     crud: Annotated[Crud, Depends(Crud.get)],
-# ) -> Dict[str, Any]:
-#     try:
-#         # Only allow in test mode
-#         if not settings.stripe.secret_key.startswith("sk_test_"):
-#             raise HTTPException(status_code=400, detail="This operation is only allowed in test mode")
+# For testing workflow will remove once stripe connect payment and listing integration done
+@stripe_router.post("/connect-account/delete-test-accounts")
+async def delete_test_accounts(
+    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> Dict[str, Any]:
+    try:
+        # Only allow in test mode
+        if not settings.stripe.secret_key.startswith("sk_test_"):
+            raise HTTPException(status_code=400, detail="This operation is only allowed in test mode")
 
-#         deleted_accounts = []
-#         accounts = stripe.Account.list(limit=100)
+        deleted_accounts = []
+        accounts = stripe.Account.list(limit=100)
 
-#         for account in accounts:
-#             try:
-#                 stripe.Account.delete(account.id)
-#                 deleted_accounts.append(account.id)
-#                 # Update any users that had this account
-#                 await crud.update_user_stripe_connect_reset(account.id)
-#             except Exception as e:
-#                 logger.error(f"Failed to delete account {account.id}: {str(e)}")
+        for account in accounts:
+            try:
+                stripe.Account.delete(account.id)
+                deleted_accounts.append(account.id)
+                # Update any users that had this account
+                await crud.update_user_stripe_connect_reset(account.id)
+            except Exception as e:
+                logger.error(f"Failed to delete account {account.id}: {str(e)}")
 
-#         return {"success": True, "deleted_accounts": deleted_accounts, "count": len(deleted_accounts)}
-#     except Exception as e:
-#         logger.error(f"Error deleting test accounts: {str(e)}")
-#         raise HTTPException(status_code=400, detail=str(e))
+        return {"success": True, "deleted_accounts": deleted_accounts, "count": len(deleted_accounts)}
+    except Exception as e:
+        logger.error(f"Error deleting test accounts: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 class ConnectAccountStatusResponse(BaseModel):

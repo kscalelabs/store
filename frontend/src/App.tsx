@@ -29,7 +29,7 @@ import { AlertQueue, AlertQueueProvider } from "@/hooks/useAlertQueue";
 import { AuthenticationProvider } from "@/hooks/useAuth";
 
 import GDPRBanner from "./components/gdpr/gdprbanner";
-// import DeleteConnect from "./components/pages/DeleteConnect";
+import DeleteConnect from "./components/pages/DeleteConnect";
 import DownloadsPage from "./components/pages/Download";
 import OrderSuccess from "./components/pages/OrderSuccess";
 import OrdersPage from "./components/pages/Orders";
@@ -98,10 +98,10 @@ const App = () => {
                           path="/seller-dashboard"
                           element={<SellerDashboard />}
                         />
-                        {/* <Route
+                        <Route
                           path="/delete-connect"
                           element={<DeleteConnect />}
-                        /> */}
+                        />
                         <Route path="/success" element={<OrderSuccess />} />
                         <Route path="/orders" element={<OrdersPage />} />
 

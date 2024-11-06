@@ -291,6 +291,19 @@ class UserCrud(BaseCrud):
         await self._update_item(user_id, User, {"permissions": list(user.permissions)})
         return user
 
+    # For testing workflow will remove once stripe connect payment and listing integration done
+    async def update_user_stripe_connect_reset(self, connect_account_id: str) -> None:
+        """Reset Stripe Connect related fields for users with the given account ID."""
+        users = await self.get_users_by_stripe_connect_id(connect_account_id)
+        for user in users:
+            await self.update_user(
+                user.id,
+                {
+                    "stripe_connect_account_id": None,
+                    "stripe_connect_onboarding_completed": False,
+                },
+            )
+
 
 async def test_adhoc() -> None:
     async with UserCrud() as crud:
