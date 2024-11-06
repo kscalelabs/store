@@ -4,7 +4,7 @@ const Signup = () => {
   return (
     <div className="mx-8">
       <div className="flex justify-center items-center">
-        <AuthBlock title="Sign Up" signup />
+        <AuthBlock title="Welcome!" signup />
       </div>
     </div>
   );

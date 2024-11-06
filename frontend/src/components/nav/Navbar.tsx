@@ -6,9 +6,10 @@ import {
   FaRobot,
   FaWpexplorer,
 } from "react-icons/fa6";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import Logo from "@/components/Logo";
+import { useFeaturedListings } from "@/components/listing/FeaturedListings";
 import Sidebar from "@/components/nav/Sidebar";
 import { useAuthentication } from "@/hooks/useAuth";
 import {
@@ -29,7 +30,9 @@ const Navbar = () => {
   const { isAuthenticated } = useAuthentication();
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const [showDevelopersDropdown, setShowDevelopersDropdown] = useState(false);
+  const { featuredListings } = useFeaturedListings();
 
   let navItems: NavItem[] = [];
 
@@ -122,6 +125,13 @@ const Navbar = () => {
     );
   };
 
+  const handleFeaturedClick = (username: string, slug: string | null) => {
+    const path = `/item/${username}/${slug}`;
+    if (location.pathname !== path) {
+      navigate(path, { replace: true });
+    }
+  };
+
   return (
     <>
       <nav className="fixed w-full z-30 top-0 start-0 bg-gray-1/30 backdrop-blur-lg">
@@ -149,7 +159,20 @@ const Navbar = () => {
             </button>
           </div>
           <div className="hidden lg:flex items-center flex-grow justify-between ml-4">
-            <div className="flex space-x-1 bg-gray-12 rounded-lg p-2 flex-grow justify-end">
+            <div className="flex space-x-1 bg-gray-12 rounded-lg p-2 flex-grow">
+              <div className="flex-grow flex space-x-1">
+                {featuredListings?.map((listing) => (
+                  <button
+                    key={listing.id}
+                    onClick={() =>
+                      handleFeaturedClick(listing.username, listing.slug)
+                    }
+                    className="px-2 xl:px-3 py-2 rounded-md text-sm tracking-widest text-gray-1 hover:bg-gray-1 hover:text-primary-9"
+                  >
+                    {listing.name}
+                  </button>
+                ))}
+              </div>
               {navItems.map((item) =>
                 item.isExternal ? (
                   <a

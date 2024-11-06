@@ -174,8 +174,17 @@ const PageHeader: React.FC<PageHeaderProps> = ({ fillGrid }) => {
     }
     window.addEventListener("resize", resizeCanvas);
 
-    // Adjust cell size to ensure all cells fit within the canvas
-    const cellSize = 5;
+    // Calculate cell size based on screen dimensions
+    const minCellSize = 4; // Minimum cell size for mobile
+    const maxCellSize = 8; // Maximum cell size for desktop
+    const cellSize = Math.max(
+      minCellSize,
+      Math.min(
+        maxCellSize,
+        Math.floor(Math.min(canvas.width, canvas.height) / 50), // Adjust divisor to control cell density
+      ),
+    );
+
     const cols = Math.ceil(canvas.width / cellSize);
     const rows = Math.ceil(canvas.height / cellSize);
 
@@ -189,19 +198,18 @@ const PageHeader: React.FC<PageHeaderProps> = ({ fillGrid }) => {
       if (!ctx) return;
 
       // Allow drawing 2 cells outside the visible area
-      const drawX = ((x + cols) % cols) * cellSize;
-      const drawY = ((y + rows) % rows) * cellSize;
+      const drawX = Math.floor(((x + cols) % cols) * cellSize);
+      const drawY = Math.floor(((y + rows) % rows) * cellSize);
 
-      // Calculate fillGrid boundaries
+      // Draw background (gap) first
+      ctx.fillStyle = "#1e1f24";
+      ctx.fillRect(drawX, drawY, cellSize, cellSize);
 
+      // Then draw the cell slightly smaller if it's alive
       if (isAlive) {
         ctx.fillStyle = "#ffffff";
-        // ctx.fillStyle = "#1e1f24";
-      } else {
-        ctx.fillStyle = "#1e1f24";
-        // ctx.fillStyle = "#ffffff";
+        ctx.fillRect(drawX + 1, drawY + 1, cellSize - 2, cellSize - 2);
       }
-      ctx.fillRect(drawX, drawY, cellSize, cellSize);
     };
 
     const drawFullGrid = (currentGrid: boolean[][]) => {
@@ -348,7 +356,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({ fillGrid }) => {
       return Array.from(clearedCells);
     };
 
-    const handleMouseMove = (event: MouseEvent) => {
+    const handlePointerMove = (event: PointerEvent) => {
+      // Prevent scrolling/zooming while interacting with canvas
+      event.preventDefault();
+
       const rect = canvas.getBoundingClientRect();
       const scaleX = canvas.width / rect.width;
       const scaleY = canvas.height / rect.height;
@@ -371,19 +382,30 @@ const PageHeader: React.FC<PageHeaderProps> = ({ fillGrid }) => {
       }
     };
 
-    const handleMouseLeave = () => {
+    const handlePointerUp = () => {
       prevMousePosRef.current = null;
     };
 
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseleave", handleMouseLeave);
+    // Use pointer events instead of mouse events
+    canvas.addEventListener("pointerdown", (event) => {
+      canvas.setPointerCapture(event.pointerId);
+    });
+    canvas.addEventListener("pointermove", handlePointerMove);
+    canvas.addEventListener("pointerup", handlePointerUp);
+    canvas.addEventListener("pointerleave", handlePointerUp);
+    canvas.addEventListener("pointercancel", handlePointerUp);
+
+    // Prevent default touch behavior
+    canvas.style.touchAction = "none";
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseleave", handleMouseLeave);
+      canvas.removeEventListener("pointermove", handlePointerMove);
+      canvas.removeEventListener("pointerup", handlePointerUp);
+      canvas.removeEventListener("pointerleave", handlePointerUp);
+      canvas.removeEventListener("pointercancel", handlePointerUp);
       window.removeEventListener("resize", resizeCanvas);
     };
   }, [initializeGrid, updateGrid, gridInitialized]);

@@ -11,6 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import Logo from "@/components/Logo";
+import { useFeaturedListings } from "@/components/listing/FeaturedListings";
 import { useAuthentication } from "@/hooks/useAuth";
 
 interface SidebarItemProps {
@@ -46,6 +47,7 @@ type NavItem = {
 const Sidebar = ({ show, onClose }: SidebarProps) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthentication();
+  const { featuredListings } = useFeaturedListings();
 
   let navItems: NavItem[] = [];
 
@@ -83,8 +85,8 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
     if (isExternal) {
       window.open(path, "_blank");
     } else {
-      navigate(path);
       onClose();
+      navigate(path, { replace: true });
     }
   };
 
@@ -106,6 +108,25 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
             <div className="border-t border-gray-1 my-2"></div>
             <nav>
               <ul className="space-y-1">
+                {featuredListings && featuredListings.length > 0 && (
+                  <>
+                    <div className="text-xl font-medium text-gray-1 px-3 py-2">
+                      Featured Listings:
+                    </div>
+                    {featuredListings.map((listing) => (
+                      <SidebarItem
+                        key={listing.id}
+                        title={listing.name}
+                        onClick={() =>
+                          handleItemClick(
+                            `/item/${listing.username}/${listing.slug || listing.id}`,
+                          )
+                        }
+                      />
+                    ))}
+                    <div className="border-t border-gray-1 my-2"></div>
+                  </>
+                )}
                 {isAuthenticated && (
                   <>
                     {navItems.map((item) => (

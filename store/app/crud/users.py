@@ -53,9 +53,17 @@ class UserCrud(BaseCrud):
     async def get_user(self, id: str, throw_if_missing: bool = False) -> User | None:
         return await self._get_item(id, User, throw_if_missing=throw_if_missing)
 
+    @overload
+    async def get_user_public(self, id: str, throw_if_missing: Literal[True]) -> UserPublic: ...
+
+    @overload
+    async def get_user_public(self, id: str, throw_if_missing: bool = False) -> UserPublic | None: ...
+
     async def get_user_public(self, id: str, throw_if_missing: bool = False) -> UserPublic | None:
         user = await self.get_user(id, throw_if_missing=throw_if_missing)
         if user is None:
+            if throw_if_missing:
+                raise UserNotFoundError(f"User with id {id} not found")
             return None
         return UserPublic(**user.model_dump())
 
@@ -269,6 +277,19 @@ class UserCrud(BaseCrud):
     async def get_users_by_stripe_connect_id(self, connect_account_id: str) -> list[User]:
         """Get users by their Stripe Connect account ID."""
         return await self._get_items_from_secondary_index("stripe_connect_account_id", connect_account_id, User)
+
+    async def set_content_manager(self, user_id: str, is_content_manager: bool) -> User:
+        user = await self.get_user(user_id, throw_if_missing=True)
+        if user.permissions is None:
+            user.permissions = set()
+
+        if is_content_manager:
+            user.permissions.add("is_content_manager")
+        else:
+            user.permissions.discard("is_content_manager")
+
+        await self._update_item(user_id, User, {"permissions": list(user.permissions)})
+        return user
 
 
 async def test_adhoc() -> None:

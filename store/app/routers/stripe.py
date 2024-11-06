@@ -83,13 +83,13 @@ async def refund_payment_intent(
                 reason="requested_by_customer",
                 metadata={"customer_reason": customer_reason},
             )
-            logger.info(f"Refund created: {refund.id}")
+            logger.info("Refund created: %s", refund.id)
 
             # Make sure order exists
             order = await crud.get_order(order_id)
             if order is None or order.user_id != user.id:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
-            logger.info(f"Found order id: {order.id}")
+            logger.info("Found order id: %s", order.id)
 
             # Update order status
             order_data = {
@@ -101,10 +101,10 @@ async def refund_payment_intent(
 
             updated_order = await crud.update_order(order_id, order_data)
 
-            logger.info(f"Updated order with status: {refund.status}")
+            logger.info("Updated order with status: %s", refund.status)
             return updated_order
         except Exception as e:
-            logger.error(f"Error processing refund: {str(e)}")
+            logger.error("Error processing refund: %s", str(e))
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
@@ -113,13 +113,13 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
 
-    logger.info(f"Received Stripe webhook. Signature: {sig_header}")
+    logger.info("Received Stripe webhook. Signature: %s", sig_header)
 
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, settings.stripe.webhook_secret)
-        logger.info(f"Webhook verified. Event type: {event['type']}")
+        logger.info("Webhook verified. Event type: %s", event["type"])
     except ValueError as e:
-        logger.error(f"Invalid payload: {str(e)}")
+        logger.error("Invalid payload: %s", str(e))
         raise HTTPException(status_code=400, detail="Invalid payload")
 
     # Handle the event
@@ -154,13 +154,13 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
 
     elif event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
-        logger.info(f"Checkout session completed: {session['id']}")
+        logger.info("Checkout session completed: %s", session["id"])
         await handle_checkout_session_completed(session, crud)
     elif event["type"] == "payment_intent.succeeded":
         payment_intent = event["data"]["object"]
-        logger.info(f"Payment intent succeeded: {payment_intent['id']}")
+        logger.info("Payment intent succeeded: %s", payment_intent["id"])
     else:
-        logger.info(f"Unhandled event type: {event['type']}")
+        logger.info("Unhandled event type: %s", event["type"])
 
     return {"status": "success"}
 
@@ -194,9 +194,9 @@ async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud)
         }
 
         new_order = await crud.create_order(order_data)
-        logger.info(f"New order created: {new_order.id}")
+        logger.info("New order created: %s", new_order.id)
     except Exception as e:
-        logger.error(f"Error creating order: {str(e)}")
+        logger.error("Error creating order: %s", str(e))
         raise
 
 
@@ -206,12 +206,12 @@ async def fulfill_order(
 ) -> None:
     user_id = session.get("client_reference_id")
     if not user_id:
-        logger.warning(f"No user_id found for session: {session['id']}")
+        logger.warning("No user_id found for session: %s", session["id"])
         return
 
     user = await crud.get_user(user_id)
     if not user:
-        logger.warning(f"User not found for id: {user_id}")
+        logger.warning("User not found for id: %s", user_id)
         return
 
     order_data = {
@@ -227,15 +227,14 @@ async def fulfill_order(
 
     try:
         await crud.create_order(order_data)
-        logger.info(f"Order fulfilled for session: {session['id']} and user: {user_id}")
+        logger.info("Order fulfilled for session: %s and user: %s", session["id"], user_id)
     except Exception as e:
-        logger.error(f"Error creating order: {str(e)}")
+        logger.error("Error creating order: %s", str(e))
         # You might want to add some error handling here, such as retrying or notifying an admin
 
 
 async def notify_payment_failed(session: Dict[str, Any]) -> None:
-    # Implement notification logic
-    print(f"Payment failed for session: {session['id']}")
+    logger.warning("Payment failed for session: %s", session["id"])
 
 
 class CreateCheckoutSessionRequest(BaseModel):
@@ -255,7 +254,7 @@ async def create_checkout_session(
     try:
         product_id = request.product_id
         cancel_url = request.cancel_url
-        logger.info(f"Creating checkout session for product: {product_id} and user: {user.id}")
+        logger.info("Creating checkout session for product: %s and user: %s", product_id, user.id)
 
         # Fetch the price associated with the product
         prices = stripe.Price.list(product=product_id, active=True, limit=1)
@@ -316,10 +315,10 @@ async def create_checkout_session(
             ],
         )
 
-        logger.info(f"Checkout session created: {checkout_session.id}")
+        logger.info("Checkout session created: %s", checkout_session.id)
         return CreateCheckoutSessionResponse(session_id=checkout_session.id)
     except Exception as e:
-        logger.error(f"Error creating checkout session: {str(e)}")
+        logger.error("Error creating checkout session: %s", str(e))
         raise HTTPException(status_code=400, detail=str(e))
 
 

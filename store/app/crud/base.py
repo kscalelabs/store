@@ -220,10 +220,20 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         return item_class.model_validate(data)
 
     @overload
-    async def _get_item(self, item_id: str, item_class: type[T], throw_if_missing: Literal[True]) -> T: ...
+    async def _get_item(
+        self,
+        item_id: str,
+        item_class: type[T],
+        throw_if_missing: Literal[True],
+    ) -> T: ...
 
     @overload
-    async def _get_item(self, item_id: str, item_class: type[T], throw_if_missing: bool = False) -> T | None: ...
+    async def _get_item(
+        self,
+        item_id: str,
+        item_class: type[T],
+        throw_if_missing: bool = False,
+    ) -> T | None: ...
 
     async def _get_item(self, item_id: str, item_class: type[T], throw_if_missing: bool = False) -> T | None:
         table = await self.db.Table(TABLE_NAME)
@@ -524,3 +534,8 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             logger.info("Deleted table %s", name)
         except ClientError:
             logger.info("Table %s does not exist", name)
+
+    async def _get_by_known_id(self, record_id: str) -> dict[str, Any] | None:
+        table = await self.db.Table(TABLE_NAME)
+        response = await table.get_item(Key={"id": record_id})
+        return response.get("Item")

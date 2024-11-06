@@ -15,7 +15,8 @@ const Footer = () => {
     pathname?.startsWith("/login") === false &&
     pathname?.startsWith("/item") === false &&
     pathname?.startsWith("/create") === false &&
-    pathname?.startsWith("/signup") === false;
+    pathname?.startsWith("/signup") === false &&
+    pathname?.startsWith("/terminal") === false;
 
   if (!showFooter) {
     return null;

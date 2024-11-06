@@ -44,6 +44,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
   const [isUsernameChanged, setIsUsernameChanged] = useState(false);
   const [usernameError, setUsernameError] = useState<string | null>(null);
+  const { addErrorAlert, addAlert } = useAlertQueue();
   const debouncedUsername = useDebounce(username, 500);
 
   const formatJoinDate = (timestamp: number) => {
@@ -85,6 +86,36 @@ export const RenderProfile = (props: RenderProfileProps) => {
       window.location.reload();
     } catch (error) {
       console.error("Failed to set moderator", error);
+    }
+  };
+
+  const handleSetContentManager = async () => {
+    try {
+      const response = await auth.client.POST("/users/set-content-manager", {
+        body: {
+          user_id: user.id,
+          is_content_manager: !user.permissions?.includes("is_content_manager"),
+        },
+      });
+
+      if (response.error) {
+        addErrorAlert({
+          message: "Failed to set content manager status",
+          detail: response.error,
+        });
+        return;
+      }
+
+      if (response.data) {
+        const updatedUser = response.data;
+        props.onUpdateProfile(updatedUser);
+        addAlert("Content manager status updated successfully!", "success");
+      }
+    } catch (error) {
+      addErrorAlert({
+        message: "Failed to set content manager status",
+        detail: error,
+      });
     }
   };
 
@@ -140,6 +171,19 @@ export const RenderProfile = (props: RenderProfileProps) => {
     checkUsernameAvailability();
   }, [debouncedUsername, user.username, auth.client]);
 
+  const getRoleName = (permissions: string[]) => {
+    switch (true) {
+      case permissions.includes("is_admin"):
+        return "Admin";
+      case permissions.includes("is_mod"):
+        return "Moderator";
+      case permissions.includes("is_content_manager"):
+        return "Content Manager";
+      default:
+        return "Member";
+    }
+  };
+
   return (
     <div className="space-y-8 mb-12">
       <Card className="w-full max-w-4xl mx-auto">
@@ -148,12 +192,19 @@ export const RenderProfile = (props: RenderProfileProps) => {
             <h1 className="text-3xl font-bold text-primary-9">
               {user.first_name || user.last_name
                 ? `${user.first_name || ""} ${user.last_name || ""}`
-                : "No name set"}
+                : "Anonymous Creator"}
             </h1>
-            <p className="text-sm text-gray-1 bg-gray-10 px-3 py-1 rounded-md">
-              <span className="font-semibold mr-0.5 select-none">@</span>
-              {user.username}
-            </p>
+            <div className="flex gap-2">
+              <p className="text-sm text-gray-1 bg-gray-10 px-3 py-1 rounded-md">
+                <span className="font-semibold mr-0.5 select-none">@</span>
+                {user.username}
+              </p>
+              {user.permissions && (
+                <p className="text-sm text-primary-9 bg-primary-3 px-3 py-1 rounded-md">
+                  {getRoleName(user.permissions)}
+                </p>
+              )}
+            </div>
             <p className="text-sm text-gray-11">
               Joined on{" "}
               {user.created_at
@@ -172,11 +223,18 @@ export const RenderProfile = (props: RenderProfileProps) => {
             </div>
           )}
           {isAdmin && !canEdit && (
-            <Button onClick={handleSetModerator} variant="outline">
-              {user.permissions?.includes("is_mod")
-                ? "Remove Moderator"
-                : "Set as Moderator"}
-            </Button>
+            <div className="flex space-x-2">
+              <Button onClick={handleSetModerator} variant="outline">
+                {user.permissions?.includes("is_mod")
+                  ? "Remove Moderator"
+                  : "Set as Moderator"}
+              </Button>
+              <Button onClick={handleSetContentManager} variant="outline">
+                {user.permissions?.includes("is_content_manager")
+                  ? "Remove Content Manager"
+                  : "Set as Content Manager"}
+              </Button>
+            </div>
           )}
         </CardHeader>
         <CardContent>
