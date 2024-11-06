@@ -29,7 +29,6 @@ export default function SellerOnboarding() {
   const handleCreateNewAccount = async () => {
     try {
       setAccountCreatePending(true);
-      console.log("Creating new Stripe Connect account...");
 
       const { data, error } = await auth.client.POST(
         "/stripe/create-connect-account",
@@ -37,7 +36,6 @@ export default function SellerOnboarding() {
       );
 
       if (error) {
-        console.error("Error creating Connect account:", error);
         addErrorAlert(error);
         return;
       }
@@ -45,7 +43,6 @@ export default function SellerOnboarding() {
       if (data) {
         const accountId = data.account_id;
         if (accountId) {
-          console.log("Account created successfully:", accountId);
           setConnectedAccountId(accountId);
 
           setTimeout(() => {

@@ -13,7 +13,6 @@ from store.app.model import Order, User
 from store.app.routers.users import get_session_user_with_read_permission
 from store.settings import settings
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 stripe_router = APIRouter()
