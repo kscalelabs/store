@@ -707,6 +707,7 @@ class FeaturedListings(BaseModel):
 class TeleopRoom(StoreBaseModel):
     """Tracks teleoperation rooms and their WebRTC connection details."""
 
+    user_id: str
     robot_id: str
     created_at: int
     ice_servers: list[dict] | None = None
@@ -716,11 +717,12 @@ class TeleopRoom(StoreBaseModel):
     ttl: int | None = None
 
     @classmethod
-    def create(cls, robot_id: str, expire_after_n_minutes: int = 10) -> Self:
+    def create(cls, user_id: str, robot_id: str, expire_after_n_minutes: int = 10) -> Self:
         now = int(time.time())
         ttl_timestamp = int((datetime.utcnow() + timedelta(minutes=expire_after_n_minutes)).timestamp())
         return cls(
             id=new_uuid(),
+            user_id=user_id,
             robot_id=robot_id,
             created_at=now,
             ice_candidates=[],

@@ -292,15 +292,14 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         items = item_dict["Items"]
         return [self._validate_item(item, item_class) for item in items]
 
-    async def _item_exists_in_secondary_index(self, secondary_index_name: str, secondary_index_value: str) -> bool:
-        table = await self.db.Table(TABLE_NAME)
-        item_dict = await table.query(
-            IndexName=self.get_gsi_index_name(secondary_index_name),
-            KeyConditionExpression=Key(secondary_index_name).eq(secondary_index_value),
-            ProjectionExpression="id",
-            Limit=1,
-        )
-        return len(item_dict["Items"]) > 0
+    async def _item_exists_in_secondary_index(
+        self,
+        secondary_index_name: str,
+        secondary_index_value: str,
+        item_class: type[T],
+    ) -> bool:
+        items = await self._get_items_from_secondary_index(secondary_index_name, secondary_index_value, item_class)
+        return len(items) > 0
 
     async def _get_items_from_secondary_index_batch(
         self,

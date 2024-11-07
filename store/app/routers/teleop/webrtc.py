@@ -1,12 +1,14 @@
 # ruff: noqa: N815
 """Defines the router endpoints for teleoperation."""
 
-from typing import Literal
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from store.app.db import Crud
+from store.app.model import User
+from store.app.security.user import get_session_user_with_write_permission
 
 
 class WebRTCSessionDescription(BaseModel):
@@ -65,11 +67,12 @@ webrtc_router = APIRouter()
 @webrtc_router.post("/offer")
 async def handle_offer(
     offer_data: WebRTCOffer,
-    crud: Crud = Depends(Crud.get),
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> SuccessResponse:
-    rooms = await crud.get_teleop_room(offer_data.roomId)
+    rooms = await crud.get_teleop_room(user, offer_data.roomId)
     if not rooms:
-        room = await crud.create_teleop_room(offer_data.roomId)
+        room = await crud.create_teleop_room(user, offer_data.roomId)
     else:
         room = rooms[0]
 
@@ -80,9 +83,10 @@ async def handle_offer(
 @webrtc_router.post("/answer")
 async def handle_answer(
     answer_data: WebRTCAnswer,
-    crud: Crud = Depends(Crud.get),
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> SuccessResponse:
-    rooms = await crud.get_teleop_room(answer_data.roomId)
+    rooms = await crud.get_teleop_room(user, answer_data.roomId)
     if not rooms:
         raise HTTPException(status_code=404, detail="Room not found")
 
@@ -94,9 +98,10 @@ async def handle_answer(
 @webrtc_router.get("/offer/{room_id}")
 async def get_offer(
     room_id: str,
-    crud: Crud = Depends(Crud.get),
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> OfferResponse:
-    rooms = await crud.get_teleop_room(room_id)
+    rooms = await crud.get_teleop_room(user, room_id)
     if not rooms:
         raise HTTPException(status_code=404, detail="Room not found")
     connection_data = WebRTCConnectionData.model_validate_json(rooms[0].connection_data)
@@ -106,9 +111,10 @@ async def get_offer(
 @webrtc_router.get("/answer/{room_id}")
 async def get_answer(
     room_id: str,
-    crud: Crud = Depends(Crud.get),
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> AnswerResponse:
-    rooms = await crud.get_teleop_room(room_id)
+    rooms = await crud.get_teleop_room(user, room_id)
     if not rooms:
         raise HTTPException(status_code=404, detail="Room not found")
     connection_data = WebRTCConnectionData.model_validate_json(rooms[0].connection_data)
@@ -118,9 +124,10 @@ async def get_answer(
 @webrtc_router.post("/ice-candidate")
 async def handle_ice_candidate(
     candidate_data: ICECandidate,
-    crud: Crud = Depends(Crud.get),
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> SuccessResponse:
-    rooms = await crud.get_teleop_room(candidate_data.roomId)
+    rooms = await crud.get_teleop_room(user, candidate_data.roomId)
     if not rooms:
         raise HTTPException(status_code=404, detail="Room not found")
 
@@ -132,13 +139,14 @@ async def handle_ice_candidate(
 @webrtc_router.get("/ice-candidates/{room_id}")
 async def get_ice_candidates(
     room_id: str,
-    is_offer: bool = True,
-    crud: Crud = Depends(Crud.get),
+    is_offer: bool,
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> CandidatesResponse:
-    if not await crud.teleop_room_exists(room_id):
+    if not await crud.teleop_room_exists(user, room_id):
         raise HTTPException(status_code=404, detail="Room not found")
 
-    rooms = await crud.get_teleop_room(room_id)
+    rooms = await crud.get_teleop_room(user, room_id)
     connection_data = WebRTCConnectionData.model_validate_json(rooms[0].connection_data)
     candidates = connection_data.offerCandidates if is_offer else connection_data.answerCandidates
     return CandidatesResponse(candidates=candidates)
@@ -147,8 +155,9 @@ async def get_ice_candidates(
 @webrtc_router.post("/clear/{room_id}")
 async def clear_room(
     room_id: str,
-    crud: Crud = Depends(Crud.get),
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> SuccessResponse:
-    if await crud.teleop_room_exists(room_id):
-        await crud.reset_room(room_id)
+    if await crud.teleop_room_exists(user, room_id):
+        await crud.reset_room(user, room_id)
     return SuccessResponse(success=True)
