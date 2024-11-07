@@ -20,9 +20,11 @@ class TeleopCrud(BaseCrud):
         await self._add_item(room)
         return room
 
-    async def get_teleop_room(self, robot_id: str) -> list[TeleopRoom]:
-        rooms = await self._get_items_from_secondary_index("robot_id", robot_id, TeleopRoom)
-        return rooms
+    async def get_teleop_room(self, robot_id: str) -> TeleopRoom:
+        return await self._get_unique_item_from_secondary_index("robot_id", robot_id, TeleopRoom)
+
+    async def teleop_room_exists(self, robot_id: str) -> bool:
+        return await self._item_exists_in_secondary_index("robot_id", robot_id)
 
     @overload
     async def get_teleop_room_by_id(self, room_id: str, throw_if_missing: Literal[True]) -> TeleopRoom: ...
@@ -46,7 +48,6 @@ class TeleopCrud(BaseCrud):
             model_type=TeleopRoom,
             updates={
                 "sdp_offer": sdp_offer,
-                "connection_status": "connecting",
                 "updated_at": int(datetime.now().timestamp()),
             },
         )
@@ -78,34 +79,6 @@ class TeleopCrud(BaseCrud):
         )
         return room
 
-    async def update_connection_status(
-        self,
-        room: TeleopRoom,
-        status: Literal["disconnected", "connecting", "connected"],
-    ) -> TeleopRoom:
-        """Updates the connection status of the room."""
-        await self._update_item(
-            id=room.id,
-            model_type=TeleopRoom,
-            updates={
-                "connection_status": status,
-                "updated_at": int(datetime.now().timestamp()),
-            },
-        )
-        return room
-
-    async def set_ice_servers(self, room: TeleopRoom, ice_servers: list[dict]) -> TeleopRoom:
-        """Sets the STUN/TURN server configurations for the room."""
-        await self._update_item(
-            id=room.id,
-            model_type=TeleopRoom,
-            updates={
-                "ice_servers": ice_servers,
-                "updated_at": int(datetime.now().timestamp()),
-            },
-        )
-        return room
-
     async def reset_room(self, room: TeleopRoom) -> TeleopRoom:
         """Resets the room's WebRTC state."""
         await self._update_item(
@@ -115,7 +88,6 @@ class TeleopCrud(BaseCrud):
                 "sdp_offer": None,
                 "sdp_answer": None,
                 "ice_candidates": [],
-                "connection_status": "disconnected",
                 "updated_at": int(datetime.now().timestamp()),
             },
         )

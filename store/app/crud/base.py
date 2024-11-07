@@ -277,6 +277,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         secondary_index_value: str,
         item_class: type[T],
         additional_filter_expression: ComparisonCondition | None = None,
+        limit: int = DEFAULT_SCAN_LIMIT,
     ) -> list[T]:
         filter_expression: ComparisonCondition = Key("type").eq(item_class.__name__)
         if additional_filter_expression is not None:
@@ -286,9 +287,20 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             IndexName=self.get_gsi_index_name(secondary_index_name),
             KeyConditionExpression=Key(secondary_index_name).eq(secondary_index_value),
             FilterExpression=filter_expression,
+            Limit=limit,
         )
         items = item_dict["Items"]
         return [self._validate_item(item, item_class) for item in items]
+
+    async def _item_exists_in_secondary_index(self, secondary_index_name: str, secondary_index_value: str) -> bool:
+        table = await self.db.Table(TABLE_NAME)
+        item_dict = await table.query(
+            IndexName=self.get_gsi_index_name(secondary_index_name),
+            KeyConditionExpression=Key(secondary_index_name).eq(secondary_index_value),
+            ProjectionExpression="id",
+            Limit=1,
+        )
+        return len(item_dict["Items"]) > 0
 
     async def _get_items_from_secondary_index_batch(
         self,
@@ -353,6 +365,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             secondary_index_name,
             secondary_index_value,
             item_class,
+            limit=2,
         )
         if len(items) == 0:
             if throw_if_missing:

@@ -69,7 +69,6 @@ async def handle_offer(
 ) -> SuccessResponse:
     rooms = await crud.get_teleop_room(offer_data.roomId)
     if not rooms:
-        # Create new room if it doesn't exist
         room = await crud.create_teleop_room(offer_data.roomId)
     else:
         room = rooms[0]
@@ -89,7 +88,6 @@ async def handle_answer(
 
     room = rooms[0]
     await crud.update_sdp_answer(room, answer_data.answer.sdp)
-    await crud.update_connection_status(room, "connected")
     return SuccessResponse(success=True)
 
 
@@ -137,10 +135,10 @@ async def get_ice_candidates(
     is_offer: bool = True,
     crud: Crud = Depends(Crud.get),
 ) -> CandidatesResponse:
-    rooms = await crud.get_teleop_room(room_id)
-    if not rooms:
+    if not await crud.teleop_room_exists(room_id):
         raise HTTPException(status_code=404, detail="Room not found")
 
+    rooms = await crud.get_teleop_room(room_id)
     connection_data = WebRTCConnectionData.model_validate_json(rooms[0].connection_data)
     candidates = connection_data.offerCandidates if is_offer else connection_data.answerCandidates
     return CandidatesResponse(candidates=candidates)
@@ -151,8 +149,6 @@ async def clear_room(
     room_id: str,
     crud: Crud = Depends(Crud.get),
 ) -> SuccessResponse:
-    rooms = await crud.get_teleop_room(room_id)
-    if rooms:
-        room = rooms[0]
-        await crud.reset_room(room)
+    if await crud.teleop_room_exists(room_id):
+        await crud.reset_room(room_id)
     return SuccessResponse(success=True)

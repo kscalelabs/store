@@ -709,12 +709,10 @@ class TeleopRoom(StoreBaseModel):
 
     robot_id: str
     created_at: int
-    updated_at: int
-    ice_servers: list[dict] | None = None  # STUN/TURN server configurations
-    sdp_offer: str | None = None  # WebRTC SDP offer from robot
-    sdp_answer: str | None = None  # WebRTC SDP answer from client
-    ice_candidates: list[dict] | None = None  # ICE candidates for connection
-    connection_status: str = "disconnected"  # Status: disconnected, connecting, connected
+    ice_servers: list[dict] | None = None
+    sdp_offer: str | None = None
+    sdp_answer: str | None = None
+    ice_candidates: list[dict] | None = None
     ttl: int | None = None
 
     @classmethod
@@ -725,7 +723,6 @@ class TeleopRoom(StoreBaseModel):
             id=new_uuid(),
             robot_id=robot_id,
             created_at=now,
-            updated_at=now,
             ice_candidates=[],
             ttl=ttl_timestamp,
         )
