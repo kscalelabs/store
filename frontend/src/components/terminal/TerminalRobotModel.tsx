@@ -98,6 +98,7 @@ const TerminalRobotModel = ({ listingId }: Props) => {
       supportedThemes={["dark"]}
       showWireframe={true}
       useControls={false}
+      overrideColor={"#00ff00"}
     />
   );
 };

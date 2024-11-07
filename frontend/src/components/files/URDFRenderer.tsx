@@ -29,14 +29,6 @@ interface URDFInfo {
 
 type Theme = "light" | "dark";
 
-interface Props {
-  urdfContent: string;
-  files: UntarredFile[];
-  useControls?: boolean;
-  showWireframe?: boolean;
-  supportedThemes?: Theme[];
-}
-
 interface ThemeColors {
   background: string;
   text: string;
@@ -60,12 +52,22 @@ const getThemeColors = (theme: Theme): ThemeColors => {
   }
 };
 
+interface Props {
+  urdfContent: string;
+  files: UntarredFile[];
+  useControls?: boolean;
+  showWireframe?: boolean;
+  supportedThemes?: Theme[];
+  overrideColor?: string | null;
+}
+
 const URDFRenderer = ({
   urdfContent,
   files,
   useControls = true,
   showWireframe = false,
   supportedThemes = ["light", "dark"],
+  overrideColor = null,
 }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -91,6 +93,10 @@ const URDFRenderer = ({
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
 
+  // Add new state/refs for auto-rotation
+  const [isAutoRotating, setIsAutoRotating] = useState(true);
+  const lastInteractionRef = useRef<number>(Date.now());
+
   useEffect(() => {
     const handleFullScreenChange = () => {
       const isNowFullScreen = !!document.fullscreenElement;
@@ -115,7 +121,7 @@ const URDFRenderer = ({
           metalness: 0.4,
           roughness: 0.5,
           wireframe: isWireframe,
-          color: originalColor,
+          color: overrideColor ? new THREE.Color(overrideColor) : originalColor,
         });
       }
     });
@@ -141,6 +147,7 @@ const URDFRenderer = ({
   }, []);
 
   const toggleOrientation = useCallback(() => {
+    lastInteractionRef.current = Date.now();
     if (!robotRef.current) return;
 
     robotRef.current.rotateOnAxis(new THREE.Vector3(1, 0, 0), -Math.PI / 2);
@@ -287,11 +294,32 @@ const URDFRenderer = ({
 
     // Setup the animation loop.
     const animate = () => {
-      requestAnimationFrame(animate);
+      const animationId = requestAnimationFrame(animate);
       controls.update();
+
+      if (isAutoRotating && controlsRef.current) {
+        const timeSinceLastInteraction =
+          Date.now() - lastInteractionRef.current;
+        if (timeSinceLastInteraction > 500) {
+          controlsRef.current.autoRotate = true;
+          controlsRef.current.autoRotateSpeed = 2.0;
+        } else {
+          controlsRef.current.autoRotate = false;
+        }
+      }
+
       renderer.render(scene, camera);
+      return animationId;
     };
-    animate();
+
+    const animationId = animate();
+
+    // Add interaction handlers to the controls
+    const handleInteraction = () => {
+      lastInteractionRef.current = Date.now();
+    };
+
+    controls.addEventListener("start", handleInteraction);
 
     // Handle window resizing.
     const handleResize = () => {
@@ -326,16 +354,44 @@ const URDFRenderer = ({
     updateMaterials();
 
     return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+
+      scene.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+          if (object.geometry) {
+            object.geometry.dispose();
+          }
+          if (object.material) {
+            if (Array.isArray(object.material)) {
+              object.material.forEach((material) => material.dispose());
+            } else {
+              object.material.dispose();
+            }
+          }
+        }
+      });
+
+      if (renderer) {
+        renderer.dispose();
+      }
+
       if (containerRef.current) {
         containerRef.current.removeChild(renderer.domElement);
       }
+      if (controlsRef.current) {
+        controlsRef.current.autoRotate = false;
+        controlsRef.current.dispose();
+      }
       window.removeEventListener("resize", handleResize);
-      rendererRef.current = null;
       document.removeEventListener("fullscreenchange", handleFullScreenChange);
+      controls.removeEventListener("start", handleInteraction);
     };
-  }, [urdfContent, files]);
+  }, [urdfContent, files, isAutoRotating]);
 
   const handleJointChange = (index: number, value: number) => {
+    lastInteractionRef.current = Date.now();
     setJointControls((prevControls) => {
       const newControls = [...prevControls];
       newControls[index].value = value;
@@ -360,7 +416,7 @@ const URDFRenderer = ({
 
     const startPositions = jointControls.map((joint) => joint.value);
     const startTime = Date.now();
-    const duration = 3000; // Changed from 10000 to 3000 (3 seconds)
+    const duration = 3000;
 
     const animate = () => {
       const elapsedTime = Date.now() - startTime;
@@ -378,15 +434,25 @@ const URDFRenderer = ({
       if (progress < 1) {
         animationRef.current = requestAnimationFrame(animate);
       } else {
-        // Reset to original positions
         jointControls.forEach((_joint, index) => {
           handleJointChange(index, startPositions[index]);
         });
         setIsCycling(false);
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current);
+          animationRef.current = null;
+        }
       }
     };
 
     animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      }
+    };
   }, [jointControls, handleJointChange]);
 
   const resetJoints = useCallback(() => {
@@ -399,6 +465,7 @@ const URDFRenderer = ({
   }, [jointControls, handleJointChange]);
 
   const toggleFullScreen = useCallback(() => {
+    lastInteractionRef.current = Date.now();
     if (!parentRef.current) return;
 
     if (!document.fullscreenElement) {
