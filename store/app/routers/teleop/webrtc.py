@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from fastapi.responses import StreamingResponse
 
 from store.app.db import Crud
-from store.app.model import User
+from store.app.model import TeleopICECandidate, User
 from store.app.security.user import get_session_user_with_write_permission
 
 router = APIRouter()
@@ -37,6 +37,16 @@ async def ice_candidates_generator(
         next_time = time.time()
         await asyncio.sleep(1 - (next_time - prev_time))
         prev_time = next_time
+
+
+@router.post("/store")
+async def store_ice_candidate(
+    candidate: str,
+    robot_id: str,
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> None:
+    crud.store_ice_candidate(TeleopICECandidate.create(user.id, robot_id, candidate))
 
 
 @router.websocket("/ws/ice-candidates")
