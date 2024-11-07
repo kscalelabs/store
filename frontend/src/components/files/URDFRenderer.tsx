@@ -63,8 +63,8 @@ const URDFRenderer = ({
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const [isWireframe, setIsWireframe] = useState(showWireframe);
   const wireframeStateRef = useRef<boolean>(showWireframe);
-  const [isDarkBackground, setIsDarkBackground] = useState(false);
-  const darkBackgroundStateRef = useRef<boolean>(false);
+  const [isDarkBackground, setIsDarkBackground] = useState(true);
+  const darkBackgroundStateRef = useRef<boolean>(true);
 
   const applyTheme = useCallback((theme: VisualizationTheme) => {
     if (!sceneRef.current) return;
@@ -139,7 +139,7 @@ const URDFRenderer = ({
     const scene = new THREE.Scene();
     sceneRef.current = scene;
     scene.background = new THREE.Color(
-      darkBackgroundStateRef.current ? 0x222222 : 0xf0f0f0,
+      darkBackgroundStateRef.current ? 0x000000 : 0xf0f0f0,
     );
     setIsDarkBackground(darkBackgroundStateRef.current);
 
@@ -503,7 +503,7 @@ const URDFRenderer = ({
       setIsDarkBackground((prev) => {
         const newIsDark = !prev;
         sceneRef.current!.background = new THREE.Color(
-          newIsDark ? 0x222222 : 0xf0f0f0,
+          newIsDark ? 0x000000 : 0xf0f0f0,
         );
         return newIsDark;
       });
@@ -511,15 +511,8 @@ const URDFRenderer = ({
   }, []);
 
   const getBackgroundColor = useCallback(() => {
-    switch (visualTheme) {
-      case "terminal":
-        return "bg-black";
-      case "dark":
-        return "bg-[#222222]";
-      default:
-        return isDarkBackground ? "bg-[#222222]" : "bg-[#f0f0f0]";
-    }
-  }, [visualTheme, isDarkBackground]);
+    return isDarkBackground ? "bg-black" : "bg-[#f0f0f0]";
+  }, [isDarkBackground]);
 
   useEffect(() => {
     if (robotRef.current) {
@@ -545,23 +538,20 @@ const URDFRenderer = ({
   }, [isWireframe]);
 
   useEffect(() => {
-    if (sceneRef.current) {
-      sceneRef.current.background = new THREE.Color(
-        isDarkBackground ? 0x222222 : 0xf0f0f0,
-      );
-    }
-
     if (robotRef.current) {
       robotRef.current.traverse((child) => {
         if (child instanceof THREE.Mesh) {
-          const currentColor = child.material.color;
+          if (!child.userData.originalColor) {
+            child.userData.originalColor = child.material.color.clone();
+          }
+
           const material = new THREE.MeshStandardMaterial({
-            color: currentColor,
+            color: isDarkBackground ? 0x00aa00 : child.userData.originalColor,
             metalness: 0.4,
             roughness: 0.6,
             wireframe: isWireframe,
-            emissive: child.material.emissive,
-            emissiveIntensity: child.material.emissiveIntensity,
+            emissive: isDarkBackground ? 0x00aa00 : 0x000000,
+            emissiveIntensity: isDarkBackground ? 0.5 : 0,
           });
           child.material = material;
           child.material.needsUpdate = true;
@@ -572,14 +562,14 @@ const URDFRenderer = ({
 
   useEffect(() => {
     if (sceneRef.current) {
-      const backgroundColor = isDarkBackground ? 0x222222 : 0xf0f0f0;
+      const backgroundColor = isDarkBackground ? 0x000000 : 0xf0f0f0;
       sceneRef.current.background = new THREE.Color(backgroundColor);
       darkBackgroundStateRef.current = isDarkBackground;
     }
   }, [isDarkBackground]);
 
   useEffect(() => {
-    if (!robotRef.current) return;
+    if (!robotRef.current || !sceneRef.current) return;
 
     const robot = robotRef.current;
     robot.rotation.set(0, 0, 0);
@@ -595,27 +585,29 @@ const URDFRenderer = ({
 
     robot.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        const currentColor = child.material.color;
         const material = new THREE.MeshStandardMaterial({
-          color: currentColor,
+          color: isDarkBackground ? 0x00aa00 : child.userData.originalColor,
           metalness: 0.4,
           roughness: 0.6,
           wireframe: isWireframe,
-          emissive: child.material.emissive,
-          emissiveIntensity: child.material.emissiveIntensity,
+          emissive: isDarkBackground ? 0x00aa00 : 0x000000,
+          emissiveIntensity: isDarkBackground ? 0.5 : 0,
         });
         child.material = material;
         child.material.needsUpdate = true;
       }
     });
-  }, [orientation, isWireframe]);
+  }, [orientation, isDarkBackground, isWireframe]);
 
   return (
     <div
       ref={parentRef}
-      className={`flex flex-col lg:flex-row ${isFullScreen ? "h-screen" : "h-full"} relative ${getBackgroundColor()}`}
+      className={`relative ${isFullScreen ? "h-screen" : "h-full"}`}
     >
-      <div ref={containerRef} className="flex-grow h-[60vh] lg:h-auto relative">
+      <div
+        ref={containerRef}
+        className={`absolute inset-0 ${getBackgroundColor()}`}
+      >
         <div className="absolute bottom-4 left-4 z-20 flex gap-2">
           <button
             onClick={toggleOrientation}
@@ -636,22 +628,20 @@ const URDFRenderer = ({
           >
             {isWireframe ? "S" : "W"}
           </button>
-          <button
-            onClick={toggleBackground}
-            className={`${getOrientationButtonColors(visualTheme)} text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center`}
-          >
-            {isDarkBackground ? "L" : "D"}
-          </button>
+          {visualTheme !== "terminal" && (
+            <button
+              onClick={toggleBackground}
+              className={`${getOrientationButtonColors(visualTheme)} text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center`}
+            >
+              {isDarkBackground ? "L" : "D"}
+            </button>
+          )}
         </div>
       </div>
 
-      {useControls && (
-        <>
-          <div
-            className={`${
-              showControls ? "translate-x-0" : "translate-x-full"
-            } relative lg:relative right-0 top-0 bottom-0 w-64 ${getBackgroundColor()} transition-transform duration-300 ease-in-out z-30`}
-          >
+      {useControls && showControls && (
+        <div className="absolute top-0 right-0 bottom-0 w-64 z-30">
+          <div className={`h-full overflow-y-auto ${getBackgroundColor()}`}>
             <div className="p-4 overflow-y-auto h-full">
               <div className="space-y-2 mb-4">
                 <button
@@ -726,17 +716,18 @@ const URDFRenderer = ({
               </div>
             </div>
           </div>
-          {!showControls && (
-            <button
-              onClick={() => setShowControls(true)}
-              className={`${
-                isFullScreen ? "fixed" : "absolute"
-              } bottom-4 right-4 z-30 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full shadow-md`}
-            >
-              <FaChevronLeft />
-            </button>
-          )}
-        </>
+        </div>
+      )}
+
+      {useControls && !showControls && (
+        <button
+          onClick={() => setShowControls(true)}
+          className={`${
+            isFullScreen ? "fixed" : "absolute"
+          } bottom-4 right-4 z-30 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full shadow-md`}
+        >
+          <FaChevronLeft />
+        </button>
       )}
     </div>
   );
