@@ -628,17 +628,19 @@ const URDFRenderer = ({
           >
             {isWireframe ? "S" : "W"}
           </button>
-          <button
-            onClick={toggleBackground}
-            className={`${getOrientationButtonColors(visualTheme)} text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center`}
-          >
-            {isDarkBackground ? "L" : "D"}
-          </button>
+          {visualTheme !== "terminal" && (
+            <button
+              onClick={toggleBackground}
+              className={`${getOrientationButtonColors(visualTheme)} text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center`}
+            >
+              {isDarkBackground ? "L" : "D"}
+            </button>
+          )}
         </div>
       </div>
 
       {useControls && showControls && (
-        <div className="absolute top-0 right-0 bottom-0 w-64 z-20">
+        <div className="absolute top-0 right-0 bottom-0 w-64 z-30">
           <div className={`h-full overflow-y-auto ${getBackgroundColor()}`}>
             <div className="p-4 overflow-y-auto h-full">
               <div className="space-y-2 mb-4">
@@ -722,7 +724,7 @@ const URDFRenderer = ({
           onClick={() => setShowControls(true)}
           className={`${
             isFullScreen ? "fixed" : "absolute"
-          } bottom-4 right-4 z-20 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full shadow-md`}
+          } bottom-4 right-4 z-30 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full shadow-md`}
         >
           <FaChevronLeft />
         </button>
