@@ -1,163 +1,67 @@
 # ruff: noqa: N815
 """Defines the router endpoints for teleoperation."""
 
-from typing import Annotated, Literal
+import asyncio
+import time
+from typing import Annotated, AsyncIterable
 
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from fastapi.responses import StreamingResponse
 
 from store.app.db import Crud
 from store.app.model import User
 from store.app.security.user import get_session_user_with_write_permission
 
+router = APIRouter()
 
-class WebRTCSessionDescription(BaseModel):
-    type: Literal["offer", "answer"]
-    sdp: str
-
-
-class ICECandidateData(BaseModel):
-    candidate: str
-    sdpMLineIndex: int
-    sdpMid: str
+MAX_ICE_CANDIDATES = 1
 
 
-class WebRTCConnectionData(BaseModel):
-    offer: WebRTCSessionDescription
-    answer: WebRTCSessionDescription | None = None
-    offerCandidates: list[ICECandidateData] = []
-    answerCandidates: list[ICECandidateData] = []
+async def ice_candidates_generator(
+    user_id: str,
+    robot_id: str,
+    crud: Crud,
+    max_candidates: int = MAX_ICE_CANDIDATES,
+) -> AsyncIterable[str]:
+    num_candidates = 0
+    prev_time = time.time()
+    while True:
+        ice_candidates = await crud.get_ice_candidates(user_id, robot_id)
+        for candidate in ice_candidates:
+            yield candidate.candidate
+            num_candidates += 1
+            if num_candidates >= max_candidates:
+                break
+
+        # Sleep until the next second.
+        next_time = time.time()
+        await asyncio.sleep(1 - (next_time - prev_time))
+        prev_time = next_time
 
 
-class SuccessResponse(BaseModel):
-    success: bool
-
-
-class OfferResponse(BaseModel):
-    offer: WebRTCSessionDescription
-
-
-class AnswerResponse(BaseModel):
-    answer: WebRTCSessionDescription
-
-
-class CandidatesResponse(BaseModel):
-    candidates: list[ICECandidateData]
-
-
-class WebRTCOffer(BaseModel):
-    roomId: str
-    offer: WebRTCSessionDescription
-
-
-class WebRTCAnswer(BaseModel):
-    roomId: str
-    answer: WebRTCSessionDescription
-
-
-class ICECandidate(BaseModel):
-    roomId: str
-    candidate: ICECandidateData
-    isOffer: bool
-
-
-webrtc_router = APIRouter()
-
-
-@webrtc_router.post("/offer")
-async def handle_offer(
-    offer_data: WebRTCOffer,
+@router.websocket("/ws/ice-candidates")
+async def websocket_ice_candidates(
+    websocket: WebSocket,
+    robot_id: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> SuccessResponse:
-    rooms = await crud.get_teleop_room(user, offer_data.roomId)
-    if not rooms:
-        room = await crud.create_teleop_room(user, offer_data.roomId)
-    else:
-        room = rooms[0]
-
-    await crud.update_sdp_offer(room, offer_data.offer.sdp)
-    return SuccessResponse(success=True)
+) -> None:
+    """Defines the WebSocket endpoint for ICE candidates."""
+    try:
+        async for candidate in ice_candidates_generator(user.id, robot_id, crud):
+            await websocket.send_text(candidate)
+    except WebSocketDisconnect:
+        pass
 
 
-@webrtc_router.post("/answer")
-async def handle_answer(
-    answer_data: WebRTCAnswer,
+@router.get("/poll/ice-candidates")
+async def poll_ice_candidates(
+    robot_id: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> SuccessResponse:
-    rooms = await crud.get_teleop_room(user, answer_data.roomId)
-    if not rooms:
-        raise HTTPException(status_code=404, detail="Room not found")
-
-    room = rooms[0]
-    await crud.update_sdp_answer(room, answer_data.answer.sdp)
-    return SuccessResponse(success=True)
-
-
-@webrtc_router.get("/offer/{room_id}")
-async def get_offer(
-    room_id: str,
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> OfferResponse:
-    rooms = await crud.get_teleop_room(user, room_id)
-    if not rooms:
-        raise HTTPException(status_code=404, detail="Room not found")
-    connection_data = WebRTCConnectionData.model_validate_json(rooms[0].connection_data)
-    return OfferResponse(offer=connection_data.offer)
-
-
-@webrtc_router.get("/answer/{room_id}")
-async def get_answer(
-    room_id: str,
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> AnswerResponse:
-    rooms = await crud.get_teleop_room(user, room_id)
-    if not rooms:
-        raise HTTPException(status_code=404, detail="Room not found")
-    connection_data = WebRTCConnectionData.model_validate_json(rooms[0].connection_data)
-    return AnswerResponse(answer=connection_data.answer)
-
-
-@webrtc_router.post("/ice-candidate")
-async def handle_ice_candidate(
-    candidate_data: ICECandidate,
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> SuccessResponse:
-    rooms = await crud.get_teleop_room(user, candidate_data.roomId)
-    if not rooms:
-        raise HTTPException(status_code=404, detail="Room not found")
-
-    room = rooms[0]
-    await crud.add_ice_candidate(room, candidate_data.candidate.model_dump())
-    return SuccessResponse(success=True)
-
-
-@webrtc_router.get("/ice-candidates/{room_id}")
-async def get_ice_candidates(
-    room_id: str,
-    is_offer: bool,
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> CandidatesResponse:
-    if not await crud.teleop_room_exists(user, room_id):
-        raise HTTPException(status_code=404, detail="Room not found")
-
-    rooms = await crud.get_teleop_room(user, room_id)
-    connection_data = WebRTCConnectionData.model_validate_json(rooms[0].connection_data)
-    candidates = connection_data.offerCandidates if is_offer else connection_data.answerCandidates
-    return CandidatesResponse(candidates=candidates)
-
-
-@webrtc_router.post("/clear/{room_id}")
-async def clear_room(
-    room_id: str,
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> SuccessResponse:
-    if await crud.teleop_room_exists(user, room_id):
-        await crud.reset_room(user, room_id)
-    return SuccessResponse(success=True)
+) -> StreamingResponse:
+    """Defines the polling endpoint for ICE candidates."""
+    return StreamingResponse(
+        content=ice_candidates_generator(user.id, robot_id, crud),
+        media_type="text/event-stream",
+    )

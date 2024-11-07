@@ -697,34 +697,30 @@ class Robot(StoreBaseModel):
         )
 
 
-class FeaturedListings(BaseModel):
-    id: str = "featured_listings"
-    type: str = "featured_listings"
-    listing_ids: list[str]
-    updated_at: int
-
-
-class TeleopRoom(StoreBaseModel):
-    """Tracks teleoperation rooms and their WebRTC connection details."""
+class TeleopICECandidate(StoreBaseModel):
+    """Tracks ICE candidates for teleoperation."""
 
     user_id: str
     robot_id: str
+    candidate: str
     created_at: int
-    ice_servers: list[dict] | None = None
-    sdp_offer: str | None = None
-    sdp_answer: str | None = None
-    ice_candidates: list[dict] | None = None
     ttl: int | None = None
 
     @classmethod
-    def create(cls, user_id: str, robot_id: str, expire_after_n_minutes: int = 10) -> Self:
+    def create(
+        cls,
+        user_id: str,
+        robot_id: str,
+        candidate: str,
+        expire_after_n_hours: int = 24,
+    ) -> Self:
         now = int(time.time())
-        ttl_timestamp = int((datetime.utcnow() + timedelta(minutes=expire_after_n_minutes)).timestamp())
+        ttl_timestamp = int((datetime.utcnow() + timedelta(hours=expire_after_n_hours)).timestamp())
         return cls(
             id=new_uuid(),
             user_id=user_id,
             robot_id=robot_id,
+            candidate=candidate,
             created_at=now,
-            ice_candidates=[],
             ttl=ttl_timestamp,
         )
