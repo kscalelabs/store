@@ -57,11 +57,9 @@ const URDFRenderer = ({
   const [orientation, setOrientation] = useState<Orientation>("Z-up");
   const [isFullScreen, setIsFullScreen] = useState(false);
   const parentRef = useRef<HTMLDivElement>(null);
-  const [forceRerender, setForceRerender] = useState(0);
   const jointPositionsRef = useRef<{ name: string; value: number }[]>([]);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const [isWireframe, setIsWireframe] = useState(showWireframe);
-  const wireframeStateRef = useRef<boolean>(showWireframe);
   const [theme, setTheme] = useState<Theme>(() => supportedThemes[0]);
   const themeRef = useRef<Theme>("default");
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
@@ -300,7 +298,7 @@ const URDFRenderer = ({
       rendererRef.current = null;
       document.removeEventListener("fullscreenchange", handleFullScreenChange);
     };
-  }, [urdfContent, files, orientation, forceRerender, getThemeColors]);
+  }, [urdfContent, files, orientation, getThemeColors]);
 
   const handleJointChange = (index: number, value: number) => {
     setJointControls((prevControls) => {
