@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuthentication } from "@/hooks/useAuth";
+import { Check } from "lucide-react";
 
 export default function SellerDashboard() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export default function SellerDashboard() {
 
     // Redirect to onboarding if not completed
     if (!auth.currentUser?.stripe_connect_onboarding_completed) {
-      navigate("/seller-onboarding");
+      navigate("/sell/onboarding");
       return;
     }
   }, [auth.isLoading, auth.isAuthenticated, auth.currentUser]);
@@ -43,10 +44,13 @@ export default function SellerDashboard() {
 
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-xl font-semibold mb-4">Account Status</h2>
-          <p className="text-green-600 mb-4">
-            ✓ Your K-Scale seller account is active and ready to receive
-            payments.
-          </p>
+          <div className="flex gap-2 text-green-600">
+            <Check />
+            <p>
+              Your K-Scale seller account is active and ready to receive
+              payments.
+            </p>
+          </div>
 
           <div className="mt-6">
             <a

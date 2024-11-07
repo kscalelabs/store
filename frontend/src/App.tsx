@@ -37,7 +37,6 @@ import Playground from "./components/pages/Playground";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import ResearchPage from "./components/pages/ResearchPage";
 import SellerOnboarding from "./components/pages/SellerOnboarding";
-import SellerOnboardingContinued from "./components/pages/SellerOnboardingContinued";
 import Terminal from "./components/pages/Terminal";
 import TermsOfService from "./components/pages/TermsOfService";
 
@@ -87,21 +86,18 @@ const App = () => {
                         <Route path="/privacy" element={<PrivacyPolicy />} />
 
                         <Route
-                          path="/seller-onboarding"
+                          path="/sell/onboarding"
                           element={<SellerOnboarding />}
                         />
                         <Route
-                          path="/seller-onboarding-continued"
-                          element={<SellerOnboardingContinued />}
-                        />
-                        <Route
-                          path="/seller-dashboard"
+                          path="/sell/dashboard"
                           element={<SellerDashboard />}
                         />
                         <Route
                           path="/delete-connect"
                           element={<DeleteConnect />}
                         />
+
                         <Route path="/success" element={<OrderSuccess />} />
                         <Route path="/orders" element={<OrdersPage />} />
 

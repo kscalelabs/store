@@ -397,7 +397,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
             {!user.stripe_connect_account_id ? (
               <Tooltip content="Start seller onboarding" position="bottom">
                 <Button
-                  onClick={() => navigate("/seller-onboarding")}
+                  onClick={() => navigate("/sell/onboarding")}
                   variant="outline"
                 >
                   Sell Robots
@@ -406,7 +406,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
             ) : !user.stripe_connect_onboarding_completed ? (
               <Tooltip content="Continue seller onboarding" position="bottom">
                 <Button
-                  onClick={() => navigate("/seller-onboarding-continued")}
+                  onClick={() => navigate("/sell/onboarding")}
                   variant="outline"
                 >
                   Complete Seller Setup
@@ -414,7 +414,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
               </Tooltip>
             ) : (
               <Button
-                onClick={() => navigate("/seller-dashboard")}
+                onClick={() => navigate("/sell/dashboard")}
                 variant="outline"
               >
                 Seller Dashboard

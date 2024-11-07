@@ -1,24 +1,22 @@
 import { useEffect, useState } from "react";
 
+import { useAuthentication } from "@/hooks/useAuth";
+import { STRIPE_PUBLISHABLE_KEY } from "@/lib/constants/env";
 import {
   StripeConnectInstance,
   loadConnectAndInitialize,
 } from "@stripe/connect-js";
 
-import { STRIPE_PUBLISHABLE_KEY } from "../lib/constants/env";
-import { useAuthentication } from "./useAuth";
-
-export const useStripeConnect = (connectedAccountId: string | null) => {
+export const useStripeConnect = (connectedAccountId: string) => {
   const auth = useAuthentication();
-  const [stripeConnectInstance, setStripeConnectInstance] = useState<
-    StripeConnectInstance | undefined
-  >();
+  const [stripeConnectInstance, setStripeConnectInstance] =
+    useState<StripeConnectInstance>();
 
   useEffect(() => {
     let mounted = true;
 
     const initializeStripeConnect = async () => {
-      if (!connectedAccountId) {
+      if (connectedAccountId === "") {
         return;
       }
 
@@ -27,12 +25,16 @@ export const useStripeConnect = (connectedAccountId: string | null) => {
           publishableKey: STRIPE_PUBLISHABLE_KEY,
           async fetchClientSecret() {
             const { data, error } = await auth.client.POST(
-              "/stripe/connect-account/create-session",
-              {},
+              "/stripe/connect/account/session",
+              { body: { account_id: connectedAccountId } },
             );
 
             if (error) {
-              throw new Error(`Failed to create account session: ${error}`);
+              console.error("Stripe session creation error:", error);
+            }
+
+            if (!data?.client_secret) {
+              throw new Error("No client secret returned from server");
             }
 
             return data.client_secret;

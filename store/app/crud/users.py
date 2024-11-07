@@ -42,7 +42,7 @@ class UserNotFoundError(Exception):
 class UserCrud(BaseCrud):
     @classmethod
     def get_gsis(cls) -> set[str]:
-        return super().get_gsis().union({"user_id", "email", "user_token", "username", "stripe_connect_account_id"})
+        return super().get_gsis().union({"user_id", "email", "user_token", "username"})
 
     @overload
     async def get_user(self, id: str, throw_if_missing: Literal[True]) -> User: ...
@@ -291,7 +291,6 @@ class UserCrud(BaseCrud):
         await self._update_item(user_id, User, {"permissions": list(user.permissions)})
         return user
 
-    # For testing workflow will remove once stripe connect payment and listing integration done
     async def update_user_stripe_connect_reset(self, connect_account_id: str) -> None:
         """Reset Stripe Connect related fields for users with the given account ID."""
         users = await self.get_users_by_stripe_connect_id(connect_account_id)

@@ -17,8 +17,7 @@ export default function DeleteConnect() {
       return;
     }
 
-    // Only allow access in development
-    if (process.env.NODE_ENV !== "development") {
+    if (!auth.currentUser?.permissions?.includes("is_admin")) {
       navigate("/");
       return;
     }
@@ -27,7 +26,7 @@ export default function DeleteConnect() {
   const handleDeleteTestAccounts = async () => {
     try {
       const { data, error } = await auth.client.POST(
-        "/stripe/connect-account/delete-test-accounts",
+        "/stripe/connect/delete/accounts",
         {},
       );
 
@@ -38,7 +37,7 @@ export default function DeleteConnect() {
 
       addAlert(`Successfully deleted ${data.count} test accounts`, "success");
       setTimeout(() => {
-        navigate("/seller-onboarding");
+        navigate("/sell/onboarding");
       }, 2000);
     } catch (error) {
       addErrorAlert(`Failed to delete test accounts: ${error}`);
@@ -67,9 +66,6 @@ export default function DeleteConnect() {
           <p className="text-red-700 mb-4">
             This action will delete all test Stripe Connect accounts associated
             with this environment. This operation cannot be undone.
-          </p>
-          <p className="text-red-700 mb-4">
-            This functionality is only available in development mode.
           </p>
         </div>
 
