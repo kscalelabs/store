@@ -134,7 +134,9 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="fixed w-full z-30 top-0 start-0 bg-gray-1/30 backdrop-blur-lg">
+      <nav
+        className="fixed w-full z-50 top-0 start-0 bg-gray-1/30 backdrop-blur-lg"
+      >
         <div className="relative flex justify-between py-3 mx-4 sm:mx-6 md:mx-10 xl:mx-16 2xl:mx-28 font-medium">
           <div className="flex justify-between w-full lg:w-auto gap-3">
             <Link

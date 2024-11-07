@@ -96,8 +96,8 @@ const TerminalRobotModel = ({ listingId }: Props) => {
     <URDFRenderer
       urdfContent={new TextDecoder().decode(urdfFile.content)}
       files={files}
+      supportedThemes={["dark"]}
       useControls={false}
-      visualTheme="terminal"
     />
   );
 };
