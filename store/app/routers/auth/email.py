@@ -14,6 +14,8 @@ from store.app.utils.password import verify_password
 
 router = APIRouter()
 
+signup_router = APIRouter()
+
 
 class EmailSignUpRequest(BaseModel):
     email: EmailStr
@@ -23,7 +25,7 @@ class EmailSignUpResponse(BaseModel):
     message: str
 
 
-@router.post("/create", response_model=EmailSignUpResponse)
+@signup_router.post("/create", response_model=EmailSignUpResponse)
 async def create_signup_token(
     data: EmailSignUpRequest,
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -43,7 +45,7 @@ class GetTokenResponse(BaseModel):
     email: str
 
 
-@router.get("/get/{id}", response_model=GetTokenResponse)
+@signup_router.get("/get/{id}", response_model=GetTokenResponse)
 async def get_signup_token(
     id: str,
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -58,13 +60,16 @@ class DeleteTokenResponse(BaseModel):
     message: str
 
 
-@router.delete("/delete/{id}", response_model=DeleteTokenResponse)
+@signup_router.delete("/delete/{id}", response_model=DeleteTokenResponse)
 async def delete_signup_token(
     id: str,
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> DeleteTokenResponse:
     await crud.delete_email_signup_token(id)
     return DeleteTokenResponse(message="Token deleted successfully.")
+
+
+router.include_router(signup_router, prefix="/signup")
 
 
 class UserSignup(BaseModel):
