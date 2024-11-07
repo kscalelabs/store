@@ -3,14 +3,68 @@
 from typing import Annotated, Self
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
+from pydantic.networks import EmailStr
 
 from store.app.crud.users import UserCrud
 from store.app.db import Crud
 from store.app.model import APIKeySource, User
+from store.app.utils.email import send_signup_email
 from store.app.utils.password import verify_password
 
 router = APIRouter()
+
+
+class EmailSignUpRequest(BaseModel):
+    email: EmailStr
+
+
+class EmailSignUpResponse(BaseModel):
+    message: str
+
+
+@router.post("/create", response_model=EmailSignUpResponse)
+async def create_signup_token(
+    data: EmailSignUpRequest,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> EmailSignUpResponse:
+    """Creates a signup token and emails it to the user."""
+    try:
+        signup_token = await crud.create_email_signup_token(data.email)
+        await send_signup_email(email=data.email, token=signup_token.id)
+
+        return EmailSignUpResponse(message="Sign up email sent! Follow the link sent to you to continue registration.")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+class GetTokenResponse(BaseModel):
+    id: str
+    email: str
+
+
+@router.get("/get/{id}", response_model=GetTokenResponse)
+async def get_signup_token(
+    id: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> GetTokenResponse:
+    signup_token = await crud.get_email_signup_token(id)
+    if not signup_token:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Token not found.")
+    return GetTokenResponse(id=signup_token.id, email=signup_token.email)
+
+
+class DeleteTokenResponse(BaseModel):
+    message: str
+
+
+@router.delete("/delete/{id}", response_model=DeleteTokenResponse)
+async def delete_signup_token(
+    id: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> DeleteTokenResponse:
+    await crud.delete_email_signup_token(id)
+    return DeleteTokenResponse(message="Token deleted successfully.")
 
 
 class UserSignup(BaseModel):
@@ -35,16 +89,6 @@ class UsersInfoResponse(BaseModel):
     users: list[UserInfoResponseItem]
 
 
-class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
-
-
-class LoginResponse(BaseModel):
-    user_id: str
-    token: str
-
-
 @router.post("/signup", response_model=UserInfoResponseItem)
 async def register_user(data: UserSignup, crud: Annotated[Crud, Depends(Crud.get)]) -> UserInfoResponseItem:
     signup_token = await crud.get_email_signup_token(data.signup_token_id)
@@ -56,6 +100,16 @@ async def register_user(data: UserSignup, crud: Annotated[Crud, Depends(Crud.get
     user = await crud._create_user_from_email(email=signup_token.email, password=data.password)
     await crud.delete_email_signup_token(data.signup_token_id)
     return UserInfoResponseItem(id=user.id, email=user.email)
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class LoginResponse(BaseModel):
+    user_id: str
+    token: str
 
 
 @router.post("/login", response_model=LoginResponse)

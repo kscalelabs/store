@@ -23,7 +23,6 @@ from store.app.errors import (
 )
 from store.app.routers.artifacts import artifacts_router
 from store.app.routers.auth import router
-from store.app.routers.email import email_router
 from store.app.routers.kernel_images import kernel_images_router
 from store.app.routers.keys import keys_router
 from store.app.routers.listings import listings_router
@@ -184,7 +183,6 @@ async def validate_auth_token(auth_token: str = Depends(api_key_header)) -> str:
 
 app.include_router(router, prefix="/auth", tags=["auth"])
 app.include_router(artifacts_router, prefix="/artifacts", tags=["artifacts"])
-app.include_router(email_router, prefix="/email", tags=["email"])
 app.include_router(kernel_images_router, prefix="/kernel-images", tags=["kernel-images"])
 app.include_router(keys_router, prefix="/keys", tags=["keys"])
 app.include_router(listings_router, prefix="/listings", tags=["listings"])
