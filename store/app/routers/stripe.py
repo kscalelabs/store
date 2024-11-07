@@ -406,17 +406,15 @@ async def create_connect_account_session(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# For testing workflow will remove once stripe connect payment and listing integration done
 @stripe_router.post("/connect/delete/accounts")
 async def delete_test_accounts(
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> Dict[str, Any]:
-    try:
-        # Only allow in test mode
-        if not settings.stripe.secret_key.startswith("sk_test_"):
-            raise HTTPException(status_code=400, detail="This operation is only allowed in test mode")
+    if not user.permissions or "is_admin" not in user.permissions:
+        raise HTTPException(status_code=403, detail="Admin permission required to delete accounts")
 
+    try:
         deleted_accounts = []
         accounts = stripe.Account.list(limit=100)
 
