@@ -610,9 +610,12 @@ const URDFRenderer = ({
   return (
     <div
       ref={parentRef}
-      className={`flex flex-col lg:flex-row ${isFullScreen ? "h-screen" : "h-full"} relative ${getBackgroundColor()}`}
+      className={`relative ${isFullScreen ? "h-screen" : "h-full"}`}
     >
-      <div ref={containerRef} className="flex-grow h-[60vh] lg:h-auto relative">
+      <div
+        ref={containerRef}
+        className={`absolute inset-0 ${getBackgroundColor()}`}
+      >
         <div className="absolute bottom-4 left-4 z-20 flex gap-2">
           <button
             onClick={toggleOrientation}
@@ -642,13 +645,9 @@ const URDFRenderer = ({
         </div>
       </div>
 
-      {useControls && (
-        <>
-          <div
-            className={`${
-              showControls ? "translate-x-0" : "translate-x-full"
-            } relative lg:relative right-0 top-0 bottom-0 w-64 ${getBackgroundColor()} transition-transform duration-300 ease-in-out z-30`}
-          >
+      {useControls && showControls && (
+        <div className="absolute top-0 right-0 bottom-0 w-64 z-30">
+          <div className={`h-full overflow-y-auto ${getBackgroundColor()}`}>
             <div className="p-4 overflow-y-auto h-full">
               <div className="space-y-2 mb-4">
                 <button
@@ -723,17 +722,18 @@ const URDFRenderer = ({
               </div>
             </div>
           </div>
-          {!showControls && (
-            <button
-              onClick={() => setShowControls(true)}
-              className={`${
-                isFullScreen ? "fixed" : "absolute"
-              } bottom-4 right-4 z-30 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full shadow-md`}
-            >
-              <FaChevronLeft />
-            </button>
-          )}
-        </>
+        </div>
+      )}
+
+      {useControls && !showControls && (
+        <button
+          onClick={() => setShowControls(true)}
+          className={`${
+            isFullScreen ? "fixed" : "absolute"
+          } bottom-4 right-4 z-30 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full shadow-md`}
+        >
+          <FaChevronLeft />
+        </button>
       )}
     </div>
   );
