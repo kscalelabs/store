@@ -546,19 +546,21 @@ const URDFRenderer = ({
           }
 
           const material = new THREE.MeshStandardMaterial({
-            color: isDarkBackground ? 0x00aa00 : child.userData.originalColor,
+            color: darkBackgroundStateRef.current
+              ? 0x00aa00
+              : child.userData.originalColor,
             metalness: 0.4,
             roughness: 0.6,
             wireframe: isWireframe,
-            emissive: isDarkBackground ? 0x00aa00 : 0x000000,
-            emissiveIntensity: isDarkBackground ? 0.5 : 0,
+            emissive: darkBackgroundStateRef.current ? 0x00aa00 : 0x000000,
+            emissiveIntensity: darkBackgroundStateRef.current ? 0.5 : 0,
           });
           child.material = material;
           child.material.needsUpdate = true;
         }
       });
     }
-  }, [orientation, isWireframe, isDarkBackground]);
+  }, [forceRerender]);
 
   useEffect(() => {
     if (sceneRef.current) {
