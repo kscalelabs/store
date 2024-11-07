@@ -1,54 +1,16 @@
-"""This module defines the FastAPI routes for authentication related API routes."""
+"""Defines the authentication endpoints for email-based authentication."""
 
-from typing import Annotated, Literal, Mapping, Self, overload
+from typing import Annotated, Self
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, EmailStr
 
 from store.app.crud.users import UserCrud
 from store.app.db import Crud
 from store.app.model import APIKeySource, User
-from store.app.routers.auth.github import github_auth_router
-from store.app.routers.auth.google import google_auth_router
 from store.app.utils.password import verify_password
 
-auth_router = APIRouter()
-
-
-@overload
-async def get_api_key_from_header(headers: Mapping[str, str], require_header: Literal[True]) -> str: ...
-
-
-@overload
-async def get_api_key_from_header(headers: Mapping[str, str], require_header: Literal[False]) -> str | None: ...
-
-
-async def get_api_key_from_header(headers: Mapping[str, str], require_header: bool) -> str | None:
-    authorization = headers.get("Authorization") or headers.get("authorization")
-    if not authorization:
-        if require_header:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
-        return None
-
-    # Check if the authorization header starts with "Bearer "
-    if authorization.startswith("Bearer "):
-        credentials = authorization[7:]  # Remove "Bearer " prefix
-    else:
-        # If "Bearer " is missing, assume the entire header is the token
-        credentials = authorization
-
-    if not credentials:
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Authorization header is invalid")
-
-    return credentials
-
-
-async def get_request_api_key_id(request: Request) -> str:
-    return await get_api_key_from_header(request.headers, True)
-
-
-async def maybe_get_request_api_key_id(request: Request) -> str | None:
-    return await get_api_key_from_header(request.headers, False)
+router = APIRouter()
 
 
 class UserSignup(BaseModel):
@@ -83,7 +45,7 @@ class LoginResponse(BaseModel):
     token: str
 
 
-@auth_router.post("/signup", response_model=UserInfoResponseItem)
+@router.post("/signup", response_model=UserInfoResponseItem)
 async def register_user(data: UserSignup, crud: Annotated[Crud, Depends(Crud.get)]) -> UserInfoResponseItem:
     signup_token = await crud.get_email_signup_token(data.signup_token_id)
     if not signup_token:
@@ -96,7 +58,7 @@ async def register_user(data: UserSignup, crud: Annotated[Crud, Depends(Crud.get
     return UserInfoResponseItem(id=user.id, email=user.email)
 
 
-@auth_router.post("/login", response_model=LoginResponse)
+@router.post("/login", response_model=LoginResponse)
 async def login_user(data: LoginRequest, user_crud: UserCrud = Depends()) -> LoginResponse:
     async with user_crud:
         # Fetch user by email
@@ -124,16 +86,3 @@ async def login_user(data: LoginRequest, user_crud: UserCrud = Depends()) -> Log
         )
 
         return LoginResponse(user_id=user.id, token=api_key.id)
-
-
-auth_router.include_router(github_auth_router, prefix="/github")
-auth_router.include_router(google_auth_router, prefix="/google")
-
-
-@auth_router.delete("/logout")
-async def logout_user_endpoint(
-    token: Annotated[str, Depends(get_request_api_key_id)],
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    await crud.delete_api_key(token)
-    return True

@@ -2,15 +2,21 @@
 
 import logging
 from email.utils import parseaddr as parse_email_address
-from typing import Annotated, Literal, Mapping, Self, overload
+from typing import Annotated, Self
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic.main import BaseModel
 from pydantic.networks import EmailStr
 
 from store.app.db import Crud
-from store.app.errors import ItemNotFoundError, NotAuthenticatedError
+from store.app.errors import ItemNotFoundError
 from store.app.model import User, UserPermission, UserPublic
+from store.app.security.requests import get_request_api_key_id
+from store.app.security.user import (
+    get_session_user_with_admin_permission,
+    get_session_user_with_read_permission,
+    get_session_user_with_write_permission,
+)
 from store.app.utils.email import send_delete_email
 
 logger = logging.getLogger(__name__)
@@ -18,88 +24,6 @@ logger = logging.getLogger(__name__)
 users_router = APIRouter()
 
 TOKEN_TYPE = "Bearer"
-
-
-@overload
-async def get_api_key_from_header(headers: Mapping[str, str], require_header: Literal[True]) -> str: ...
-
-
-@overload
-async def get_api_key_from_header(headers: Mapping[str, str], require_header: Literal[False]) -> str | None: ...
-
-
-async def get_api_key_from_header(headers: Mapping[str, str], require_header: bool) -> str | None:
-    authorization = headers.get("Authorization") or headers.get("authorization")
-    logger.debug(f"Received authorization header: {authorization}")
-    if not authorization:
-        if require_header:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
-        return None
-
-    # Check if the authorization header starts with "Bearer "
-    if authorization.startswith("Bearer "):
-        credentials = authorization[7:]  # Remove "Bearer " prefix
-    else:
-        # If "Bearer " is missing, assume the entire header is the token
-        credentials = authorization
-
-    if not credentials:
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Authorization header is invalid")
-
-    return credentials
-
-
-async def get_request_api_key_id(request: Request) -> str:
-    return await get_api_key_from_header(request.headers, True)
-
-
-async def maybe_get_request_api_key_id(request: Request) -> str | None:
-    return await get_api_key_from_header(request.headers, False)
-
-
-async def get_session_user_with_permission(
-    permission: str,
-    crud: Crud,
-    api_key_id: str,
-) -> User:
-    try:
-        api_key = await crud.get_api_key(api_key_id)
-        if api_key.permissions is None or permission not in api_key.permissions:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
-        return await crud.get_user(api_key.user_id, throw_if_missing=True)
-    except ItemNotFoundError:
-        raise NotAuthenticatedError("Not authenticated")
-
-
-async def get_session_user_with_read_permission(
-    crud: Annotated[Crud, Depends(Crud.get)],
-    api_key_id: Annotated[str, Depends(get_request_api_key_id)],
-) -> User:
-    return await get_session_user_with_permission("read", crud, api_key_id)
-
-
-async def get_session_user_with_write_permission(
-    crud: Annotated[Crud, Depends(Crud.get)],
-    api_key_id: Annotated[str, Depends(get_request_api_key_id)],
-) -> User:
-    return await get_session_user_with_permission("write", crud, api_key_id)
-
-
-async def get_session_user_with_admin_permission(
-    crud: Annotated[Crud, Depends(Crud.get)],
-    api_key_id: Annotated[str, Depends(get_request_api_key_id)],
-) -> User:
-    return await get_session_user_with_permission("admin", crud, api_key_id)
-
-
-async def maybe_get_user_from_api_key(
-    crud: Annotated[Crud, Depends(Crud.get)],
-    api_key_id: Annotated[str | None, Depends(maybe_get_request_api_key_id)],
-) -> User | None:
-    if api_key_id is None:
-        return None
-    api_key = await crud.get_api_key(api_key_id)
-    return await crud.get_user(api_key.user_id, throw_if_missing=False)
 
 
 def validate_email(email: str) -> str:

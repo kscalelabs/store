@@ -22,7 +22,7 @@ from store.app.errors import (
     NotAuthorizedError,
 )
 from store.app.routers.artifacts import artifacts_router
-from store.app.routers.authenticate import auth_router
+from store.app.routers.auth import router
 from store.app.routers.email import email_router
 from store.app.routers.kernel_images import kernel_images_router
 from store.app.routers.keys import keys_router
@@ -182,7 +182,7 @@ async def validate_auth_token(auth_token: str = Depends(api_key_header)) -> str:
     return auth_token
 
 
-app.include_router(auth_router, prefix="/auth", tags=["auth"])
+app.include_router(router, prefix="/auth", tags=["auth"])
 app.include_router(artifacts_router, prefix="/artifacts", tags=["artifacts"])
 app.include_router(email_router, prefix="/email", tags=["email"])
 app.include_router(kernel_images_router, prefix="/kernel-images", tags=["kernel-images"])

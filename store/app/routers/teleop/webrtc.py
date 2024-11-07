@@ -44,33 +44,33 @@ class CandidatesResponse(BaseModel):
 
 
 class WebRTCOffer(BaseModel):
-    room_id: str
+    roomId: str
     offer: WebRTCSessionDescription
 
 
 class WebRTCAnswer(BaseModel):
-    room_id: str
+    roomId: str
     answer: WebRTCSessionDescription
 
 
 class ICECandidate(BaseModel):
-    room_id: str
+    roomId: str
     candidate: ICECandidateData
-    is_offer: bool
+    isOffer: bool
 
 
-teleop_router = APIRouter()
+webrtc_router = APIRouter()
 
 
-@teleop_router.post("/offer")
+@webrtc_router.post("/offer")
 async def handle_offer(
     offer_data: WebRTCOffer,
     crud: Crud = Depends(Crud.get),
 ) -> SuccessResponse:
-    rooms = await crud.get_teleop_room(offer_data.room_id)
+    rooms = await crud.get_teleop_room(offer_data.roomId)
     if not rooms:
         # Create new room if it doesn't exist
-        room = await crud.create_teleop_room(offer_data.room_id)
+        room = await crud.create_teleop_room(offer_data.roomId)
     else:
         room = rooms[0]
 
@@ -78,12 +78,12 @@ async def handle_offer(
     return SuccessResponse(success=True)
 
 
-@teleop_router.post("/answer")
+@webrtc_router.post("/answer")
 async def handle_answer(
     answer_data: WebRTCAnswer,
     crud: Crud = Depends(Crud.get),
 ) -> SuccessResponse:
-    rooms = await crud.get_teleop_room(answer_data.room_id)
+    rooms = await crud.get_teleop_room(answer_data.roomId)
     if not rooms:
         raise HTTPException(status_code=404, detail="Room not found")
 
@@ -93,7 +93,7 @@ async def handle_answer(
     return SuccessResponse(success=True)
 
 
-@teleop_router.get("/offer/{room_id}")
+@webrtc_router.get("/offer/{room_id}")
 async def get_offer(
     room_id: str,
     crud: Crud = Depends(Crud.get),
@@ -105,7 +105,7 @@ async def get_offer(
     return OfferResponse(offer=connection_data.offer)
 
 
-@teleop_router.get("/answer/{room_id}")
+@webrtc_router.get("/answer/{room_id}")
 async def get_answer(
     room_id: str,
     crud: Crud = Depends(Crud.get),
@@ -117,12 +117,12 @@ async def get_answer(
     return AnswerResponse(answer=connection_data.answer)
 
 
-@teleop_router.post("/ice-candidate")
+@webrtc_router.post("/ice-candidate")
 async def handle_ice_candidate(
     candidate_data: ICECandidate,
     crud: Crud = Depends(Crud.get),
 ) -> SuccessResponse:
-    rooms = await crud.get_teleop_room(candidate_data.room_id)
+    rooms = await crud.get_teleop_room(candidate_data.roomId)
     if not rooms:
         raise HTTPException(status_code=404, detail="Room not found")
 
@@ -131,7 +131,7 @@ async def handle_ice_candidate(
     return SuccessResponse(success=True)
 
 
-@teleop_router.get("/ice-candidates/{room_id}")
+@webrtc_router.get("/ice-candidates/{room_id}")
 async def get_ice_candidates(
     room_id: str,
     is_offer: bool = True,
@@ -146,7 +146,7 @@ async def get_ice_candidates(
     return CandidatesResponse(candidates=candidates)
 
 
-@teleop_router.post("/clear/{room_id}")
+@webrtc_router.post("/clear/{room_id}")
 async def clear_room(
     room_id: str,
     crud: Crud = Depends(Crud.get),

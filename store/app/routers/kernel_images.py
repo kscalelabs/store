@@ -11,7 +11,7 @@ from pydantic import BaseModel
 
 from store.app.db import Crud
 from store.app.model import User
-from store.app.routers.users import (
+from store.app.security.user import (
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
     maybe_get_user_from_api_key,

@@ -24,10 +24,7 @@ from store.app.model import (
     get_artifact_url,
     get_artifact_urls,
 )
-from store.app.routers.users import (
-    get_session_user_with_write_permission,
-    maybe_get_user_from_api_key,
-)
+from store.app.security.user import get_session_user_with_write_permission, maybe_get_user_from_api_key
 from store.settings import settings
 
 artifacts_router = APIRouter()

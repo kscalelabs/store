@@ -12,14 +12,14 @@ from store.settings import settings
 
 logger = logging.getLogger(__name__)
 
-github_auth_router = APIRouter()
+router = APIRouter()
 
 
 class ClientIdResponse(BaseModel):
     client_id: str
 
 
-@github_auth_router.get("/client-id", response_model=ClientIdResponse)
+@router.get("/client-id", response_model=ClientIdResponse)
 async def github_client_id_endpoint() -> ClientIdResponse:
     return ClientIdResponse(client_id=settings.oauth.github_client_id)
 
@@ -51,7 +51,7 @@ class GithubAuthResponse(BaseModel):
     api_key: str
 
 
-@github_auth_router.post("/code", response_model=GithubAuthResponse)
+@router.post("/code", response_model=GithubAuthResponse)
 async def github_code(
     data: GithubAuthRequest,
     crud: Annotated[Crud, Depends(Crud.get)],
