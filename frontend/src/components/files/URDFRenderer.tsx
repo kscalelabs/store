@@ -2,20 +2,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FaChevronLeft,
   FaChevronRight,
+  FaChevronUp,
   FaCompress,
   FaExpand,
   FaPlay,
   FaUndo,
 } from "react-icons/fa";
 
+import { UntarredFile } from "@/components/files/Tarfile";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
 import URDFLoader, { URDFJoint, URDFLink } from "urdf-loader";
-
-import { UntarredFile } from "./Tarfile";
-
-type Orientation = "Z-up" | "Y-up" | "X-up";
 
 interface JointControl {
   name: string;
@@ -29,7 +27,7 @@ interface URDFInfo {
   linkCount: number;
 }
 
-type Theme = "default" | "dark";
+type Theme = "light" | "dark";
 
 interface Props {
   urdfContent: string;
@@ -39,12 +37,35 @@ interface Props {
   supportedThemes?: Theme[];
 }
 
+interface ThemeColors {
+  background: string;
+  text: string;
+  backgroundColor: number;
+}
+
+const getThemeColors = (theme: Theme): ThemeColors => {
+  switch (theme) {
+    case "light":
+      return {
+        background: "bg-[#f0f0f0]",
+        text: "text-gray-800",
+        backgroundColor: 0xf0f0f0,
+      };
+    case "dark":
+      return {
+        background: "bg-black",
+        text: "text-gray-200",
+        backgroundColor: 0x000000,
+      };
+  }
+};
+
 const URDFRenderer = ({
   urdfContent,
   files,
   useControls = true,
   showWireframe = false,
-  supportedThemes = ["default", "dark"],
+  supportedThemes = ["light", "dark"],
 }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -53,82 +74,114 @@ const URDFRenderer = ({
   const [showControls, setShowControls] = useState(true);
   const [isCycling, setIsCycling] = useState(false);
   const animationRef = useRef<number | null>(null);
-  const [isInStartPosition, setIsInStartPosition] = useState(true);
   const [urdfInfo, setUrdfInfo] = useState<URDFInfo | null>(null);
-  const [orientation, setOrientation] = useState<Orientation>("Z-up");
+
+  // Used to toggle the wireframe.
+  const [isWireframe, setIsWireframe] = useState(showWireframe);
+
+  // Control the theme colors.
+  const [theme, setTheme] = useState<Theme>(() => supportedThemes[0]);
+
+  // Toggle fullscreen.
   const [isFullScreen, setIsFullScreen] = useState(false);
   const parentRef = useRef<HTMLDivElement>(null);
-  const [forceRerender, setForceRerender] = useState(0);
-  const jointPositionsRef = useRef<{ name: string; value: number }[]>([]);
+
+  // Used to store the renderer.
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const [isWireframe, setIsWireframe] = useState(showWireframe);
-  const wireframeStateRef = useRef<boolean>(showWireframe);
-  const [theme, setTheme] = useState<Theme>(() => supportedThemes[0]);
-  const themeRef = useRef<Theme>("default");
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const controlsRef = useRef<OrbitControls | null>(null);
 
   useEffect(() => {
     const handleFullScreenChange = () => {
       const isNowFullScreen = !!document.fullscreenElement;
-
-      if (isNowFullScreen) {
-        setIsFullScreen(true);
-      } else {
-        jointPositionsRef.current = jointControls.map((joint) => ({
-          name: joint.name,
-          value: joint.value,
-        }));
-        wireframeStateRef.current = isWireframe;
-        themeRef.current = theme;
-
-        setIsFullScreen(false);
-        setForceRerender((prev) => prev + 1);
-      }
+      setIsFullScreen(isNowFullScreen);
     };
 
     document.addEventListener("fullscreenchange", handleFullScreenChange);
     return () =>
       document.removeEventListener("fullscreenchange", handleFullScreenChange);
-  }, [jointControls, isWireframe, theme]);
+  }, []);
 
-  const getThemeColors = useCallback(() => {
-    switch (theme) {
-      case "default":
-        return {
-          background: "bg-[#f0f0f0]",
-          text: "text-gray-800",
-          backgroundColor: 0xf0f0f0,
-        };
-      case "dark":
-        return {
-          background: "bg-black",
-          text: "text-gray-200",
-          backgroundColor: 0x000000,
-        };
-    }
+  const updateMaterials = useCallback(() => {
+    if (!robotRef.current) return;
+
+    robotRef.current.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        const originalColor =
+          child.material instanceof THREE.Material
+            ? (child.material as THREE.MeshPhysicalMaterial).color
+            : new THREE.Color(0x808080);
+        child.material = new THREE.MeshPhysicalMaterial({
+          metalness: 0.4,
+          roughness: 0.5,
+          wireframe: isWireframe,
+          color: originalColor,
+        });
+      }
+    });
+  }, [theme, isWireframe]);
+
+  const updateTheme = useCallback(() => {
+    if (!sceneRef.current) return;
+
+    const themeColors = getThemeColors(theme);
+    sceneRef.current.background = new THREE.Color(themeColors.backgroundColor);
   }, [theme]);
 
+  useEffect(() => {
+    updateMaterials();
+  }, [updateMaterials, isWireframe]);
+
+  useEffect(() => {
+    updateTheme();
+  }, [updateTheme]);
+
+  const toggleWireframe = useCallback(() => {
+    setIsWireframe((prev) => !prev);
+  }, []);
+
+  const toggleOrientation = useCallback(() => {
+    if (!robotRef.current) return;
+
+    robotRef.current.rotateOnAxis(new THREE.Vector3(1, 0, 0), -Math.PI / 2);
+  }, []);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => {
+      const nextIndex =
+        (supportedThemes.indexOf(prev) + 1) % supportedThemes.length;
+      return supportedThemes[nextIndex];
+    });
+  }, [supportedThemes]);
+
+  // Setup the scene.
   useEffect(() => {
     if (!containerRef.current) return;
 
     const scene = new THREE.Scene();
     sceneRef.current = scene;
-    const colors = getThemeColors();
-    scene.background = new THREE.Color(colors.backgroundColor);
 
+    // Setup camera.
     const camera = new THREE.PerspectiveCamera(
       50,
       containerRef.current.clientWidth / containerRef.current.clientHeight,
       0.1,
       1000,
     );
+    cameraRef.current = camera;
+
+    // Setup renderer.
     const renderer = new THREE.WebGLRenderer({ antialias: true });
+    rendererRef.current = renderer;
     renderer.setSize(
       containerRef.current.clientWidth,
       containerRef.current.clientHeight,
     );
     containerRef.current.appendChild(renderer.domElement);
 
+    // Setup controls.
     const controls = new OrbitControls(camera, renderer.domElement);
+    controlsRef.current = controls;
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
 
@@ -138,37 +191,35 @@ const URDFRenderer = ({
       }
     });
 
+    // Setup lights.
     const mainLight = new THREE.DirectionalLight(0xffffff, 2.0);
     mainLight.position.set(5, 5, 5);
     scene.add(mainLight);
 
+    // Setup fill light.
     const fillLight = new THREE.DirectionalLight(0xffffff, 0.8);
     fillLight.position.set(-5, 2, -5);
     scene.add(fillLight);
 
+    // Setup ambient light.
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
     scene.add(ambientLight);
 
+    // Setup loader.
     const loader = new URDFLoader();
     loader.loadMeshCb = (path, _manager, onComplete) => {
       const fileContent = files.find((f) => f.name.endsWith(path))?.content;
+
       if (fileContent) {
         const geometry = new STLLoader().parse(fileContent.buffer);
-
-        const material = new THREE.MeshStandardMaterial({
-          color: 0xaaaaaa,
-          metalness: 0.4,
-          roughness: 0.6,
-          wireframe: showWireframe || false,
-        });
-
-        const mesh = new THREE.Mesh(geometry, material);
+        const mesh = new THREE.Mesh(geometry);
         onComplete(mesh);
       } else {
         onComplete(new THREE.Object3D());
       }
     };
 
+    // Parse URDF.
     const robot = loader.parse(urdfContent);
     robotRef.current = robot;
     scene.add(robot);
@@ -212,14 +263,7 @@ const URDFRenderer = ({
         const joint = child as URDFJoint;
         const min = Number(joint.limit.lower);
         const max = Number(joint.limit.upper);
-        const storedPosition = jointPositionsRef.current.find(
-          (pos) => pos.name === joint.name,
-        );
-        const initialValue = storedPosition
-          ? storedPosition.value
-          : min <= 0 && max >= 0
-            ? 0
-            : (min + max) / 2;
+        const initialValue = min <= 0 && max >= 0 ? 0 : (min + max) / 2;
 
         joints.push({
           name: joint.name,
@@ -230,9 +274,6 @@ const URDFRenderer = ({
         joint.setJointValue(initialValue);
       }
     });
-
-    // Sort joints alphabetically by name
-    joints.sort((a, b) => a.name.localeCompare(b.name));
     setJointControls(joints);
 
     // Collect link information.
@@ -244,6 +285,7 @@ const URDFRenderer = ({
       }
     });
 
+    // Setup the animation loop.
     const animate = () => {
       requestAnimationFrame(animate);
       controls.update();
@@ -251,8 +293,14 @@ const URDFRenderer = ({
     };
     animate();
 
+    // Handle window resizing.
     const handleResize = () => {
-      if (!containerRef.current) return;
+      if (!containerRef.current || !rendererRef.current || !cameraRef.current)
+        return;
+
+      const camera = cameraRef.current;
+      const renderer = rendererRef.current;
+
       camera.aspect =
         containerRef.current.clientWidth / containerRef.current.clientHeight;
       camera.updateProjectionMatrix();
@@ -264,35 +312,28 @@ const URDFRenderer = ({
 
     window.addEventListener("resize", handleResize);
 
-    const updateOrientation = (newOrientation: Orientation) => {
-      if (robotRef.current) {
-        const robot = robotRef.current;
-
-        // Reset rotations
-        robot.rotation.set(0, 0, 0);
-
-        switch (newOrientation) {
-          case "Y-up":
-            robot.rotateX(-Math.PI / 2);
-            break;
-          case "X-up":
-            robot.rotateZ(Math.PI / 2);
-            break;
-          // 'Z-up' is the default, no rotation needed
-        }
-      }
+    // Add fullscreen change handler that just triggers a resize
+    const handleFullScreenChange = () => {
+      const isNowFullScreen = !!document.fullscreenElement;
+      setIsFullScreen(isNowFullScreen);
+      requestAnimationFrame(handleResize);
     };
 
-    updateOrientation(orientation);
+    document.addEventListener("fullscreenchange", handleFullScreenChange);
+
+    // Update the theme, materials, etc.
+    updateTheme();
+    updateMaterials();
 
     return () => {
       if (containerRef.current) {
         containerRef.current.removeChild(renderer.domElement);
       }
       window.removeEventListener("resize", handleResize);
-      updateOrientation("Z-up"); // Reset orientation on unmount
+      rendererRef.current = null;
+      document.removeEventListener("fullscreenchange", handleFullScreenChange);
     };
-  }, [urdfContent, files, orientation, forceRerender, getThemeColors]);
+  }, [urdfContent, files]);
 
   const handleJointChange = (index: number, value: number) => {
     setJointControls((prevControls) => {
@@ -311,8 +352,6 @@ const URDFRenderer = ({
         }
       });
     }
-
-    setIsInStartPosition(false);
   };
 
   const cycleAllJoints = useCallback(() => {
@@ -321,7 +360,7 @@ const URDFRenderer = ({
 
     const startPositions = jointControls.map((joint) => joint.value);
     const startTime = Date.now();
-    const duration = 10000; // 10 seconds
+    const duration = 3000; // Changed from 10000 to 3000 (3 seconds)
 
     const animate = () => {
       const elapsedTime = Date.now() - startTime;
@@ -350,147 +389,24 @@ const URDFRenderer = ({
     animationRef.current = requestAnimationFrame(animate);
   }, [jointControls, handleJointChange]);
 
-  useEffect(() => {
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, []);
-
   const resetJoints = useCallback(() => {
     jointControls.forEach((joint, index) => {
-      handleJointChange(index, (joint.max + joint.min) / 2);
+      handleJointChange(
+        index,
+        joint.min > 0 || joint.max < 0 ? (joint.min + joint.max) / 2 : 0,
+      );
     });
-    setIsInStartPosition(true);
   }, [jointControls, handleJointChange]);
 
-  const toggleOrientation = useCallback(() => {
-    setOrientation((prev) => {
-      const newOrientation =
-        prev === "Z-up" ? "Y-up" : prev === "Y-up" ? "X-up" : "Z-up";
-      if (robotRef.current) {
-        const robot = robotRef.current;
-        robot.rotation.set(0, 0, 0);
-
-        switch (newOrientation) {
-          case "Y-up":
-            robot.rotateX(-Math.PI / 2);
-            break;
-          case "X-up":
-            robot.rotateZ(Math.PI / 2);
-            break;
-          // 'Z-up' is the default, no rotation needed
-        }
-      }
-      return newOrientation;
-    });
-  }, []);
-
-  const resetViewerState = useCallback(() => {
-    if (
-      !containerRef.current ||
-      !robotRef.current ||
-      !sceneRef.current ||
-      !rendererRef.current
-    )
-      return;
-
-    const renderer = rendererRef.current;
-    renderer.setSize(
-      containerRef.current.clientWidth,
-      containerRef.current.clientHeight,
-    );
-
-    const camera = new THREE.PerspectiveCamera(
-      50,
-      containerRef.current.clientWidth / containerRef.current.clientHeight,
-      0.1,
-      1000,
-    );
-    const distance = 10;
-    camera.position.set(0, distance / 2, -distance);
-    camera.lookAt(0, 0, 0);
-
-    const robot = robotRef.current;
-    const box = new THREE.Box3().setFromObject(robot);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const scale = 5 / maxDim;
-    robot.scale.setScalar(scale);
-    robot.position.sub(center.multiplyScalar(scale));
-
-    renderer.render(sceneRef.current, camera);
-  }, []);
-
-  useEffect(() => {
-    const handleFullScreenChange = () => {
-      const isNowFullScreen = !!document.fullscreenElement;
-      setIsFullScreen(isNowFullScreen);
-
-      if (!isNowFullScreen) {
-        setTimeout(() => {
-          resetViewerState();
-        }, 100);
-      }
-    };
-
-    document.addEventListener("fullscreenchange", handleFullScreenChange);
-    return () =>
-      document.removeEventListener("fullscreenchange", handleFullScreenChange);
-  }, [resetViewerState]);
-
   const toggleFullScreen = useCallback(() => {
-    if (!parentRef.current || isCycling) return;
+    if (!parentRef.current) return;
 
     if (!document.fullscreenElement) {
       parentRef.current.requestFullscreen();
-      setIsFullScreen(true);
     } else {
       document.exitFullscreen();
-      setIsFullScreen(false);
     }
-  }, [isCycling]);
-
-  const cycleTheme = useCallback(() => {
-    if (sceneRef.current && supportedThemes.length > 1) {
-      setTheme((prev) => {
-        const currentIndex = supportedThemes.indexOf(prev);
-        const nextIndex = (currentIndex + 1) % supportedThemes.length;
-        const newTheme = supportedThemes[nextIndex];
-
-        const colors = getThemeColors();
-        sceneRef.current!.background = new THREE.Color(colors.backgroundColor);
-        themeRef.current = newTheme;
-        return newTheme;
-      });
-    }
-  }, [getThemeColors, supportedThemes]);
-
-  useEffect(() => {
-    if (sceneRef.current) {
-      const colors = getThemeColors();
-      sceneRef.current.background = new THREE.Color(colors.backgroundColor);
-    }
-  }, [theme, getThemeColors]);
-
-  useEffect(() => {
-    if (robotRef.current) {
-      robotRef.current.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          const material = new THREE.MeshStandardMaterial({
-            color: child.userData.originalColor || child.material.color,
-            metalness: 0.4,
-            roughness: 0.6,
-            wireframe: isWireframe,
-          });
-          child.material = material;
-          child.material.needsUpdate = true;
-        }
-      });
-    }
-  }, [isWireframe]);
+  }, []);
 
   return (
     <div
@@ -499,7 +415,7 @@ const URDFRenderer = ({
     >
       <div
         ref={containerRef}
-        className={`absolute inset-0 ${getThemeColors().background}`}
+        className={`absolute inset-0 ${getThemeColors(theme).background}`}
       >
         <div className="absolute bottom-4 left-4 z-20 flex gap-2">
           <button
@@ -508,31 +424,30 @@ const URDFRenderer = ({
               "bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center"
             }
           >
-            {orientation.charAt(0)}
+            <FaChevronUp />
           </button>
           <button
             onClick={toggleFullScreen}
-            disabled={isCycling}
             className={
-              "bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center disabled:opacity-50"
+              "bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center"
             }
           >
             {isFullScreen ? <FaCompress /> : <FaExpand />}
           </button>
           <button
-            onClick={() => setIsWireframe(!isWireframe)}
+            onClick={toggleWireframe}
             className={
-              "bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center disabled:opacity-50"
+              "bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center"
             }
           >
             {isWireframe ? "S" : "W"}
           </button>
           {supportedThemes.length > 1 && (
             <button
-              onClick={cycleTheme}
+              onClick={toggleTheme}
               className="bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center"
             >
-              {theme === "default" ? "D" : "L"}
+              {theme.charAt(0).toUpperCase()}
             </button>
           )}
         </div>
@@ -541,7 +456,7 @@ const URDFRenderer = ({
       {useControls && showControls && (
         <div className="absolute top-0 right-0 bottom-0 w-64 z-30">
           <div
-            className={`h-full overflow-y-auto ${getThemeColors().background}`}
+            className={`h-full overflow-y-auto ${getThemeColors(theme).background}`}
           >
             <div className="p-4 overflow-y-auto h-full">
               <div className="space-y-2 mb-4">
@@ -555,8 +470,7 @@ const URDFRenderer = ({
                 </button>
                 <button
                   onClick={resetJoints}
-                  disabled={isCycling || isInStartPosition}
-                  className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+                  className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
                 >
                   <FaUndo className="inline-block mr-2" />
                   Reset Joints
@@ -571,7 +485,7 @@ const URDFRenderer = ({
               </div>
               {urdfInfo && (
                 <div className="p-4 rounded-lg shadow-md mb-4 bg-grey-100 font-mono">
-                  <ul className={`text-sm ${getThemeColors().text}`}>
+                  <ul className={`text-sm ${getThemeColors(theme).text}`}>
                     <li>Joint Count: {urdfInfo.jointCount}</li>
                     <li>Link Count: {urdfInfo.linkCount}</li>
                   </ul>
@@ -581,10 +495,12 @@ const URDFRenderer = ({
                 {jointControls.map((joint, index) => (
                   <div key={joint.name} className="text-sm">
                     <div className="flex justify-between items-center mb-1">
-                      <label className={`font-medium ${getThemeColors().text}`}>
+                      <label
+                        className={`font-medium ${getThemeColors(theme).text}`}
+                      >
                         {joint.name}
                       </label>
-                      <span className={`text-xs ${getThemeColors().text}`}>
+                      <span className={`text-xs ${getThemeColors(theme).text}`}>
                         {joint.value.toFixed(2)}
                       </span>
                     </div>
@@ -601,7 +517,9 @@ const URDFRenderer = ({
                       disabled={isCycling}
                     />
                     <div
-                      className={`flex justify-between text-xs ${getThemeColors().text} mt-1`}
+                      className={`flex justify-between text-xs ${
+                        getThemeColors(theme).text
+                      } mt-1`}
                     >
                       <span>{joint.min.toFixed(2)}</span>
                       <span>{joint.max.toFixed(2)}</span>

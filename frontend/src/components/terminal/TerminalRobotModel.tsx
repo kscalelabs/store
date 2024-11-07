@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 
 import { parseTar } from "@/components/files/Tarfile";
+import URDFRenderer from "@/components/files/URDFRenderer";
 import Spinner from "@/components/ui/Spinner";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import pako from "pako";
-
-import URDFRenderer from "../files/URDFRenderer";
 
 interface Props {
   listingId: string;
@@ -97,6 +96,7 @@ const TerminalRobotModel = ({ listingId }: Props) => {
       urdfContent={new TextDecoder().decode(urdfFile.content)}
       files={files}
       supportedThemes={["dark"]}
+      showWireframe={true}
       useControls={false}
     />
   );
