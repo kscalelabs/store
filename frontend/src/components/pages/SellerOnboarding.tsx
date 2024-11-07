@@ -76,9 +76,7 @@ export default function SellerOnboarding() {
     }
   };
 
-  const showStripeConnect = Boolean(
-    connectedAccountId && stripeConnectInstance,
-  );
+  const showStripeConnect = connectedAccountId && stripeConnectInstance;
 
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen">

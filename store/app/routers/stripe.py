@@ -122,7 +122,7 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
     # Handle the event
     if event["type"] == "account.updated":
         account = event["data"]["object"]
-        logger.info(f"[WEBHOOK] Account updated: {account['id']}")
+        logger.info("Account updated: %s", account["id"])
 
         # Check if this is a Connect account becoming fully onboarded
         capabilities = account.get("capabilities", {})
@@ -141,13 +141,13 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
                     user = users[0]  # Assume one user per Connect account
                     # Update user's onboarding status
                     await crud.update_stripe_connect_status(user.id, account["id"], is_completed=True)
-                    logger.info(f"[WEBHOOK] Updated user {user.id} Connect onboarding status to completed")
+                    logger.info("Updated user %s Connect onboarding status to completed", user.id)
                 else:
-                    logger.warning(f"[WEBHOOK] No user found for Connect account: {account['id']}")
+                    logger.warning("No user found for Connect account: %s", account["id"])
             except Exception as e:
-                logger.error(f"[WEBHOOK] Error updating user Connect status: {str(e)}")
+                logger.error("Error updating user Connect status: %s", str(e))
         else:
-            logger.info(f"[WEBHOOK] Account {account['id']} not fully onboarded yet. Capabilities: {capabilities}")
+            logger.info("Account %s not fully onboarded yet. Capabilities: %s", account["id"], capabilities)
 
     elif event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
@@ -344,7 +344,7 @@ async def create_connect_account(
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> CreateConnectAccountResponse:
     try:
-        logger.info(f"Starting new account creation for user {user.id}")
+        logger.info("Starting new account creation for user %s", user.id)
 
         # Create a Standard Connect account
         account = stripe.Account.create(
@@ -358,7 +358,7 @@ async def create_connect_account(
             business_type="individual",
         )
 
-        logger.info(f"Created new Connect account: {account.id} for user: {user.id}")
+        logger.info("Created new Connect account: %s for user: %s", account.id, user.id)
 
         # Update user record with new Connect account ID
         logger.info("Updating user record with new Connect account ID")
@@ -372,7 +372,7 @@ async def create_connect_account(
 
         return CreateConnectAccountResponse(account_id=account.id)
     except Exception as e:
-        logger.error(f"[CREATE-CONNECT] Error creating Connect account: {str(e)}", exc_info=True)
+        logger.error("Error creating Connect account: %s", str(e), exc_info=True)
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -382,14 +382,14 @@ async def create_connect_account_session(
     account_id: str = Body(..., embed=True),
 ) -> Dict[str, str]:
     try:
-        logger.info(f"Creating account session for account: {account_id}")
+        logger.info("Creating account session for account: %s", account_id)
 
         if not account_id:
             logger.error("No account ID provided in request body")
             raise HTTPException(status_code=400, detail="No account ID provided")
 
         if user.stripe_connect_account_id != account_id:
-            logger.error(f"Account ID mismatch. User: {user.stripe_connect_account_id}, Requested: {account_id}")
+            logger.error("Account ID mismatch. User: %s, Requested: %s", user.stripe_connect_account_id, account_id)
             raise HTTPException(status_code=400, detail="Account ID does not match user's connected account")
 
         account_session = stripe.AccountSession.create(
@@ -399,11 +399,11 @@ async def create_connect_account_session(
             },
         )
 
-        logger.info(f"Successfully created account session for account: {account_id}")
+        logger.info("Successfully created account session for account: %s", account_id)
         return {"client_secret": account_session.client_secret}
     except Exception as e:
-        logger.error(f"Error creating account session: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Error creating account session: %s", str(e), exc_info=True)
+        raise
 
 
 @stripe_router.post("/connect/delete/accounts")
@@ -425,9 +425,9 @@ async def delete_test_accounts(
                 # Update any users that had this account
                 await crud.update_user_stripe_connect_reset(account.id)
             except Exception as e:
-                logger.error(f"Failed to delete account {account.id}: {str(e)}")
+                logger.error("Failed to delete account %s: %s", account.id, str(e))
 
         return {"success": True, "deleted_accounts": deleted_accounts, "count": len(deleted_accounts)}
     except Exception as e:
-        logger.error(f"Error deleting test accounts: {str(e)}")
+        logger.error("Error deleting test accounts: %s", str(e))
         raise HTTPException(status_code=400, detail=str(e))
