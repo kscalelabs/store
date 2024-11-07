@@ -46,7 +46,7 @@ async def store_ice_candidate(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> None:
-    crud.store_ice_candidate(TeleopICECandidate.create(user.id, robot_id, candidate))
+    await crud.store_ice_candidate(TeleopICECandidate.create(user.id, robot_id, candidate))
 
 
 @router.websocket("/ws/ice-candidates")

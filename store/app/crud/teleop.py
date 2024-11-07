@@ -13,11 +13,11 @@ class TeleopCrud(BaseCrud):
     def get_gsis(cls) -> set[str]:
         return super().get_gsis().union({"robot_id"})
 
-    def store_ice_candidate(self, candidate: TeleopICECandidate) -> None:
-        self._add_item(candidate, unique_fields=["user_id", "robot_id"])
+    async def store_ice_candidate(self, candidate: TeleopICECandidate) -> None:
+        await self._add_item(candidate, unique_fields=["user_id", "robot_id"])
 
-    def get_ice_candidates(self, user_id: str, robot_id: str, limit: int = 1) -> list[TeleopICECandidate]:
-        return self._get_items_from_secondary_index(
+    async def get_ice_candidates(self, user_id: str, robot_id: str, limit: int = 1) -> list[TeleopICECandidate]:
+        return await self._get_items_from_secondary_index(
             "user_id",
             user_id,
             TeleopICECandidate,
@@ -25,5 +25,5 @@ class TeleopCrud(BaseCrud):
             limit=limit,
         )
 
-    def delete_ice_candidate(self, candidate: TeleopICECandidate) -> None:
-        self._delete_item(candidate)
+    async def delete_ice_candidate(self, candidate: TeleopICECandidate) -> None:
+        await self._delete_item(candidate)
