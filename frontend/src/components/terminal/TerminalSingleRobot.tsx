@@ -5,9 +5,8 @@ import { useNavigate } from "react-router-dom";
 import "@/components/terminal/Terminal.css";
 
 import AudioIcon from "@/components/icons/AudioIcon";
+import TerminalRobotModel from "@/components/terminal/TerminalRobotModel";
 import { SingleRobotResponse } from "@/components/terminal/types";
-
-import TerminalRobotModel from "./TerminalRobotModel";
 
 interface Props {
   robot: SingleRobotResponse;

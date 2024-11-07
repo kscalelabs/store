@@ -53,7 +53,6 @@ const URDFRenderer = ({
   const [showControls, setShowControls] = useState(true);
   const [isCycling, setIsCycling] = useState(false);
   const animationRef = useRef<number | null>(null);
-  const [isInStartPosition, setIsInStartPosition] = useState(true);
   const [urdfInfo, setUrdfInfo] = useState<URDFInfo | null>(null);
   const [orientation, setOrientation] = useState<Orientation>("Z-up");
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -65,30 +64,19 @@ const URDFRenderer = ({
   const wireframeStateRef = useRef<boolean>(showWireframe);
   const [theme, setTheme] = useState<Theme>(() => supportedThemes[0]);
   const themeRef = useRef<Theme>("default");
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const controlsRef = useRef<OrbitControls | null>(null);
 
   useEffect(() => {
     const handleFullScreenChange = () => {
       const isNowFullScreen = !!document.fullscreenElement;
-
-      if (isNowFullScreen) {
-        setIsFullScreen(true);
-      } else {
-        jointPositionsRef.current = jointControls.map((joint) => ({
-          name: joint.name,
-          value: joint.value,
-        }));
-        wireframeStateRef.current = isWireframe;
-        themeRef.current = theme;
-
-        setIsFullScreen(false);
-        setForceRerender((prev) => prev + 1);
-      }
+      setIsFullScreen(isNowFullScreen);
     };
 
     document.addEventListener("fullscreenchange", handleFullScreenChange);
     return () =>
       document.removeEventListener("fullscreenchange", handleFullScreenChange);
-  }, [jointControls, isWireframe, theme]);
+  }, []);
 
   const getThemeColors = useCallback(() => {
     switch (theme) {
@@ -121,7 +109,10 @@ const URDFRenderer = ({
       0.1,
       1000,
     );
+    cameraRef.current = camera;
+
     const renderer = new THREE.WebGLRenderer({ antialias: true });
+    rendererRef.current = renderer;
     renderer.setSize(
       containerRef.current.clientWidth,
       containerRef.current.clientHeight,
@@ -129,6 +120,7 @@ const URDFRenderer = ({
     containerRef.current.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);
+    controlsRef.current = controls;
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
 
@@ -252,7 +244,12 @@ const URDFRenderer = ({
     animate();
 
     const handleResize = () => {
-      if (!containerRef.current) return;
+      if (!containerRef.current || !rendererRef.current || !cameraRef.current)
+        return;
+
+      const camera = cameraRef.current;
+      const renderer = rendererRef.current;
+
       camera.aspect =
         containerRef.current.clientWidth / containerRef.current.clientHeight;
       camera.updateProjectionMatrix();
@@ -285,12 +282,23 @@ const URDFRenderer = ({
 
     updateOrientation(orientation);
 
+    // Add fullscreen change handler that just triggers a resize
+    const handleFullScreenChange = () => {
+      const isNowFullScreen = !!document.fullscreenElement;
+      setIsFullScreen(isNowFullScreen);
+      requestAnimationFrame(handleResize);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullScreenChange);
+
     return () => {
       if (containerRef.current) {
         containerRef.current.removeChild(renderer.domElement);
       }
       window.removeEventListener("resize", handleResize);
       updateOrientation("Z-up"); // Reset orientation on unmount
+      rendererRef.current = null;
+      document.removeEventListener("fullscreenchange", handleFullScreenChange);
     };
   }, [urdfContent, files, orientation, forceRerender, getThemeColors]);
 
@@ -311,8 +319,6 @@ const URDFRenderer = ({
         }
       });
     }
-
-    setIsInStartPosition(false);
   };
 
   const cycleAllJoints = useCallback(() => {
@@ -321,7 +327,7 @@ const URDFRenderer = ({
 
     const startPositions = jointControls.map((joint) => joint.value);
     const startTime = Date.now();
-    const duration = 10000; // 10 seconds
+    const duration = 3000; // Changed from 10000 to 3000 (3 seconds)
 
     const animate = () => {
       const elapsedTime = Date.now() - startTime;
@@ -358,13 +364,6 @@ const URDFRenderer = ({
     };
   }, []);
 
-  const resetJoints = useCallback(() => {
-    jointControls.forEach((joint, index) => {
-      handleJointChange(index, (joint.max + joint.min) / 2);
-    });
-    setIsInStartPosition(true);
-  }, [jointControls, handleJointChange]);
-
   const toggleOrientation = useCallback(() => {
     setOrientation((prev) => {
       const newOrientation =
@@ -372,6 +371,9 @@ const URDFRenderer = ({
       if (robotRef.current) {
         const robot = robotRef.current;
         robot.rotation.set(0, 0, 0);
+
+        // Store current wireframe state
+        const currentWireframe = isWireframe;
 
         switch (newOrientation) {
           case "Y-up":
@@ -382,76 +384,34 @@ const URDFRenderer = ({
             break;
           // 'Z-up' is the default, no rotation needed
         }
+
+        // Reapply wireframe state to all meshes
+        robot.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            const material = new THREE.MeshStandardMaterial({
+              color: child.userData.originalColor || child.material.color,
+              metalness: 0.4,
+              roughness: 0.6,
+              wireframe: currentWireframe,
+            });
+            child.material = material;
+            child.material.needsUpdate = true;
+          }
+        });
       }
       return newOrientation;
     });
-  }, []);
-
-  const resetViewerState = useCallback(() => {
-    if (
-      !containerRef.current ||
-      !robotRef.current ||
-      !sceneRef.current ||
-      !rendererRef.current
-    )
-      return;
-
-    const renderer = rendererRef.current;
-    renderer.setSize(
-      containerRef.current.clientWidth,
-      containerRef.current.clientHeight,
-    );
-
-    const camera = new THREE.PerspectiveCamera(
-      50,
-      containerRef.current.clientWidth / containerRef.current.clientHeight,
-      0.1,
-      1000,
-    );
-    const distance = 10;
-    camera.position.set(0, distance / 2, -distance);
-    camera.lookAt(0, 0, 0);
-
-    const robot = robotRef.current;
-    const box = new THREE.Box3().setFromObject(robot);
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z);
-    const scale = 5 / maxDim;
-    robot.scale.setScalar(scale);
-    robot.position.sub(center.multiplyScalar(scale));
-
-    renderer.render(sceneRef.current, camera);
-  }, []);
-
-  useEffect(() => {
-    const handleFullScreenChange = () => {
-      const isNowFullScreen = !!document.fullscreenElement;
-      setIsFullScreen(isNowFullScreen);
-
-      if (!isNowFullScreen) {
-        setTimeout(() => {
-          resetViewerState();
-        }, 100);
-      }
-    };
-
-    document.addEventListener("fullscreenchange", handleFullScreenChange);
-    return () =>
-      document.removeEventListener("fullscreenchange", handleFullScreenChange);
-  }, [resetViewerState]);
+  }, [isWireframe]);
 
   const toggleFullScreen = useCallback(() => {
-    if (!parentRef.current || isCycling) return;
+    if (!parentRef.current) return;
 
     if (!document.fullscreenElement) {
       parentRef.current.requestFullscreen();
-      setIsFullScreen(true);
     } else {
       document.exitFullscreen();
-      setIsFullScreen(false);
     }
-  }, [isCycling]);
+  }, []);
 
   const cycleTheme = useCallback(() => {
     if (sceneRef.current && supportedThemes.length > 1) {
@@ -512,9 +472,8 @@ const URDFRenderer = ({
           </button>
           <button
             onClick={toggleFullScreen}
-            disabled={isCycling}
             className={
-              "bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center disabled:opacity-50"
+              "bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center"
             }
           >
             {isFullScreen ? <FaCompress /> : <FaExpand />}
@@ -522,7 +481,7 @@ const URDFRenderer = ({
           <button
             onClick={() => setIsWireframe(!isWireframe)}
             className={
-              "bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center disabled:opacity-50"
+              "bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center"
             }
           >
             {isWireframe ? "S" : "W"}
@@ -554,9 +513,8 @@ const URDFRenderer = ({
                   {isCycling ? "Cycling..." : "Cycle All Joints"}
                 </button>
                 <button
-                  onClick={resetJoints}
-                  disabled={isCycling || isInStartPosition}
-                  className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+                  onClick={() => setShowControls(false)}
+                  className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
                 >
                   <FaUndo className="inline-block mr-2" />
                   Reset Joints
