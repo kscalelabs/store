@@ -36,6 +36,7 @@ interface Props {
   files: UntarredFile[];
   useControls?: boolean;
   visualTheme?: VisualizationTheme | null;
+  showWireframe?: boolean;
 }
 
 const URDFRenderer = ({
@@ -43,6 +44,7 @@ const URDFRenderer = ({
   files,
   useControls = true,
   visualTheme = null,
+  showWireframe = false,
 }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -59,6 +61,10 @@ const URDFRenderer = ({
   const [forceRerender, setForceRerender] = useState(0);
   const jointPositionsRef = useRef<{ name: string; value: number }[]>([]);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const [isWireframe, setIsWireframe] = useState(showWireframe);
+  const wireframeStateRef = useRef<boolean>(showWireframe);
+  const [isDarkBackground, setIsDarkBackground] = useState(false);
+  const darkBackgroundStateRef = useRef<boolean>(false);
 
   const applyTheme = useCallback((theme: VisualizationTheme) => {
     if (!sceneRef.current) return;
@@ -114,6 +120,9 @@ const URDFRenderer = ({
           name: joint.name,
           value: joint.value,
         }));
+        wireframeStateRef.current = isWireframe;
+        darkBackgroundStateRef.current = isDarkBackground;
+
         setIsFullScreen(false);
         setForceRerender((prev) => prev + 1);
       }
@@ -122,14 +131,17 @@ const URDFRenderer = ({
     document.addEventListener("fullscreenchange", handleFullScreenChange);
     return () =>
       document.removeEventListener("fullscreenchange", handleFullScreenChange);
-  }, [jointControls]);
+  }, [jointControls, isWireframe, isDarkBackground]);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     const scene = new THREE.Scene();
     sceneRef.current = scene;
-    scene.background = new THREE.Color(0xf0f0f0);
+    scene.background = new THREE.Color(
+      darkBackgroundStateRef.current ? 0x222222 : 0xf0f0f0,
+    );
+    setIsDarkBackground(darkBackgroundStateRef.current);
 
     const camera = new THREE.PerspectiveCamera(
       50,
@@ -148,16 +160,21 @@ const URDFRenderer = ({
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
 
-    // Lighting setup
-    const frontLight = new THREE.DirectionalLight(0xffffff, 0.7);
-    frontLight.position.set(1, 1, 1);
-    scene.add(frontLight);
+    scene.children.forEach((child) => {
+      if (child instanceof THREE.Light) {
+        scene.remove(child);
+      }
+    });
 
-    const backLight = new THREE.DirectionalLight(0xffffff, 0.3);
-    backLight.position.set(-1, -1, -1);
-    scene.add(backLight);
+    const mainLight = new THREE.DirectionalLight(0xffffff, 2.0);
+    mainLight.position.set(5, 5, 5);
+    scene.add(mainLight);
 
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+    const fillLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    fillLight.position.set(-5, 2, -5);
+    scene.add(fillLight);
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
     scene.add(ambientLight);
 
     const loader = new URDFLoader();
@@ -165,7 +182,14 @@ const URDFRenderer = ({
       const fileContent = files.find((f) => f.name.endsWith(path))?.content;
       if (fileContent) {
         const geometry = new STLLoader().parse(fileContent.buffer);
-        const material = new THREE.MeshPhongMaterial({ color: 0xaaaaaa });
+
+        const material = new THREE.MeshStandardMaterial({
+          color: 0xaaaaaa,
+          metalness: 0.4,
+          roughness: 0.6,
+          wireframe: showWireframe || false,
+        });
+
         const mesh = new THREE.Mesh(geometry, material);
         onComplete(mesh);
       } else {
@@ -378,10 +402,8 @@ const URDFRenderer = ({
     setOrientation((prev) => {
       const newOrientation =
         prev === "Z-up" ? "Y-up" : prev === "Y-up" ? "X-up" : "Z-up";
-      if (sceneRef.current && robotRef.current) {
+      if (robotRef.current) {
         const robot = robotRef.current;
-
-        // Reset rotations
         robot.rotation.set(0, 0, 0);
 
         switch (newOrientation) {
@@ -465,7 +487,7 @@ const URDFRenderer = ({
   }, [resetViewerState]);
 
   const toggleFullScreen = useCallback(() => {
-    if (!parentRef.current) return;
+    if (!parentRef.current || isCycling) return;
 
     if (!document.fullscreenElement) {
       parentRef.current.requestFullscreen();
@@ -473,6 +495,18 @@ const URDFRenderer = ({
     } else {
       document.exitFullscreen();
       setIsFullScreen(false);
+    }
+  }, [isCycling]);
+
+  const toggleBackground = useCallback(() => {
+    if (sceneRef.current) {
+      setIsDarkBackground((prev) => {
+        const newIsDark = !prev;
+        sceneRef.current!.background = new THREE.Color(
+          newIsDark ? 0x222222 : 0xf0f0f0,
+        );
+        return newIsDark;
+      });
     }
   }, []);
 
@@ -483,9 +517,98 @@ const URDFRenderer = ({
       case "dark":
         return "bg-[#222222]";
       default:
-        return "bg-[#f0f0f0]";
+        return isDarkBackground ? "bg-[#222222]" : "bg-[#f0f0f0]";
     }
-  }, [visualTheme]);
+  }, [visualTheme, isDarkBackground]);
+
+  useEffect(() => {
+    if (robotRef.current) {
+      robotRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.material.wireframe = wireframeStateRef.current;
+          child.material.needsUpdate = true;
+        }
+      });
+    }
+  }, [forceRerender]);
+
+  useEffect(() => {
+    if (robotRef.current) {
+      robotRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.material.wireframe = isWireframe;
+          child.material.needsUpdate = true;
+        }
+      });
+    }
+    wireframeStateRef.current = isWireframe;
+  }, [isWireframe]);
+
+  useEffect(() => {
+    if (sceneRef.current) {
+      sceneRef.current.background = new THREE.Color(
+        isDarkBackground ? 0x222222 : 0xf0f0f0,
+      );
+    }
+
+    if (robotRef.current) {
+      robotRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          const currentColor = child.material.color;
+          const material = new THREE.MeshStandardMaterial({
+            color: currentColor,
+            metalness: 0.4,
+            roughness: 0.6,
+            wireframe: isWireframe,
+            emissive: child.material.emissive,
+            emissiveIntensity: child.material.emissiveIntensity,
+          });
+          child.material = material;
+          child.material.needsUpdate = true;
+        }
+      });
+    }
+  }, [orientation, isWireframe, isDarkBackground]);
+
+  useEffect(() => {
+    if (sceneRef.current) {
+      const backgroundColor = isDarkBackground ? 0x222222 : 0xf0f0f0;
+      sceneRef.current.background = new THREE.Color(backgroundColor);
+      darkBackgroundStateRef.current = isDarkBackground;
+    }
+  }, [isDarkBackground]);
+
+  useEffect(() => {
+    if (!robotRef.current) return;
+
+    const robot = robotRef.current;
+    robot.rotation.set(0, 0, 0);
+
+    switch (orientation) {
+      case "Y-up":
+        robot.rotateX(-Math.PI / 2);
+        break;
+      case "X-up":
+        robot.rotateZ(Math.PI / 2);
+        break;
+    }
+
+    robot.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        const currentColor = child.material.color;
+        const material = new THREE.MeshStandardMaterial({
+          color: currentColor,
+          metalness: 0.4,
+          roughness: 0.6,
+          wireframe: isWireframe,
+          emissive: child.material.emissive,
+          emissiveIntensity: child.material.emissiveIntensity,
+        });
+        child.material = material;
+        child.material.needsUpdate = true;
+      }
+    });
+  }, [orientation, isWireframe]);
 
   return (
     <div
@@ -502,9 +625,22 @@ const URDFRenderer = ({
           </button>
           <button
             onClick={toggleFullScreen}
-            className={`${getOrientationButtonColors(visualTheme)} text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center`}
+            disabled={isCycling}
+            className={`${getOrientationButtonColors(visualTheme)} text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center disabled:opacity-50`}
           >
             {isFullScreen ? <FaCompress /> : <FaExpand />}
+          </button>
+          <button
+            onClick={() => setIsWireframe(!isWireframe)}
+            className={`${getOrientationButtonColors(visualTheme)} text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center`}
+          >
+            {isWireframe ? "S" : "W"}
+          </button>
+          <button
+            onClick={toggleBackground}
+            className={`${getOrientationButtonColors(visualTheme)} text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center`}
+          >
+            {isDarkBackground ? "L" : "D"}
           </button>
         </div>
       </div>
@@ -544,7 +680,9 @@ const URDFRenderer = ({
               </div>
               {urdfInfo && (
                 <div className="p-4 rounded-lg shadow-md mb-4 bg-grey-100 font-mono">
-                  <ul className="text-sm text-gray-800">
+                  <ul
+                    className={`text-sm ${isDarkBackground ? "text-gray-200" : "text-gray-800"}`}
+                  >
                     <li>Joint Count: {urdfInfo.jointCount}</li>
                     <li>Link Count: {urdfInfo.linkCount}</li>
                   </ul>
@@ -554,10 +692,14 @@ const URDFRenderer = ({
                 {jointControls.map((joint, index) => (
                   <div key={joint.name} className="text-sm">
                     <div className="flex justify-between items-center mb-1">
-                      <label className="font-medium text-gray-700">
+                      <label
+                        className={`font-medium ${isDarkBackground ? "text-gray-200" : "text-gray-700"}`}
+                      >
                         {joint.name}
                       </label>
-                      <span className="text-xs text-gray-500">
+                      <span
+                        className={`text-xs ${isDarkBackground ? "text-gray-400" : "text-gray-500"}`}
+                      >
                         {joint.value.toFixed(2)}
                       </span>
                     </div>
@@ -573,7 +715,9 @@ const URDFRenderer = ({
                       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                       disabled={isCycling}
                     />
-                    <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <div
+                      className={`flex justify-between text-xs ${isDarkBackground ? "text-gray-400" : "text-gray-500"} mt-1`}
+                    >
                       <span>{joint.min.toFixed(2)}</span>
                       <span>{joint.max.toFixed(2)}</span>
                     </div>
