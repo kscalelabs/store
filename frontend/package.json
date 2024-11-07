@@ -39,6 +39,8 @@
     "@react-oauth/google": "^0.12.1",
     "@react-three/drei": "^9.109.2",
     "@react-three/fiber": "^8.16.8",
+    "@stripe/connect-js": "^3.3.16",
+    "@stripe/react-connect-js": "^3.3.18",
     "@stripe/stripe-js": "^1.54.2",
     "@types/three": "^0.168.0",
     "@uidotdev/usehooks": "^2.4.1",

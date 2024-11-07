@@ -5,6 +5,7 @@ import UpvotedGrid from "@/components/listings/UpvotedGrid";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Input, TextArea } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
+import { Tooltip } from "@/components/ui/ToolTip";
 import { Button } from "@/components/ui/button";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
@@ -187,7 +188,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
     <div className="space-y-8 mb-12">
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader className="flex flex-col items-center space-y-4">
-          <div className="flex flex-col items-center space-y-2 mb-2">
+          <div className="flex flex-col items-center space-y-2">
             <h1 className="text-3xl font-bold text-primary-9">
               {user.first_name || user.last_name
                 ? `${user.first_name || ""} ${user.last_name || ""}`
@@ -195,7 +196,8 @@ export const RenderProfile = (props: RenderProfileProps) => {
             </h1>
             <div className="flex gap-2">
               <p className="text-sm text-gray-1 bg-gray-10 px-3 py-1 rounded-md">
-                @{user.username}
+                <span className="font-semibold mr-0.5 select-none">@</span>
+                {user.username}
               </p>
               {user.permissions && (
                 <p className="text-sm text-primary-9 bg-primary-3 px-3 py-1 rounded-md">
@@ -211,12 +213,9 @@ export const RenderProfile = (props: RenderProfileProps) => {
             </p>
           </div>
           {!isEditing && canEdit && (
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap gap-2 justify-center">
               <Button onClick={() => navigate("/keys")} variant="primary">
                 API Keys
-              </Button>
-              <Button onClick={() => navigate("/orders")} variant="default">
-                Orders
               </Button>
               <Button onClick={() => setIsEditing(true)} variant="outline">
                 Edit Profile
@@ -358,11 +357,11 @@ export const RenderProfile = (props: RenderProfileProps) => {
           ) : (
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-semibold mb-2">Bio</h2>
+                <h2 className="text-lg font-medium mb-2">Bio</h2>
                 {user.bio ? (
                   <p>{user.bio}</p>
                 ) : (
-                  <p className="text-gray-11">
+                  <p className="text-gray-11 text-sm">
                     No bio set. Edit your profile to add a bio.
                   </p>
                 )}
@@ -374,9 +373,54 @@ export const RenderProfile = (props: RenderProfileProps) => {
 
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader>
-          <h2 className="text-2xl font-bold">Listings</h2>
+          <h2 className="text-2xl font-bold">Store</h2>
         </CardHeader>
         <CardContent>
+          <div className="mb-4">
+            {user.stripe_connect_account_id &&
+            !user.stripe_connect_onboarding_completed ? (
+              <p className="text-gray-11 text-sm">
+                Your Stripe account setup is not complete. Please resolve
+                outstanding requirements to begin selling robots. It may take
+                some time for Stripe to process your info between submissions.
+              </p>
+            ) : user.stripe_connect_onboarding_completed ? (
+              <p className="text-gray-11 text-sm">
+                Stripe account setup complete.
+              </p>
+            ) : null}
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={() => navigate("/orders")} variant="primary">
+              Orders
+            </Button>
+            {!user.stripe_connect_account_id ? (
+              <Tooltip content="Start seller onboarding" position="bottom">
+                <Button
+                  onClick={() => navigate("/sell/onboarding")}
+                  variant="outline"
+                >
+                  Sell Robots
+                </Button>
+              </Tooltip>
+            ) : !user.stripe_connect_onboarding_completed ? (
+              <Tooltip content="Continue seller onboarding" position="bottom">
+                <Button
+                  onClick={() => navigate("/sell/onboarding")}
+                  variant="outline"
+                >
+                  Complete Seller Setup
+                </Button>
+              </Tooltip>
+            ) : (
+              <Button
+                onClick={() => navigate("/sell/dashboard")}
+                variant="outline"
+              >
+                Seller Dashboard
+              </Button>
+            )}
+          </div>
           <div className="flex flex-col items-center space-y-4">
             <Tabs
               defaultValue="own"
@@ -386,13 +430,13 @@ export const RenderProfile = (props: RenderProfileProps) => {
               <TabsList className="flex justify-center space-x-4 mb-4">
                 <TabsTrigger
                   value="own"
-                  className="px-3 py-1.5 rounded-md transition-colors duration-300 hover:bg-gray-11 hover:text-gray-1 data-[state=active]:bg-primary-9 data-[state=active]:text-gray-1"
+                  className="text-sm px-3 py-1.5 rounded-md transition-colors duration-300 hover:bg-gray-9 hover:text-gray-1 data-[state=active]:bg-gray-12 data-[state=active]:text-gray-1"
                 >
-                  Overview
+                  Your Listings
                 </TabsTrigger>
                 <TabsTrigger
                   value="upvoted"
-                  className="px-3 py-1.5 rounded-md transition-colors duration-300 hover:bg-gray-11 hover:text-gray-1 data-[state=active]:bg-primary-9 data-[state=active]:text-gray-1"
+                  className="text-sm px-3 py-1.5 rounded-md transition-colors duration-300 hover:bg-gray-9 hover:text-gray-1 data-[state=active]:bg-gray-12 data-[state=active]:text-gray-1"
                 >
                   Upvoted
                 </TabsTrigger>

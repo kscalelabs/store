@@ -1064,6 +1064,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/stripe/connect/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Connect Account */
+        post: operations["create_connect_account_stripe_connect_account_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stripe/connect/account/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Connect Account Session */
+        post: operations["create_connect_account_session_stripe_connect_account_session_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stripe/connect/delete/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Delete Test Accounts */
+        post: operations["delete_test_accounts_stripe_connect_delete_accounts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/me": {
         parameters: {
             query?: never;
@@ -1290,6 +1341,11 @@ export interface components {
             /** Photos */
             photos?: string[];
         };
+        /** Body_create_connect_account_session_stripe_connect_account_session_post */
+        Body_create_connect_account_session_stripe_connect_account_session_post: {
+            /** Account Id */
+            account_id: string;
+        };
         /** Body_pull_onshape_document_onshape_pull__listing_id__get */
         Body_pull_onshape_document_onshape_pull__listing_id__get: {
             /** Suffix To Joint Effort */
@@ -1329,6 +1385,11 @@ export interface components {
         CreateCheckoutSessionResponse: {
             /** Session Id */
             session_id: string;
+        };
+        /** CreateConnectAccountResponse */
+        CreateConnectAccountResponse: {
+            /** Account Id */
+            account_id: string;
         };
         /** CreateRefundsRequest */
         CreateRefundsRequest: {
@@ -1398,6 +1459,8 @@ export interface components {
             username: string | null;
             /** Slug */
             slug: string | null;
+            /** Score */
+            score: number;
             /** Views */
             views: number;
             /** Created At */
@@ -1959,6 +2022,13 @@ export interface components {
             name?: string | null;
             /** Bio */
             bio?: string | null;
+            /** Stripe Connect Account Id */
+            stripe_connect_account_id?: string | null;
+            /**
+             * Stripe Connect Onboarding Completed
+             * @default false
+             */
+            stripe_connect_onboarding_completed: boolean;
         };
         /** UserSignup */
         UserSignup: {
@@ -3848,6 +3918,81 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_connect_account_stripe_connect_account_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateConnectAccountResponse"];
+                };
+            };
+        };
+    };
+    create_connect_account_session_stripe_connect_account_session_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["Body_create_connect_account_session_stripe_connect_account_session_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_test_accounts_stripe_connect_delete_accounts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
                 };
             };
         };

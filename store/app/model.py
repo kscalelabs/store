@@ -51,6 +51,8 @@ class User(StoreBaseModel):
     last_name: str | None = None
     name: str | None = None
     bio: str | None = None
+    stripe_connect_account_id: str | None = None
+    stripe_connect_onboarding_completed: bool = False
 
     @classmethod
     def create(
@@ -64,6 +66,8 @@ class User(StoreBaseModel):
         last_name: str | None = None,
         name: str | None = None,
         bio: str | None = None,
+        stripe_connect_account_id: str | None = None,
+        stripe_connect_onboarding_completed: bool = False,
     ) -> Self:
         now = int(time.time())
         hashed_pw = hash_password(password) if password else None
@@ -80,6 +84,8 @@ class User(StoreBaseModel):
             last_name=last_name,
             name=name,
             bio=bio,
+            stripe_connect_account_id=stripe_connect_account_id,
+            stripe_connect_onboarding_completed=stripe_connect_onboarding_completed,
         )
 
     def update_timestamp(self) -> None:
@@ -110,6 +116,8 @@ class UserPublic(BaseModel):
     last_name: str | None = None
     name: str | None = None
     bio: str | None = None
+    stripe_connect_account_id: str | None = None
+    stripe_connect_onboarding_completed: bool = False
 
 
 class EmailSignUpToken(StoreBaseModel):

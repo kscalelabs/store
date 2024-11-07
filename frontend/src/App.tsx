@@ -23,17 +23,20 @@ import Login from "@/components/pages/Login";
 import Logout from "@/components/pages/Logout";
 import NotFound from "@/components/pages/NotFound";
 import Profile from "@/components/pages/Profile";
+import SellerDashboard from "@/components/pages/SellerDashboard";
 import Signup from "@/components/pages/Signup";
 import { AlertQueue, AlertQueueProvider } from "@/hooks/useAlertQueue";
 import { AuthenticationProvider } from "@/hooks/useAuth";
 
 import GDPRBanner from "./components/gdpr/gdprbanner";
+import DeleteConnect from "./components/pages/DeleteConnect";
 import DownloadsPage from "./components/pages/Download";
 import OrderSuccess from "./components/pages/OrderSuccess";
 import OrdersPage from "./components/pages/Orders";
 import Playground from "./components/pages/Playground";
 import PrivacyPolicy from "./components/pages/PrivacyPolicy";
 import ResearchPage from "./components/pages/ResearchPage";
+import SellerOnboarding from "./components/pages/SellerOnboarding";
 import Terminal from "./components/pages/Terminal";
 import TermsOfService from "./components/pages/TermsOfService";
 
@@ -81,6 +84,19 @@ const App = () => {
 
                         <Route path="/tos" element={<TermsOfService />} />
                         <Route path="/privacy" element={<PrivacyPolicy />} />
+
+                        <Route
+                          path="/sell/onboarding"
+                          element={<SellerOnboarding />}
+                        />
+                        <Route
+                          path="/sell/dashboard"
+                          element={<SellerDashboard />}
+                        />
+                        <Route
+                          path="/delete-connect"
+                          element={<DeleteConnect />}
+                        />
 
                         <Route path="/success" element={<OrderSuccess />} />
                         <Route path="/orders" element={<OrdersPage />} />
