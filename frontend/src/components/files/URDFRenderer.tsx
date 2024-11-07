@@ -139,7 +139,7 @@ const URDFRenderer = ({
     const scene = new THREE.Scene();
     sceneRef.current = scene;
     scene.background = new THREE.Color(
-      darkBackgroundStateRef.current ? 0x222222 : 0xf0f0f0,
+      darkBackgroundStateRef.current ? 0x000000 : 0xf0f0f0,
     );
     setIsDarkBackground(darkBackgroundStateRef.current);
 
@@ -503,7 +503,7 @@ const URDFRenderer = ({
       setIsDarkBackground((prev) => {
         const newIsDark = !prev;
         sceneRef.current!.background = new THREE.Color(
-          newIsDark ? 0x222222 : 0xf0f0f0,
+          newIsDark ? 0x000000 : 0xf0f0f0,
         );
         return newIsDark;
       });
@@ -511,15 +511,8 @@ const URDFRenderer = ({
   }, []);
 
   const getBackgroundColor = useCallback(() => {
-    switch (visualTheme) {
-      case "terminal":
-        return "bg-black";
-      case "dark":
-        return "bg-[#222222]";
-      default:
-        return isDarkBackground ? "bg-black" : "bg-[#f0f0f0]";
-    }
-  }, [visualTheme, isDarkBackground]);
+    return isDarkBackground ? "bg-black" : "bg-[#f0f0f0]";
+  }, [isDarkBackground]);
 
   useEffect(() => {
     if (robotRef.current) {
@@ -576,7 +569,7 @@ const URDFRenderer = ({
   }, [isDarkBackground]);
 
   useEffect(() => {
-    if (!robotRef.current) return;
+    if (!robotRef.current || !sceneRef.current) return;
 
     const robot = robotRef.current;
     robot.rotation.set(0, 0, 0);
@@ -592,20 +585,19 @@ const URDFRenderer = ({
 
     robot.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        const currentColor = child.material.color;
         const material = new THREE.MeshStandardMaterial({
-          color: currentColor,
+          color: isDarkBackground ? 0x00aa00 : child.userData.originalColor,
           metalness: 0.4,
           roughness: 0.6,
           wireframe: isWireframe,
-          emissive: child.material.emissive,
-          emissiveIntensity: child.material.emissiveIntensity,
+          emissive: isDarkBackground ? 0x00aa00 : 0x000000,
+          emissiveIntensity: isDarkBackground ? 0.5 : 0,
         });
         child.material = material;
         child.material.needsUpdate = true;
       }
     });
-  }, [orientation, isWireframe]);
+  }, [orientation, isDarkBackground, isWireframe]);
 
   return (
     <div
@@ -646,7 +638,7 @@ const URDFRenderer = ({
       </div>
 
       {useControls && showControls && (
-        <div className="absolute top-0 right-0 bottom-0 w-64 z-30">
+        <div className="absolute top-0 right-0 bottom-0 w-64 z-20">
           <div className={`h-full overflow-y-auto ${getBackgroundColor()}`}>
             <div className="p-4 overflow-y-auto h-full">
               <div className="space-y-2 mb-4">
@@ -730,7 +722,7 @@ const URDFRenderer = ({
           onClick={() => setShowControls(true)}
           className={`${
             isFullScreen ? "fixed" : "absolute"
-          } bottom-4 right-4 z-30 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full shadow-md`}
+          } bottom-4 right-4 z-20 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-full shadow-md`}
         >
           <FaChevronLeft />
         </button>
