@@ -6,6 +6,7 @@ import {
   FaCompress,
   FaExpand,
   FaPlay,
+  FaSync,
   FaUndo,
 } from "react-icons/fa";
 
@@ -94,8 +95,7 @@ const URDFRenderer = ({
   const controlsRef = useRef<OrbitControls | null>(null);
 
   // Add new state/refs for auto-rotation
-  const [isAutoRotating, setIsAutoRotating] = useState(true);
-  const lastInteractionRef = useRef<number>(Date.now());
+  const [isAutoRotating, setIsAutoRotating] = useState(false);
 
   useEffect(() => {
     const handleFullScreenChange = () => {
@@ -147,7 +147,6 @@ const URDFRenderer = ({
   }, []);
 
   const toggleOrientation = useCallback(() => {
-    lastInteractionRef.current = Date.now();
     if (!robotRef.current) return;
 
     robotRef.current.rotateOnAxis(new THREE.Vector3(1, 0, 0), -Math.PI / 2);
@@ -191,6 +190,7 @@ const URDFRenderer = ({
     controlsRef.current = controls;
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
+    controls.autoRotateSpeed = 1.0;
 
     scene.children.forEach((child) => {
       if (child instanceof THREE.Light) {
@@ -297,29 +297,11 @@ const URDFRenderer = ({
       const animationId = requestAnimationFrame(animate);
       controls.update();
 
-      if (isAutoRotating && controlsRef.current) {
-        const timeSinceLastInteraction =
-          Date.now() - lastInteractionRef.current;
-        if (timeSinceLastInteraction > 500) {
-          controlsRef.current.autoRotate = true;
-          controlsRef.current.autoRotateSpeed = 2.0;
-        } else {
-          controlsRef.current.autoRotate = false;
-        }
-      }
-
       renderer.render(scene, camera);
       return animationId;
     };
 
     const animationId = animate();
-
-    // Add interaction handlers to the controls
-    const handleInteraction = () => {
-      lastInteractionRef.current = Date.now();
-    };
-
-    controls.addEventListener("start", handleInteraction);
 
     // Handle window resizing.
     const handleResize = () => {
@@ -386,12 +368,10 @@ const URDFRenderer = ({
       }
       window.removeEventListener("resize", handleResize);
       document.removeEventListener("fullscreenchange", handleFullScreenChange);
-      controls.removeEventListener("start", handleInteraction);
     };
-  }, [urdfContent, files, isAutoRotating]);
+  }, [urdfContent, files]);
 
   const handleJointChange = (index: number, value: number) => {
-    lastInteractionRef.current = Date.now();
     setJointControls((prevControls) => {
       const newControls = [...prevControls];
       newControls[index].value = value;
@@ -465,7 +445,6 @@ const URDFRenderer = ({
   }, [jointControls, handleJointChange]);
 
   const toggleFullScreen = useCallback(() => {
-    lastInteractionRef.current = Date.now();
     if (!parentRef.current) return;
 
     if (!document.fullscreenElement) {
@@ -474,6 +453,14 @@ const URDFRenderer = ({
       document.exitFullscreen();
     }
   }, []);
+
+  const toggleAutoRotate = useCallback(() => {
+    const newIsAutoRotating = !isAutoRotating;
+    if (controlsRef.current) {
+      controlsRef.current.autoRotate = newIsAutoRotating;
+    }
+    setIsAutoRotating(newIsAutoRotating);
+  }, [isAutoRotating]);
 
   return (
     <div
@@ -492,6 +479,12 @@ const URDFRenderer = ({
             }
           >
             <FaChevronUp />
+          </button>
+          <button
+            onClick={toggleAutoRotate}
+            className="bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center"
+          >
+            <FaSync className={isAutoRotating ? "animate-pulse" : ""} />
           </button>
           <button
             onClick={toggleFullScreen}
