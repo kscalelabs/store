@@ -17,8 +17,6 @@ import { UntarredFile } from "./Tarfile";
 
 type Orientation = "Z-up" | "Y-up" | "X-up";
 
-type VisualizationTheme = "default" | "terminal" | "dark";
-
 interface JointControl {
   name: string;
   min: number;
@@ -31,20 +29,22 @@ interface URDFInfo {
   linkCount: number;
 }
 
+type Theme = "default" | "dark";
+
 interface Props {
   urdfContent: string;
   files: UntarredFile[];
   useControls?: boolean;
-  visualTheme?: VisualizationTheme | null;
   showWireframe?: boolean;
+  supportedThemes?: Theme[];
 }
 
 const URDFRenderer = ({
   urdfContent,
   files,
   useControls = true,
-  visualTheme = null,
   showWireframe = false,
+  supportedThemes = ["default", "dark"],
 }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -63,51 +63,8 @@ const URDFRenderer = ({
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const [isWireframe, setIsWireframe] = useState(showWireframe);
   const wireframeStateRef = useRef<boolean>(showWireframe);
-  const [isDarkBackground, setIsDarkBackground] = useState(true);
-  const darkBackgroundStateRef = useRef<boolean>(true);
-
-  const applyTheme = useCallback((theme: VisualizationTheme) => {
-    if (!sceneRef.current) return;
-    const scene = sceneRef.current;
-
-    switch (theme) {
-      case "terminal":
-        scene.background = new THREE.Color(0x000000);
-        robotRef.current?.traverse((child) => {
-          if (child instanceof THREE.Mesh) {
-            child.material = new THREE.MeshBasicMaterial({
-              color: 0x00aa00,
-              wireframe: true,
-              wireframeLinewidth: 1,
-            });
-          }
-        });
-        break;
-
-      case "dark":
-        scene.background = new THREE.Color(0x222222);
-        robotRef.current?.traverse((child) => {
-          if (child instanceof THREE.Mesh) {
-            child.material = new THREE.MeshPhongMaterial({
-              color: 0x4444ff,
-              emissive: 0x000044,
-            });
-          }
-        });
-        break;
-
-      default:
-        scene.background = new THREE.Color(0xf0f0f0);
-        robotRef.current?.traverse((child) => {
-          if (child instanceof THREE.Mesh) {
-            child.material = new THREE.MeshPhongMaterial({
-              color: 0xaaaaaa,
-            });
-          }
-        });
-        break;
-    }
-  }, []);
+  const [theme, setTheme] = useState<Theme>(() => supportedThemes[0]);
+  const themeRef = useRef<Theme>("default");
 
   useEffect(() => {
     const handleFullScreenChange = () => {
@@ -121,7 +78,7 @@ const URDFRenderer = ({
           value: joint.value,
         }));
         wireframeStateRef.current = isWireframe;
-        darkBackgroundStateRef.current = isDarkBackground;
+        themeRef.current = theme;
 
         setIsFullScreen(false);
         setForceRerender((prev) => prev + 1);
@@ -131,17 +88,32 @@ const URDFRenderer = ({
     document.addEventListener("fullscreenchange", handleFullScreenChange);
     return () =>
       document.removeEventListener("fullscreenchange", handleFullScreenChange);
-  }, [jointControls, isWireframe, isDarkBackground]);
+  }, [jointControls, isWireframe, theme]);
+
+  const getThemeColors = useCallback(() => {
+    switch (theme) {
+      case "default":
+        return {
+          background: "bg-[#f0f0f0]",
+          text: "text-gray-800",
+          backgroundColor: 0xf0f0f0,
+        };
+      case "dark":
+        return {
+          background: "bg-black",
+          text: "text-gray-200",
+          backgroundColor: 0x000000,
+        };
+    }
+  }, [theme]);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     const scene = new THREE.Scene();
     sceneRef.current = scene;
-    scene.background = new THREE.Color(
-      darkBackgroundStateRef.current ? 0x000000 : 0xf0f0f0,
-    );
-    setIsDarkBackground(darkBackgroundStateRef.current);
+    const colors = getThemeColors();
+    scene.background = new THREE.Color(colors.backgroundColor);
 
     const camera = new THREE.PerspectiveCamera(
       50,
@@ -272,11 +244,6 @@ const URDFRenderer = ({
       }
     });
 
-    // Apply visual theme if specified
-    if (visualTheme !== null) {
-      applyTheme(visualTheme);
-    }
-
     const animate = () => {
       requestAnimationFrame(animate);
       controls.update();
@@ -325,7 +292,7 @@ const URDFRenderer = ({
       window.removeEventListener("resize", handleResize);
       updateOrientation("Z-up"); // Reset orientation on unmount
     };
-  }, [urdfContent, files, orientation, forceRerender]);
+  }, [urdfContent, files, orientation, forceRerender, getThemeColors]);
 
   const handleJointChange = (index: number, value: number) => {
     setJointControls((prevControls) => {
@@ -420,18 +387,6 @@ const URDFRenderer = ({
     });
   }, []);
 
-  // Add this helper function before the return statement
-  const getOrientationButtonColors = (theme: VisualizationTheme | null) => {
-    switch (theme) {
-      case "terminal":
-        return "bg-green-600 hover:bg-green-700";
-      case "dark":
-        return "bg-blue-600 hover:bg-blue-700";
-      default:
-        return "bg-purple-500 hover:bg-purple-600";
-    }
-  };
-
   const resetViewerState = useCallback(() => {
     if (
       !containerRef.current ||
@@ -498,108 +453,44 @@ const URDFRenderer = ({
     }
   }, [isCycling]);
 
-  const toggleBackground = useCallback(() => {
+  const cycleTheme = useCallback(() => {
+    if (sceneRef.current && supportedThemes.length > 1) {
+      setTheme((prev) => {
+        const currentIndex = supportedThemes.indexOf(prev);
+        const nextIndex = (currentIndex + 1) % supportedThemes.length;
+        const newTheme = supportedThemes[nextIndex];
+
+        const colors = getThemeColors();
+        sceneRef.current!.background = new THREE.Color(colors.backgroundColor);
+        themeRef.current = newTheme;
+        return newTheme;
+      });
+    }
+  }, [getThemeColors, supportedThemes]);
+
+  useEffect(() => {
     if (sceneRef.current) {
-      setIsDarkBackground((prev) => {
-        const newIsDark = !prev;
-        sceneRef.current!.background = new THREE.Color(
-          newIsDark ? 0x000000 : 0xf0f0f0,
-        );
-        return newIsDark;
-      });
+      const colors = getThemeColors();
+      sceneRef.current.background = new THREE.Color(colors.backgroundColor);
     }
-  }, []);
-
-  const getBackgroundColor = useCallback(() => {
-    return isDarkBackground ? "bg-black" : "bg-[#f0f0f0]";
-  }, [isDarkBackground]);
+  }, [theme, getThemeColors]);
 
   useEffect(() => {
     if (robotRef.current) {
       robotRef.current.traverse((child) => {
         if (child instanceof THREE.Mesh) {
-          child.material.wireframe = wireframeStateRef.current;
-          child.material.needsUpdate = true;
-        }
-      });
-    }
-  }, [forceRerender]);
-
-  useEffect(() => {
-    if (robotRef.current) {
-      robotRef.current.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.material.wireframe = isWireframe;
-          child.material.needsUpdate = true;
-        }
-      });
-    }
-    wireframeStateRef.current = isWireframe;
-  }, [isWireframe]);
-
-  useEffect(() => {
-    if (robotRef.current) {
-      robotRef.current.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          if (!child.userData.originalColor) {
-            child.userData.originalColor = child.material.color.clone();
-          }
-
           const material = new THREE.MeshStandardMaterial({
-            color: darkBackgroundStateRef.current
-              ? 0x00aa00
-              : child.userData.originalColor,
+            color: child.userData.originalColor || child.material.color,
             metalness: 0.4,
             roughness: 0.6,
             wireframe: isWireframe,
-            emissive: darkBackgroundStateRef.current ? 0x00aa00 : 0x000000,
-            emissiveIntensity: darkBackgroundStateRef.current ? 0.5 : 0,
           });
           child.material = material;
           child.material.needsUpdate = true;
         }
       });
     }
-  }, [forceRerender]);
-
-  useEffect(() => {
-    if (sceneRef.current) {
-      const backgroundColor = isDarkBackground ? 0x000000 : 0xf0f0f0;
-      sceneRef.current.background = new THREE.Color(backgroundColor);
-      darkBackgroundStateRef.current = isDarkBackground;
-    }
-  }, [isDarkBackground]);
-
-  useEffect(() => {
-    if (!robotRef.current || !sceneRef.current) return;
-
-    const robot = robotRef.current;
-    robot.rotation.set(0, 0, 0);
-
-    switch (orientation) {
-      case "Y-up":
-        robot.rotateX(-Math.PI / 2);
-        break;
-      case "X-up":
-        robot.rotateZ(Math.PI / 2);
-        break;
-    }
-
-    robot.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        const material = new THREE.MeshStandardMaterial({
-          color: isDarkBackground ? 0x00aa00 : child.userData.originalColor,
-          metalness: 0.4,
-          roughness: 0.6,
-          wireframe: isWireframe,
-          emissive: isDarkBackground ? 0x00aa00 : 0x000000,
-          emissiveIntensity: isDarkBackground ? 0.5 : 0,
-        });
-        child.material = material;
-        child.material.needsUpdate = true;
-      }
-    });
-  }, [orientation, isDarkBackground, isWireframe]);
+  }, [isWireframe]);
 
   return (
     <div
@@ -608,34 +499,40 @@ const URDFRenderer = ({
     >
       <div
         ref={containerRef}
-        className={`absolute inset-0 ${getBackgroundColor()}`}
+        className={`absolute inset-0 ${getThemeColors().background}`}
       >
         <div className="absolute bottom-4 left-4 z-20 flex gap-2">
           <button
             onClick={toggleOrientation}
-            className={`${getOrientationButtonColors(visualTheme)} text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center`}
+            className={
+              "bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center"
+            }
           >
             {orientation.charAt(0)}
           </button>
           <button
             onClick={toggleFullScreen}
             disabled={isCycling}
-            className={`${getOrientationButtonColors(visualTheme)} text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center disabled:opacity-50`}
+            className={
+              "bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center disabled:opacity-50"
+            }
           >
             {isFullScreen ? <FaCompress /> : <FaExpand />}
           </button>
           <button
             onClick={() => setIsWireframe(!isWireframe)}
-            className={`${getOrientationButtonColors(visualTheme)} text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center`}
+            className={
+              "bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center disabled:opacity-50"
+            }
           >
             {isWireframe ? "S" : "W"}
           </button>
-          {visualTheme !== "terminal" && (
+          {supportedThemes.length > 1 && (
             <button
-              onClick={toggleBackground}
-              className={`${getOrientationButtonColors(visualTheme)} text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center`}
+              onClick={cycleTheme}
+              className="bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center"
             >
-              {isDarkBackground ? "L" : "D"}
+              {theme === "default" ? "D" : "L"}
             </button>
           )}
         </div>
@@ -643,7 +540,9 @@ const URDFRenderer = ({
 
       {useControls && showControls && (
         <div className="absolute top-0 right-0 bottom-0 w-64 z-30">
-          <div className={`h-full overflow-y-auto ${getBackgroundColor()}`}>
+          <div
+            className={`h-full overflow-y-auto ${getThemeColors().background}`}
+          >
             <div className="p-4 overflow-y-auto h-full">
               <div className="space-y-2 mb-4">
                 <button
@@ -672,9 +571,7 @@ const URDFRenderer = ({
               </div>
               {urdfInfo && (
                 <div className="p-4 rounded-lg shadow-md mb-4 bg-grey-100 font-mono">
-                  <ul
-                    className={`text-sm ${isDarkBackground ? "text-gray-200" : "text-gray-800"}`}
-                  >
+                  <ul className={`text-sm ${getThemeColors().text}`}>
                     <li>Joint Count: {urdfInfo.jointCount}</li>
                     <li>Link Count: {urdfInfo.linkCount}</li>
                   </ul>
@@ -684,14 +581,10 @@ const URDFRenderer = ({
                 {jointControls.map((joint, index) => (
                   <div key={joint.name} className="text-sm">
                     <div className="flex justify-between items-center mb-1">
-                      <label
-                        className={`font-medium ${isDarkBackground ? "text-gray-200" : "text-gray-700"}`}
-                      >
+                      <label className={`font-medium ${getThemeColors().text}`}>
                         {joint.name}
                       </label>
-                      <span
-                        className={`text-xs ${isDarkBackground ? "text-gray-400" : "text-gray-500"}`}
-                      >
+                      <span className={`text-xs ${getThemeColors().text}`}>
                         {joint.value.toFixed(2)}
                       </span>
                     </div>
@@ -708,7 +601,7 @@ const URDFRenderer = ({
                       disabled={isCycling}
                     />
                     <div
-                      className={`flex justify-between text-xs ${isDarkBackground ? "text-gray-400" : "text-gray-500"} mt-1`}
+                      className={`flex justify-between text-xs ${getThemeColors().text} mt-1`}
                     >
                       <span>{joint.min.toFixed(2)}</span>
                       <span>{joint.max.toFixed(2)}</span>

@@ -14,6 +14,7 @@ const FileRenderer: React.FC<{
         <URDFRenderer
           urdfContent={new TextDecoder().decode(file.content)}
           files={allFiles}
+          supportedThemes={["default", "dark"]}
         />
       );
     case "stl":
