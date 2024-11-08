@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 import { useAuthentication } from "@/hooks/useAuth";
+import {
+  getFeaturedListingsFromCookie,
+  setFeaturedListingsCookie,
+} from "@/lib/utils/FeaturedListingsCookies";
 
 type FeaturedListing = {
   id: string;
@@ -23,7 +27,7 @@ export const FeaturedListingsProvider = ({
   children: React.ReactNode;
 }) => {
   const [featuredListings, setFeaturedListings] = useState<FeaturedListing[]>(
-    [],
+    getFeaturedListingsFromCookie(),
   );
   const auth = useAuthentication();
 
@@ -34,6 +38,7 @@ export const FeaturedListingsProvider = ({
 
       if (!featuredData?.listing_ids?.length) {
         setFeaturedListings([]);
+        setFeaturedListingsCookie([]);
         return;
       }
 
@@ -58,6 +63,7 @@ export const FeaturedListingsProvider = ({
           }));
 
         setFeaturedListings(orderedListings);
+        setFeaturedListingsCookie(orderedListings);
       }
     } catch (error) {
       console.error("Error refreshing featured listings:", error);
@@ -65,19 +71,15 @@ export const FeaturedListingsProvider = ({
   };
 
   useEffect(() => {
-    refreshFeaturedListings();
-
-    const handleFeaturedChange = () => {
+    if (featuredListings.length === 0) {
       refreshFeaturedListings();
-    };
-
-    window.addEventListener("featuredListingsChanged", handleFeaturedChange);
-    return () => {
-      window.removeEventListener(
-        "featuredListingsChanged",
-        handleFeaturedChange,
-      );
-    };
+    } else {
+      Promise.resolve()
+        .then(refreshFeaturedListings)
+        .catch((error) => {
+          console.error("Background refresh failed:", error);
+        });
+    }
   }, []);
 
   return (

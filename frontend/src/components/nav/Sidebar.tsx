@@ -110,9 +110,6 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
               <ul className="space-y-1">
                 {featuredListings && featuredListings.length > 0 && (
                   <>
-                    <div className="text-xl font-medium text-gray-1 px-3 py-2">
-                      Featured Listings:
-                    </div>
                     {featuredListings.map((listing) => (
                       <SidebarItem
                         key={listing.id}
