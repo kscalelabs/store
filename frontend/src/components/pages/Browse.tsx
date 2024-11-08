@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import ListingGrid from "@/components/listings/ListingGrid";
 import { Input } from "@/components/ui/Input/Input";
+import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,7 +17,6 @@ import { components, paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { useDebounce } from "@uidotdev/usehooks";
-import Spinner from "@/components/ui/Spinner";
 
 type SortOption = components["schemas"]["SortOption"];
 
