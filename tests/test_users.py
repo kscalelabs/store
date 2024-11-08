@@ -14,7 +14,7 @@ def test_user_auth_functions(test_client: TestClient) -> None:
     assert response.json()["detail"] == "Not authenticated"
 
     # Checks that we can't log the user out without the session token.
-    response = test_client.delete("/auth/logout")
+    response = test_client.delete("/auth/api/logout")
     assert response.status_code == status.HTTP_401_UNAUTHORIZED, response.json()
 
     # Because of the way we patched GitHub functions for mocking, it doesn't matter what token we pass in.
@@ -28,7 +28,7 @@ def test_user_auth_functions(test_client: TestClient) -> None:
     assert response.status_code == status.HTTP_200_OK, response.json()
 
     # Log the user out, which deletes the session token.
-    response = test_client.delete("/auth/logout", headers=auth_headers)
+    response = test_client.delete("/auth/api/logout", headers=auth_headers)
     assert response.status_code == status.HTTP_200_OK, response.json()
     assert response.json() is True
 

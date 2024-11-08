@@ -134,20 +134,20 @@ async def get_open_api_endpoint() -> JSONResponse:
     # Define paths that don't require authorization
     unsecured_paths = {
         "/",
-        "/auth/login",
-        "/auth/logout",
-        "/auth/google/client-id",
+        "/auth/api/logout",
+        "/auth/email/login",
+        "/auth/email/signup",
+        "/auth/email/signup/create",
+        "/auth/email/signup/delete/{id}",
+        "/auth/email/signup/get/{id}",
         "/auth/github/client-id",
-        "/auth/google/login",
         "/auth/github/code",
-        "/auth/signup",
-        "/listings/search",
-        "/listings/dump",
-        "/listings/{id}",
+        "/auth/google/client-id",
+        "/auth/google/login",
         "/kernel-images/public",
-        "/email/signup/create",
-        "/email/signup/get/{id}",
-        "/email/signup/delete/{id}",
+        "/listings/{id}",
+        "/listings/dump",
+        "/listings/search",
     }
 
     # Set default security for all paths

@@ -10,7 +10,7 @@ import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 
 type GetEmailSignUpTokenResponse =
-  paths["/email/signup/get/{id}"]["get"]["responses"][200]["content"]["application/json"];
+  paths["/auth/email/signup/get/{id}"]["get"]["responses"][200]["content"]["application/json"];
 
 const EmailSignup = () => {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ const EmailSignup = () => {
 
       try {
         const { data, error } = await auth.client.GET(
-          "/email/signup/get/{id}",
+          "/auth/email/signup/get/{id}",
           {
             params: {
               path: { id },

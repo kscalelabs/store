@@ -12,7 +12,7 @@ const Logout = () => {
 
   useEffect(() => {
     (async () => {
-      const { error } = await auth.client.DELETE("/auth/logout");
+      const { error } = await auth.client.DELETE("/auth/api/logout");
       if (error) {
         addErrorAlert(error);
       } else {

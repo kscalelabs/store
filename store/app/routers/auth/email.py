@@ -14,6 +14,7 @@ from store.app.utils.password import verify_password
 
 router = APIRouter()
 
+# Make a specific sub-router for the signup-related endpoints.
 signup_router = APIRouter()
 
 
