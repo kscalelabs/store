@@ -16,6 +16,7 @@ import { components, paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { useDebounce } from "@uidotdev/usehooks";
+import Spinner from "@/components/ui/Spinner";
 
 type SortOption = components["schemas"]["SortOption"];
 
@@ -179,7 +180,7 @@ const Browse = () => {
       <div ref={observerTarget} className="py-8 text-center">
         {isLoading && (
           <div className="flex items-center justify-center gap-2">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-12"></div>
+            <Spinner />
           </div>
         )}
       </div>
