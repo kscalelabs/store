@@ -3,9 +3,9 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { useAuthentication } from "@/hooks/useAuth";
 import {
   FeaturedListing,
-  getFeaturedListingsFromCookie,
-  setFeaturedListingsCookie,
-} from "@/lib/utils/FeaturedListingsCookies";
+  getFeaturedListingsFromStorage,
+  setFeaturedListingsStorage,
+} from "@/lib/utils/featuredListingsStorage";
 
 type FeaturedListingsContextType = {
   featuredListings: FeaturedListing[];
@@ -21,7 +21,7 @@ export const FeaturedListingsProvider = ({
   children: React.ReactNode;
 }) => {
   const [featuredListings, setFeaturedListings] = useState<FeaturedListing[]>(
-    getFeaturedListingsFromCookie(),
+    getFeaturedListingsFromStorage(),
   );
   const auth = useAuthentication();
 
@@ -32,7 +32,7 @@ export const FeaturedListingsProvider = ({
 
       if (!featuredData?.listing_ids?.length) {
         setFeaturedListings([]);
-        setFeaturedListingsCookie([]);
+        setFeaturedListingsStorage([]);
         return;
       }
 
@@ -57,7 +57,7 @@ export const FeaturedListingsProvider = ({
           }));
 
         setFeaturedListings(orderedListings);
-        setFeaturedListingsCookie(orderedListings);
+        setFeaturedListingsStorage(orderedListings);
       }
     } catch (error) {
       console.error("Error refreshing featured listings:", error);
@@ -65,15 +65,11 @@ export const FeaturedListingsProvider = ({
   };
 
   useEffect(() => {
-    if (featuredListings.length === 0) {
-      refreshFeaturedListings();
-    } else {
-      Promise.resolve()
-        .then(refreshFeaturedListings)
-        .catch((error) => {
-          console.error("Background refresh failed:", error);
-        });
-    }
+    Promise.resolve()
+      .then(refreshFeaturedListings)
+      .catch((error) => {
+        console.error("Background refresh failed:", error);
+      });
   }, []);
 
   return (
