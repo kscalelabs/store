@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import ListingGrid from "@/components/listings/ListingGrid";
 import { Input } from "@/components/ui/Input/Input";
+import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -179,7 +180,7 @@ const Browse = () => {
       <div ref={observerTarget} className="py-8 text-center">
         {isLoading && (
           <div className="flex items-center justify-center gap-2">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-12"></div>
+            <Spinner />
           </div>
         )}
       </div>
