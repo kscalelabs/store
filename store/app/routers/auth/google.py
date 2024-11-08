@@ -12,7 +12,7 @@ from store.settings import settings
 
 logger = logging.getLogger(__name__)
 
-google_auth_router = APIRouter()
+router = APIRouter()
 
 
 class GoogleLogin(BaseModel):
@@ -35,7 +35,7 @@ class ClientIdResponse(BaseModel):
     client_id: str
 
 
-@google_auth_router.get("/client-id", response_model=ClientIdResponse)
+@router.get("/client-id", response_model=ClientIdResponse)
 async def google_client_id_endpoint() -> ClientIdResponse:
     return ClientIdResponse(client_id=settings.oauth.google_client_id)
 
@@ -44,7 +44,7 @@ class AuthResponse(BaseModel):
     api_key: str
 
 
-@google_auth_router.post("/login", response_model=AuthResponse)
+@router.post("/login", response_model=AuthResponse)
 async def google_login_endpoint(
     data: GoogleLogin,
     crud: Annotated[Crud, Depends(Crud.get)],

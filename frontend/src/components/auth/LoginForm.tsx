@@ -23,9 +23,12 @@ const LoginForm = () => {
 
   const onSubmit: SubmitHandler<LoginType> = async (data: LoginType) => {
     try {
-      const { data: response, error } = await auth.client.POST("/auth/login", {
-        body: data,
-      });
+      const { data: response, error } = await auth.client.POST(
+        "/auth/email/login",
+        {
+          body: data,
+        },
+      );
 
       if (error) {
         addErrorAlert(error);

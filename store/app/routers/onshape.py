@@ -11,7 +11,7 @@ from pydantic.main import BaseModel
 
 from store.app.db import Crud
 from store.app.model import User, can_write_listing
-from store.app.routers.users import get_session_user_with_write_permission
+from store.app.security.user import get_session_user_with_write_permission
 
 onshape_router = APIRouter()
 

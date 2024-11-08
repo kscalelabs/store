@@ -8,7 +8,7 @@ from pydantic.main import BaseModel
 
 from store.app.db import Crud
 from store.app.model import APIKeyPermission, User
-from store.app.routers.users import get_session_user_with_admin_permission
+from store.app.security.user import get_session_user_with_admin_permission
 
 logger = logging.getLogger(__name__)
 

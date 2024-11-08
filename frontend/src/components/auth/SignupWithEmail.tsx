@@ -25,11 +25,14 @@ const SignupWithEmail = () => {
   });
 
   const onSubmit = async ({ email }: EmailSignupType) => {
-    const { data, error } = await auth.client.POST("/email/signup/create", {
-      body: {
-        email,
+    const { data, error } = await auth.client.POST(
+      "/auth/email/signup/create",
+      {
+        body: {
+          email,
+        },
       },
-    });
+    );
 
     if (error) {
       addErrorAlert(error);

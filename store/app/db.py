@@ -13,6 +13,7 @@ from store.app.crud.listings import ListingsCrud
 from store.app.crud.onshape import OnshapeCrud
 from store.app.crud.orders import OrdersCrud
 from store.app.crud.robots import RobotsCrud
+from store.app.crud.teleop import TeleopCrud
 from store.app.crud.users import UserCrud
 
 
@@ -25,6 +26,7 @@ class Crud(
     KernelImagesCrud,
     OrdersCrud,
     RobotsCrud,
+    TeleopCrud,
     BaseCrud,
 ):
     """Composes the various CRUD classes into a single class."""

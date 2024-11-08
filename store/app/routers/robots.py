@@ -12,7 +12,7 @@ from typing_extensions import Annotated
 from store.app.crud.base import ItemNotFoundError
 from store.app.db import Crud
 from store.app.model import Listing, Robot, User, get_artifact_url
-from store.app.routers.users import (
+from store.app.security.user import (
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
 )

@@ -44,7 +44,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ signupTokenId }) => {
     }
 
     try {
-      const { error } = await auth.client.POST("/auth/signup", {
+      const { error } = await auth.client.POST("/auth/email/signup", {
         body: {
           signup_token_id: signupTokenId,
           email: data.email,

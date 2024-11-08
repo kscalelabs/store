@@ -6,6 +6,7 @@ import {
   FaCompress,
   FaExpand,
   FaPlay,
+  FaSync,
   FaUndo,
 } from "react-icons/fa";
 
@@ -28,14 +29,6 @@ interface URDFInfo {
 }
 
 type Theme = "light" | "dark";
-
-interface Props {
-  urdfContent: string;
-  files: UntarredFile[];
-  useControls?: boolean;
-  showWireframe?: boolean;
-  supportedThemes?: Theme[];
-}
 
 interface ThemeColors {
   background: string;
@@ -60,12 +53,22 @@ const getThemeColors = (theme: Theme): ThemeColors => {
   }
 };
 
+interface Props {
+  urdfContent: string;
+  files: UntarredFile[];
+  useControls?: boolean;
+  showWireframe?: boolean;
+  supportedThemes?: Theme[];
+  overrideColor?: string | null;
+}
+
 const URDFRenderer = ({
   urdfContent,
   files,
   useControls = true,
   showWireframe = false,
   supportedThemes = ["light", "dark"],
+  overrideColor = null,
 }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -91,6 +94,9 @@ const URDFRenderer = ({
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
 
+  // Add new state/refs for auto-rotation
+  const [isAutoRotating, setIsAutoRotating] = useState(false);
+
   useEffect(() => {
     const handleFullScreenChange = () => {
       const isNowFullScreen = !!document.fullscreenElement;
@@ -115,7 +121,7 @@ const URDFRenderer = ({
           metalness: 0.4,
           roughness: 0.5,
           wireframe: isWireframe,
-          color: originalColor,
+          color: overrideColor ? new THREE.Color(overrideColor) : originalColor,
         });
       }
     });
@@ -184,6 +190,7 @@ const URDFRenderer = ({
     controlsRef.current = controls;
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
+    controls.autoRotateSpeed = 1.0;
 
     scene.children.forEach((child) => {
       if (child instanceof THREE.Light) {
@@ -287,11 +294,14 @@ const URDFRenderer = ({
 
     // Setup the animation loop.
     const animate = () => {
-      requestAnimationFrame(animate);
+      const animationId = requestAnimationFrame(animate);
       controls.update();
+
       renderer.render(scene, camera);
+      return animationId;
     };
-    animate();
+
+    const animationId = animate();
 
     // Handle window resizing.
     const handleResize = () => {
@@ -326,11 +336,37 @@ const URDFRenderer = ({
     updateMaterials();
 
     return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+
+      scene.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+          if (object.geometry) {
+            object.geometry.dispose();
+          }
+          if (object.material) {
+            if (Array.isArray(object.material)) {
+              object.material.forEach((material) => material.dispose());
+            } else {
+              object.material.dispose();
+            }
+          }
+        }
+      });
+
+      if (renderer) {
+        renderer.dispose();
+      }
+
       if (containerRef.current) {
         containerRef.current.removeChild(renderer.domElement);
       }
+      if (controlsRef.current) {
+        controlsRef.current.autoRotate = false;
+        controlsRef.current.dispose();
+      }
       window.removeEventListener("resize", handleResize);
-      rendererRef.current = null;
       document.removeEventListener("fullscreenchange", handleFullScreenChange);
     };
   }, [urdfContent, files]);
@@ -360,7 +396,7 @@ const URDFRenderer = ({
 
     const startPositions = jointControls.map((joint) => joint.value);
     const startTime = Date.now();
-    const duration = 3000; // Changed from 10000 to 3000 (3 seconds)
+    const duration = 3000;
 
     const animate = () => {
       const elapsedTime = Date.now() - startTime;
@@ -378,15 +414,25 @@ const URDFRenderer = ({
       if (progress < 1) {
         animationRef.current = requestAnimationFrame(animate);
       } else {
-        // Reset to original positions
         jointControls.forEach((_joint, index) => {
           handleJointChange(index, startPositions[index]);
         });
         setIsCycling(false);
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current);
+          animationRef.current = null;
+        }
       }
     };
 
     animationRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      }
+    };
   }, [jointControls, handleJointChange]);
 
   const resetJoints = useCallback(() => {
@@ -408,6 +454,14 @@ const URDFRenderer = ({
     }
   }, []);
 
+  const toggleAutoRotate = useCallback(() => {
+    const newIsAutoRotating = !isAutoRotating;
+    if (controlsRef.current) {
+      controlsRef.current.autoRotate = newIsAutoRotating;
+    }
+    setIsAutoRotating(newIsAutoRotating);
+  }, [isAutoRotating]);
+
   return (
     <div
       ref={parentRef}
@@ -425,6 +479,12 @@ const URDFRenderer = ({
             }
           >
             <FaChevronUp />
+          </button>
+          <button
+            onClick={toggleAutoRotate}
+            className="bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center"
+          >
+            <FaSync className={isAutoRotating ? "animate-pulse" : ""} />
           </button>
           <button
             onClick={toggleFullScreen}

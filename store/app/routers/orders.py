@@ -40,7 +40,9 @@ async def get_user_orders(
 
 @orders_router.get("/order/{order_id}", response_model=Order)
 async def get_order(
-    order_id: str, user: User = Depends(get_session_user_with_read_permission), crud: Crud = Depends(Crud.get)
+    order_id: str,
+    user: User = Depends(get_session_user_with_read_permission),
+    crud: Crud = Depends(Crud.get),
 ) -> Order:
     order = await crud.get_order(order_id)
     if order is None or order.user_id != user.id:
@@ -50,7 +52,9 @@ async def get_order(
 
 @orders_router.get("/order-with-product/{order_id}", response_model=OrderWithProduct)
 async def get_order_with_product(
-    order_id: str, user: User = Depends(get_session_user_with_read_permission), crud: Crud = Depends(Crud.get)
+    order_id: str,
+    user: User = Depends(get_session_user_with_read_permission),
+    crud: Crud = Depends(Crud.get),
 ) -> OrderWithProduct:
     order = await crud.get_order(order_id)
     if order is None or order.user_id != user.id:
@@ -65,7 +69,8 @@ async def get_order_with_product(
 
 @orders_router.get("/user-orders-with-products", response_model=List[OrderWithProduct])
 async def get_user_orders_with_products(
-    user: User = Depends(get_session_user_with_read_permission), crud: Crud = Depends(Crud.get)
+    user: User = Depends(get_session_user_with_read_permission),
+    crud: Crud = Depends(Crud.get),
 ) -> List[OrderWithProduct]:
     try:
         orders = await crud.get_orders_by_user_id(user.id)

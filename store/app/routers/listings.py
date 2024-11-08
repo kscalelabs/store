@@ -20,7 +20,7 @@ from store.app.crud.listings import SortOption
 from store.app.db import Crud
 from store.app.model import Listing, User, can_write_listing
 from store.app.routers.artifacts import SingleArtifactResponse
-from store.app.routers.users import (
+from store.app.security.user import (
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
     maybe_get_user_from_api_key,

@@ -1,54 +1,76 @@
-"""This module defines the FastAPI routes for authentication related API routes."""
+"""Defines the authentication endpoints for email-based authentication."""
 
-from typing import Annotated, Literal, Mapping, Self, overload
+from typing import Annotated, Self
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from pydantic import BaseModel, EmailStr
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
+from pydantic.networks import EmailStr
 
 from store.app.crud.users import UserCrud
 from store.app.db import Crud
 from store.app.model import APIKeySource, User
-from store.app.routers.auth.github import github_auth_router
-from store.app.routers.auth.google import google_auth_router
+from store.app.utils.email import send_signup_email
 from store.app.utils.password import verify_password
 
-auth_router = APIRouter()
+router = APIRouter()
+
+# Make a specific sub-router for the signup-related endpoints.
+signup_router = APIRouter()
 
 
-@overload
-async def get_api_key_from_header(headers: Mapping[str, str], require_header: Literal[True]) -> str: ...
+class EmailSignUpRequest(BaseModel):
+    email: EmailStr
 
 
-@overload
-async def get_api_key_from_header(headers: Mapping[str, str], require_header: Literal[False]) -> str | None: ...
+class EmailSignUpResponse(BaseModel):
+    message: str
 
 
-async def get_api_key_from_header(headers: Mapping[str, str], require_header: bool) -> str | None:
-    authorization = headers.get("Authorization") or headers.get("authorization")
-    if not authorization:
-        if require_header:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
-        return None
+@signup_router.post("/create", response_model=EmailSignUpResponse)
+async def create_signup_token(
+    data: EmailSignUpRequest,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> EmailSignUpResponse:
+    """Creates a signup token and emails it to the user."""
+    try:
+        signup_token = await crud.create_email_signup_token(data.email)
+        await send_signup_email(email=data.email, token=signup_token.id)
 
-    # Check if the authorization header starts with "Bearer "
-    if authorization.startswith("Bearer "):
-        credentials = authorization[7:]  # Remove "Bearer " prefix
-    else:
-        # If "Bearer " is missing, assume the entire header is the token
-        credentials = authorization
-
-    if not credentials:
-        raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Authorization header is invalid")
-
-    return credentials
+        return EmailSignUpResponse(message="Sign up email sent! Follow the link sent to you to continue registration.")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-async def get_request_api_key_id(request: Request) -> str:
-    return await get_api_key_from_header(request.headers, True)
+class GetTokenResponse(BaseModel):
+    id: str
+    email: str
 
 
-async def maybe_get_request_api_key_id(request: Request) -> str | None:
-    return await get_api_key_from_header(request.headers, False)
+@signup_router.get("/get/{id}", response_model=GetTokenResponse)
+async def get_signup_token(
+    id: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> GetTokenResponse:
+    signup_token = await crud.get_email_signup_token(id)
+    if not signup_token:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Token not found.")
+    return GetTokenResponse(id=signup_token.id, email=signup_token.email)
+
+
+class DeleteTokenResponse(BaseModel):
+    message: str
+
+
+@signup_router.delete("/delete/{id}", response_model=DeleteTokenResponse)
+async def delete_signup_token(
+    id: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> DeleteTokenResponse:
+    await crud.delete_email_signup_token(id)
+    return DeleteTokenResponse(message="Token deleted successfully.")
+
+
+router.include_router(signup_router, prefix="/signup")
 
 
 class UserSignup(BaseModel):
@@ -73,17 +95,7 @@ class UsersInfoResponse(BaseModel):
     users: list[UserInfoResponseItem]
 
 
-class LoginRequest(BaseModel):
-    email: EmailStr
-    password: str
-
-
-class LoginResponse(BaseModel):
-    user_id: str
-    token: str
-
-
-@auth_router.post("/signup", response_model=UserInfoResponseItem)
+@router.post("/signup", response_model=UserInfoResponseItem)
 async def register_user(data: UserSignup, crud: Annotated[Crud, Depends(Crud.get)]) -> UserInfoResponseItem:
     signup_token = await crud.get_email_signup_token(data.signup_token_id)
     if not signup_token:
@@ -96,7 +108,17 @@ async def register_user(data: UserSignup, crud: Annotated[Crud, Depends(Crud.get
     return UserInfoResponseItem(id=user.id, email=user.email)
 
 
-@auth_router.post("/login", response_model=LoginResponse)
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class LoginResponse(BaseModel):
+    user_id: str
+    token: str
+
+
+@router.post("/login", response_model=LoginResponse)
 async def login_user(data: LoginRequest, user_crud: UserCrud = Depends()) -> LoginResponse:
     async with user_crud:
         # Fetch user by email
@@ -124,16 +146,3 @@ async def login_user(data: LoginRequest, user_crud: UserCrud = Depends()) -> Log
         )
 
         return LoginResponse(user_id=user.id, token=api_key.id)
-
-
-auth_router.include_router(github_auth_router, prefix="/github")
-auth_router.include_router(google_auth_router, prefix="/google")
-
-
-@auth_router.delete("/logout")
-async def logout_user_endpoint(
-    token: Annotated[str, Depends(get_request_api_key_id)],
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> bool:
-    await crud.delete_api_key(token)
-    return True
