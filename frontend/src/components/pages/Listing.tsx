@@ -15,17 +15,12 @@ const Listing = () => {
   const [isFetched, setIsFetched] = useState(false);
 
   const fetchListing = useCallback(async () => {
-    if (listing !== null) {
-      return;
-    }
-
     if (!username || !slug) {
       addErrorAlert(new Error("Invalid URL parameters"));
       return;
     }
 
     try {
-      // Try to fetch the listing using the username/slug endpoint
       const response = await auth.client.GET("/listings/{username}/{slug}", {
         params: {
           path: { username, slug },
@@ -41,23 +36,21 @@ const Listing = () => {
     } catch (err) {
       addErrorAlert(err);
     }
-  }, [listing, username, slug, auth.client, addErrorAlert]);
+  }, [username, slug, auth.client, addErrorAlert]);
 
   useEffect(() => {
-    fetchListing();
-  }, [fetchListing]);
+    const shouldFetch =
+      (listing === null && username && slug) ||
+      (auth.isAuthenticated && !isFetched);
 
-  // Refetch the listing when auth state changes or on initial load
-  useEffect(() => {
-    if (auth.isAuthenticated || !isFetched) {
+    if (shouldFetch) {
       fetchListing();
     }
-  }, [auth.isAuthenticated, isFetched, fetchListing]);
+  }, [username, slug, auth.isAuthenticated, isFetched, listing, fetchListing]);
 
   useEffect(() => {
     setListing(null);
     setIsFetched(false);
-    fetchListing();
   }, [username, slug]);
 
   return (
