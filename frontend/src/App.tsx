@@ -13,6 +13,7 @@ import Navbar from "@/components/nav/Navbar";
 import APIKeys from "@/components/pages/APIKeys";
 import About from "@/components/pages/About";
 import Account from "@/components/pages/Account";
+import ArtifactPlayground from "@/components/pages/ArtifactPlayground";
 import Browse from "@/components/pages/Browse";
 import Create from "@/components/pages/Create";
 import DeleteConnect from "@/components/pages/DeleteConnect";
@@ -61,7 +62,12 @@ const App = () => {
                         <Route
                           path={ROUTES.PLAYGROUND.path}
                           element={<Playground />}
-                        />
+                        >
+                          <Route
+                            path={ROUTES.PLAYGROUND.WITH_ID.path}
+                            element={<ArtifactPlayground />}
+                          />
+                        </Route>
 
                         {/* General pages */}
                         <Route path={ROUTES.ABOUT.path} element={<About />} />

@@ -10,6 +10,7 @@ import ListingName from "@/components/listing/ListingName";
 import ListingOnshape from "@/components/listing/ListingOnshape";
 import ListingRegisterRobot from "@/components/listing/ListingRegisterRobot";
 import { Artifact, ListingResponse } from "@/components/listing/types";
+import ListingPlaygroundButton from "./ListingPlaygroundButton";
 
 const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
   const {
@@ -30,14 +31,6 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
   } = listing;
   const [artifacts, setArtifacts] = useState(initialArtifacts);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
-  const addArtifacts = (newArtifacts: Artifact[]) => {
-    setArtifacts((prevArtifacts) =>
-      [...newArtifacts, ...prevArtifacts].sort((a, b) =>
-        a.is_main ? -1 : b.is_main ? 1 : 0,
-      ),
-    );
-  };
 
   return (
     <div className="max-w-6xl mx-auto p-4 pt-12">
@@ -72,12 +65,13 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
           <hr className="border-gray-200 my-4" />
 
           {/* Build this robot */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-baseline gap-4">
             <ListingRegisterRobot listingId={listingId} />
             <ListingFeatureButton
               listingId={listingId}
               initialFeatured={isFeatured}
             />
+            <ListingPlaygroundButton artifacts={artifacts} />
           </div>
 
           <hr className="border-gray-200 my-4" />
@@ -107,7 +101,7 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
           dropzoneOptions={{
             accept: { "image/*": [".png", ".jpg", ".jpeg"] },
           }}
-          addArtifacts={addArtifacts}
+          addArtifacts={setArtifacts}
         />
       )}
 
@@ -117,7 +111,7 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
           listingId={listingId}
           onshapeUrl={onshapeUrl}
           canEdit={canEdit}
-          addArtifacts={addArtifacts}
+          addArtifacts={setArtifacts}
         />
       )}
     </div>

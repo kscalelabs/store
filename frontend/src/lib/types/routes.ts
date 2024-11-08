@@ -2,7 +2,14 @@ import { route, string } from "react-router-typesafe-routes/dom";
 
 const ROUTES = {
   HOME: route(""),
-  PLAYGROUND: route("playground"),
+  PLAYGROUND: route("playground",
+    {},
+    {
+      WITH_ID: route(":artifactId", {
+        params: { artifactId: string().defined() },
+      }),
+    },
+  ),
 
   // General pages
   ABOUT: route("about"),
