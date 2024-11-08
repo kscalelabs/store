@@ -2,16 +2,10 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 
 import { useAuthentication } from "@/hooks/useAuth";
 import {
+  FeaturedListing,
   getFeaturedListingsFromCookie,
   setFeaturedListingsCookie,
 } from "@/lib/utils/FeaturedListingsCookies";
-
-type FeaturedListing = {
-  id: string;
-  username: string;
-  slug: string | null;
-  name: string;
-};
 
 type FeaturedListingsContextType = {
   featuredListings: FeaturedListing[];

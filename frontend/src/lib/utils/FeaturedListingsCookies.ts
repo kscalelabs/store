@@ -1,10 +1,8 @@
 export interface FeaturedListing {
   id: string;
+  username: string;
+  slug: string | null;
   name: string;
-  slug: string;
-  description: string;
-  stripe_link?: string;
-  price?: number;
 }
 
 export const FEATURED_LISTINGS_COOKIES = "featured_listings";
