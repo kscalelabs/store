@@ -54,13 +54,11 @@ const ListingFeatureButton = (props: Props) => {
       if (response.error) {
         addErrorAlert(response.error);
       } else {
-        const newFeaturedState = !isFeatured;
-        setIsFeatured(newFeaturedState);
+        setIsFeatured(!isFeatured);
         addAlert(
-          `Listing ${newFeaturedState ? "featured" : "unfeatured"} successfully`,
+          `Listing ${!isFeatured ? "featured" : "unfeatured"} successfully`,
           "success",
         );
-
         refreshFeaturedListings();
       }
     } catch {

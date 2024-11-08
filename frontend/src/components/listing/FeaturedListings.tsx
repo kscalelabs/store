@@ -1,13 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 import { useAuthentication } from "@/hooks/useAuth";
-
-type FeaturedListing = {
-  id: string;
-  username: string;
-  slug: string | null;
-  name: string;
-};
+import {
+  FeaturedListing,
+  getFeaturedListingsFromStorage,
+  setFeaturedListingsStorage,
+} from "@/lib/utils/featuredListingsStorage";
 
 type FeaturedListingsContextType = {
   featuredListings: FeaturedListing[];
@@ -23,7 +21,7 @@ export const FeaturedListingsProvider = ({
   children: React.ReactNode;
 }) => {
   const [featuredListings, setFeaturedListings] = useState<FeaturedListing[]>(
-    [],
+    getFeaturedListingsFromStorage(),
   );
   const auth = useAuthentication();
 
@@ -34,6 +32,7 @@ export const FeaturedListingsProvider = ({
 
       if (!featuredData?.listing_ids?.length) {
         setFeaturedListings([]);
+        setFeaturedListingsStorage([]);
         return;
       }
 
@@ -58,6 +57,7 @@ export const FeaturedListingsProvider = ({
           }));
 
         setFeaturedListings(orderedListings);
+        setFeaturedListingsStorage(orderedListings);
       }
     } catch (error) {
       console.error("Error refreshing featured listings:", error);
@@ -65,19 +65,11 @@ export const FeaturedListingsProvider = ({
   };
 
   useEffect(() => {
-    refreshFeaturedListings();
-
-    const handleFeaturedChange = () => {
-      refreshFeaturedListings();
-    };
-
-    window.addEventListener("featuredListingsChanged", handleFeaturedChange);
-    return () => {
-      window.removeEventListener(
-        "featuredListingsChanged",
-        handleFeaturedChange,
-      );
-    };
+    Promise.resolve()
+      .then(refreshFeaturedListings)
+      .catch((error) => {
+        console.error("Background refresh failed:", error);
+      });
   }, []);
 
   return (
