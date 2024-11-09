@@ -46,7 +46,7 @@ const ROUTES = {
     params: { artifactId: string().defined() },
   }),
 
-  // Seller routes
+  // Sell.
   SELL: route(
     "sell",
     {},
@@ -76,6 +76,9 @@ const ROUTES = {
       }),
     },
   ),
+
+  // Link robot
+  LINK: route("link"),
 
   // Not found
   NOT_FOUND: route("404"),

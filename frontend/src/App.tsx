@@ -2,7 +2,6 @@ import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
 import "@/App.css";
 
-import Container from "@/components/Container";
 import NotFoundRedirect from "@/components/NotFoundRedirect";
 import PendoInitializer from "@/components/PendoInitializer";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -21,6 +20,7 @@ import DownloadsPage from "@/components/pages/Download";
 import EmailSignup from "@/components/pages/EmailSignup";
 import FileBrowser from "@/components/pages/FileBrowser";
 import Home from "@/components/pages/Home";
+import LinkRobot from "@/components/pages/LinkRobot";
 import Listing from "@/components/pages/Listing";
 import Login from "@/components/pages/Login";
 import Logout from "@/components/pages/Logout";
@@ -54,7 +54,7 @@ const App = () => {
                   <PendoInitializer />
                   <SprigInitializer />
                   <div className="flex-grow">
-                    <Container>
+                    <div className="mt-20 mb-6 mx-4 sm:mx-6 md:mx-10 xl:mx-16 2xl:mx-28 max-full">
                       <Routes>
                         <Route path={ROUTES.HOME.path} element={<Home />} />
 
@@ -158,6 +158,11 @@ const App = () => {
                           element={<Terminal />}
                         />
 
+                        <Route
+                          path={ROUTES.LINK.path}
+                          element={<LinkRobot />}
+                        />
+
                         {/* Not found */}
                         <Route
                           path={ROUTES.NOT_FOUND.path}
@@ -165,7 +170,7 @@ const App = () => {
                         />
                         <Route path="*" element={<NotFoundRedirect />} />
                       </Routes>
-                    </Container>
+                    </div>
                   </div>
                   <Footer />
                 </div>

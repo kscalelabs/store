@@ -4,6 +4,7 @@ import { useTypedParams } from "react-router-typesafe-routes/dom";
 import ListingLoadingSkeleton from "@/components/listing/ListingLoadingSkeleton";
 import ListingRenderer from "@/components/listing/ListingRenderer";
 import { ListingResponse } from "@/components/listing/types";
+import Container from "@/components/ui/container";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import ROUTES from "@/lib/types/routes";
@@ -55,7 +56,7 @@ const Listing = () => {
   }, [username, slug]);
 
   return (
-    <div className="max-w-7xl mx-auto px-4">
+    <Container>
       <div className="flex-grow">
         {isFetched && listing !== null ? (
           <ListingRenderer listing={listing} />
@@ -63,7 +64,7 @@ const Listing = () => {
           <ListingLoadingSkeleton />
         )}
       </div>
-    </div>
+    </Container>
   );
 };
 
