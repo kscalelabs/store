@@ -8,6 +8,7 @@ import PendoInitializer from "@/components/PendoInitializer";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import SprigInitializer from "@/components/SprigInitializer";
 import Footer from "@/components/footer/Footer";
+import GDPRBanner from "@/components/gdpr/gdprbanner";
 import { FeaturedListingsProvider } from "@/components/listing/FeaturedListings";
 import Navbar from "@/components/nav/Navbar";
 import APIKeys from "@/components/pages/APIKeys";
@@ -15,6 +16,8 @@ import About from "@/components/pages/About";
 import Account from "@/components/pages/Account";
 import Browse from "@/components/pages/Browse";
 import Create from "@/components/pages/Create";
+import DeleteConnect from "@/components/pages/DeleteConnect";
+import DownloadsPage from "@/components/pages/Download";
 import EmailSignup from "@/components/pages/EmailSignup";
 import FileBrowser from "@/components/pages/FileBrowser";
 import Home from "@/components/pages/Home";
@@ -22,23 +25,20 @@ import Listing from "@/components/pages/Listing";
 import Login from "@/components/pages/Login";
 import Logout from "@/components/pages/Logout";
 import NotFound from "@/components/pages/NotFound";
+import OrderSuccess from "@/components/pages/OrderSuccess";
+import OrdersPage from "@/components/pages/Orders";
+import Playground from "@/components/pages/Playground";
+import PrivacyPolicy from "@/components/pages/PrivacyPolicy";
 import Profile from "@/components/pages/Profile";
+import ResearchPage from "@/components/pages/ResearchPage";
 import SellerDashboard from "@/components/pages/SellerDashboard";
+import SellerOnboarding from "@/components/pages/SellerOnboarding";
 import Signup from "@/components/pages/Signup";
+import Terminal from "@/components/pages/Terminal";
+import TermsOfService from "@/components/pages/TermsOfService";
 import { AlertQueue, AlertQueueProvider } from "@/hooks/useAlertQueue";
 import { AuthenticationProvider } from "@/hooks/useAuth";
-
-import GDPRBanner from "./components/gdpr/gdprbanner";
-import DeleteConnect from "./components/pages/DeleteConnect";
-import DownloadsPage from "./components/pages/Download";
-import OrderSuccess from "./components/pages/OrderSuccess";
-import OrdersPage from "./components/pages/Orders";
-import Playground from "./components/pages/Playground";
-import PrivacyPolicy from "./components/pages/PrivacyPolicy";
-import ResearchPage from "./components/pages/ResearchPage";
-import SellerOnboarding from "./components/pages/SellerOnboarding";
-import Terminal from "./components/pages/Terminal";
-import TermsOfService from "./components/pages/TermsOfService";
+import ROUTES from "@/lib/types/routes";
 
 const App = () => {
   return (
@@ -56,55 +56,113 @@ const App = () => {
                   <div className="flex-grow">
                     <Container>
                       <Routes>
-                        <Route path="/" element={<Home />} />
+                        <Route path={ROUTES.HOME.path} element={<Home />} />
 
-                        <Route path="/playground" element={<Playground />} />
-
-                        <Route path="/about" element={<About />} />
-                        <Route path="/downloads" element={<DownloadsPage />} />
-                        <Route path="/research" element={<ResearchPage />} />
-                        <Route path="/browse/:page?" element={<Browse />} />
+                        {/* Playground */}
                         <Route
-                          path="/file/:artifactId"
-                          element={<FileBrowser />}
+                          path={ROUTES.PLAYGROUND.path}
+                          element={<Playground />}
                         />
-                        <Route path="/account" element={<Account />} />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/logout" element={<Logout />} />
-                        <Route path="/signup/" element={<Signup />} />
-                        <Route path="/signup/:id" element={<EmailSignup />} />
 
-                        <Route path="/create" element={<Create />} />
+                        {/* General pages */}
+                        <Route path={ROUTES.ABOUT.path} element={<About />} />
                         <Route
-                          path="/item/:username/:slug"
+                          path={ROUTES.DOWNLOADS.path}
+                          element={<DownloadsPage />}
+                        />
+                        <Route
+                          path={ROUTES.RESEARCH.path}
+                          element={<ResearchPage />}
+                        />
+                        <Route
+                          path={ROUTES.TOS.path}
+                          element={<TermsOfService />}
+                        />
+                        <Route
+                          path={ROUTES.PRIVACY.path}
+                          element={<PrivacyPolicy />}
+                        />
+
+                        {/* Account */}
+                        <Route
+                          path={ROUTES.ACCOUNT.path}
+                          element={<Account />}
+                        />
+                        <Route path={ROUTES.LOGIN.path} element={<Login />} />
+                        <Route path={ROUTES.LOGOUT.path} element={<Logout />} />
+                        <Route path={ROUTES.SIGNUP.path} element={<Signup />} />
+                        <Route
+                          path={ROUTES.SIGNUP.EMAIL.path}
+                          element={<EmailSignup />}
+                        />
+                        <Route path={ROUTES.KEYS.path} element={<APIKeys />} />
+                        <Route
+                          path={ROUTES.PROFILE.path}
+                          element={<Profile />}
+                        />
+
+                        {/* Listings */}
+                        <Route path={ROUTES.LISTINGS.path}>
+                          <Route
+                            path={ROUTES.LISTINGS.$.BROWSE.relativePath}
+                            element={<Browse />}
+                          />
+                          <Route
+                            path={ROUTES.LISTINGS.$.CREATE.relativePath}
+                            element={<Create />}
+                          />
+                        </Route>
+                        <Route
+                          path={ROUTES.LISTING.path}
                           element={<Listing />}
                         />
-                        <Route path="/keys" element={<APIKeys />} />
-                        <Route path="/profile/:id?" element={<Profile />} />
-
-                        <Route path="/tos" element={<TermsOfService />} />
-                        <Route path="/privacy" element={<PrivacyPolicy />} />
-
                         <Route
-                          path="/sell/onboarding"
-                          element={<SellerOnboarding />}
+                          path={ROUTES.FILE.path}
+                          element={<FileBrowser />}
                         />
+
+                        {/* Seller */}
                         <Route
-                          path="/sell/dashboard"
+                          path={ROUTES.SELL.path}
                           element={<SellerDashboard />}
+                        >
+                          <Route
+                            path={ROUTES.SELL.$.ONBOARDING.relativePath}
+                            element={<SellerOnboarding />}
+                          />
+                          <Route
+                            path={ROUTES.SELL.$.DELETE.relativePath}
+                            element={<DeleteConnect />}
+                          />
+                        </Route>
+
+                        {/* Orders */}
+                        <Route path={ROUTES.ORDER.path}>
+                          <Route
+                            path={ROUTES.ORDER.$.SUCCESS.relativePath}
+                            element={<OrderSuccess />}
+                          />
+                        </Route>
+                        <Route
+                          path={ROUTES.ORDERS.path}
+                          element={<OrdersPage />}
+                        />
+
+                        {/* Terminal */}
+                        <Route
+                          path={ROUTES.TERMINAL.path}
+                          element={<Terminal />}
                         />
                         <Route
-                          path="/delete-connect"
-                          element={<DeleteConnect />}
+                          path={ROUTES.TERMINAL.WITH_ID.path}
+                          element={<Terminal />}
                         />
 
-                        <Route path="/success" element={<OrderSuccess />} />
-                        <Route path="/orders" element={<OrdersPage />} />
-
-                        <Route path="/terminal" element={<Terminal />} />
-                        <Route path="/terminal/:id" element={<Terminal />} />
-
-                        <Route path="/404" element={<NotFound />} />
+                        {/* Not found */}
+                        <Route
+                          path={ROUTES.NOT_FOUND.path}
+                          element={<NotFound />}
+                        />
                         <Route path="*" element={<NotFoundRedirect />} />
                       </Routes>
                     </Container>

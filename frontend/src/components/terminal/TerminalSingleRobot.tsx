@@ -7,6 +7,7 @@ import "@/components/terminal/Terminal.css";
 import AudioIcon from "@/components/icons/AudioIcon";
 import TerminalRobotModel from "@/components/terminal/TerminalRobotModel";
 import { SingleRobotResponse } from "@/components/terminal/types";
+import ROUTES from "@/lib/types/routes";
 
 interface Props {
   robot: SingleRobotResponse;
@@ -87,13 +88,20 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
       {/* Navigation buttons */}
       <div className="flex gap-4 mb-4">
         <button
-          onClick={() => navigate("/terminal")}
+          onClick={() => navigate(ROUTES.TERMINAL.path)}
           className="border border-green-500 px-4 py-2 hover:bg-green-500 hover:text-black transition-colors flex items-center gap-2"
         >
           <FaArrowLeft /> All Robots
         </button>
         <button
-          onClick={() => navigate(`/item/${robot.username}/${robot.slug}`)}
+          onClick={() =>
+            navigate(
+              ROUTES.LISTING.buildPath({
+                username: robot.username,
+                slug: robot.slug,
+              }),
+            )
+          }
           className="border border-green-500 px-4 py-2 hover:bg-green-500 hover:text-black transition-colors"
         >
           Listing

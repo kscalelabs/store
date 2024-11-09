@@ -6,6 +6,7 @@ import Spinner from "@/components/ui/Spinner";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import ROUTES from "@/lib/types/routes";
 
 type ListingInfo =
   paths["/listings/upvotes"]["get"]["responses"][200]["content"]["application/json"]["listings"][number];
@@ -91,7 +92,10 @@ const UpvotedGrid = ({ page, setPage }: UpvotedGridProps) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         {listingInfos.map((info) => (
           <Link
-            to={`/item/${info.username || "unknown"}/${info.slug || info.id}`}
+            to={ROUTES.LISTING.buildPath({
+              username: info.username || "unknown",
+              slug: info.slug || info.id,
+            })}
             key={info.id}
           >
             <ListingGridCard

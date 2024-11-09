@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useTypedParams } from "react-router-typesafe-routes/dom";
 
 import TerminalAllRobots from "@/components/terminal/TerminalAllRobots";
 import TerminalSingleRobot from "@/components/terminal/TerminalSingleRobot";
@@ -7,6 +7,7 @@ import { SingleRobotResponse } from "@/components/terminal/types";
 import Spinner from "@/components/ui/Spinner";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import ROUTES from "@/lib/types/routes";
 
 import RequireAuthentication from "../auth/RequireAuthentication";
 
@@ -24,7 +25,7 @@ const TerminalInnerRouter = ({
   onDeleteRobot,
   onUpdateRobot,
 }: TerminalInnerRouterProps) => {
-  const { id: robotId } = useParams();
+  const { id: robotId } = useTypedParams(ROUTES.TERMINAL.WITH_ID);
   const robot = robots.find((robot) => robot.robot_id === robotId);
 
   return robot ? (

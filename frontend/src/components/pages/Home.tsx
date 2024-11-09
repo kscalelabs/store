@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/Card";
 import PageHeader from "@/components/ui/PageHeader";
-import stompy from "@/images/stompy.png";
+import ROUTES from "@/lib/types/routes";
 import {
   ChevronRightIcon,
   CodeIcon,
@@ -25,8 +25,6 @@ const Home: React.FC = () => {
   return (
     <div ref={containerRef} className="bg-gray-1 text-gray-12 space-y-6">
       <HeroSection />
-      <StompyProSection />
-      <StompyMiniSection />
       <OptionsSection />
     </div>
   );
@@ -77,64 +75,6 @@ const HeroSection: React.FC = () => {
   );
 };
 
-const StompyProSection: React.FC = () => {
-  const navigate = useNavigate();
-
-  return (
-    <section
-      className="relative h-[600px] overflow-hidden cursor-pointer transition-all duration-300 hover:opacity-90 rounded-lg"
-      onClick={() => navigate("/pro")}
-    >
-      <div className="absolute inset-0">
-        <img
-          src={stompy}
-          alt="Stompy Pro Background"
-          className="w-full h-full object-cover"
-        />
-      </div>
-
-      <div className="relative z-10 max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between h-full px-4">
-        <div className="unit-copy-wrapper text-center md:text-left mb-8 md:mb-0">
-          <div className="split-wrapper-top mt-8 md:mt-0">
-            <h2 className="headline text-4xl font-bold mb-2 md:mb-4 text-gray-900">
-              Stompy Pro
-            </h2>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const StompyMiniSection: React.FC = () => {
-  const navigate = useNavigate();
-
-  return (
-    <section
-      className="relative h-[600px] overflow-hidden cursor-pointer transition-all duration-300 hover:opacity-90 rounded-lg"
-      onClick={() => navigate("/mini")}
-    >
-      <div className="absolute inset-0">
-        <img
-          src={stompy}
-          alt="Stompy Mini Background"
-          className="w-full h-full object-cover scale-x-[-1]"
-        />
-      </div>
-
-      <div className="relative z-10 max-w-7xl mx-auto flex flex-col md:flex-row-reverse items-center justify-between h-full px-4">
-        <div className="unit-copy-wrapper text-center md:text-right mb-8 md:mb-0">
-          <div className="split-wrapper-top mt-8 md:mt-0">
-            <h2 className="headline text-4xl font-bold mb-2 md:mb-4 text-gray-900">
-              Stompy Mini
-            </h2>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
 const OptionsSection: React.FC = () => {
   const navigate = useNavigate();
 
@@ -146,7 +86,7 @@ const OptionsSection: React.FC = () => {
             title: "Downloads",
             description: "Kernel images, URDFs, ML models, and more.",
             icon: DownloadIcon,
-            path: "/downloads",
+            path: ROUTES.DOWNLOADS.path,
             buttonText: "Browse Downloads",
           },
           {
@@ -154,7 +94,7 @@ const OptionsSection: React.FC = () => {
             description:
               "Browse robot builds with linked CAD files, part lists, and various related downloads.",
             icon: MagnifyingGlassIcon,
-            path: "/browse",
+            path: ROUTES.LISTINGS.BROWSE.path,
             buttonText: "View Builds",
           },
           {

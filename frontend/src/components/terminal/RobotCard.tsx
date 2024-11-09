@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { SingleRobotResponse } from "@/components/terminal/types";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/button";
+import ROUTES from "@/lib/types/routes";
 import { formatDate } from "@/lib/utils/formatDate";
 
 import { DeleteRobotModal } from "../modals/DeleteRobotModal";
@@ -22,7 +23,7 @@ export default function RobotCard({ robot, onDeleteRobot }: RobotCardProps) {
     <Card className="p-6 bg-gray-2 border-gray-4">
       <div className="flex items-start justify-between">
         <Link
-          to={`/terminal/${robot.robot_id}`}
+          to={ROUTES.TERMINAL.WITH_ID.buildPath({ id: robot.robot_id })}
           className="flex items-center gap-4 group flex-grow hover:cursor-pointer"
         >
           <div className="p-2 bg-gray-4 rounded-lg group-hover:bg-gray-5">
@@ -60,7 +61,10 @@ export default function RobotCard({ robot, onDeleteRobot }: RobotCardProps) {
               position="bottom"
             >
               <Link
-                to={`/item/${robot.username}/${robot.slug}`}
+                to={ROUTES.LISTING.buildPath({
+                  username: robot.username,
+                  slug: robot.slug,
+                })}
                 className="text-gray-12 underline hover:text-primary-9 flex items-center gap-1 group"
               >
                 <span className="group-hover:underline">
@@ -84,7 +88,7 @@ export default function RobotCard({ robot, onDeleteRobot }: RobotCardProps) {
                 position="bottom"
               >
                 <Link
-                  to={`/orders`}
+                  to={ROUTES.ORDERS.path}
                   className="text-gray-12 underline hover:text-primary-9 flex items-center gap-1 group"
                 >
                   <span className="group-hover:underline">

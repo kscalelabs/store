@@ -11,6 +11,7 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { components } from "@/gen/api";
+import ROUTES from "@/lib/types/routes";
 import { cx } from "class-variance-authority";
 
 type SingleArtifactResponse = components["schemas"]["SingleArtifactResponse"];
@@ -59,7 +60,7 @@ const UrdfViewerButton = ({ artifact }: Props) => {
     <Button
       className="p-3 w-full mt-2"
       onClick={() => {
-        navigate(`/file/${artifact.artifact_id}`);
+        navigate(ROUTES.FILE.buildPath({ artifactId: artifact.artifact_id }));
       }}
       variant="secondary"
     >
@@ -84,7 +85,7 @@ const CodeInstructions = ({ artifactId }: { artifactId: string }) => {
         </li>
         <li>
           Configure your{" "}
-          <Link to="/keys" className="link">
+          <Link to={ROUTES.KEYS.path} className="link">
             API key
           </Link>
         </li>

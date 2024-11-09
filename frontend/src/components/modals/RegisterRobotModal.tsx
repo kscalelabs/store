@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import ROUTES from "@/lib/types/routes";
 
 import Spinner from "../ui/Spinner";
 
@@ -52,7 +53,7 @@ export function RegisterRobotModal({
         addErrorAlert(error);
       } else {
         addAlert("Robot registered successfully", "success");
-        navigate(`/terminal/${data.id}`);
+        navigate(ROUTES.TERMINAL.WITH_ID.buildPath({ id: data.id }));
       }
     } catch (error) {
       addErrorAlert(error);

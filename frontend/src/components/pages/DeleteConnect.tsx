@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import ROUTES from "@/lib/types/routes";
 
 export default function DeleteConnect() {
   const navigate = useNavigate();
@@ -13,12 +14,12 @@ export default function DeleteConnect() {
     if (auth.isLoading) return;
 
     if (!auth.isAuthenticated) {
-      navigate("/login");
+      navigate(ROUTES.LOGIN.path);
       return;
     }
 
     if (!auth.currentUser?.permissions?.includes("is_admin")) {
-      navigate("/");
+      navigate(ROUTES.HOME.path);
       return;
     }
   }, [auth.isLoading, auth.isAuthenticated]);
@@ -37,7 +38,7 @@ export default function DeleteConnect() {
 
       addAlert(`Successfully deleted ${data.count} test accounts`, "success");
       setTimeout(() => {
-        navigate("/sell/onboarding");
+        navigate(ROUTES.SELL.ONBOARDING.path);
       }, 2000);
     } catch (error) {
       addErrorAlert(`Failed to delete test accounts: ${error}`);

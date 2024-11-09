@@ -6,6 +6,7 @@ import Spinner from "@/components/ui/Spinner";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import ROUTES from "@/lib/types/routes";
 
 import ListingGridSkeleton from "./ListingGridSkeleton";
 
@@ -65,7 +66,10 @@ const ListingGrid = (props: ListingGridProps) => {
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-7xl mx-auto">
       {listingInfos.map((info) => (
         <Link
-          to={`/item/${info.username}/${info.slug || info.id}`}
+          to={ROUTES.LISTING.buildPath({
+            username: info.username,
+            slug: info.slug || info.id,
+          })}
           key={`${info.username}-${info.id}`}
         >
           {listingDetails === null ? (

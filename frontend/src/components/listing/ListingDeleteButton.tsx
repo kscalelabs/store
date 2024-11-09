@@ -6,6 +6,7 @@ import Modal from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import ROUTES from "@/lib/types/routes";
 
 interface Props {
   listingId: string;
@@ -37,7 +38,7 @@ const ListingDeleteButton = (props: Props) => {
       setDeleting(false);
     } else {
       addAlert("Listing was deleted successfully", "success");
-      navigate("/browse");
+      navigate(ROUTES.LISTINGS.BROWSE.path);
     }
   };
 

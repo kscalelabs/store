@@ -6,7 +6,8 @@ import {
   FaPen,
   FaTimes,
 } from "react-icons/fa";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useTypedParams } from "react-router-typesafe-routes/dom";
 
 import FileRenderer from "@/components/files/FileRenderer";
 import FileTreeViewer from "@/components/files/FileTreeViewer";
@@ -18,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { components } from "@/gen/api";
 import { humanReadableError, useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import ROUTES from "@/lib/types/routes";
 import pako from "pako";
 
 type SingleArtifactResponse = components["schemas"]["SingleArtifactResponse"];
@@ -28,7 +30,7 @@ interface UntarredFile {
 }
 
 const FileBrowser = () => {
-  const { artifactId } = useParams<{ artifactId: string }>();
+  const { artifactId } = useTypedParams(ROUTES.FILE);
   const [artifact, setArtifact] = useState<SingleArtifactResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [untarring, setUntarring] = useState(false);
@@ -42,7 +44,7 @@ const FileBrowser = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   if (!artifactId) {
-    navigate("/");
+    navigate(ROUTES.HOME.path);
     return null;
   }
 
@@ -215,7 +217,12 @@ const FileBrowser = () => {
               <Tooltip content="View Listing" position="bottom">
                 <Button
                   onClick={() =>
-                    navigate(`/item/${artifact.username}/${artifact.slug}`)
+                    navigate(
+                      ROUTES.LISTING.buildPath({
+                        username: artifact.username,
+                        slug: artifact.slug,
+                      }),
+                    )
                   }
                   variant="ghost"
                   size="icon"

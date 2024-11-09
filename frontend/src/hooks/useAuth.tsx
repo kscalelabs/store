@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import type { paths } from "@/gen/api";
 import api from "@/hooks/api";
 import { BACKEND_URL } from "@/lib/constants/env";
+import ROUTES from "@/lib/types/routes";
 import createClient, { Client } from "openapi-fetch";
 
 const AUTH_KEY_ID = "AUTH";
@@ -113,7 +114,7 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
       setApiKeyId(newApiKeyId);
       setCurrentUser(null);
       setIsLoading(true);
-      navigate("/");
+      navigate(ROUTES.HOME.path);
     },
     [navigate],
   );
@@ -123,7 +124,7 @@ export const AuthenticationProvider = (props: AuthenticationProviderProps) => {
     setApiKeyId(null);
     setCurrentUser(null);
     setIsLoading(false);
-    navigate("/");
+    navigate(ROUTES.HOME.path);
   }, [navigate]);
 
   // const apiImpl = new api(client);

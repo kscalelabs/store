@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 
 import Logo from "@/components/Logo";
 import SocialLink from "@/components/footer/SocialLink";
+import ROUTES from "@/lib/types/routes";
 
 const Footer = () => {
   const location = useLocation();
@@ -64,19 +65,19 @@ const Footer = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           <div className="flex flex-col items-start gap-2">
             <h2 className="text-base font-bold mb-1">Company</h2>
-            <Link to={"/about"} className="hover:text-primary-9">
+            <Link to={ROUTES.ABOUT.path} className="hover:text-primary-9">
               About
             </Link>
-            <Link to={"/research"} className="hover:text-primary-9">
+            <Link to={ROUTES.RESEARCH.path} className="hover:text-primary-9">
               Blog
             </Link>
           </div>
           <div className="flex flex-col items-start gap-2">
             <h2 className="text-base font-bold mb-1">Legal</h2>
-            <Link to={"/tos"} className="hover:text-primary-9">
+            <Link to={ROUTES.TOS.path} className="hover:text-primary-9">
               Terms of Service
             </Link>
-            <Link to={"/privacy"} className="hover:text-primary-9">
+            <Link to={ROUTES.PRIVACY.path} className="hover:text-primary-9">
               Privacy Policy
             </Link>
           </div>

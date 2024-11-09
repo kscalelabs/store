@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import ROUTES from "@/lib/types/routes";
 
 interface Props {
   listingId: string;
@@ -110,7 +111,7 @@ const ListingMetadata = ({
         <div className="flex items-center gap-2">
           <button
             onClick={() => {
-              navigate(`/profile/${creatorId}`);
+              navigate(ROUTES.PROFILE.buildPath({ id: creatorId }));
             }}
             className="text-blue-500 hover:bg-gray-100 rounded px-1 flex items-center gap-1"
           >
