@@ -12,6 +12,7 @@ import Logo from "@/components/Logo";
 import { useFeaturedListings } from "@/components/listing/FeaturedListings";
 import Sidebar from "@/components/nav/Sidebar";
 import { useAuthentication } from "@/hooks/useAuth";
+import ROUTES from "@/lib/types/routes";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -46,25 +47,25 @@ const Navbar = () => {
   const technicalItems = [
     {
       name: "Builds",
-      path: "/browse",
+      path: ROUTES.BROWSE.path,
       icon: <MagnifyingGlassIcon className="h-5 w-5" />,
       isExternal: false,
     },
     {
       name: "Downloads",
-      path: "/downloads",
+      path: ROUTES.DOWNLOADS.path,
       icon: <DownloadIcon className="h-5 w-5" />,
       isExternal: false,
     },
     {
       name: "Playground",
-      path: "/playground",
+      path: ROUTES.PLAYGROUND.path,
       icon: <FaRobot className="h-5 w-5" />,
       isExternal: false,
     },
     {
       name: "Research",
-      path: "/research",
+      path: ROUTES.RESEARCH.path,
       icon: <FaWpexplorer className="h-5 w-5" />,
       isExternal: false,
     },
@@ -126,7 +127,10 @@ const Navbar = () => {
   };
 
   const handleFeaturedClick = (username: string, slug: string | null) => {
-    const path = `/item/${username}/${slug}`;
+    const path = ROUTES.LISTING.buildPath({
+      username,
+      slug: slug || "",
+    });
     if (location.pathname !== path) {
       navigate(path, { replace: true });
     }
@@ -138,7 +142,7 @@ const Navbar = () => {
         <div className="relative flex justify-between py-3 mx-4 sm:mx-6 md:mx-10 xl:mx-16 2xl:mx-28 font-medium">
           <div className="flex justify-between w-full lg:w-auto gap-3">
             <Link
-              to="/"
+              to={ROUTES.HOME.path}
               className="
                 flex
                 flex-grow
@@ -240,17 +244,13 @@ const Navbar = () => {
               {isAuthenticated ? (
                 <>
                   <Link
-                    to="/account"
-                    className={`px-3 py-2 rounded-md hover:bg-gray-1 hover:text-primary-9 ${
-                      location.pathname === "/account"
-                        ? "bg-gray-11 text-gray-1"
-                        : ""
-                    }`}
+                    to={ROUTES.ACCOUNT.path}
+                    className="px-3 py-2 rounded-md hover:bg-gray-1 hover:text-primary-9"
                   >
                     Account
                   </Link>
                   <Link
-                    to="/logout"
+                    to={ROUTES.LOGOUT.path}
                     className="px-3 py-2 rounded-md hover:bg-primary-9"
                   >
                     Logout
@@ -259,13 +259,13 @@ const Navbar = () => {
               ) : (
                 <>
                   <Link
-                    to="/login"
+                    to={ROUTES.LOGIN.path}
                     className="px-3 py-2 rounded-md hover:bg-gray-1 hover:text-primary-9"
                   >
                     Sign In
                   </Link>
                   <Link
-                    to="/signup"
+                    to={ROUTES.SIGNUP.path}
                     className="px-3 py-2 rounded-md hover:bg-gray-1 hover:text-primary-9"
                   >
                     Sign Up

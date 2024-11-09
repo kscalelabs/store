@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 
 import placeholder from "@/components/listing/pics/placeholder.jpg";
 import { Artifact } from "@/components/listing/types";
+import ROUTES from "@/lib/types/routes";
 
 interface Props {
   artifact: Artifact;
@@ -22,7 +23,7 @@ const ListingArtifactRenderer = ({ artifact }: Props) => {
       return (
         <div className="w-full h-full bg-gray-3 flex flex-col items-center justify-center gap-2">
           <Link
-            to={`/file/${artifact.artifact_id}`}
+            to={ROUTES.FILE.buildPath({ artifactId: artifact.artifact_id })}
             className="p-4 hover:bg-gray-4 rounded-lg transition-colors"
           >
             <FaFileArchive className="w-16 h-16" />

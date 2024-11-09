@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { SignUpSchema, SignupType } from "@/lib/types";
+import ROUTES from "@/lib/types/routes";
 import { zodResolver } from "@hookform/resolvers/zod";
 import zxcvbn from "zxcvbn";
 
@@ -93,11 +94,11 @@ const SignupForm: React.FC<SignupFormProps> = ({ signupTokenId }) => {
       {/* TOS Text */}
       <div className="text-xs text-center text-gray-11">
         By signing up, you agree to our <br />
-        <Link to="/tos" className="text-accent underline">
+        <Link to={ROUTES.TOS.path} className="text-accent underline">
           terms and conditions
         </Link>{" "}
         and{" "}
-        <Link to="/privacy" className="text-accent underline">
+        <Link to={ROUTES.PRIVACY.path} className="text-accent underline">
           privacy policy
         </Link>
         .
