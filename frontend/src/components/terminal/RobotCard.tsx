@@ -61,7 +61,7 @@ export default function RobotCard({ robot, onDeleteRobot }: RobotCardProps) {
               position="bottom"
             >
               <Link
-                to={ROUTES.LISTING.buildPath({
+                to={ROUTES.BOT.buildPath({
                   username: robot.username,
                   slug: robot.slug,
                 })}

@@ -218,7 +218,7 @@ const FileBrowser = () => {
                 <Button
                   onClick={() =>
                     navigate(
-                      ROUTES.LISTING.buildPath({
+                      ROUTES.BOT.buildPath({
                         username: artifact.username,
                         slug: artifact.slug,
                       }),

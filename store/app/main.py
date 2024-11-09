@@ -21,17 +21,16 @@ from store.app.errors import (
     NotAuthenticatedError,
     NotAuthorizedError,
 )
-from store.app.routers.artifacts import artifacts_router
-from store.app.routers.auth import router
-from store.app.routers.kernel_images import kernel_images_router
-from store.app.routers.keys import keys_router
-from store.app.routers.listings import listings_router
-from store.app.routers.onshape import onshape_router
-from store.app.routers.orders import orders_router
-from store.app.routers.robots import robots_router
-from store.app.routers.stripe import stripe_router
-from store.app.routers.teleop import teleop_router
-from store.app.routers.users import users_router
+from store.app.routers.artifacts import router as artifacts_router
+from store.app.routers.auth import router as auth_router
+from store.app.routers.keys import router as keys_router
+from store.app.routers.listings import router as listings_router
+from store.app.routers.onshape import router as onshape_router
+from store.app.routers.orders import router as orders_router
+from store.app.routers.robots import router as robots_router
+from store.app.routers.stripe import router as stripe_router
+from store.app.routers.teleop import router as teleop_router
+from store.app.routers.users import router as users_router
 from store.utils import get_cors_origins
 
 
@@ -144,7 +143,6 @@ async def get_open_api_endpoint() -> JSONResponse:
         "/auth/github/code",
         "/auth/google/client-id",
         "/auth/google/login",
-        "/kernel-images/public",
         "/listings/{id}",
         "/listings/dump",
         "/listings/search",
@@ -181,9 +179,8 @@ async def validate_auth_token(auth_token: str = Depends(api_key_header)) -> str:
     return auth_token
 
 
-app.include_router(router, prefix="/auth", tags=["auth"])
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(artifacts_router, prefix="/artifacts", tags=["artifacts"])
-app.include_router(kernel_images_router, prefix="/kernel-images", tags=["kernel-images"])
 app.include_router(keys_router, prefix="/keys", tags=["keys"])
 app.include_router(listings_router, prefix="/listings", tags=["listings"])
 app.include_router(onshape_router, prefix="/onshape", tags=["onshape"])

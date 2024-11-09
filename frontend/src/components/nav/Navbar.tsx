@@ -16,7 +16,6 @@ import ROUTES from "@/lib/types/routes";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
-  DownloadIcon,
   ExternalLinkIcon,
   MagnifyingGlassIcon,
 } from "@radix-ui/react-icons";
@@ -46,15 +45,9 @@ const Navbar = () => {
 
   const technicalItems = [
     {
-      name: "Builds",
-      path: ROUTES.LISTINGS.BROWSE.path,
+      name: "Bots",
+      path: ROUTES.BOTS.BROWSE.path,
       icon: <MagnifyingGlassIcon className="h-5 w-5" />,
-      isExternal: false,
-    },
-    {
-      name: "Downloads",
-      path: ROUTES.DOWNLOADS.path,
-      icon: <DownloadIcon className="h-5 w-5" />,
       isExternal: false,
     },
     {
@@ -127,7 +120,7 @@ const Navbar = () => {
   };
 
   const handleFeaturedClick = (username: string, slug: string | null) => {
-    const path = ROUTES.LISTING.buildPath({
+    const path = ROUTES.BOT.buildPath({
       username,
       slug: slug || "",
     });

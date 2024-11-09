@@ -26,7 +26,7 @@ from store.app.security.user import (
     maybe_get_user_from_api_key,
 )
 
-listings_router = APIRouter()
+router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ class FeaturedListingsResponse(BaseModel):
     listing_ids: list[str]
 
 
-@listings_router.get("/featured", response_model=FeaturedListingsResponse)
+@router.get("/featured", response_model=FeaturedListingsResponse)
 async def get_featured_listings(
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> FeaturedListingsResponse:
@@ -44,7 +44,7 @@ async def get_featured_listings(
     return FeaturedListingsResponse(listing_ids=featured_ids)
 
 
-@listings_router.put("/featured/{listing_id}", response_model=bool)
+@router.put("/featured/{listing_id}", response_model=bool)
 async def toggle_featured_listing(
     listing_id: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
@@ -81,7 +81,7 @@ async def toggle_featured_listing(
     return featured
 
 
-@listings_router.delete("/featured/{listing_id}", response_model=bool)
+@router.delete("/featured/{listing_id}", response_model=bool)
 async def remove_featured_listing(
     listing_id: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
@@ -112,7 +112,7 @@ class ListListingsResponse(BaseModel):
     has_next: bool = False
 
 
-@listings_router.get("/search", response_model=ListListingsResponse)
+@router.get("/search", response_model=ListListingsResponse)
 async def list_listings(
     crud: Annotated[Crud, Depends(Crud.get)],
     page: int = Query(1, description="Page number for pagination"),
@@ -148,7 +148,7 @@ class GetBatchListingsResponse(BaseModel):
     listings: list[ListingInfoResponse]
 
 
-@listings_router.get("/batch", response_model=GetBatchListingsResponse)
+@router.get("/batch", response_model=GetBatchListingsResponse)
 async def get_batch_listing_info(
     crud: Annotated[Crud, Depends(Crud.get)],
     user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
@@ -214,14 +214,14 @@ class DumpListingsResponse(BaseModel):
     listings: list[Listing]
 
 
-@listings_router.get("/dump", response_model=DumpListingsResponse)
+@router.get("/dump", response_model=DumpListingsResponse)
 async def dump_listings(
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> DumpListingsResponse:
     return DumpListingsResponse(listings=await crud.dump_listings())
 
 
-@listings_router.get("/user/{user_id}", response_model=ListListingsResponse)
+@router.get("/user/{user_id}", response_model=ListListingsResponse)
 async def get_user_listings(
     user_id: str,
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -240,7 +240,7 @@ async def get_user_listings(
     return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
 
-@listings_router.get("/me", response_model=ListListingsResponse)
+@router.get("/me", response_model=ListListingsResponse)
 async def get_my_listings(
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -265,7 +265,7 @@ class NewListingResponse(BaseModel):
     slug: str
 
 
-@listings_router.post("/add", response_model=NewListingResponse)
+@router.post("/add", response_model=NewListingResponse)
 async def add_listing(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -305,7 +305,7 @@ async def add_listing(
     return NewListingResponse(listing_id=listing.id, username=user.username, slug=slug)
 
 
-@listings_router.delete("/delete/{listing_id}", response_model=bool)
+@router.delete("/delete/{listing_id}", response_model=bool)
 async def delete_listing(
     listing_id: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
@@ -333,7 +333,7 @@ class UpdateListingRequest(BaseModel):
     slug: str | None = None
 
 
-@listings_router.put("/edit/{id}", response_model=bool)
+@router.put("/edit/{id}", response_model=bool)
 async def edit_listing(
     id: str,
     listing: UpdateListingRequest,
@@ -381,7 +381,7 @@ class UpvotedListingsResponse(BaseModel):
     has_more: bool
 
 
-@listings_router.get("/upvotes", response_model=ListListingsResponse)
+@router.get("/upvotes", response_model=ListListingsResponse)
 async def get_upvoted_listings(
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -466,7 +466,7 @@ async def get_listing_common(
     return response
 
 
-@listings_router.get("/{listing_id}", response_model=GetListingResponse)
+@router.get("/{listing_id}", response_model=GetListingResponse)
 async def get_listing(
     listing_id: str,
     user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
@@ -478,7 +478,7 @@ async def get_listing(
     return await get_listing_common(listing, user, crud)
 
 
-@listings_router.get("/{username}/{slug}", response_model=GetListingResponse)
+@router.get("/{username}/{slug}", response_model=GetListingResponse)
 async def get_listing_by_username_and_slug(
     username: str,
     slug: str,
@@ -496,7 +496,7 @@ class VoteListingResponse(BaseModel):
     user_vote: bool
 
 
-@listings_router.post("/{id}/vote")
+@router.post("/{id}/vote")
 async def vote_listing(
     id: str,
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -506,7 +506,7 @@ async def vote_listing(
     await crud.handle_vote(user.id, id, upvote)
 
 
-@listings_router.delete("/{id}/vote")
+@router.delete("/{id}/vote")
 async def remove_vote(
     id: str,
     crud: Annotated[Crud, Depends(Crud.get)],

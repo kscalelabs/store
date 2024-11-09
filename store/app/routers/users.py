@@ -21,7 +21,7 @@ from store.app.utils.email import send_delete_email
 
 logger = logging.getLogger(__name__)
 
-users_router = APIRouter()
+router = APIRouter()
 
 TOKEN_TYPE = "Bearer"
 
@@ -66,7 +66,7 @@ class MyUserInfoResponse(BaseModel):
         )
 
 
-@users_router.get("/me", response_model=MyUserInfoResponse)
+@router.get("/me", response_model=MyUserInfoResponse)
 async def get_user_info_endpoint(
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
 ) -> MyUserInfoResponse | None:
@@ -86,7 +86,7 @@ async def get_user_info_endpoint(
         return None
 
 
-@users_router.delete("/me")
+@router.delete("/me")
 async def delete_user_endpoint(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -154,7 +154,7 @@ class LoginResponse(BaseModel):
     token: str
 
 
-@users_router.get("/batch", response_model=PublicUsersInfoResponse)
+@router.get("/batch", response_model=PublicUsersInfoResponse)
 async def get_users_batch_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
     ids: list[str] = Query(...),
@@ -163,7 +163,7 @@ async def get_users_batch_endpoint(
     return PublicUsersInfoResponse(users=[PublicUserInfoResponseItem.from_user(user) for user in users])
 
 
-@users_router.get("/public/batch", response_model=PublicUsersInfoResponse)
+@router.get("/public/batch", response_model=PublicUsersInfoResponse)
 async def get_users_public_batch_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
     ids: list[str] = Query(...),
@@ -172,7 +172,7 @@ async def get_users_public_batch_endpoint(
     return PublicUsersInfoResponse(users=[PublicUserInfoResponseItem.from_user(user) for user in users])
 
 
-@users_router.get("/{id}", response_model=UserInfoResponseItem)
+@router.get("/{id}", response_model=UserInfoResponseItem)
 async def get_user_info_by_id_endpoint(id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> UserInfoResponseItem:
     user = await crud.get_user(id)
     if user is None:
@@ -180,14 +180,14 @@ async def get_user_info_by_id_endpoint(id: str, crud: Annotated[Crud, Depends(Cr
     return UserInfoResponseItem.from_user(user)
 
 
-@users_router.get("/public/me", response_model=UserPublic)
+@router.get("/public/me", response_model=UserPublic)
 async def get_my_public_user_info_endpoint(
     user: User = Depends(get_session_user_with_read_permission),
 ) -> UserPublic:  # Change return type to UserPublic
     return UserPublic(**user.model_dump())  # Return UserPublic instance directly
 
 
-@users_router.get("/public/{id}", response_model=UserPublic)
+@router.get("/public/{id}", response_model=UserPublic)
 async def get_public_user_info_by_id_endpoint(
     id: str,
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -209,7 +209,7 @@ class UpdateUserRequest(BaseModel):
     bio: str | None = None
 
 
-@users_router.put("/me", response_model=UserPublic)
+@router.put("/me", response_model=UserPublic)
 async def update_profile(
     updates: UpdateUserRequest,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
@@ -233,7 +233,7 @@ class UpdateUsernameRequest(BaseModel):
     new_username: str
 
 
-@users_router.put("/me/username", response_model=UserPublic)
+@router.put("/me/username", response_model=UserPublic)
 async def update_username(
     request: UpdateUsernameRequest,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
@@ -245,7 +245,7 @@ async def update_username(
     return UserPublic(**updated_user.model_dump())
 
 
-@users_router.get("/validate-api-key")
+@router.get("/validate-api-key")
 async def validate_api_key_endpoint(
     crud: Annotated[Crud, Depends(Crud.get)],
     api_key_id: Annotated[str, Depends(get_request_api_key_id)],
@@ -262,7 +262,7 @@ class SetModeratorRequest(BaseModel):
     is_mod: bool
 
 
-@users_router.post("/set-moderator")
+@router.post("/set-moderator")
 async def set_moderator(
     request: SetModeratorRequest,
     admin_user: Annotated[User, Depends(get_session_user_with_admin_permission)],
@@ -281,7 +281,7 @@ async def set_moderator(
     return UserPublic(**updated_user.model_dump())
 
 
-@users_router.get("/check-username/{username}")
+@router.get("/check-username/{username}")
 async def check_username_availability(
     username: str,
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -296,7 +296,7 @@ class SetContentManagerRequest(BaseModel):
     is_content_manager: bool
 
 
-@users_router.post("/set-content-manager")
+@router.post("/set-content-manager")
 async def set_content_manager(
     request: SetContentManagerRequest,
     admin_user: Annotated[User, Depends(get_session_user_with_admin_permission)],

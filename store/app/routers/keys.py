@@ -12,7 +12,7 @@ from store.app.security.user import get_session_user_with_admin_permission
 
 logger = logging.getLogger(__name__)
 
-keys_router = APIRouter()
+router = APIRouter()
 
 TOKEN_TYPE = "Bearer"
 
@@ -31,7 +31,7 @@ class NewKeyResponse(BaseModel):
     key: KeysResponseItem
 
 
-@keys_router.post("/new", response_model=NewKeyResponse)
+@router.post("/new", response_model=NewKeyResponse)
 async def new_key(
     data: NewKeyRequest,
     user: Annotated[User, Depends(get_session_user_with_admin_permission)],
@@ -52,7 +52,7 @@ class ListKeysResponse(BaseModel):
     keys: list[KeysResponseItem]
 
 
-@keys_router.get("/list", response_model=ListKeysResponse)
+@router.get("/list", response_model=ListKeysResponse)
 async def list_keys(
     user: Annotated[User, Depends(get_session_user_with_admin_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -69,7 +69,7 @@ async def list_keys(
     )
 
 
-@keys_router.delete("/delete/{key}")
+@router.delete("/delete/{key}")
 async def delete_key(
     key: str,
     user: Annotated[User, Depends(get_session_user_with_admin_permission)],

@@ -13,7 +13,7 @@ from store.app.db import Crud
 from store.app.model import User, can_write_listing
 from store.app.security.user import get_session_user_with_write_permission
 
-onshape_router = APIRouter()
+router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,7 @@ class SetRequest(BaseModel):
     onshape_url: str | None
 
 
-@onshape_router.post("/set/{listing_id}")
+@router.post("/set/{listing_id}")
 async def set_onshape_document(
     listing_id: str,
     request: SetRequest,
@@ -61,7 +61,7 @@ async def pull_onshape_document_generator(
     yield "event: finish\ndata: finish\n\n"
 
 
-@onshape_router.get("/pull/{listing_id}", response_class=StreamingResponse)
+@router.get("/pull/{listing_id}", response_class=StreamingResponse)
 async def pull_onshape_document(
     listing_id: str,
     request: Request,

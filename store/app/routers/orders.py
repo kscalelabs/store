@@ -11,7 +11,7 @@ from store.app.model import Order, User
 from store.app.routers import stripe
 from store.app.routers.users import get_session_user_with_read_permission
 
-orders_router = APIRouter()
+router = APIRouter()
 
 
 class ProductInfo(BaseModel):
@@ -27,7 +27,7 @@ class OrderWithProduct(BaseModel):
     product: ProductInfo
 
 
-@orders_router.get("/user-orders", response_model=List[Order])
+@router.get("/user-orders", response_model=List[Order])
 async def get_user_orders(
     user: User = Depends(get_session_user_with_read_permission), crud: Crud = Depends(Crud.get)
 ) -> List[Order]:
@@ -38,7 +38,7 @@ async def get_user_orders(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No orders found for this user")
 
 
-@orders_router.get("/order/{order_id}", response_model=Order)
+@router.get("/order/{order_id}", response_model=Order)
 async def get_order(
     order_id: str,
     user: User = Depends(get_session_user_with_read_permission),
@@ -50,7 +50,7 @@ async def get_order(
     return order
 
 
-@orders_router.get("/order-with-product/{order_id}", response_model=OrderWithProduct)
+@router.get("/order-with-product/{order_id}", response_model=OrderWithProduct)
 async def get_order_with_product(
     order_id: str,
     user: User = Depends(get_session_user_with_read_permission),
@@ -67,7 +67,7 @@ async def get_order_with_product(
     return OrderWithProduct(order=order, product=ProductInfo(**product))
 
 
-@orders_router.get("/user-orders-with-products", response_model=List[OrderWithProduct])
+@router.get("/user-orders-with-products", response_model=List[OrderWithProduct])
 async def get_user_orders_with_products(
     user: User = Depends(get_session_user_with_read_permission),
     crud: Crud = Depends(Crud.get),
@@ -95,7 +95,7 @@ class UpdateOrderAddressRequest(BaseModel):
     shipping_country: str
 
 
-@orders_router.put("/update-order-address/{order_id}", response_model=Order)
+@router.put("/update-order-address/{order_id}", response_model=Order)
 async def update_order_address(
     order_id: str,
     address_update: UpdateOrderAddressRequest,

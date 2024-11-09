@@ -6,7 +6,6 @@ const ROUTES = {
 
   // General pages
   ABOUT: route("about"),
-  DOWNLOADS: route("downloads"),
   RESEARCH: route("research"),
   TOS: route("tos"),
   PRIVACY: route("privacy"),
@@ -25,15 +24,15 @@ const ROUTES = {
   KEYS: route("keys"),
 
   // Listings
-  LISTINGS: route(
-    "listings",
+  BOTS: route(
+    "bots",
     {},
     {
       CREATE: route("create"),
       BROWSE: route("browse"),
     },
   ),
-  LISTING: route("item/:username/:slug", {
+  BOT: route("bot/:username/:slug", {
     params: {
       username: string().defined(),
       slug: string().defined(),
@@ -46,7 +45,7 @@ const ROUTES = {
     params: { artifactId: string().defined() },
   }),
 
-  // Seller routes
+  // Sell.
   SELL: route(
     "sell",
     {},
@@ -76,6 +75,9 @@ const ROUTES = {
       }),
     },
   ),
+
+  // Link robot
+  LINK: route("link"),
 
   // Not found
   NOT_FOUND: route("404"),

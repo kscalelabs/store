@@ -6,6 +6,7 @@ import ListingGrid from "@/components/listings/ListingGrid";
 import { Input } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
+import Container from "@/components/ui/container";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -113,7 +114,7 @@ const Browse = () => {
   ];
 
   return (
-    <>
+    <Container>
       <div className="py-8">
         <div className="flex flex-col md:flex-row justify-center items-center gap-2">
           <div className="relative w-full md:w-auto">
@@ -165,7 +166,7 @@ const Browse = () => {
               </DropdownMenuContent>
             </DropdownMenu>
             <Button
-              onClick={() => navigate(ROUTES.LISTINGS.CREATE.path)}
+              onClick={() => navigate(ROUTES.BOTS.CREATE.path)}
               variant="primary"
               size="lg"
               className="w-full md:w-auto"
@@ -185,7 +186,7 @@ const Browse = () => {
           </div>
         )}
       </div>
-    </>
+    </Container>
   );
 };
 
