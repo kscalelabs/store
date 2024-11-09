@@ -14,7 +14,6 @@ import ROUTES from "@/lib/types/routes";
 import {
   ChevronRightIcon,
   CodeIcon,
-  DownloadIcon,
   ExternalLinkIcon,
   MagnifyingGlassIcon,
 } from "@radix-ui/react-icons";
@@ -83,24 +82,17 @@ const OptionsSection: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           {
-            title: "Downloads",
-            description: "Kernel images, URDFs, ML models, and more.",
-            icon: DownloadIcon,
-            path: ROUTES.DOWNLOADS.path,
-            buttonText: "Browse Downloads",
-          },
-          {
             title: "Browse Builds",
             description:
-              "Browse robot builds with linked CAD files, part lists, and various related downloads.",
+              "Browse robot builds with linked CAD files, part lists, and related downloads.",
             icon: MagnifyingGlassIcon,
-            path: ROUTES.LISTINGS.BROWSE.path,
+            path: ROUTES.BOTS.BROWSE.path,
             buttonText: "View Builds",
           },
           {
             title: "Code",
             description:
-              "Explore or contribute to dozens of open-source repositories from robot builds to edge vision-language-action models, kernel images, simulations, and more.",
+              "Explore or contribute to dozens of open-source repositories from robot builds to edge vision-language-action models, simulations, and more.",
             icon: CodeIcon,
             path: "https://github.com/kscalelabs",
             buttonText: "Visit our Github",

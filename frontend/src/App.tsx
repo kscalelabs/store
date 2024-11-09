@@ -16,7 +16,6 @@ import Account from "@/components/pages/Account";
 import Browse from "@/components/pages/Browse";
 import Create from "@/components/pages/Create";
 import DeleteConnect from "@/components/pages/DeleteConnect";
-import DownloadsPage from "@/components/pages/Download";
 import EmailSignup from "@/components/pages/EmailSignup";
 import FileBrowser from "@/components/pages/FileBrowser";
 import Home from "@/components/pages/Home";
@@ -67,10 +66,6 @@ const App = () => {
                         {/* General pages */}
                         <Route path={ROUTES.ABOUT.path} element={<About />} />
                         <Route
-                          path={ROUTES.DOWNLOADS.path}
-                          element={<DownloadsPage />}
-                        />
-                        <Route
                           path={ROUTES.RESEARCH.path}
                           element={<ResearchPage />}
                         />
@@ -102,20 +97,17 @@ const App = () => {
                         />
 
                         {/* Listings */}
-                        <Route path={ROUTES.LISTINGS.path}>
+                        <Route path={ROUTES.BOTS.path}>
                           <Route
-                            path={ROUTES.LISTINGS.$.BROWSE.relativePath}
+                            path={ROUTES.BOTS.$.BROWSE.relativePath}
                             element={<Browse />}
                           />
                           <Route
-                            path={ROUTES.LISTINGS.$.CREATE.relativePath}
+                            path={ROUTES.BOTS.$.CREATE.relativePath}
                             element={<Create />}
                           />
                         </Route>
-                        <Route
-                          path={ROUTES.LISTING.path}
-                          element={<Listing />}
-                        />
+                        <Route path={ROUTES.BOT.path} element={<Listing />} />
                         <Route
                           path={ROUTES.FILE.path}
                           element={<FileBrowser />}

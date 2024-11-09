@@ -12,7 +12,7 @@ import ROUTES from "@/lib/types/routes";
 const Listing = () => {
   const { addErrorAlert } = useAlertQueue();
   const auth = useAuthentication();
-  const { username, slug } = useTypedParams(ROUTES.LISTING);
+  const { username, slug } = useTypedParams(ROUTES.BOT);
   const [listing, setListing] = useState<ListingResponse | null>(null);
   const [isFetched, setIsFetched] = useState(false);
 

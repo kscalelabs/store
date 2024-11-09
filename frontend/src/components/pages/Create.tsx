@@ -138,7 +138,7 @@ const Create = () => {
       if (responseData && responseData.username && responseData.slug) {
         addAlert("New listing was created successfully", "success");
         navigate(
-          ROUTES.LISTING.buildPath({
+          ROUTES.BOT.buildPath({
             username: responseData.username,
             slug: responseData.slug,
           }),

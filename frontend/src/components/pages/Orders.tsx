@@ -74,7 +74,7 @@ const OrdersPage: React.FC = () => {
         <div className="flex flex-col gap-4 justify-center items-center bg-gray-4 p-10 rounded-lg max-w-3xl mx-auto">
           <p className="text-gray-12 font-medium sm:text-lg">No orders yet.</p>
           <Button
-            onClick={() => navigate(ROUTES.LISTINGS.BROWSE.path)}
+            onClick={() => navigate(ROUTES.BOTS.BROWSE.path)}
             variant="primary"
           >
             Browse Robots

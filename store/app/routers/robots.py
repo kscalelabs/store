@@ -17,7 +17,7 @@ from store.app.security.user import (
     get_session_user_with_write_permission,
 )
 
-robots_router = APIRouter()
+router = APIRouter()
 
 
 class CreateRobotRequest(BaseModel):
@@ -101,7 +101,7 @@ class RobotListResponse(BaseModel):
     robots: list[SingleRobotResponse]
 
 
-@robots_router.post("/create", response_model=Robot)
+@router.post("/create", response_model=Robot)
 async def create_robot(
     robot_data: CreateRobotRequest,
     user: User = Depends(get_session_user_with_write_permission),
@@ -119,7 +119,7 @@ async def create_robot(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@robots_router.get("/get/{robot_id}", response_model=Robot)
+@router.get("/get/{robot_id}", response_model=Robot)
 async def get_robot(
     robot_id: str,
     user: User = Depends(get_session_user_with_read_permission),
@@ -135,7 +135,7 @@ async def get_robot(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Robot not found")
 
 
-@robots_router.get("/list", response_model=RobotListResponse)
+@router.get("/list", response_model=RobotListResponse)
 async def list_user_robots(
     user: User = Depends(get_session_user_with_read_permission),
     crud: Crud = Depends(Crud.get),
@@ -165,7 +165,7 @@ async def list_user_robots(
     return RobotListResponse(robots=list(robot_responses))
 
 
-@robots_router.put("/update/{robot_id}", response_model=Robot)
+@router.put("/update/{robot_id}", response_model=Robot)
 async def update_robot(
     robot_id: str,
     update_data: UpdateRobotRequest,
@@ -184,7 +184,7 @@ async def update_robot(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Robot not found")
 
 
-@robots_router.delete("/delete/{robot_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/delete/{robot_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_robot(
     robot_id: str,
     user: User = Depends(get_session_user_with_write_permission),
@@ -203,7 +203,7 @@ async def delete_robot(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Robot not found")
 
 
-@robots_router.get("/check-order/{order_id}", response_model=Robot | None)
+@router.get("/check-order/{order_id}", response_model=Robot | None)
 async def check_order_robot(
     order_id: str,
     user: User = Depends(get_session_user_with_read_permission),
@@ -227,7 +227,7 @@ class RobotURDFResponse(BaseModel):
     urdf_url: str | None
 
 
-@robots_router.get("/urdf/{listing_id}", response_model=RobotURDFResponse)
+@router.get("/urdf/{listing_id}", response_model=RobotURDFResponse)
 async def get_robot_urdf(
     listing_id: str,
     crud: Crud = Depends(Crud.get),

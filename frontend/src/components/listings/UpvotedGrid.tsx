@@ -92,7 +92,7 @@ const UpvotedGrid = ({ page, setPage }: UpvotedGridProps) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         {listingInfos.map((info) => (
           <Link
-            to={ROUTES.LISTING.buildPath({
+            to={ROUTES.BOT.buildPath({
               username: info.username || "unknown",
               slug: info.slug || info.id,
             })}

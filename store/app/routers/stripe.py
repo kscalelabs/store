@@ -15,7 +15,7 @@ from store.settings import settings
 
 logger = logging.getLogger(__name__)
 
-stripe_router = APIRouter()
+router = APIRouter()
 stripe.api_key = settings.stripe.secret_key
 
 
@@ -25,7 +25,7 @@ class ConnectAccountStatus(str, Enum):
     COMPLETE = "complete"
 
 
-@stripe_router.post("/create-payment-intent")
+@router.post("/create-payment-intent")
 async def create_payment_intent(request: Request) -> Dict[str, Any]:
     try:
         data = await request.json()
@@ -56,7 +56,7 @@ class CreateRefundsRequest(BaseModel):
     amount: int
 
 
-@stripe_router.put("/refunds/{order_id}", response_model=Order)
+@router.put("/refunds/{order_id}", response_model=Order)
 async def refund_payment_intent(
     order_id: str,
     refund_request: CreateRefundsRequest,
@@ -105,7 +105,7 @@ async def refund_payment_intent(
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-@stripe_router.post("/webhook")
+@router.post("/webhook")
 async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Dict[str, str]:
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
@@ -243,7 +243,7 @@ class CreateCheckoutSessionResponse(BaseModel):
     session_id: str
 
 
-@stripe_router.post("/create-checkout-session", response_model=CreateCheckoutSessionResponse)
+@router.post("/create-checkout-session", response_model=CreateCheckoutSessionResponse)
 async def create_checkout_session(
     request: CreateCheckoutSessionRequest,
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
@@ -319,7 +319,7 @@ async def create_checkout_session(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@stripe_router.get("/get-product/{product_id}")
+@router.get("/get-product/{product_id}")
 async def get_product(product_id: str) -> Dict[str, Any]:
     try:
         product = stripe.Product.retrieve(product_id)
@@ -338,7 +338,7 @@ class CreateConnectAccountResponse(BaseModel):
     account_id: str
 
 
-@stripe_router.post("/connect/account", response_model=CreateConnectAccountResponse)
+@router.post("/connect/account", response_model=CreateConnectAccountResponse)
 async def create_connect_account(
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -376,7 +376,7 @@ async def create_connect_account(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@stripe_router.post("/connect/account/session")
+@router.post("/connect/account/session")
 async def create_connect_account_session(
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
     account_id: str = Body(..., embed=True),
@@ -406,7 +406,7 @@ async def create_connect_account_session(
         raise
 
 
-@stripe_router.post("/connect/delete/accounts")
+@router.post("/connect/delete/accounts")
 async def delete_test_accounts(
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],

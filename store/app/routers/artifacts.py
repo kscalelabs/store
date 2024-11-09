@@ -27,12 +27,12 @@ from store.app.model import (
 from store.app.security.user import get_session_user_with_write_permission, maybe_get_user_from_api_key
 from store.settings import settings
 
-artifacts_router = APIRouter()
+router = APIRouter()
 
 logger = logging.getLogger(__name__)
 
 
-@artifacts_router.get("/url/{artifact_type}/{listing_id}/{name}")
+@router.get("/url/{artifact_type}/{listing_id}/{name}")
 async def artifact_url(
     artifact_type: ArtifactType,
     listing_id: str,
@@ -165,7 +165,7 @@ class ListArtifactsResponse(BaseModel):
     artifacts: list[SingleArtifactResponse]
 
 
-@artifacts_router.get("/info/{artifact_id}")
+@router.get("/info/{artifact_id}")
 async def get_artifact_info(
     artifact_id: str,
     user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
@@ -180,7 +180,7 @@ async def get_artifact_info(
     return await SingleArtifactResponse.from_artifact(artifact=artifact, crud=crud, user=user)
 
 
-@artifacts_router.get("/list/{listing_id}", response_model=ListArtifactsResponse)
+@router.get("/list/{listing_id}", response_model=ListArtifactsResponse)
 async def list_artifacts(
     listing_id: str,
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -242,7 +242,7 @@ class UploadArtifactResponse(BaseModel):
     artifacts: list[SingleArtifactResponse]
 
 
-@artifacts_router.post("/upload/{listing_id}", response_model=UploadArtifactResponse)
+@router.post("/upload/{listing_id}", response_model=UploadArtifactResponse)
 async def upload(
     listing_id: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
@@ -311,7 +311,7 @@ class UpdateArtifactRequest(BaseModel):
     description: str | None = None
 
 
-@artifacts_router.put("/edit/{artifact_id}", response_model=bool)
+@router.put("/edit/{artifact_id}", response_model=bool)
 async def edit_artifact(
     id: str,
     artifact: UpdateArtifactRequest,
@@ -330,7 +330,7 @@ async def edit_artifact(
     return True
 
 
-@artifacts_router.delete("/delete/{artifact_id}", response_model=bool)
+@router.delete("/delete/{artifact_id}", response_model=bool)
 async def delete_artifact(
     artifact_id: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
@@ -351,7 +351,7 @@ async def delete_artifact(
     return True
 
 
-@artifacts_router.put("/list/{listing_id}/main", response_model=bool)
+@router.put("/list/{listing_id}/main", response_model=bool)
 async def set_main_image(
     listing_id: str,
     artifact_id: str,

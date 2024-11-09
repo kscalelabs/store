@@ -96,7 +96,7 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
         <button
           onClick={() =>
             navigate(
-              ROUTES.LISTING.buildPath({
+              ROUTES.BOT.buildPath({
                 username: robot.username,
                 slug: robot.slug,
               }),

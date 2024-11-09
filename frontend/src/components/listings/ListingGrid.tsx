@@ -66,7 +66,7 @@ const ListingGrid = (props: ListingGridProps) => {
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
       {listingInfos.map((info) => (
         <Link
-          to={ROUTES.LISTING.buildPath({
+          to={ROUTES.BOT.buildPath({
             username: info.username,
             slug: info.slug || info.id,
           })}
