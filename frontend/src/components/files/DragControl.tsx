@@ -1,23 +1,22 @@
 import {
-  Raycaster,
-  Vector3,
-  Plane,
-  Vector2,
-  Scene,
-  Object3D,
-  Ray,
   Camera,
-} from 'three';
-import { URDFJoint } from 'urdf-loader';
+  Object3D,
+  Plane,
+  Ray,
+  Raycaster,
+  Scene,
+  Vector2,
+  Vector3,
+} from "three";
+import { URDFJoint } from "urdf-loader";
 
-
-export function isJoint(o: any): boolean {
+export function isJoint(o: unknown): boolean {
   const j = o as URDFJoint;
-  return j.isURDFJoint && j.jointType !== 'fixed';
+  return j && j.isURDFJoint && j.jointType !== "fixed";
 }
 
 function findNearestJoint(child: Object3D): URDFJoint | null {
-  let curr: any = child;
+  let curr: Object3D | null = child;
   while (curr) {
     if (isJoint(curr)) {
       return curr as URDFJoint;
@@ -46,7 +45,9 @@ export class URDFDragControls {
   protected projectedEndPoint: Vector3;
   protected plane: Plane;
 
-  constructor(scene: Scene) {
+  protected draggable: boolean;
+
+  constructor(scene: Scene, draggable = false) {
     this.enabled = true;
     this.scene = scene;
     this.raycaster = new Raycaster();
@@ -65,6 +66,8 @@ export class URDFDragControls {
     this.projectedStartPoint = new Vector3();
     this.projectedEndPoint = new Vector3();
     this.plane = new Plane();
+
+    this.draggable = draggable;
   }
 
   update() {
@@ -79,7 +82,6 @@ export class URDFDragControls {
     let hoveredJoint: URDFJoint | null = null;
     const intersections = raycaster.intersectObjects(scene.children, true);
     if (intersections.length !== 0) {
-      console.log('hit');
       const hit = intersections[0];
       this.hitDistance = hit.distance;
       hoveredJoint = findNearestJoint(hit.object);
@@ -107,18 +109,16 @@ export class URDFDragControls {
 
   onDragEnd(joint: URDFJoint) {}
 
-  onHover(joint: URDFJoint) {
-    console.log('pow');
-  }
+  onHover(joint: URDFJoint) {}
 
-  onUnhover(joint: URDFJoint) {
-    console.log('wow');
-  }
+  onUnhover(joint: URDFJoint) {}
+
+  onClick(joint: URDFJoint) {}
 
   getRevoluteDelta(
     joint: URDFJoint,
     startPoint: Vector3,
-    endPoint: Vector3
+    endPoint: Vector3,
   ): number {
     // set up the plane
     this.tempVector
@@ -138,20 +138,17 @@ export class URDFDragControls {
 
     this.tempVector.crossVectors(
       this.projectedStartPoint,
-      this.projectedEndPoint
+      this.projectedEndPoint,
     );
 
     const direction = Math.sign(this.tempVector.dot(this.plane.normal));
-    return (
-      direction *
-      this.projectedEndPoint.angleTo(this.projectedStartPoint)
-    );
+    return direction * this.projectedEndPoint.angleTo(this.projectedStartPoint);
   }
 
   getPrismaticDelta(
     joint: URDFJoint,
     startPoint: Vector3,
-    endPoint: Vector3
+    endPoint: Vector3,
   ): number {
     this.tempVector.subVectors(endPoint, startPoint);
     this.plane.normal
@@ -166,30 +163,30 @@ export class URDFDragControls {
     const { raycaster, hitDistance, manipulating } = this;
     const { ray } = raycaster;
 
-    if (manipulating) {
+    if (manipulating && this.draggable) {
       ray.at(hitDistance, this.prevHitPoint);
       toRay.at(hitDistance, this.newHitPoint);
 
       let delta = 0;
       if (
-        manipulating.jointType === 'revolute' ||
-        manipulating.jointType === 'continuous'
+        manipulating.jointType === "revolute" ||
+        manipulating.jointType === "continuous"
       ) {
         delta = this.getRevoluteDelta(
           manipulating,
           this.prevHitPoint,
-          this.newHitPoint
+          this.newHitPoint,
         );
-      } else if (manipulating.jointType === 'prismatic') {
+      } else if (manipulating.jointType === "prismatic") {
         delta = this.getPrismaticDelta(
           manipulating,
           this.prevHitPoint,
-          this.newHitPoint
+          this.newHitPoint,
         );
       }
 
       if (delta) {
-        this.updateJoint(manipulating, manipulating.angle + delta);
+        this.updateJoint(manipulating, manipulating.angle.valueOf() + delta);
       }
     }
 
@@ -213,8 +210,12 @@ export class URDFDragControls {
       }
 
       this.onDragEnd(this.manipulating);
+      const manipulating = this.manipulating;
       this.manipulating = null;
       this.update();
+      if (manipulating == this.hovered) {
+        this.onClick(manipulating!);
+      }
     }
   }
 }
@@ -239,8 +240,6 @@ export class PointerURDFDragControls extends URDFDragControls {
       const rect = domElement.getBoundingClientRect();
       mouse.x = ((e.clientX - rect.x) / rect.width) * 2 - 1;
       mouse.y = -((e.clientY - rect.y) / rect.height) * 2 + 1;
-
-      console.log('mouse:', mouse.x, mouse.y);
     };
 
     this._mouseDown = (e: MouseEvent) => {
@@ -263,15 +262,15 @@ export class PointerURDFDragControls extends URDFDragControls {
       this.setGrabbed(false);
     };
 
-    domElement.addEventListener('mousedown', this._mouseDown);
-    domElement.addEventListener('mousemove', this._mouseMove);
-    domElement.addEventListener('mouseup', this._mouseUp);
+    domElement.addEventListener("mousedown", this._mouseDown);
+    domElement.addEventListener("mousemove", this._mouseMove);
+    domElement.addEventListener("mouseup", this._mouseUp);
   }
 
   getRevoluteDelta(
     joint: URDFJoint,
     startPoint: Vector3,
-    endPoint: Vector3
+    endPoint: Vector3,
   ): number {
     const { camera, initialGrabPoint } = this;
 
@@ -306,9 +305,8 @@ export class PointerURDFDragControls extends URDFDragControls {
 
   dispose() {
     const { domElement } = this;
-    domElement.removeEventListener('mousedown', this._mouseDown);
-    domElement.removeEventListener('mousemove', this._mouseMove);
-    domElement.removeEventListener('mouseup', this._mouseUp);
+    domElement.removeEventListener("mousedown", this._mouseDown);
+    domElement.removeEventListener("mousemove", this._mouseMove);
+    domElement.removeEventListener("mouseup", this._mouseUp);
   }
 }
-
