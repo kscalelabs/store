@@ -190,7 +190,7 @@ const URDFRenderer = ({
     controlsRef.current = controls;
     controls.enableDamping = true;
     controls.dampingFactor = 0.25;
-    controls.autoRotateSpeed = 1.0;
+    controls.autoRotateSpeed = 4.0;
 
     scene.children.forEach((child) => {
       if (child instanceof THREE.Light) {
