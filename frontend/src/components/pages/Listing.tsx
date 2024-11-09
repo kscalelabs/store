@@ -1,16 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useTypedParams } from "react-router-typesafe-routes/dom";
 
 import ListingLoadingSkeleton from "@/components/listing/ListingLoadingSkeleton";
 import ListingRenderer from "@/components/listing/ListingRenderer";
 import { ListingResponse } from "@/components/listing/types";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import ROUTES from "@/lib/types/routes";
 
 const Listing = () => {
   const { addErrorAlert } = useAlertQueue();
   const auth = useAuthentication();
-  const { username, slug } = useParams();
+  const { username, slug } = useTypedParams(ROUTES.LISTING);
   const [listing, setListing] = useState<ListingResponse | null>(null);
   const [isFetched, setIsFetched] = useState(false);
 

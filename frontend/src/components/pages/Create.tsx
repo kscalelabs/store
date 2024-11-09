@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { NewListingSchema, NewListingType } from "@/lib/types";
+import ROUTES from "@/lib/types/routes";
 import { slugify } from "@/lib/utils/formatString";
 import { convertToCents, convertToDecimal } from "@/lib/utils/priceFormat";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -136,7 +137,12 @@ const Create = () => {
 
       if (responseData && responseData.username && responseData.slug) {
         addAlert("New listing was created successfully", "success");
-        navigate(`/item/${responseData.username}/${responseData.slug}`);
+        navigate(
+          ROUTES.LISTING.buildPath({
+            username: responseData.username,
+            slug: responseData.slug,
+          }),
+        );
       } else {
         throw new Error("Invalid response data");
       }

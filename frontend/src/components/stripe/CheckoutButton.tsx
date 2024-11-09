@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { STRIPE_PUBLISHABLE_KEY } from "@/lib/constants/env";
+import ROUTES from "@/lib/types/routes";
 import { loadStripe } from "@stripe/stripe-js";
 
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
@@ -108,7 +109,7 @@ const CheckoutButton: React.FC<{ productId: string; label?: string }> = ({
             <Button
               onClick={() => {
                 setIsDrawerOpen(false);
-                navigate("/login");
+                navigate(ROUTES.LOGIN.path);
               }}
               variant="secondary"
             >
@@ -117,7 +118,7 @@ const CheckoutButton: React.FC<{ productId: string; label?: string }> = ({
             <Button
               onClick={() => {
                 setIsDrawerOpen(false);
-                navigate("/signup");
+                navigate(ROUTES.SIGNUP.path);
               }}
               variant="primary"
               className="ml-2"

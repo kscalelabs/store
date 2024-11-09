@@ -6,6 +6,7 @@ import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
 import type { paths } from "@/gen/api";
 import { useAuthentication } from "@/hooks/useAuth";
+import ROUTES from "@/lib/types/routes";
 
 type OrderWithProduct =
   paths["/orders/user-orders-with-products"]["get"]["responses"][200]["content"]["application/json"][number];
@@ -72,7 +73,10 @@ const OrdersPage: React.FC = () => {
       ) : (
         <div className="flex flex-col gap-4 justify-center items-center bg-gray-4 p-10 rounded-lg max-w-3xl mx-auto">
           <p className="text-gray-12 font-medium sm:text-lg">No orders yet.</p>
-          <Button onClick={() => navigate("/browse")} variant="primary">
+          <Button
+            onClick={() => navigate(ROUTES.LISTINGS.BROWSE.path)}
+            variant="primary"
+          >
             Browse Robots
           </Button>
         </div>

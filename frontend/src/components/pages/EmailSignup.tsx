@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useTypedParams } from "react-router-typesafe-routes/dom";
 
 import SignupForm from "@/components/auth/SignupForm";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import ROUTES from "@/lib/types/routes";
 
 type GetEmailSignUpTokenResponse =
   paths["/auth/email/signup/get/{id}"]["get"]["responses"][200]["content"]["application/json"];
@@ -16,7 +18,7 @@ const EmailSignup = () => {
   const navigate = useNavigate();
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
-  const { id } = useParams();
+  const { id } = useTypedParams(ROUTES.SIGNUP.EMAIL);
   const [signupToken, setSignupToken] =
     useState<GetEmailSignUpTokenResponse | null>(null);
 
@@ -64,7 +66,7 @@ const EmailSignup = () => {
               <Button
                 variant="primary"
                 onClick={() => {
-                  navigate("/login");
+                  navigate(ROUTES.LOGIN.path);
                 }}
               >
                 Login / Signup

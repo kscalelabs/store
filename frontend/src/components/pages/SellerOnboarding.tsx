@@ -5,6 +5,7 @@ import Spinner from "@/components/ui/Spinner";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { useStripeConnect } from "@/hooks/useStripeConnect";
+import ROUTES from "@/lib/types/routes";
 import {
   ConnectAccountOnboarding,
   ConnectComponentsProvider,
@@ -32,7 +33,7 @@ export default function SellerOnboarding() {
 
   useEffect(() => {
     if (auth.currentUser?.stripe_connect_onboarding_completed) {
-      navigate("/sell/dashboard");
+      navigate(ROUTES.SELL.path);
     }
   }, [auth.currentUser, navigate]);
 
@@ -47,7 +48,7 @@ export default function SellerOnboarding() {
   }
 
   if (!auth.isAuthenticated) {
-    navigate("/login");
+    navigate(ROUTES.LOGIN.path);
     return null;
   }
 
@@ -107,7 +108,7 @@ export default function SellerOnboarding() {
             <ConnectAccountOnboarding
               onExit={() => {
                 setOnboardingExited(true);
-                navigate("/sell/dashboard");
+                navigate(ROUTES.SELL.path);
               }}
             />
           </ConnectComponentsProvider>

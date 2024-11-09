@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuthentication } from "@/hooks/useAuth";
+import ROUTES from "@/lib/types/routes";
 import { Check } from "lucide-react";
 
 export default function SellerDashboard() {
@@ -16,13 +17,13 @@ export default function SellerDashboard() {
     if (auth.isLoading) return;
 
     if (!auth.isAuthenticated) {
-      navigate("/login");
+      navigate(ROUTES.LOGIN.path);
       return;
     }
 
     // Redirect to onboarding if not completed
     if (!auth.currentUser?.stripe_connect_onboarding_completed) {
-      navigate("/sell/onboarding");
+      navigate(ROUTES.SELL.ONBOARDING.path);
       return;
     }
   }, [auth.isLoading, auth.isAuthenticated, auth.currentUser]);

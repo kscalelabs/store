@@ -1,4 +1,4 @@
-import { number, route, string } from "react-router-typesafe-routes/dom";
+import { route, string } from "react-router-typesafe-routes/dom";
 
 const ROUTES = {
   HOME: route(""),
@@ -25,10 +25,14 @@ const ROUTES = {
   KEYS: route("keys"),
 
   // Listings
-  CREATE: route("create"),
-  BROWSE: route("browse/:page?", {
-    params: { page: number() },
-  }),
+  LISTINGS: route(
+    "listings",
+    {},
+    {
+      CREATE: route("create"),
+      BROWSE: route("browse"),
+    },
+  ),
   LISTING: route("item/:username/:slug", {
     params: {
       username: string().defined(),
@@ -48,7 +52,6 @@ const ROUTES = {
     {},
     {
       ONBOARDING: route("onboarding"),
-      DASHBOARD: route("dashboard"),
       DELETE: route("delete"),
     },
   ),
@@ -64,10 +67,8 @@ const ROUTES = {
   ORDERS: route("orders"),
 
   // Terminal
-  // TERMINAL: route("terminal/:id?", {
-  //   params: { id: string() },
-  // }),
-  TERMINAL: route("terminal",
+  TERMINAL: route(
+    "terminal",
     {},
     {
       WITH_ID: route(":id", {

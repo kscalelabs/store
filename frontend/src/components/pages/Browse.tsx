@@ -16,6 +16,7 @@ import {
 import { components, paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import ROUTES from "@/lib/types/routes";
 import { useDebounce } from "@uidotdev/usehooks";
 
 type SortOption = components["schemas"]["SortOption"];
@@ -164,7 +165,7 @@ const Browse = () => {
               </DropdownMenuContent>
             </DropdownMenu>
             <Button
-              onClick={() => navigate(`/create`)}
+              onClick={() => navigate(ROUTES.LISTINGS.CREATE.path)}
               variant="primary"
               size="lg"
               className="w-full md:w-auto"

@@ -60,7 +60,7 @@ const UrdfViewerButton = ({ artifact }: Props) => {
     <Button
       className="p-3 w-full mt-2"
       onClick={() => {
-        navigate(`/file/${artifact.artifact_id}`);
+        navigate(ROUTES.FILE.buildPath({ artifactId: artifact.artifact_id }));
       }}
       variant="secondary"
     >

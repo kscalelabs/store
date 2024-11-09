@@ -47,7 +47,7 @@ const Navbar = () => {
   const technicalItems = [
     {
       name: "Builds",
-      path: ROUTES.BROWSE.path,
+      path: ROUTES.LISTINGS.BROWSE.path,
       icon: <MagnifyingGlassIcon className="h-5 w-5" />,
       isExternal: false,
     },

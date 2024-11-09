@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useTypedParams } from "react-router-typesafe-routes/dom";
 
+import MyListingGrid from "@/components/listings/MyListingGrid";
 import UpvotedGrid from "@/components/listings/UpvotedGrid";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
 import { Input, TextArea } from "@/components/ui/Input/Input";
@@ -11,11 +13,10 @@ import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { useDebounce } from "@/hooks/useDebounce";
+import ROUTES from "@/lib/types/routes";
 import { isValidUsername } from "@/lib/utils/validation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import { format } from "date-fns";
-
-import MyListingGrid from "../listings/MyListingGrid";
 
 type UserResponse =
   paths["/users/public/{id}"]["get"]["responses"][200]["content"]["application/json"];
@@ -214,7 +215,10 @@ export const RenderProfile = (props: RenderProfileProps) => {
           </div>
           {!isEditing && canEdit && (
             <div className="flex flex-wrap gap-2 justify-center">
-              <Button onClick={() => navigate("/keys")} variant="primary">
+              <Button
+                onClick={() => navigate(ROUTES.KEYS.path)}
+                variant="primary"
+              >
                 API Keys
               </Button>
               <Button onClick={() => setIsEditing(true)} variant="outline">
@@ -391,13 +395,16 @@ export const RenderProfile = (props: RenderProfileProps) => {
             ) : null}
           </div>
           <div className="flex gap-2">
-            <Button onClick={() => navigate("/orders")} variant="primary">
+            <Button
+              onClick={() => navigate(ROUTES.ORDERS.path)}
+              variant="primary"
+            >
               Orders
             </Button>
             {!user.stripe_connect_account_id ? (
               <Tooltip content="Start seller onboarding" position="bottom">
                 <Button
-                  onClick={() => navigate("/sell/onboarding")}
+                  onClick={() => navigate(ROUTES.SELL.ONBOARDING.path)}
                   variant="outline"
                 >
                   Sell Robots
@@ -406,7 +413,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
             ) : !user.stripe_connect_onboarding_completed ? (
               <Tooltip content="Continue seller onboarding" position="bottom">
                 <Button
-                  onClick={() => navigate("/sell/onboarding")}
+                  onClick={() => navigate(ROUTES.SELL.ONBOARDING.path)}
                   variant="outline"
                 >
                   Complete Seller Setup
@@ -414,7 +421,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
               </Tooltip>
             ) : (
               <Button
-                onClick={() => navigate("/sell/dashboard")}
+                onClick={() => navigate(ROUTES.SELL.path)}
                 variant="outline"
               >
                 Seller Dashboard
@@ -458,7 +465,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
 const Profile = () => {
   const { addErrorAlert, addAlert } = useAlertQueue();
   const auth = useAuthentication();
-  const { id } = useParams();
+  const { id } = useTypedParams(ROUTES.PROFILE);
   const [user, setUser] = useState<UserResponse | null>(null);
   const [canEdit, setCanEdit] = useState(false);
   const [isLoading, setIsLoading] = useState(true);

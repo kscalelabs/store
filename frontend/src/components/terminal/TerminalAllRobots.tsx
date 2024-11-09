@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import RobotCard from "@/components/terminal/RobotCard";
 import { SingleRobotResponse } from "@/components/terminal/types";
 import { Button } from "@/components/ui/button";
+import ROUTES from "@/lib/types/routes";
 
 interface Props {
   robots: SingleRobotResponse[];
@@ -31,7 +32,7 @@ const TerminalAllRobots = ({ robots, onDeleteRobot }: Props) => {
           </p>
           <Button
             variant="primary"
-            onClick={() => navigate("/browse")}
+            onClick={() => navigate(ROUTES.LISTINGS.BROWSE.path)}
             className="flex items-center"
           >
             <span className="mr-2">Browse Listings</span>

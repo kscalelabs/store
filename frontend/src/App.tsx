@@ -32,14 +32,13 @@ import PrivacyPolicy from "@/components/pages/PrivacyPolicy";
 import Profile from "@/components/pages/Profile";
 import ResearchPage from "@/components/pages/ResearchPage";
 import SellerDashboard from "@/components/pages/SellerDashboard";
+import SellerOnboarding from "@/components/pages/SellerOnboarding";
 import Signup from "@/components/pages/Signup";
 import Terminal from "@/components/pages/Terminal";
 import TermsOfService from "@/components/pages/TermsOfService";
 import { AlertQueue, AlertQueueProvider } from "@/hooks/useAlertQueue";
 import { AuthenticationProvider } from "@/hooks/useAuth";
 import ROUTES from "@/lib/types/routes";
-
-import SellerOnboarding from "./components/pages/SellerOnboarding";
 
 const App = () => {
   return (
@@ -97,17 +96,25 @@ const App = () => {
                           element={<EmailSignup />}
                         />
                         <Route path={ROUTES.KEYS.path} element={<APIKeys />} />
-
-                        {/* Listings */}
-                        <Route path={ROUTES.CREATE.path} element={<Create />} />
-                        <Route path={ROUTES.BROWSE.path} element={<Browse />} />
-                        <Route
-                          path={ROUTES.LISTING.path}
-                          element={<Listing />}
-                        />
                         <Route
                           path={ROUTES.PROFILE.path}
                           element={<Profile />}
+                        />
+
+                        {/* Listings */}
+                        <Route path={ROUTES.LISTINGS.path}>
+                          <Route
+                            path={ROUTES.LISTINGS.$.BROWSE.relativePath}
+                            element={<Browse />}
+                          />
+                          <Route
+                            path={ROUTES.LISTINGS.$.CREATE.relativePath}
+                            element={<Create />}
+                          />
+                        </Route>
+                        <Route
+                          path={ROUTES.LISTING.path}
+                          element={<Listing />}
                         />
                         <Route
                           path={ROUTES.FILE.path}
@@ -115,26 +122,27 @@ const App = () => {
                         />
 
                         {/* Seller */}
-                        <Route path={ROUTES.SELL.path}>
+                        <Route
+                          path={ROUTES.SELL.path}
+                          element={<SellerDashboard />}
+                        >
                           <Route
-                            path={ROUTES.SELL.ONBOARDING.path}
+                            path={ROUTES.SELL.$.ONBOARDING.relativePath}
                             element={<SellerOnboarding />}
                           />
                           <Route
-                            path={ROUTES.SELL.DASHBOARD.path}
-                            element={<SellerDashboard />}
-                          />
-                          <Route
-                            path={ROUTES.SELL.DELETE.path}
+                            path={ROUTES.SELL.$.DELETE.relativePath}
                             element={<DeleteConnect />}
                           />
                         </Route>
 
                         {/* Orders */}
-                        <Route
-                          path={ROUTES.ORDER.SUCCESS.path}
-                          element={<OrderSuccess />}
-                        />
+                        <Route path={ROUTES.ORDER.path}>
+                          <Route
+                            path={ROUTES.ORDER.$.SUCCESS.relativePath}
+                            element={<OrderSuccess />}
+                          />
+                        </Route>
                         <Route
                           path={ROUTES.ORDERS.path}
                           element={<OrdersPage />}
