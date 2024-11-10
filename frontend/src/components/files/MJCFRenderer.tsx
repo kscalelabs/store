@@ -9,6 +9,7 @@ import {
   FaUndo,
 } from "react-icons/fa";
 
+import humanoid from "@/components/files/demo/humanoid.xml";
 import {
   MujocoRefs,
   cleanupMujoco,
@@ -28,7 +29,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 interface Props {
-  mjcfContent: string;
+  mjcfContent?: string;
   files: UntarredFile[];
   useControls?: boolean;
 }
@@ -53,7 +54,7 @@ const MJCFRenderer = ({ mjcfContent, files, useControls = true }: Props) => {
   const isSimulatingRef = useRef(false);
   const mujocoTimeRef = useRef(0);
   const [isMujocoReady, setIsMujocoReady] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [errorToShow, setErrorToShow] = useState<Error | null>(null);
 
   // Constants
   const DEFAULT_TIMESTEP = 0.002;
@@ -217,7 +218,8 @@ const MJCFRenderer = ({ mjcfContent, files, useControls = true }: Props) => {
 
         // Initialize MuJoCo with the humanoid model
         const { mj, model, state, simulation } = await initializeMujoco({
-          modelXML: mjcfContent,
+          modelXML:
+            mjcfContent || (await fetch(humanoid).then((r) => r.text())),
           files,
         });
 
@@ -268,7 +270,7 @@ const MJCFRenderer = ({ mjcfContent, files, useControls = true }: Props) => {
           setIsSimulating(false);
         }
       } catch (error) {
-        setError(error as Error);
+        setErrorToShow(error as Error);
       }
     })();
 
@@ -291,7 +293,13 @@ const MJCFRenderer = ({ mjcfContent, files, useControls = true }: Props) => {
       ref={parentRef}
       className={`relative ${isFullscreen ? "h-screen" : "h-full"}`}
     >
-      <div ref={containerRef} className="w-full h-full" />
+      {errorToShow && (
+        <div className="flex justify-center items-center w-full h-full">
+          <div className="text-red-500 font-mono p-4">
+            {errorToShow.name}: {humanReadableError(errorToShow)}
+          </div>
+        </div>
+      )}
 
       {!isMujocoReady && (
         <div className="flex justify-center items-center w-full h-full">
@@ -299,11 +307,7 @@ const MJCFRenderer = ({ mjcfContent, files, useControls = true }: Props) => {
         </div>
       )}
 
-      {error && (
-        <div className="flex justify-center items-center w-full h-full">
-          <div className="text-red-500">{humanReadableError(error)}</div>
-        </div>
-      )}
+      <div ref={containerRef} className="w-full h-full" />
 
       {useControls && showControls && (
         <div className="absolute top-0 right-0 bottom-0 w-64 z-30">
