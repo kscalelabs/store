@@ -196,6 +196,52 @@ export const cleanupMujoco = (refs: MujocoRefs) => {
   refs.controlsRef.current = null;
 };
 
+const getMeshGeometry = (model: mujoco["Model"], i: number) => {
+  // Get mesh data from MuJoCo
+  const meshId = model.geom_dataid[i];
+  if (meshId < 0) {
+    throw new Error(`Mesh data not found for geom ${i}`);
+  }
+
+  const vertCount = model.mesh_vertnum[meshId];
+  const faceCount = model.mesh_facenum[meshId];
+
+  // Get vertex positions
+  const vertStart = model.mesh_vertadr[meshId];
+  const vertices = model.mesh_vert.subarray(
+    vertStart * 3,
+    (vertStart + vertCount) * 3,
+  );
+
+  // Get face indices
+  const faceStart = model.mesh_faceadr[meshId];
+  const faces = model.mesh_face.subarray(
+    faceStart * 3,
+    (faceStart + faceCount) * 3,
+  );
+
+  // Create Three.js geometry
+  const geometry = new THREE.BufferGeometry();
+
+  // Set vertices (converting from MuJoCo to Three.js coordinate system)
+  const positions = new Float32Array(vertCount * 3);
+  for (let v = 0; v < vertCount; v++) {
+    positions[v * 3] = vertices[v * 3]; // x
+    positions[v * 3 + 1] = vertices[v * 3 + 2]; // y -> z
+    positions[v * 3 + 2] = -vertices[v * 3 + 1]; // z -> -y
+  }
+
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+
+  // Set faces
+  geometry.setIndex(Array.from(faces));
+
+  // Compute normals
+  geometry.computeVertexNormals();
+
+  return geometry;
+};
+
 export const setupModelGeometry = (refs: MujocoRefs) => {
   const { sceneRef, modelRef, mujocoRef } = refs;
   if (!sceneRef.current || !modelRef.current || !mujocoRef.current) return;
@@ -269,51 +315,7 @@ export const setupModelGeometry = (refs: MujocoRefs) => {
           break;
         // @ts-expect-error: mj.mjtGeom is not typed
         case mj.mjtGeom.mjGEOM_MESH.value:
-          // Get mesh data from MuJoCo
-          const meshId = model.geom_dataid[i];
-          if (meshId >= 0) {
-            const vertCount = model.mesh_vertnum[meshId];
-            const faceCount = model.mesh_facenum[meshId];
-
-            // Get vertex positions
-            const vertStart = model.mesh_vertadr[meshId];
-            const vertices = model.mesh_vert.subarray(
-              vertStart * 3,
-              (vertStart + vertCount) * 3,
-            );
-
-            // Get face indices
-            const faceStart = model.mesh_faceadr[meshId];
-            const faces = model.mesh_face.subarray(
-              faceStart * 3,
-              (faceStart + faceCount) * 3,
-            );
-
-            // Create Three.js geometry
-            geometry = new THREE.BufferGeometry();
-
-            // Set vertices (converting from MuJoCo to Three.js coordinate system)
-            const positions = new Float32Array(vertCount * 3);
-            for (let v = 0; v < vertCount; v++) {
-              positions[v * 3] = vertices[v * 3]; // x
-              positions[v * 3 + 1] = vertices[v * 3 + 2]; // y -> z
-              positions[v * 3 + 2] = -vertices[v * 3 + 1]; // z -> -y
-            }
-
-            geometry.setAttribute(
-              "position",
-              new THREE.BufferAttribute(positions, 3),
-            );
-
-            // Set faces
-            geometry.setIndex(Array.from(faces));
-
-            // Compute normals
-            geometry.computeVertexNormals();
-          } else {
-            console.warn(`Mesh data not found for geom ${i}`);
-            continue;
-          }
+          geometry = getMeshGeometry(model, i);
           break;
         // @ts-expect-error: mj.mjtGeom is not typed
         case mj.mjtGeom.mjGEOM_LINE.value:
