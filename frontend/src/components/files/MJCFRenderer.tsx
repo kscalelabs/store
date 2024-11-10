@@ -1,18 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 
 import humanoid from "@/components/files/demo/humanoid.xml";
-import { humanReadableError } from "@/hooks/useAlertQueue";
-import { mujoco } from "@/lib/mujoco/mujoco_wasm";
-import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-
-import Spinner from "../ui/Spinner";
 import {
   MujocoRefs,
   cleanupMujoco,
   initializeMujoco,
   initializeThreeJS,
-} from "./mujoco/mujoco";
+} from "@/components/files/mujoco/mujoco";
+import Spinner from "@/components/ui/Spinner";
+import { humanReadableError } from "@/hooks/useAlertQueue";
+import { mujoco } from "@/lib/mujoco/mujoco_wasm";
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 interface Props {
   useControls?: boolean;
@@ -34,40 +33,89 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
     controlsRef: useRef<OrbitControls | null>(null),
   };
 
-  // Additional refs specific to this renderer
-  const leftLegRef = useRef<THREE.Mesh | null>(null);
-  const rightLegRef = useRef<THREE.Mesh | null>(null);
-
   // State management
-  const [leftLegAngle, setLeftLegAngle] = useState(0);
-  const [rightLegAngle, setRightLegAngle] = useState(0);
   const isSimulatingRef = useRef(false);
-  const [isSimulating, setIsSimulating] = useState(false);
   const mujocoTimeRef = useRef(0);
   const [isMujocoReady, setIsMujocoReady] = useState(false);
-  const [showControls, setShowControls] = useState(useControls);
-  const [jointLimits, setJointLimits] = useState<{
-    [key: string]: { min: number; max: number };
-  }>({});
   const [error, setError] = useState<Error | null>(null);
 
   // Constants
-  const DEFAULT_TIMESTEP = 0.002;
-  const SWING_FREQUENCY = 2.0;
-  const SWING_AMPLITUDE = 0.8;
+  const DEFAULT_TIMESTEP = 0.01;
 
   const setupModelGeometry = () => {
-    if (!refs.sceneRef.current) return;
+    const { sceneRef, modelRef } = refs;
+    if (!sceneRef.current || !modelRef.current) return;
+    const model = modelRef.current;
 
-    // Setup basic geometries
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshPhongMaterial({ color: 0x808080 });
+    // Loop over all geoms in the model
+    for (let i = 0; i < model.ngeom; i++) {
+      // Get geom properties from the model
+      const geomType = model.geom_type[i];
+      const geomSize = model.geom_size.subarray(i * 3, i * 3 + 3);
+      const geomPos = model.geom_pos.subarray(i * 3, i * 3 + 3);
+      const geomMat = model.geom_mat.subarray(i * 9, i * 9 + 9);
 
-    leftLegRef.current = new THREE.Mesh(geometry, material);
-    rightLegRef.current = new THREE.Mesh(geometry, material);
+      // Create corresponding Three.js geometry
+      let geometry: THREE.BufferGeometry;
+      switch (geomType) {
+        case mj.mjtGeom.mjGEOM_BOX:
+          geometry = new THREE.BoxGeometry(
+            geomSize[0] * 2,
+            geomSize[1] * 2,
+            geomSize[2] * 2,
+          );
+          break;
+        case mj.mjtGeom.mjGEOM_SPHERE:
+          geometry = new THREE.SphereGeometry(geomSize[0], 32, 32);
+          break;
+        case mj.mjtGeom.mjGEOM_CYLINDER:
+          geometry = new THREE.CylinderGeometry(
+            geomSize[0],
+            geomSize[0],
+            geomSize[1] * 2,
+            32,
+          );
+          break;
+        // Add cases for other geom types as needed
+        default:
+          console.warn(`Unsupported geom type: ${geomType}`);
+          continue;
+      }
 
-    refs.sceneRef.current.add(leftLegRef.current);
-    refs.sceneRef.current.add(rightLegRef.current);
+      // Create material (you can customize this based on geom properties)
+      const material = new THREE.MeshPhongMaterial({ color: 0x808080 });
+
+      // Create mesh and set initial position and orientation
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(geomPos[0], geomPos[1], geomPos[2]);
+
+      // Set orientation from geomMat
+      const rotationMatrix = new THREE.Matrix4().fromArray([
+        geomMat[0],
+        geomMat[3],
+        geomMat[6],
+        0,
+        geomMat[1],
+        geomMat[4],
+        geomMat[7],
+        0,
+        geomMat[2],
+        geomMat[5],
+        geomMat[8],
+        0,
+        0,
+        0,
+        0,
+        1,
+      ]);
+      mesh.setRotationFromMatrix(rotationMatrix);
+
+      // Store geom index for later updates
+      mesh.userData.geomIndex = i;
+
+      // Add mesh to the scene
+      sceneRef.current.add(mesh);
+    }
   };
 
   const animate = (time: number) => {
@@ -102,7 +150,6 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
 
   const stopPhysicsSimulation = () => {
     isSimulatingRef.current = false;
-    setIsSimulating(false);
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
@@ -113,26 +160,26 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
 
     (async () => {
       try {
+        if (!containerRef.current) throw new Error("Container ref is null");
+
         // Initialize MuJoCo with the humanoid model
-        if (
-          !(await initializeMujoco({
-            modelXML: humanoid,
-            refs,
-            onInitialized: () => setIsMujocoReady(true),
-            onError: (error) => setError(error),
-          }))
-        ) {
-          return;
-        }
+        const { mj, model, state, simulation } = await initializeMujoco({
+          modelXML: humanoid,
+          refs,
+        });
+        refs.mujocoRef.current = mj;
+        refs.modelRef.current = model;
+        refs.stateRef.current = state;
+        refs.simulationRef.current = simulation;
 
         // Initialize Three.js scene
-        if (
-          !(await initializeThreeJS(refs, containerRef, {
-            onError: (error) => setError(error),
-          }))
-        ) {
-          return;
-        }
+        const { renderer, scene, camera, controls } = initializeThreeJS(
+          containerRef.current,
+        );
+        refs.rendererRef.current = renderer;
+        refs.sceneRef.current = scene;
+        refs.cameraRef.current = camera;
+        refs.controlsRef.current = controls;
 
         // Add model-specific setup (bodies, geometries, etc.)
         setupModelGeometry();

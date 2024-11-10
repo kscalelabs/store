@@ -24,41 +24,28 @@ export interface MujocoInitOptions {
 
 export const initializeMujoco = async ({
   modelXML,
-  refs,
   onInitialized,
-  onError,
 }: MujocoInitOptions) => {
   const MODEL_DIR = "/working";
   const MODEL_FILE = "model.xml";
   const MODEL_PATH = `${MODEL_DIR}/${MODEL_FILE}`;
 
-  try {
-    // Load MuJoCo WASM module
-    refs.mujocoRef.current = await load_mujoco();
-    const mj = refs.mujocoRef.current;
+  // Load MuJoCo WASM module
+  const mj = await load_mujoco();
 
-    // Set up file system and load XML model
-    // @ts-ignore
-    if (!mj.FS.analyzePath(MODEL_DIR).exists) {
-      mj.FS.mkdir(MODEL_DIR);
-    }
-    mj.FS.writeFile(MODEL_PATH, modelXML);
-
-    const model = new mj.Model(MODEL_PATH);
-    const state = new mj.State(model);
-    const simulation = new mj.Simulation(model, state);
-
-    // Store references
-    refs.modelRef.current = model;
-    refs.stateRef.current = state;
-    refs.simulationRef.current = simulation;
-
-    onInitialized?.();
-    return true;
-  } catch (error) {
-    onError?.(error as Error);
-    return false;
+  // Set up file system and load XML model
+  // @ts-ignore
+  if (!mj.FS.analyzePath(MODEL_DIR).exists) {
+    mj.FS.mkdir(MODEL_DIR);
   }
+  mj.FS.writeFile(MODEL_PATH, modelXML);
+
+  const model = new mj.Model(MODEL_PATH);
+  const state = new mj.State(model);
+  const simulation = new mj.Simulation(model, state);
+
+  onInitialized?.();
+  return { mj, model, state, simulation };
 };
 
 export interface ThreeJSInitOptions {
@@ -69,100 +56,74 @@ export interface ThreeJSInitOptions {
 }
 
 export const initializeThreeJS = (
-  refs: MujocoRefs,
-  containerRef: React.RefObject<HTMLDivElement>,
+  container: HTMLDivElement,
   {
     cameraDistance = 2.5,
     cameraHeight = 1.5,
     backgroundColor = new THREE.Color(0.15, 0.25, 0.35),
-    onError,
   }: ThreeJSInitOptions = {},
 ) => {
-  const container = containerRef.current;
+  // Set up renderer
+  const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    alpha: true,
+    powerPreference: "high-performance",
+  });
 
-  if (!container) {
-    onError?.(new Error("Container ref is null"));
-    return false;
+  if (!renderer.getContext()) {
+    throw new Error("Failed to get WebGL context");
   }
 
-  try {
-    // Set up renderer
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: true,
-      powerPreference: "high-performance",
-    });
+  renderer.setSize(container.clientWidth, container.clientHeight);
+  container.appendChild(renderer.domElement);
 
-    if (!renderer.getContext()) {
-      throw new Error("Failed to get WebGL context");
-    }
+  // Set up scene
+  const scene = new THREE.Scene();
+  scene.background = backgroundColor;
 
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    container.appendChild(renderer.domElement);
-    refs.rendererRef.current = renderer;
+  // Set up camera
+  const camera = new THREE.PerspectiveCamera(
+    45,
+    container.clientWidth / container.clientHeight,
+    0.001,
+    100,
+  );
+  camera.position.set(
+    cameraDistance * Math.cos(Math.PI / 4),
+    cameraHeight,
+    cameraDistance * Math.sin(Math.PI / 4),
+  );
+  scene.add(camera);
 
-    // Set up scene
-    const scene = new THREE.Scene();
-    scene.background = backgroundColor;
-    refs.sceneRef.current = scene;
+  // Set up controls
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.1;
+  controls.minDistance = 1.0;
+  controls.maxDistance = 5.0;
+  controls.update();
 
-    // Set up camera
-    const camera = new THREE.PerspectiveCamera(
-      45,
-      container.clientWidth / container.clientHeight,
-      0.001,
-      100,
-    );
-    camera.position.set(
-      cameraDistance * Math.cos(Math.PI / 4),
-      cameraHeight,
-      cameraDistance * Math.sin(Math.PI / 4),
-    );
-    scene.add(camera);
-    refs.cameraRef.current = camera;
+  // Add lighting
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+  scene.add(ambientLight);
 
-    // Set up controls
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.1;
-    controls.minDistance = 1.0;
-    controls.maxDistance = 5.0;
-    controls.update();
-    refs.controlsRef.current = controls;
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+  dirLight.position.set(5, 5, 5);
+  scene.add(dirLight);
 
-    // Add lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-    scene.add(ambientLight);
+  // Add floor
+  const floorGeometry = new THREE.PlaneGeometry(10, 10);
+  const floorMaterial = new THREE.MeshStandardMaterial({
+    color: 0xe0e0e0,
+    roughness: 0.7,
+    metalness: 0.1,
+  });
+  const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = 0;
+  scene.add(floor);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    dirLight.position.set(5, 5, 5);
-    scene.add(dirLight);
-
-    // Add floor
-    const floorGeometry = new THREE.PlaneGeometry(10, 10);
-    const floorMaterial = new THREE.MeshStandardMaterial({
-      color: 0xe0e0e0,
-      roughness: 0.7,
-      metalness: 0.1,
-    });
-    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    floor.rotation.x = -Math.PI / 2;
-    floor.position.y = 0;
-    scene.add(floor);
-
-    return true;
-  } catch (error) {
-    onError?.(error as Error);
-
-    // Clean up any partially initialized resources
-    if (refs.rendererRef.current) {
-      refs.rendererRef.current.dispose();
-      refs.rendererRef.current.forceContextLoss();
-      refs.rendererRef.current.domElement?.remove();
-      refs.rendererRef.current = null;
-    }
-    return false;
-  }
+  return { renderer, scene, camera, controls };
 };
 
 export const cleanupMujoco = (refs: MujocoRefs) => {
@@ -189,8 +150,6 @@ export const cleanupMujoco = (refs: MujocoRefs) => {
   if (refs.controlsRef.current) {
     refs.controlsRef.current.dispose();
   }
-
-  // Clean up MuJoCo resources
   if (refs.stateRef.current) {
     refs.stateRef.current.free();
   }
