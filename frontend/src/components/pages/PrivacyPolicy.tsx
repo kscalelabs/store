@@ -1,8 +1,10 @@
 import React from "react";
 
+import Container from "@/components/ui/container";
+
 const PrivacyPolicy: React.FC = () => {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <Container>
       <h1 className="text-3xl font-bold mb-2">Privacy Policy</h1>
       <p className="mb-4 text-sm text-gray-600">
         Last updated {new Date().toLocaleDateString()}
@@ -54,7 +56,7 @@ const PrivacyPolicy: React.FC = () => {
       <p className="mt-8 text-sm text-gray-600">
         © 2024 K-Scale Labs. All Rights Reserved.
       </p>
-    </div>
+    </Container>
   );
 };
 

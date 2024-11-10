@@ -1,9 +1,6 @@
 const ListingGridSkeleton = () => {
   return (
-    <div
-      role="status"
-      className="p-4 border border-gray-800 rounded shadow animate-pulse"
-    >
+    <div role="status" className="p-4 rounded animate-pulse">
       <div className="flex items-center justify-center h-48 mb-4 bg-gray-800 rounded">
         <svg
           className="w-10 h-10 text-gray-200"

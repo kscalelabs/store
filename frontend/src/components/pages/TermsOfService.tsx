@@ -1,6 +1,8 @@
+import Container from "@/components/ui/container";
+
 const TermsOfService = () => {
   return (
-    <div className="container mx-auto px-4 py-8">
+    <Container>
       <h1 className="text-3xl font-bold mb-2">Terms of Service</h1>
       <p className="mb-4 text-sm text-gray-600">
         Last updated {new Date().toLocaleDateString()}
@@ -231,7 +233,7 @@ const TermsOfService = () => {
       <p className="mt-8 text-sm text-gray-600">
         © 2024 K-Scale Labs. All Rights Reserved.
       </p>
-    </div>
+    </Container>
   );
 };
 

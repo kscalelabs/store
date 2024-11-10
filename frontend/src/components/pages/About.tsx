@@ -1,8 +1,9 @@
-import PageHeader from "../ui/PageHeader";
+import PageHeader from "@/components/ui/PageHeader";
+import Container from "@/components/ui/container";
 
 const About = () => {
   return (
-    <div className="container mx-auto px-4">
+    <Container>
       <div className="text-center bg-gray-12 text-gray-1 rounded-lg p-8">
         <h1 className="text-4xl font-bold mb-4">K-Scale Labs</h1>
 
@@ -89,7 +90,7 @@ const About = () => {
           </div>
         </footer>
       </div>
-    </div>
+    </Container>
   );
 };
 

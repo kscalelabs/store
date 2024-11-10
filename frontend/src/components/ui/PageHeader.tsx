@@ -19,6 +19,9 @@ const PageHeader = ({ children }: Props) => {
   const fakeMouseAngleRef = useRef(0);
   const isRealMouseActiveRef = useRef(false);
 
+  const isMobile = window.innerWidth < 600;
+  const cellSize = isMobile ? 3 : 5;
+
   // Initialize grid with R-pentomino pattern and random points
   const initializeGrid = useCallback((rows: number, cols: number) => {
     const grid = Array(rows)
@@ -42,12 +45,30 @@ const PageHeader = ({ children }: Props) => {
       });
     });
 
-    // Add random points (1% of cells)
-    const numberOfRandomPoints = Math.floor(cols * rows * 0.01);
+    // Add more random points (10% of cells)
+    const numberOfRandomPoints = Math.floor(cols * rows * 0.1);
     for (let i = 0; i < numberOfRandomPoints; i++) {
       const randomX = Math.floor(Math.random() * cols);
       const randomY = Math.floor(Math.random() * rows);
       grid[randomY][randomX] = true;
+    }
+
+    // Add additional clusters of points
+    const numberOfClusters = Math.floor((cols * rows) / 2000);
+    for (let i = 0; i < numberOfClusters; i++) {
+      const clusterX = Math.floor(Math.random() * cols);
+      const clusterY = Math.floor(Math.random() * rows);
+      const clusterSize = Math.floor(Math.random() * 5) + 3;
+
+      for (let dy = -clusterSize; dy <= clusterSize; dy++) {
+        for (let dx = -clusterSize; dx <= clusterSize; dx++) {
+          if (Math.random() < 0.4) {
+            const x = (clusterX + dx + cols) % cols;
+            const y = (clusterY + dy + rows) % rows;
+            grid[y][x] = true;
+          }
+        }
+      }
     }
 
     return grid;
@@ -170,22 +191,30 @@ const PageHeader = ({ children }: Props) => {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Responsive cell size
-    const isMobile = window.innerWidth < 600;
-    const cellSize = isMobile ? 3 : 5;
+    // Move canvas setup into a separate function
+    const setupCanvas = () => {
+      const containerWidth =
+        canvas.parentElement?.clientWidth || window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const cols = Math.floor(containerWidth / cellSize);
+      const rows = Math.floor((viewportHeight * 0.4) / cellSize);
 
-    // Set canvas size
-    const containerWidth =
-      canvas.parentElement?.clientWidth || window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const cols = Math.floor(containerWidth / cellSize);
-    const rows = Math.floor((viewportHeight * 0.4) / cellSize);
+      canvas.width = cols * cellSize;
+      canvas.height = rows * cellSize;
 
-    canvas.width = cols * cellSize;
-    canvas.height = rows * cellSize;
+      // Reinitialize grid when canvas is resized
+      gridRef.current = initializeGrid(rows, cols);
+    };
 
-    // Initialize grid
-    gridRef.current = initializeGrid(rows, cols);
+    // Initial setup
+    setupCanvas();
+
+    // Add resize handler
+    const handleResize = () => {
+      setupCanvas();
+    };
+
+    window.addEventListener("resize", handleResize);
 
     const animate = () => {
       // Draw current state
@@ -210,7 +239,7 @@ const PageHeader = ({ children }: Props) => {
       if (!isRealMouseActiveRef.current) {
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
-        const radiusX = Math.min(canvas.width * 0.33, 200);
+        const radiusX = Math.min(canvas.width * 0.45, 400);
         const radiusY = Math.min(canvas.height * 0.3, 100);
 
         targetPosRef.current = {
@@ -292,12 +321,13 @@ const PageHeader = ({ children }: Props) => {
       }
       canvas.removeEventListener("pointermove", handlePointerMove);
       canvas.removeEventListener("pointerleave", handlePointerLeave);
+      window.removeEventListener("resize", handleResize); // Clean up resize listener
     };
   }, [initializeGrid, updateGrid, clearLineBetweenPoints]);
 
   return (
-    <div className="relative w-full h-[40vh] overflow-hidden">
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+    <div className="relative overflow-hidden h-full w-full">
+      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
       {children}
     </div>
   );

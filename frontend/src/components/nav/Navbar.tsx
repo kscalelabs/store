@@ -31,8 +31,8 @@ const Navbar = () => {
   return (
     <>
       <nav className="fixed w-full z-50 top-0 start-0 bg-background border-b border-gray-1/10">
-        <div className="relative flex justify-between py-3 mx-4 sm:mx-6 md:mx-10 xl:mx-16 2xl:mx-28 font-mono">
-          <div className="flex justify-between w-full lg:w-auto gap-3">
+        <div className="relative flex items-center justify-between py-3 mx-4 sm:mx-6 md:mx-10 xl:mx-16 2xl:mx-28 font-mono">
+          <div className="flex items-center justify-between w-full lg:w-auto gap-3">
             <Link
               to={ROUTES.HOME.path}
               className="flex items-center lg:flex-grow-0 bg-black border border-gray-1 p-2"
@@ -42,7 +42,7 @@ const Navbar = () => {
             <Button
               onClick={() => setShowSidebar(true)}
               variant="ghost"
-              className="lg:hidden text-gray-1 p-4 text-sm"
+              className="lg:hidden text-gray-1 p-2 text-sm flex items-center"
             >
               <FaBars size={20} />
             </Button>
