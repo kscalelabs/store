@@ -65,7 +65,7 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
             <nav>
               <ul className="space-y-1">
                 {featuredListings && featuredListings.length > 0 && (
-                  <>
+                  <div className="flex flex-col gap-2 py-2">
                     {featuredListings.map((listing) => (
                       <SidebarItem
                         key={listing.id}
@@ -77,10 +77,10 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
                         }
                       />
                     ))}
-                    <div className="border-t border-gray-1 my-2"></div>
-                  </>
+                    <div className="border-t border-gray-1"></div>
+                  </div>
                 )}
-                <div className="flex flex-col gap-2 py-4">
+                <div className="flex flex-col gap-2 py-2">
                   {navItems.map((item) => (
                     <SidebarItem
                       key={item.name}
@@ -92,7 +92,7 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
                 </div>
                 <div className="border-t border-gray-1"></div>
                 {isAuthenticated ? (
-                  <div className="flex flex-col gap-2 py-4">
+                  <div className="flex flex-col gap-2 py-2">
                     <SidebarItem
                       title="Account"
                       onClick={() => handleItemClick("/account")}
