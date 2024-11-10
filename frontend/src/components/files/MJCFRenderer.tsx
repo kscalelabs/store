@@ -310,6 +310,24 @@ const MJCFRenderer = ({ mjcfContent, files, useControls = true }: Props) => {
           <div className="h-full overflow-y-auto bg-[#f0f0f0]">
             <div className="p-4 overflow-y-auto h-full">
               <div className="space-y-4">
+                {/* Add notification banner */}
+                <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4">
+                  <p className="text-sm">
+                    The MuJoCo renderer is currently under development. A
+                    placeholder humanoid model is being used for demonstration
+                    purposes. If you would like to contribute, see the project
+                    repository{" "}
+                    <a
+                      className="underline"
+                      target="_blank"
+                      href="https://github.com/kscalelabs/urdf2mjcf"
+                    >
+                      here
+                    </a>
+                    .
+                  </p>
+                </div>
+
                 <button
                   onClick={() => setShowControls(false)}
                   className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded flex items-center justify-center gap-2"
