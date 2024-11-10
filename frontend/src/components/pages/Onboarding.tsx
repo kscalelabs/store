@@ -1,23 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { FaDownload, FaFileDownload, FaHome, FaList } from "react-icons/fa";
-import { useNavigate, useParams } from "react-router-dom";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { FaChevronRight, FaExclamationTriangle } from "react-icons/fa";
 
-import FileRenderer from "@/components/files/FileRenderer";
+import URDFRenderer from "@/components/files/StaticURDFRenderer";
 import { parseTar } from "@/components/files/Tarfile";
-import Spinner from "@/components/ui/Spinner";
-import { Button } from "@/components/ui/button";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { components } from "@/gen/api";
-import { humanReadableError, useAlertQueue } from "@/hooks/useAlertQueue";
-import { useAuthentication } from "@/hooks/useAuth";
-import pako from "pako";
 import {
   Card,
   CardContent,
@@ -26,18 +13,26 @@ import {
   CardTitle,
 } from "@/components/ui/Card";
 import { Skeleton } from "@/components/ui/Skeleton";
+import Spinner from "@/components/ui/Spinner";
 import {
-  FaChevronLeft,
-  FaChevronRight,
-  FaExclamationTriangle,
-} from "react-icons/fa";
-import { Input } from "@/components/ui/input";
-import { GrpcWebFetchTransport } from "@protobuf-ts/grpcweb-transport";
-import { ServoControlClient } from "@/lib/openlch-server-grpc/hal_pb.client";
-import * as hal_pb from "@/lib/openlch-server-grpc/hal_pb";
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { components } from "@/gen/api";
+import { humanReadableError, useAlertQueue } from "@/hooks/useAlertQueue";
+import { useAuthentication } from "@/hooks/useAuth";
 import stompy from "@/images/stompy.png";
+import * as hal_pb from "@/lib/openlch-server-grpc/hal_pb";
+import { ServoInfo } from "@/lib/openlch-server-grpc/hal_pb";
+import { ServoControlClient } from "@/lib/openlch-server-grpc/hal_pb.client";
+import { GrpcWebFetchTransport } from "@protobuf-ts/grpcweb-transport";
+import pako from "pako";
+import { URDFJoint } from "urdf-loader";
 
 type SingleArtifactResponse = components["schemas"]["SingleArtifactResponse"];
 
@@ -46,59 +41,50 @@ interface UntarredFile {
   content: Uint8Array;
 }
 
-enum JointEnum {
-  RIGHT_SHOULDER_PITCH = "right_shoulder_pitch",
-  LEFT_SHOULDER_PITCH = "left_shoulder_pitch",
-  RIGHT_HIP_PITCH = "right_hip_pitch",
-  LEFT_HIP_PITCH = "left_hip_pitch",
-  RIGHT_HIP_YAW = "right_hip_yaw",
-  LEFT_HIP_YAW = "left_hip_yaw",
-  RIGHT_HIP_ROLL = "right_hip_roll",
-  LEFT_HIP_ROLL = "left_hip_roll",
-  // Add other joints as needed
+function isIpAddress(input: string): boolean {
+  const ipv4Regex =
+    /^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$/;
+  const ipv6Regex =
+    /^(([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:)|(([0-9a-fA-F]{1,4}:){1,7}:)|(([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4})|(([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2})|(([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3})|(([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4})|(([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5})|([0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6}))|(:((:[0-9a-fA-F]{1,4}){1,7}|:))|(::([fF]{4}:)?(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}))$/;
+
+  return ipv4Regex.test(input) || ipv6Regex.test(input) || input == "localhost";
 }
 
-// Mock GRPC functions
-const getServos = async (): Promise<number[]> => {
-  // Simulate getting servo IDs from the robot
-  return [1, 2, 3, 4, 5, 6]; // Example servo IDs
+const handleLoadAndUntar = async (a: SingleArtifactResponse) => {
+  if (!a?.urls?.large) {
+    throw new Error("Artifact URL not available.");
+  }
+
+  let files = [];
+  try {
+    const response = await fetch(a.urls.large);
+    const arrayBuffer = await response.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+
+    // Decompress gzip
+    const decompressed = pako.ungzip(uint8Array);
+
+    // Parse tar
+    files = parseTar(decompressed);
+  } catch {
+    throw new Error("Failed to fetch artifacts.");
+  }
+
+  return files;
 };
 
-const wiggleServo = async (id: number): Promise<void> => {
-  // Simulate wiggling a servo
-  console.log(`Wiggling servo ${id}`);
-};
+interface RobotRendererProps {
+  onJointClicked: (joint: URDFJoint) => void;
+}
 
-const changeServoId = async (oldId: number, newId: number): Promise<void> => {
-  // Simulate changing a servo ID
-  console.log(`Changing servo ID from ${oldId} to ${newId}`);
-};
-
-const startCalibration = async (): Promise<void> => {
-  // Simulate starting calibration
-  console.log("Calibration started");
-};
-
-const getCalibrationStatus = async (): Promise<"in_progress" | "completed"> => {
-  // Simulate getting calibration status
-  return "completed";
-};
-
-const cancelCalibration = async (): Promise<void> => {
-  // Simulate canceling calibration
-  console.log("Calibration canceled");
-};
-
-const RobotRenderer = () => {
+const RobotRenderer = ({ onJointClicked }: RobotRendererProps) => {
   const artifactId = "28a426fd25d70716";
   const [artifact, setArtifact] = useState<SingleArtifactResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [untarring, setUntarring] = useState(false);
   const [untarredFiles, setUntarredFiles] = useState<UntarredFile[]>([]);
   const [selectedFile, setSelectedFile] = useState<UntarredFile | null>(null);
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
-  const navigate = useNavigate();
 
   useEffect(() => {
     (async () => {
@@ -113,9 +99,14 @@ const RobotRenderer = () => {
         );
 
         if (error) {
-          addErrorAlert(error);
-        } else {
-          setArtifact(data);
+          throw error;
+        }
+
+        setArtifact(data);
+        const files = await handleLoadAndUntar(data);
+        setUntarredFiles(files!);
+        if (files.length != 0) {
+          setSelectedFile(files[0]);
         }
       } catch (err) {
         addErrorAlert(humanReadableError(err));
@@ -123,67 +114,8 @@ const RobotRenderer = () => {
         setLoading(false);
       }
     })();
-  }, [
-    artifactId,
-    auth.client,
-    addErrorAlert,
-    artifact,
-    setArtifact,
-    setLoading,
-  ]);
+  }, [auth.client]);
 
-  const handleLoadAndUntar = async () => {
-    if (!artifact?.urls?.large) {
-      addErrorAlert("Artifact URL not available.");
-      return;
-    }
-
-    setUntarring(true);
-    try {
-      const response = await fetch(artifact.urls.large);
-      const arrayBuffer = await response.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-
-      // Decompress gzip
-      const decompressed = pako.ungzip(uint8Array);
-
-      // Parse tar
-      const files = parseTar(decompressed);
-
-      setUntarredFiles(files);
-    } catch (err) {
-      addErrorAlert(`Error loading file: ${humanReadableError(err)}`);
-    } finally {
-      setUntarring(false);
-    }
-  };
-
-  const handleDownload = () => {
-    if (!artifact?.urls.large) {
-      addErrorAlert("Artifact URL not available.");
-      return;
-    }
-
-    const link = document.createElement("a");
-    link.href = artifact.urls.large;
-    link.download = `${artifact.name}.tgz`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  useEffect(() => {
-    (async () => {
-      if (artifact) {
-        await handleLoadAndUntar();
-      }
-    })();
-  }, [artifact]);
-  useEffect(() => {
-    if (untarredFiles.length != 0) {
-      setSelectedFile(untarredFiles[0]);
-    }
-  }, [untarredFiles]);
   if (loading) {
     return (
       <div className="flex justify-center items-center pt-8">
@@ -201,9 +133,12 @@ const RobotRenderer = () => {
               <div className="h-full">
                 {selectedFile
                   ? (
-                    <FileRenderer
-                      file={selectedFile}
-                      allFiles={untarredFiles}
+                    <URDFRenderer
+                      urdfContent={new TextDecoder().decode(
+                        selectedFile.content,
+                      )}
+                      files={untarredFiles}
+                      onJointClicked={onJointClicked}
                     />
                   )
                   : null}
@@ -220,17 +155,16 @@ const RobotRenderer = () => {
     );
 };
 
-interface IntroProps {
+interface SlideProps {
   onNext: () => void;
+  onPrev: () => void;
 }
 
-const Intro: React.FC<IntroProps> = ({ onNext }) => {
+const Intro: React.FC<SlideProps> = ({ onNext }) => {
   return (
     <Card className="p-4">
       <CardHeader>
-        <CardTitle className="text-xl">
-          Stompy Mini
-        </CardTitle>
+        <CardTitle className="text-xl">Stompy Mini</CardTitle>
       </CardHeader>
       <CardContent className="min-h-4">
         <img
@@ -239,7 +173,8 @@ const Intro: React.FC<IntroProps> = ({ onNext }) => {
           className="max-w-full max-h-full object-contain mb-3"
         />
         <p>
-          Thanks for getting started with our latest robot!<br />
+          Thanks for getting started with our latest robot!
+          <br />
           In the next few moments we'll get your robot assembled, calibrated,
           and ready to walk.
         </p>
@@ -253,17 +188,11 @@ const Intro: React.FC<IntroProps> = ({ onNext }) => {
   );
 };
 
-interface UnboxingProps {
-  onNext: () => void;
-}
-
-const Unboxing: React.FC<UnboxingProps> = ({ onNext }) => {
+const Unboxing: React.FC<SlideProps> = ({ onNext, onPrev }) => {
   return (
     <Card className="p-4">
       <CardHeader>
-        <CardTitle className="text-xl">
-          Unboxing
-        </CardTitle>
+        <CardTitle className="text-xl">Unboxing</CardTitle>
       </CardHeader>
       <CardContent className="min-h-4">
         <h4 className="my-2">Here's what you can expect to find in your box</h4>
@@ -297,7 +226,9 @@ const Unboxing: React.FC<UnboxingProps> = ({ onNext }) => {
         </Accordion>
       </CardContent>
       <CardFooter className="py-4">
-        <Button className="ml-auto" variant="secondary">Back</Button>
+        <Button className="ml-auto" variant="secondary" onClick={onPrev}>
+          Back
+        </Button>
         <Button onClick={onNext}>
           Assembly <FaChevronRight />
         </Button>
@@ -306,17 +237,11 @@ const Unboxing: React.FC<UnboxingProps> = ({ onNext }) => {
   );
 };
 
-interface AssemblyProps {
-  onNext: () => void;
-}
-
-const Assembly: React.FC<AssemblyProps> = ({ onNext }) => {
+const Assembly: React.FC<SlideProps> = ({ onNext, onPrev }) => {
   return (
     <Card className="p-4">
       <CardHeader>
-        <CardTitle className="text-xl">
-          Assembly
-        </CardTitle>
+        <CardTitle className="text-xl">Assembly</CardTitle>
       </CardHeader>
       <CardContent className="min-h-4">
         <h4 className="my-2">Let's get your robot assembled!</h4>
@@ -459,7 +384,9 @@ const Assembly: React.FC<AssemblyProps> = ({ onNext }) => {
         </Accordion>
       </CardContent>
       <CardFooter className="py-4">
-        <Button className="ml-auto" variant="secondary">Back</Button>
+        <Button className="ml-auto" variant="secondary" onClick={onPrev}>
+          Back
+        </Button>
         <Button onClick={onNext}>
           Connect to Robot <FaChevronRight />
         </Button>
@@ -470,34 +397,29 @@ const Assembly: React.FC<AssemblyProps> = ({ onNext }) => {
 
 interface ConnectProps {
   onNext: () => void;
-  updateRobotName: (string) => void;
+  onPrev: () => void;
+  updateRobotUrl: (url: string) => void;
 }
 
-const Connect: React.FC<ConnectProps> = ({ onNext, updateRobotName }) => {
-  const [robotName, setRobotName] = useState("");
+const Connect: React.FC<ConnectProps> = ({
+  onNext,
+  onPrev,
+  updateRobotUrl,
+}) => {
+  const [robotNameOrIp, setRobotNameOrIp] = useState("");
   const [isConnecting, setConnecting] = useState(false);
   const [error, setError] = useState("");
-  function isIpAddress(input: string): boolean {
-    const ipv4Regex =
-      /^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$/;
-    const ipv6Regex =
-      /^(([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:)|(([0-9a-fA-F]{1,4}:){1,7}:)|(([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4})|(([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2})|(([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3})|(([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4})|(([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5})|([0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6}))|(:((:[0-9a-fA-F]{1,4}){1,7}|:))|(::([fF]{4}:)?(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}))$/;
-
-    return true;
-    return ipv4Regex.test(input) || ipv6Regex.test(input) ||
-      input == "localhost";
-  }
   async function connectToRobot() {
     setConnecting(true);
-    let server = "http://" + robotName;
+    let server = robotNameOrIp;
     if (!isIpAddress(server)) {
       server = server + ".local";
     }
-    server = server + ":50051";
+    server = "http://" + server + ":50051";
     const robotConnection = new ServoControlClient(
       new GrpcWebFetchTransport({ baseUrl: server }),
     );
-    updateRobotName(server);
+    updateRobotUrl(server);
     try {
       const { response } = await robotConnection.getPositions(hal_pb.Empty);
       console.log(response);
@@ -512,9 +434,7 @@ const Connect: React.FC<ConnectProps> = ({ onNext, updateRobotName }) => {
   return (
     <Card className="p-4">
       <CardHeader>
-        <CardTitle className="text-xl">
-          Connect to Stompy
-        </CardTitle>
+        <CardTitle className="text-xl">Connect to Stompy</CardTitle>
       </CardHeader>
       <CardContent className="min-h-4">
         <Skeleton className="h-60 bg-gray-300 w-full mb-4" />
@@ -525,7 +445,7 @@ const Connect: React.FC<ConnectProps> = ({ onNext, updateRobotName }) => {
         <Input
           className="my-2"
           placeholder="stompy-robot-name"
-          onChange={(e) => setRobotName(e.target.value)}
+          onChange={(e) => setRobotNameOrIp(e.target.value)}
         />
         {error != ""
           ? (
@@ -540,9 +460,11 @@ const Connect: React.FC<ConnectProps> = ({ onNext, updateRobotName }) => {
           : null}
       </CardContent>
       <CardFooter className="mt-2">
-        <Button className="ml-auto" variant="secondary">Back</Button>
+        <Button className="ml-auto" variant="secondary" onClick={onPrev}>
+          Back
+        </Button>
         <Button
-          disabled={robotName == "" || isConnecting}
+          disabled={robotNameOrIp == "" || isConnecting}
           onClick={connectToRobot}
         >
           Connect
@@ -558,33 +480,88 @@ interface ServoLinkProps {
 }
 
 const ServoLink: React.FC<ServoLinkProps> = ({ onNext, robotUrl }) => {
-  const servosAssigned = false;
+  const client = new ServoControlClient(
+    new GrpcWebFetchTransport({ baseUrl: robotUrl }),
+  );
+  const [servos, setServos] = useState<ServoInfo[]>([]);
+  const [currentServo, setCurrentServo] = useState<number>(0);
+  const [servoMappings, setServoMappings] = useState<Record<number, string>>(
+    {},
+  );
+
+  useEffect(() => {
+    console.log(currentServo);
+    const fetchServos = async () => {
+      const { response } = await client.scan(hal_pb.Empty);
+      let servos = [];
+      for (const id of response.ids) {
+        const { response } = await client.getServoInfo({ id: id });
+        if (response.result.oneofKind === "info") {
+          servos.push(response.result.info);
+        }
+      }
+      return servos;
+    };
+
+    fetchServos().then((s) => {
+      setServos(s);
+      if (s.length > 0) {
+        setCurrentServo(s[0].id);
+      }
+    }).catch(console.error);
+  }, []);
+
+  const handleJointClicked = (joint: URDFJoint) => {
+    setServoMappings({ ...servoMappings, [currentServo]: joint.name });
+  };
+
+  const servosReady = servos.length == Object.keys(servoMappings).length;
+
   return (
     <Card className="p-4">
       <CardHeader>
-        <CardTitle className="text-xl">
-          Servo Linking
-        </CardTitle>
+        <CardTitle className="text-xl">Servo Linking</CardTitle>
       </CardHeader>
       <CardContent className="min-h-4">
         <p className="my-2">
           Select the servo to link, and click on the corresponding robot joint
-          that moves on the robot
+          that moves on the robot. <br />{" "}
+          Once all servos have been assigned joints you may continue to
+          calibration.
         </p>
-        <Button className="mx-1" variant="selected" size="sm">
-          <div>Servo 1</div>
-        </Button>
-        <Button className="mx-1" variant="outline" size="sm">
-          <div>Servo 2</div>
-        </Button>
-        <Button className="mx-1" variant="outline" size="sm">
-          <div>Servo 3</div>
-        </Button>
+        {servos.map((val, index) => {
+          let variant = "ghost";
+          let select = false;
+          if (val.id in servoMappings) {
+            variant = "success";
+          }
+          if (val.id == currentServo) {
+            select = true;
+          }
+          return (
+            <Button
+              key={val.id}
+              className="mx-1"
+              variant={variant}
+              outline={select ? "active" : "default"}
+              size="sm"
+              onClick={() => {
+                setCurrentServo(val.id);
+              }}
+            >
+              Servo {index}
+            </Button>
+          );
+        })}
 
-        <RobotRenderer />
+        <RobotRenderer
+          onJointClicked={(j) => {
+            handleJointClicked(j);
+          }}
+        />
       </CardContent>
       <CardFooter className="mt-2">
-        <Button disabled={servosAssigned} className="ml-auto" onClick={onNext}>
+        <Button disabled={!servosReady} className="ml-auto" onClick={onNext}>
           Calibration <FaChevronRight />
         </Button>
       </CardFooter>
@@ -597,14 +574,40 @@ interface CalibrationProps {
   onNext: () => void;
 }
 
-const Calibration: React.FC<ServoLinkProps> = ({ onNext, robotUrl }) => {
-  const servosAssigned = false;
+const Calibration: React.FC<CalibrationProps> = ({ onNext, robotUrl }) => {
+  const [isCalibrating, setCalibrating] = useState(false);
+  const [isCalibrated, setCalibrated] = useState(false);
+
+  const client = new ServoControlClient(
+    new GrpcWebFetchTransport({ baseUrl: robotUrl }),
+  );
+
+  const startCalibration = () => {
+    // client.startCalibration()
+    setCalibrating(true);
+  };
+
+  const cancelCalibration = () => {
+    // client.cancelCalibration()
+    setCalibrating(false);
+  };
+
+  useEffect(() => {
+    function checkCalibrated() {
+      if (isCalibrating) {
+        client.getCalibrationStatus(hal_pb.Empty).then(({response}) => {
+          setCalibrated(!response.isCalibrating)
+        }).catch((e) => console.error(e))
+      }
+    }
+    const id = setInterval(checkCalibrated, 1000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <Card className="p-4">
       <CardHeader>
-        <CardTitle className="text-xl">
-          Calibrating Servos
-        </CardTitle>
+        <CardTitle className="text-xl">Calibrating Servos</CardTitle>
       </CardHeader>
       <CardContent>
         <p>
@@ -613,14 +616,29 @@ const Calibration: React.FC<ServoLinkProps> = ({ onNext, robotUrl }) => {
           viewer, please go back and make sure your servos are correctly
           assigned.
         </p>
-        <RobotRenderer />
-        <Button className="w-full my-2">
-          Start Calibration
-        </Button>
-
+        <RobotRenderer onJointClicked={(j) => {}} />
+        { !isCalibrated ?
+           (!isCalibrating
+          ? (
+            <Button className="w-full my-2" onClick={startCalibration}>
+              Start Calibration
+            </Button>
+          )
+          : (
+            <Button
+              className="w-full my-2"
+              variant="destructive"
+              onClick={cancelCalibration}
+            >
+              Cancel Calibration
+            </Button>
+          ))
+          :
+          <h2>Calibration Complete</h2>
+        }
       </CardContent>
       <CardFooter className="mt-2">
-        <Button variant="primary" disabled={servosAssigned} className="ml-auto" onClick={onNext}>
+        <Button variant="primary" className="ml-auto" disabled={!isCalibrated} onClick={onNext}>
           Next Steps <FaChevronRight />
         </Button>
       </CardFooter>
@@ -628,216 +646,33 @@ const Calibration: React.FC<ServoLinkProps> = ({ onNext, robotUrl }) => {
   );
 };
 
-interface Step2Props {
-  isConnected: boolean;
-  onConnected: () => void;
-  onNext: () => void;
-}
-
-const Step2: React.FC<Step2Props> = ({ isConnected, onConnected, onNext }) => {
-  useEffect(() => {
-    // Simulate connection
-    const timer = setTimeout(() => {
-      onConnected();
-    }, 2000); // Simulate a 2-second delay for connection
-    return () => clearTimeout(timer);
-  }, [onConnected]);
-
-  return (
-    <div className="flex flex-col items-center justify-center">
-      {isConnected
-        ? (
-          <>
-            <h1 className="text-2xl font-bold mb-4">Connected!</h1>
-            <button
-              className="px-4 py-2 bg-blue-500 text-white rounded"
-              onClick={onNext}
-            >
-              Start Calibration
-            </button>
-          </>
-        )
-        : (
-          <>
-            <h1 className="text-2xl font-bold mb-4">
-              Connecting to the robot...
-            </h1>
-            <p className="mb-4">
-              Please ensure the robot is plugged in via USB-C.
-            </p>
-            <img src="/robot_logo.png" alt="Robot Logo" className="w-32 h-32" />
-          </>
-        )}
-    </div>
-  );
-};
-
-interface Step3Props {
-  servoIds: number[];
-  onServoIdsLoaded: (ids: number[]) => void;
-  onMappingComplete: (mapping: Record<string, number>) => void;
-}
-
-const Step3: React.FC<Step3Props> = (
-  { servoIds, onServoIdsLoaded, onMappingComplete },
-) => {
-  const [servoIndex, setServoIndex] = useState(0);
-  const [jointMapping, setJointMapping] = useState<Record<string, number>>({});
-
-  // Load servo IDs if not loaded
-  useEffect(() => {
-    if (servoIds.length === 0) {
-      getServos().then((ids) => onServoIdsLoaded(ids));
-    }
-  }, [servoIds, onServoIdsLoaded]);
-
-  const currentServoId = servoIds[servoIndex];
-
-  // Wiggle current servo
-  useEffect(() => {
-    if (currentServoId) {
-      wiggleServo(currentServoId);
-    }
-  }, [currentServoId]);
-
-  // Initialize Three.js scene
-
-  const handleJointClick = (jointName: string) => {
-    setJointMapping((prevMapping) => ({
-      ...prevMapping,
-      [jointName]: currentServoId,
-    }));
-    setServoIndex(servoIndex + 1);
-  };
-
-  // Check if mapping is complete
-  useEffect(() => {
-    if (servoIndex >= servoIds.length && servoIds.length > 0) {
-      onMappingComplete(jointMapping);
-    }
-  }, [servoIndex, servoIds.length, jointMapping, onMappingComplete]);
-
-  return (
-    <div className="flex flex-col items-center justify-center relative">
-      <h1 className="text-2xl font-bold mb-4">Servo Calibration</h1>
-      <p className="mb-4">
-        Servo {currentServoId}{" "}
-        is wiggling. Please click on the corresponding joint.
-      </p>
-      <RobotRenderer />
-    </div>
-  );
-};
-
 const Onboarding = () => {
   const [step, setStep] = useState(1);
-  const [isConnected, setIsConnected] = useState(false);
-  const [servoIds, setServoIds] = useState<number[]>([]);
-  const [jointMapping, setJointMapping] = useState<Record<string, number>>({});
-  const [robotName, setRobotName] = useState("");
+  const [robotUrl, setRobotUrl] = useState("");
 
   const nextStep = () => setStep((prevStep) => prevStep + 1);
   const prevStep = () => setStep((prevStep) => prevStep - 1);
 
-  const handleServoIdsLoaded = (ids: number[]) => {
-    setServoIds(ids);
-  };
-
-  const handleMappingComplete = (mapping: Record<string, number>) => {
-    setJointMapping(mapping);
-
-    // Change servo IDs based on standard mapping
-    const standardMapping = {
-      [JointEnum.RIGHT_SHOULDER_PITCH]: 1,
-      [JointEnum.LEFT_SHOULDER_PITCH]: 2,
-      // Add other standard mappings
-    };
-
-    // Update servo IDs
-    Object.entries(mapping).forEach(([joint, oldId]) => {
-      const newId = standardMapping[joint as JointEnum];
-      if (newId !== undefined && newId !== oldId) {
-        changeServoId(oldId, newId);
-      }
-    });
-
-    nextStep();
-  };
-
-  const handleStartCalibration = () => {
-    startCalibration();
-    nextStep();
-  };
-
-  const handleCalibrationComplete = () => {
-    nextStep();
-  };
-
-  const handleCancelCalibration = () => {
-    cancelCalibration();
-    setStep(4); // Go back to the calibration confirmation step
-  };
-
   const renderCurrentStep = () => {
     switch (step) {
       case 1:
-        return <Intro onNext={nextStep} />;
+        return <Intro onNext={nextStep} onPrev={prevStep} />;
       case 2:
-        return <Unboxing onNext={nextStep} />;
+        return <Unboxing onNext={nextStep} onPrev={prevStep} />;
       case 3:
-        return <Assembly onNext={nextStep} />;
+        return <Assembly onNext={nextStep} onPrev={prevStep} />;
       case 4:
         return (
           <Connect
             onNext={nextStep}
-            updateRobotName={(name: string) => {
-              setRobotName(name);
-            }}
+            onPrev={prevStep}
+            updateRobotUrl={setRobotUrl}
           />
         );
       case 5:
-        return (
-          <ServoLink
-            onNext={nextStep}
-            robotUrl={robotName}
-          />
-        );
+        return <ServoLink onNext={nextStep} robotUrl={robotUrl} />;
       case 6:
-        return (
-          <Calibration
-            onNext={nextStep}
-            robotUrl={robotName}
-          />
-        );
-      /*
-        return (
-          <Step2
-            isConnected={isConnected}
-            onConnected={() => setIsConnected(true)}
-            onNext={nextStep}
-          />
-        );
-      case 3:
-        return (
-          <Step3
-            servoIds={servoIds}
-            onServoIdsLoaded={handleServoIdsLoaded}
-            onMappingComplete={handleMappingComplete}
-          />
-        );
-        /*
-      case 4:
-        return <Step4 onStartCalibration={handleStartCalibration} />;
-      case 5:
-        return (
-          <Step5
-            onCalibrationComplete={handleCalibrationComplete}
-            onCancelCalibration={handleCancelCalibration}
-          />
-        );
-      case 6:
-        return <Step6 />;
-        */
+        return <Calibration onNext={nextStep} robotUrl={robotUrl} />;
       default:
         return null;
     }
@@ -845,9 +680,7 @@ const Onboarding = () => {
 
   return (
     <div className="relative flex justify-center">
-      <div className="max-w-5xl py-4 flex-grow">
-        {renderCurrentStep()}
-      </div>
+      <div className="max-w-5xl py-4 flex-grow">{renderCurrentStep()}</div>
     </div>
   );
 };

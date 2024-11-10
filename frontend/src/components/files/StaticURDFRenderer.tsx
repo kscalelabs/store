@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { Material } from "three";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
-import URDFLoader, { URDFJoint, URDFLink } from "urdf-loader";
+import URDFLoader, { URDFJoint, URDFLink, URDFRobot } from "urdf-loader";
 import { PointerURDFDragControls, isJoint } from "./DragControl";
 
 import { UntarredFile } from "./Tarfile";
@@ -18,7 +19,8 @@ type Orientation = "Z-up" | "Y-up" | "X-up";
 const URDFRenderer: React.FC<{
   urdfContent: string;
   files: UntarredFile[];
-}> = ({ urdfContent, files }) => {
+  onJointClicked: (a: URDFJoint) => void;
+}> = ({ urdfContent, files, onJointClicked }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const worldRef = useRef<THREE.Object3D | null>(null);
@@ -169,19 +171,21 @@ const URDFRenderer: React.FC<{
     };
 
     updateOrientation(orientation);
-    const updateMaterials = (mesh) => {
-      mesh.traverse((c) => {
+    const updateMaterials = (mesh: URDFRobot) => {
+      mesh.traverse((child:any) => {
+        const c = child as THREE.Mesh;
         if (c.isMesh) {
           c.castShadow = true;
           c.receiveShadow = true;
 
           if (c.material) {
             const mats = (Array.isArray(c.material) ? c.material : [c.material])
-              .map((m) => {
-                if (m instanceof THREE.MeshBasicMaterial) {
-                  m = new THREE.MeshPhongMaterial();
+              .map((mesh:Material) => {
+                if (mesh instanceof THREE.MeshBasicMaterial) {
+                  mesh = new THREE.MeshPhongMaterial();
                 }
-
+                
+                const m = mesh as THREE.MeshPhongMaterial;
                 if (m.map) {
                   m.map.colorSpace = THREE.SRGBColorSpace;
                 }
@@ -195,14 +199,14 @@ const URDFRenderer: React.FC<{
     };
     updateMaterials(robot);
 
-    const hightlightMaterial = new THREE.MeshPhongMaterial({
+    const highlightMaterial = new THREE.MeshPhongMaterial({
       shininess: 10,
       color: 0xffffff,
       emissive: 0xffffff,
       emissiveIntensity: 0.25,
     });
 
-    const highlightLinkGeometry = (m, revert) => {
+    const highlightLinkGeometry = (m:THREE.Object3D, revert: boolean) => {
       const traverse = (c) => {
         // Set or revert the highlight color
         if (c.type === "Mesh") {
@@ -211,7 +215,7 @@ const URDFRenderer: React.FC<{
             delete c.__origMaterial;
           } else {
             c.__origMaterial = c.material;
-            c.material = hightlightMaterial;
+            c.material = highlightMaterial;
           }
         }
 
@@ -230,7 +234,6 @@ const URDFRenderer: React.FC<{
     };
     animate();
     world.updateMatrixWorld(true);
-    console.log("Length: ", robot.children.length);
     const dragControls = new PointerURDFDragControls(
       scene,
       camera,
@@ -238,15 +241,14 @@ const URDFRenderer: React.FC<{
     );
     dragControlsRef.current = dragControls;
     dragControls.onHover = (joint) => {
-      console.log("your mom");
       highlightLinkGeometry(joint, false);
       renderer.render(scene, camera);
     };
     dragControls.onUnhover = (joint) => {
-      console.log("chacha");
       highlightLinkGeometry(joint, true);
       renderer.render(scene, camera);
     };
+    dragControls.onClick = onJointClicked;
 
     return () => {
       if (containerRef.current) {
@@ -277,6 +279,13 @@ const URDFRenderer: React.FC<{
 
     setIsInStartPosition(false);
   };
+
+  // Ensure that callbacks are updated as component is rerendered.
+  useEffect(()=> {
+    if (dragControlsRef.current !== null) {
+      dragControlsRef.current!.onClick = onJointClicked
+    }
+  }, [onJointClicked])
 
   useEffect(() => {
     return () => {
