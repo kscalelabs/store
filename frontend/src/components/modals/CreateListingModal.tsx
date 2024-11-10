@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuthentication } from "@/hooks/useAuth";
 import ROUTES from "@/lib/types/routes";
-import { Share2, ShoppingBag } from "lucide-react";
+import { DollarSign, Share2, ShoppingBag } from "lucide-react";
 
 interface Props {
   isOpen: boolean;
@@ -31,7 +31,7 @@ export const CreateListingModal = ({ isOpen, onOpenChange }: Props) => {
         <DialogHeader>
           <DialogTitle>What would you like to do?</DialogTitle>
         </DialogHeader>
-        <div className="grid grid-cols-2 gap-4 p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4">
           <div
             onClick={() =>
               handleOptionClick(
@@ -47,27 +47,33 @@ export const CreateListingModal = ({ isOpen, onOpenChange }: Props) => {
             </p>
           </div>
 
-          <div
-            onClick={() =>
-              canSell &&
-              handleOptionClick(
-                `${ROUTES.BOTS.path}/${ROUTES.BOTS.$.SELL.relativePath}`,
-              )
-            }
-            className={`flex flex-col items-center justify-center p-6 rounded-lg border ${
-              canSell
-                ? "border-gray-7 hover:border-gray-1 hover:bg-gray-11 cursor-pointer"
-                : "border-gray-4 opacity-50 cursor-not-allowed"
-            } transition-all`}
-          >
-            <ShoppingBag className="w-12 h-12 mb-4" />
-            <h3 className="text-lg font-semibold">Sell a Robot</h3>
-            <p className="text-sm text-gray-7 text-center mt-2">
-              {canSell
-                ? "List your Robot for sale"
-                : "Complete Seller onboarding to sell"}
-            </p>
-          </div>
+          {!canSell ? (
+            <div
+              onClick={() => handleOptionClick(ROUTES.SELL.ONBOARDING.path)}
+              className="flex flex-col items-center justify-center p-6 rounded-lg border border-gray-7 hover:border-gray-1 hover:bg-gray-11 cursor-pointer transition-all"
+            >
+              <DollarSign className="w-12 h-12 mb-4" />
+              <h3 className="text-lg font-semibold">Sell Robots</h3>
+              <p className="text-sm text-gray-7 text-center mt-2">
+                Complete onboarding to start selling robots
+              </p>
+            </div>
+          ) : (
+            <div
+              onClick={() =>
+                handleOptionClick(
+                  `${ROUTES.BOTS.path}/${ROUTES.BOTS.$.SELL.relativePath}`,
+                )
+              }
+              className="flex flex-col items-center justify-center p-6 rounded-lg border border-gray-7 hover:border-gray-1 hover:bg-gray-11 cursor-pointer transition-all"
+            >
+              <ShoppingBag className="w-12 h-12 mb-4" />
+              <h3 className="text-lg font-semibold">Sell a Robot</h3>
+              <p className="text-sm text-gray-7 text-center mt-2">
+                List your Robot for sale
+              </p>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

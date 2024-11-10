@@ -53,7 +53,7 @@ const OrdersPage: React.FC = () => {
     <div className="p-6 min-h-screen rounded-xl">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Your Orders</h1>
-        <p className="text-gray-11">
+        <p className="text-gray-8">
           You can view the status of your past and current orders here.
         </p>
       </div>
