@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import { FaDiscord } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
@@ -18,58 +18,30 @@ import {
   MagnifyingGlassIcon,
 } from "@radix-ui/react-icons";
 
-const Home: React.FC = () => {
-  const containerRef = useRef(null);
+import Container from "../ui/container";
 
+const Home: React.FC = () => {
   return (
-    <div ref={containerRef} className="bg-gray-1 text-gray-12 space-y-6">
+    <Container>
       <HeroSection />
       <OptionsSection />
-    </div>
+    </Container>
   );
 };
 
 const HeroSection: React.FC = () => {
-  const myFillGridString = [
-    "  ██████████████████████████    ███████████████████████████  ",
-    " █                          ████                           █ ",
-    "█                                                           █",
-    "█                                                           █",
-    "█   ██   ██        ██████   █████   ███   ██       ██████   █",
-    "█   ██   ██       ███████  ██████  █████  ██      ███████   █",
-    "█   ██  ██        ██      ██      ██   ██ ██      ██        █",
-    "█   ██  ██        ██      ██      ██   ██ ██      ██        █",
-    "█   █████   █████ ██████  ██      ███████ ██      █████     █",
-    "█   █████   █████  ██████ ██      ███████ ██      █████     █",
-    "█   ██  ██             ██ ██      ██   ██ ██      ██        █",
-    "█   ██  ██             ██ ██      ██   ██ ██      ██       █ ",
-    "█   ██   ██       ███████  ██████ ██   ██ ███████ ███████  █ ",
-    " █  ██   ██       ██████    █████ ██   ██ ███████  ██████  █ ",
-    " █                                                         █ ",
-    " █                                                         █ ",
-    " █            ██        ███   █████    ██████              █ ",
-    " █            ██       █████  ██████  ███████               █",
-    " █            ██      ██   ██ ██   ██ ██                    █",
-    "█             ██      ██   ██ ██   ██ ██                    █",
-    "█             ██      ███████ ██████  ██████                █",
-    "█             ██      ███████ ██████   ██████               █",
-    "█             ██      ██   ██ ██   ██      ██               █",
-    "█             ██      ██   ██ ██   ██      ██               █",
-    "█             ███████ ██   ██ ██████  ███████               █",
-    "█              ██████ ██   ██ █████   ██████                █",
-    "█                                                           █",
-    "█                                                           █",
-    " █                           ████                          █ ",
-    "  ███████████████████████████    ██████████████████████████  ",
-  ];
-
-  const myFillGrid = myFillGridString.map((row) =>
-    row.split("").map((char) => char !== " "),
-  );
-
   return (
-    <section className="relative overflow-hidden h-[80vh] md:h-[40vh] rounded-lg">
-      <PageHeader fillGrid={myFillGrid} />
+    <section className="relative overflow-hidden h-[40vh] rounded-lg">
+      <PageHeader>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black border border-gray-500 rounded-lg p-4">
+          <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold text-gray-1">
+            K-Scale Labs
+          </h1>
+          <p className="text-gray-400 mt-2">
+            Moving humanity up the Kardashev scale
+          </p>
+        </div>
+      </PageHeader>
     </section>
   );
 };
@@ -78,11 +50,11 @@ const OptionsSection: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="w-full py-24 sm:py-36">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <section className="w-full py-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {[
           {
-            title: "Browse Builds",
+            title: "Browse Robots",
             description:
               "Browse robot builds with linked CAD files, part lists, and related downloads.",
             icon: MagnifyingGlassIcon,
@@ -110,7 +82,7 @@ const OptionsSection: React.FC = () => {
         ].map((item, index) => (
           <Card
             key={index}
-            className="cursor-pointer flex flex-col h-full transition-all duration-300 ease-in-out hover:scale-[1.03] hover:shadow-lg bg-gray-12"
+            className="cursor-pointer flex flex-col h-full transition-all duration-300 ease-in-out hover:scale-[1.03] hover:shadow-lg"
             onClick={() =>
               item.external
                 ? window.open(item.path, "_blank")

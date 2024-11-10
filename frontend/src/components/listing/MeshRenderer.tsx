@@ -99,7 +99,7 @@ const MeshRenderer = ({ url, name, edit, onDelete, disabled, kind }: Props) => {
                 setClickedCopyButton(false);
               }, 1000);
             }}
-            variant="secondary"
+            variant="default"
             className="rounded-full w-full"
             disabled={clickedCopyButton}
           >
@@ -111,7 +111,7 @@ const MeshRenderer = ({ url, name, edit, onDelete, disabled, kind }: Props) => {
           <>
             <Button
               onClick={() => setConfirmDelete(true)}
-              variant="secondary"
+              variant="default"
               className="rounded-full"
               disabled={disabled ?? false}
             >
@@ -129,13 +129,13 @@ const MeshRenderer = ({ url, name, edit, onDelete, disabled, kind }: Props) => {
                         onDelete?.();
                         setConfirmDelete(false);
                       }}
-                      variant="secondary"
+                      variant="default"
                     >
                       <code>yes</code>
                     </Button>
                     <Button
                       onClick={() => setConfirmDelete(false)}
-                      variant="secondary"
+                      variant="default"
                     >
                       <code>no</code>
                     </Button>

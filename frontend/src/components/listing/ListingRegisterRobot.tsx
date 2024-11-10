@@ -15,7 +15,7 @@ const ListingRegisterRobot = ({ listingId }: Props) => {
   return (
     <div className="flex items-center gap-2 mt-2">
       <Button
-        variant="primary"
+        variant="default"
         className="flex items-center"
         onClick={() => setIsRegisterModalOpen(true)}
       >

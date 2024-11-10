@@ -60,7 +60,7 @@ const LoginForm = () => {
         showStrength={false} // Hide password strength bar
       />
       {/* Submit Button */}
-      <Button variant="primary">Login</Button>
+      <Button variant="default">Login</Button>
     </form>
   );
 };

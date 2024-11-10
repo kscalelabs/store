@@ -94,7 +94,7 @@ export default function SellerOnboarding() {
             <button
               onClick={handleCreateAccount}
               disabled={accountCreatePending}
-              className="w-full bg-primary-9 text-white px-6 py-3 rounded-lg hover:bg-primary-9/80 disabled:opacity-50"
+              className="w-full text-white px-6 py-3 rounded-lg disabled:opacity-50"
             >
               {accountCreatePending
                 ? "Creating account..."
@@ -115,7 +115,7 @@ export default function SellerOnboarding() {
         )}
 
         {(connectedAccountId || accountCreatePending || onboardingExited) && (
-          <div className="mt-10 p-3 bg-gray-3 rounded-lg text-sm">
+          <div className="mt-10 p-3 rounded-lg text-sm">
             {connectedAccountId && (
               <div className="flex flex-col gap-2">
                 <span className="font-semibold">

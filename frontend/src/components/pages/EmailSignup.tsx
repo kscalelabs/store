@@ -64,7 +64,7 @@ const EmailSignup = () => {
             <div className="text-center">
               <p className="text-lg mb-8">Invalid Sign Up Link</p>
               <Button
-                variant="primary"
+                variant="default"
                 onClick={() => {
                   navigate(ROUTES.LOGIN.path);
                 }}

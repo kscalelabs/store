@@ -147,7 +147,6 @@ const Browse = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="lg" className="w-full md:w-1/2">
-                  Sort By:{" "}
                   {options.find((opt) => opt.value === sortOption)?.label}
                 </Button>
               </DropdownMenuTrigger>
@@ -167,7 +166,7 @@ const Browse = () => {
             </DropdownMenu>
             <Button
               onClick={() => navigate(ROUTES.BOTS.CREATE.path)}
-              variant="primary"
+              variant="default"
               size="lg"
               className="w-full md:w-auto"
             >

@@ -91,7 +91,7 @@ const CheckoutButton: React.FC<{ productId: string; label?: string }> = ({
         onClick={handleClick}
         disabled={isLoading}
         className="flex items-center justify-center"
-        variant="primary"
+        variant="default"
       >
         {isLoading ? <FaSpinner className="animate-spin mr-2" /> : null}
         {isLoading ? "Starting checkout..." : label}
@@ -111,7 +111,7 @@ const CheckoutButton: React.FC<{ productId: string; label?: string }> = ({
                 setIsDrawerOpen(false);
                 navigate(ROUTES.LOGIN.path);
               }}
-              variant="secondary"
+              variant="default"
             >
               Sign In
             </Button>
@@ -120,7 +120,7 @@ const CheckoutButton: React.FC<{ productId: string; label?: string }> = ({
                 setIsDrawerOpen(false);
                 navigate(ROUTES.SIGNUP.path);
               }}
-              variant="primary"
+              variant="default"
               className="ml-2"
             >
               Sign Up

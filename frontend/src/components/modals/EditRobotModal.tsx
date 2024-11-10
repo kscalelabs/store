@@ -149,7 +149,7 @@ export function EditRobotModal({
           <Button
             onClick={handleEdit}
             disabled={!name || isLoading}
-            variant="primary"
+            variant="default"
           >
             <Save className="mr-2 h-4 w-4" />
             <span className="mr-2">

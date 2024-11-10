@@ -23,7 +23,7 @@ interface AuthBlockProps {
 
 const AuthBlock: React.FC<AuthBlockProps> = ({ title, onClosed, signup }) => {
   return (
-    <Card className="w-[400px] shadow-md bg-gray-2 text-gray-12 rounded-lg">
+    <Card className="w-[400px] bg-gray-2 text-gray-12 rounded-lg">
       <CardHeader>
         <Header title={title} onClosed={onClosed} />
       </CardHeader>
@@ -85,7 +85,7 @@ export const AuthBlockInner: React.FC<{ initialSignup?: boolean }> = ({
         <Button
           onClick={() => setIsSignup((s) => !s)}
           variant="link"
-          className="font-normal w-full"
+          className="w-full"
         >
           {isSignup
             ? "Already have an account? Login here."

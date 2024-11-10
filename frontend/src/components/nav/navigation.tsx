@@ -1,4 +1,4 @@
-import { FaRobot, FaTerminal, FaWpexplorer } from "react-icons/fa";
+import { FaRobot, FaTerminal } from "react-icons/fa";
 import { FaRegFileLines } from "react-icons/fa6";
 
 import ROUTES from "@/lib/types/routes";
@@ -19,11 +19,6 @@ export const DEFAULT_NAV_ITEMS: BaseNavItem[] = [
     name: "Bots",
     path: ROUTES.BOTS.BROWSE.path,
     icon: <FaRobot />,
-  },
-  {
-    name: "Research",
-    path: ROUTES.RESEARCH.path,
-    icon: <FaWpexplorer />,
   },
   {
     name: "Docs",

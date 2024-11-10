@@ -69,7 +69,7 @@ const Footer = () => {
               About
             </Link>
             <Link to={ROUTES.RESEARCH.path} className="hover:text-primary-9">
-              Blog
+              Research
             </Link>
           </div>
           <div className="flex flex-col items-start gap-2">
