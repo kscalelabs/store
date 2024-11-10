@@ -21,16 +21,16 @@ const ListingArtifactRenderer = ({ artifact }: Props) => {
       );
     case "tgz":
       return (
-        <div className="w-full h-full bg-gray-3 flex flex-col items-center justify-center gap-2">
+        <div className="w-full h-full flex flex-col items-center justify-center gap-2">
           <Link
             to={ROUTES.FILE.buildPath({ artifactId: artifact.artifact_id })}
-            className="p-4 hover:bg-gray-4 rounded-lg transition-colors"
+            className="p-4 hover:bg-gray-700 rounded-lg transition-colors"
           >
             <FaFileArchive className="w-16 h-16" />
           </Link>
           <div className="text-center">
             <div className="font-medium">{artifact.name}</div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm">
               {new Date(artifact.timestamp * 1000).toLocaleString()}
             </div>
           </div>

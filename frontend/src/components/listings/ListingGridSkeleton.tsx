@@ -2,9 +2,9 @@ const ListingGridSkeleton = () => {
   return (
     <div
       role="status"
-      className="p-4 border border-gray-200 rounded shadow animate-pulse"
+      className="p-4 border border-gray-800 rounded shadow animate-pulse"
     >
-      <div className="flex items-center justify-center h-48 mb-4 bg-gray-300 rounded">
+      <div className="flex items-center justify-center h-48 mb-4 bg-gray-800 rounded">
         <svg
           className="w-10 h-10 text-gray-200"
           aria-hidden="true"
@@ -16,10 +16,10 @@ const ListingGridSkeleton = () => {
           <path d="M5 5V.13a2.96 2.96 0 0 0-1.293.749L.879 3.707A2.98 2.98 0 0 0 .13 5H5Z" />
         </svg>
       </div>
-      <div className="h-2.5 bg-gray-200 rounded-full w-48 mb-4"></div>
-      <div className="h-2 bg-gray-200 rounded-full mb-2.5"></div>
-      <div className="h-2 bg-gray-200 rounded-full mb-2.5"></div>
-      <div className="h-2 bg-gray-200 rounded-full"></div>
+      <div className="h-2.5 bg-gray-800 rounded-full w-48 mb-4"></div>
+      <div className="h-2 bg-gray-800 rounded-full mb-2.5"></div>
+      <div className="h-2 bg-gray-800 rounded-full mb-2.5"></div>
+      <div className="h-2 bg-gray-800 rounded-full"></div>
       <span className="sr-only">Loading...</span>
     </div>
   );

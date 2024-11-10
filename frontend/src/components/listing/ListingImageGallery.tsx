@@ -121,7 +121,7 @@ const ListingImageItem = ({
               variant="secondary"
               onClick={handleSetMain}
               disabled={isUpdating}
-              className="bg-green-500 hover:bg-green-600 text-white"
+              className="hover:bg-green-600 text-white"
             >
               <FaStar />
             </Button>

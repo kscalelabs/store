@@ -318,7 +318,7 @@ const MJCFRenderer = ({ mjcfContent, files, useControls = true }: Props) => {
                     The MuJoCo renderer is currently under development. If you
                     would like to contribute, see the project repository{" "}
                     <a
-                      className="underline"
+                      className="text-gray-11"
                       target="_blank"
                       rel="noreferrer"
                       href="https://github.com/kscalelabs/urdf2mjcf"

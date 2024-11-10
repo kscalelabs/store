@@ -45,7 +45,7 @@ const UploadContent: FC<UploadContentProps> = ({ images, onChange }) => {
   }, [images]);
 
   return (
-    <div className="p-6 bg-gray-2 rounded-lg">
+    <div className="p-6 bg-black border border-gray-500 rounded-lg">
       <ImageUploading
         multiple
         value={images}
@@ -67,13 +67,13 @@ const UploadContent: FC<UploadContentProps> = ({ images, onChange }) => {
             <div
               className={`border-2 border-dashed p-5 rounded-lg flex flex-col items-center justify-center h-64 transition-colors duration-300 ${
                 isDragging
-                  ? "border-primary-9 bg-primary-3"
-                  : "border-gray-6 bg-gray-3"
+                  ? "border-orange-900 bg-orange-300"
+                  : "border-gray-6 bg-gray-900"
               }`}
               onClick={onImageUpload}
               {...dragProps}
             >
-              <p className="text-gray-11">
+              <p className="text-gray-300">
                 Drag & drop images here, click to select files, or paste an
                 image from your clipboard
               </p>

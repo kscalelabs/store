@@ -46,20 +46,20 @@ const App = () => {
           <AlertQueueProvider>
             <AlertQueue>
               <ScrollToTop>
-                <div className="flex flex-col bg-gray-1 text-gray-12 min-h-screen">
+                <div className="min-h-screen bg-gray-12 text-gray-100 font-mono">
                   <Navbar />
                   <GDPRBanner />
                   <PendoInitializer />
                   <SprigInitializer />
                   <div className="flex-grow">
-                    <div className="mt-20 mb-6 mx-4 sm:mx-6 md:mx-10 xl:mx-16 2xl:mx-28 max-full">
+                    <div className="mt-24 mb-6 mx-4 sm:mx-6 md:mx-10 xl:mx-16 2xl:mx-28 max-full">
                       <Routes>
                         <Route path={ROUTES.HOME.path} element={<Home />} />
 
                         {/* General pages */}
                         <Route path={ROUTES.ABOUT.path} element={<About />} />
                         <Route
-                          path={ROUTES.RESEARCH.path}
+                          path={ROUTES.BLOG.path}
                           element={<ResearchPage />}
                         />
                         <Route

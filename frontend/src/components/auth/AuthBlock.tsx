@@ -85,7 +85,7 @@ export const AuthBlockInner: React.FC<{ initialSignup?: boolean }> = ({
         <Button
           onClick={() => setIsSignup((s) => !s)}
           variant="link"
-          className="font-normal w-full"
+          className="w-full"
         >
           {isSignup
             ? "Already have an account? Login here."

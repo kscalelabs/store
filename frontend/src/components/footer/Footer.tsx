@@ -68,7 +68,7 @@ const Footer = () => {
             <Link to={ROUTES.ABOUT.path} className="hover:text-primary-9">
               About
             </Link>
-            <Link to={ROUTES.RESEARCH.path} className="hover:text-primary-9">
+            <Link to={ROUTES.BLOG.path} className="hover:text-primary-9">
               Blog
             </Link>
           </div>

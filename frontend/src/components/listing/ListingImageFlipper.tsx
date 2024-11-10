@@ -35,7 +35,7 @@ const ListingImageFlipper = (props: Props) => {
     <>
       {/* Main image - full width on mobile, half width on desktop */}
       <div className="w-full md:w-1/2 relative">
-        <div className="aspect-square bg-white rounded-lg overflow-hidden">
+        <div className="aspect-square bg-black rounded-lg overflow-hidden">
           <ListingArtifactRenderer artifact={currentArtifact} />
         </div>
 
@@ -48,9 +48,9 @@ const ListingImageFlipper = (props: Props) => {
                   prev === 0 ? artifacts.length - 1 : prev - 1,
                 )
               }
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 w-8 h-8 rounded-full flex items-center justify-center shadow-md"
+              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 w-8 h-8 rounded-full flex items-center justify-center shadow-md border border-gray-11"
             >
-              <FaChevronLeft />
+              <FaChevronLeft className="text-gray-11" />
             </button>
             <button
               onClick={() =>
@@ -58,9 +58,9 @@ const ListingImageFlipper = (props: Props) => {
                   prev === artifacts.length - 1 ? 0 : prev + 1,
                 )
               }
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 w-8 h-8 rounded-full flex items-center justify-center shadow-md"
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 w-8 h-8 rounded-full flex items-center justify-center shadow-md border border-gray-11"
             >
-              <FaChevronRight />
+              <FaChevronRight className="text-gray-11" />
             </button>
           </>
         )}

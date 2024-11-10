@@ -11,6 +11,7 @@ import ErrorMessage from "@/components/ui/ErrorMessage";
 import Header from "@/components/ui/Header";
 import { Input, TextArea } from "@/components/ui/Input/Input";
 import { Button } from "@/components/ui/button";
+import Container from "@/components/ui/container";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { NewListingSchema, NewListingType } from "@/lib/types";
@@ -163,12 +164,12 @@ const Create = () => {
 
   return (
     <RequireAuthentication>
-      <div className="container mx-auto max-w-lg shadow-md rounded-lg bg-gray-2 text-gray-12">
-        <Card className="shadow-md">
+      <Container className="max-w-xl">
+        <Card>
           <CardHeader>
             <Header title="Post new build" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <form
               onSubmit={handleSubmit((data) => {
                 if (validateFields() !== true) {
@@ -179,13 +180,13 @@ const Create = () => {
                 }
                 onSubmit(data);
               })}
-              className="grid grid-cols-1 space-y-6"
+              className="grid grid-cols-1 gap-6"
             >
               {/* Name */}
               <div>
                 <label
                   htmlFor="name"
-                  className="block mb-2 text-sm font-medium text-gray-12"
+                  className="block mb-2 text-sm font-medium text-gray-300"
                 >
                   Name
                 </label>
@@ -204,7 +205,7 @@ const Create = () => {
               <div className="relative">
                 <label
                   htmlFor="description"
-                  className="block mb-2 text-sm font-medium text-gray-12"
+                  className="block mb-2 text-sm font-medium text-gray-300"
                 >
                   Description (supports Markdown formatting)
                 </label>
@@ -224,7 +225,9 @@ const Create = () => {
               {/* Render Description */}
               {description && (
                 <div className="relative">
-                  <h3 className="font-semibold mb-2">Description Preview</h3>
+                  <h3 className="font-semibold mb-2 text-gray-300">
+                    Description Preview
+                  </h3>
                   <RenderDescription description={description} />
                 </div>
               )}
@@ -233,7 +236,7 @@ const Create = () => {
               <div>
                 <label
                   htmlFor="slug"
-                  className="block mb-2 text-sm font-medium text-gray-12"
+                  className="block mb-2 text-sm font-medium text-gray-300"
                 >
                   Slug
                 </label>
@@ -258,10 +261,10 @@ const Create = () => {
               {/* URL Preview */}
               {previewUrl && (
                 <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-12">
+                  <label className="block mb-2 text-sm font-medium text-gray-300">
                     Listing URL Preview
                   </label>
-                  <div className="p-2 bg-gray-3 rounded-md text-gray-11">
+                  <div className="p-2 bg-gray-900 rounded-md text-gray-400">
                     {previewUrl}
                   </div>
                 </div>
@@ -271,7 +274,7 @@ const Create = () => {
               <div>
                 <label
                   htmlFor="price"
-                  className="block mb-2 text-sm font-medium text-gray-12"
+                  className="block mb-2 text-sm font-medium text-gray-300"
                 >
                   Price
                 </label>
@@ -298,7 +301,7 @@ const Create = () => {
               <div>
                 <label
                   htmlFor="stripe_link"
-                  className="block mb-2 text-sm font-medium text-gray-12"
+                  className="block mb-2 text-sm font-medium text-gray-300"
                 >
                   Stripe Link
                 </label>
@@ -318,7 +321,7 @@ const Create = () => {
 
               {/* Photos */}
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-12">
+                <label className="block mb-2 text-sm font-medium text-gray-300">
                   Photos
                 </label>
                 <UploadContent images={images} onChange={handleImageChange} />
@@ -326,14 +329,19 @@ const Create = () => {
 
               {/* Submit */}
               <div className="flex justify-end">
-                <Button variant="primary" type="submit" disabled={isSubmitting}>
+                <Button
+                  variant="primary"
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-orange-500 hover:bg-orange-600 text-white"
+                >
                   {isSubmitting ? "Posting..." : "Post build"}
                 </Button>
               </div>
             </form>
           </CardContent>
         </Card>
-      </div>
+      </Container>
     </RequireAuthentication>
   );
 };

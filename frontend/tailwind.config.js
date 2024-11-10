@@ -5,6 +5,7 @@ export default {
     fontFamily: {
       sans: ["Inter", "sans-serif"],
       orbitron: ["Orbitron", "sans-serif"],
+      mono: ["monospace"],
     },
     extend: {
       animation: {
@@ -31,10 +32,9 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       colors: {
-        // Radix UI Gray Colorscale 1-12 (light)
-        // compliments international orange primary color palette
+        // Using pure black and white for main colors
         gray: {
-          1: "#fcfcfd",
+          1: "#ffffff", // Pure white
           2: "#f9f9fb",
           3: "#eff0f3",
           4: "#e7e8ec",
@@ -45,9 +45,8 @@ export default {
           9: "#8b8d98",
           10: "#80828d",
           11: "#62636c",
-          12: "#1e1f24",
+          12: "#000000", // Pure black
         },
-        // Radix UI International Orange Colorscale 1-12 (light)
         primary: {
           1: "#fefcfb",
           2: "#fff5f1",
@@ -57,42 +56,42 @@ export default {
           6: "#ffb89f",
           7: "#ffa284",
           8: "#fb8765",
-          9: "#ff4f00",
+          9: "#ffffff", // Pure white for primary highlight
           10: "#f14000",
           11: "#de3500",
-          12: "#5d291a",
+          12: "#000000", // Pure black
           DEFAULT: "#ff4f00",
-          foreground: "#5d291a",
+          foreground: "#000000",
         },
-        background: "var(--gray1)",
-        foreground: "var(--gray12)",
+        background: "#000000", // Pure black
+        foreground: "#ffffff", // Pure white
         card: {
-          DEFAULT: "var(--gray2)",
-          foreground: "var(--gray12)",
+          DEFAULT: "#000000",
+          foreground: "#ffffff",
         },
         popover: {
-          DEFAULT: "var(--gray2)",
-          foreground: "var(--gray11)",
+          DEFAULT: "#000000",
+          foreground: "#ffffff",
         },
         secondary: {
-          DEFAULT: "var(--gray4)",
-          foreground: "var(--gray12)",
+          DEFAULT: "#000000",
+          foreground: "#ffffff",
         },
         muted: {
-          DEFAULT: "var(--gray3)",
-          foreground: "var(--gray11)",
+          DEFAULT: "#000000",
+          foreground: "#ffffff",
         },
         accent: {
-          DEFAULT: "var(--gray4)",
-          foreground: "var(--gray12)",
+          DEFAULT: "#000000",
+          foreground: "#ffffff",
         },
         destructive: {
           DEFAULT: "#DD4425",
-          foreground: "var(--gray1)",
+          foreground: "#ffffff",
         },
-        border: "var(--gray6)",
-        input: "var(--gray2)",
-        ring: "var(--gray7)",
+        border: "#ffffff",
+        input: "#000000",
+        ring: "#ffffff",
         chart: {
           1: "rgb(59, 130, 246)",
           2: "rgb(16, 185, 129)",
@@ -106,7 +105,8 @@ export default {
   plugins: [require("tailwindcss-animate")],
   base: {
     "html, body": {
-      color: "var(--gray1)",
+      color: "#ffffff",
+      backgroundColor: "#000000",
     },
   },
 };

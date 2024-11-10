@@ -5,7 +5,7 @@ const ROUTES = {
 
   // General pages
   ABOUT: route("about"),
-  RESEARCH: route("research"),
+  BLOG: route("blog"),
   TOS: route("tos"),
   PRIVACY: route("privacy"),
 
