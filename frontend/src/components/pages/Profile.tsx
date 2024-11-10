@@ -361,7 +361,6 @@ export const RenderProfile = (props: RenderProfileProps) => {
           ) : (
             <div className="space-y-6">
               <div>
-                <h2 className="text-lg font-medium mb-2">Bio</h2>
                 {user.bio ? (
                   <p>{user.bio}</p>
                 ) : (

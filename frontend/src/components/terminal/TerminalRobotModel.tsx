@@ -1,19 +1,13 @@
 import { useEffect, useState } from "react";
 
-import { parseTar } from "@/components/files/Tarfile";
 import URDFRenderer from "@/components/files/URDFRenderer";
+import { UntarredFile, untarFile } from "@/components/files/untar";
 import Spinner from "@/components/ui/Spinner";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
-import pako from "pako";
 
 interface Props {
   listingId: string;
-}
-
-interface UntarredFile {
-  name: string;
-  content: Uint8Array;
 }
 
 const TerminalRobotModel = ({ listingId }: Props) => {
@@ -58,11 +52,7 @@ const TerminalRobotModel = ({ listingId }: Props) => {
         setIsLoading(false);
         return;
       }
-      const response = await fetch(urdfUrl);
-      const arrayBuffer = await response.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-      const decompressed = pako.ungzip(uint8Array);
-      const files = parseTar(decompressed);
+      const files = await untarFile(urdfUrl);
       const firstUrdfFile = files.find((file) => file.name.endsWith(".urdf"));
       if (!firstUrdfFile) {
         addErrorAlert("No URDF file found in the tarball");

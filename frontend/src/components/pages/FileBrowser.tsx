@@ -11,7 +11,7 @@ import { useTypedParams } from "react-router-typesafe-routes/dom";
 
 import FileRenderer from "@/components/files/FileRenderer";
 import FileTreeViewer from "@/components/files/FileTreeViewer";
-import { parseTar } from "@/components/files/Tarfile";
+import { UntarredFile, untarFile } from "@/components/files/untar";
 import Spinner from "@/components/ui/Spinner";
 import { Tooltip } from "@/components/ui/ToolTip";
 import { Button } from "@/components/ui/button";
@@ -20,19 +20,13 @@ import { components } from "@/gen/api";
 import { humanReadableError, useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import ROUTES from "@/lib/types/routes";
-import pako from "pako";
 
 type SingleArtifactResponse = components["schemas"]["SingleArtifactResponse"];
 
-interface UntarredFile {
-  name: string;
-  content: Uint8Array;
-}
-
 const FileBrowser = () => {
-  const { artifactId } = useTypedParams(ROUTES.FILE);
+  const { artifactId, fileName } = useTypedParams(ROUTES.FILE);
   const [artifact, setArtifact] = useState<SingleArtifactResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [untarring, setUntarring] = useState(false);
   const [untarredFiles, setUntarredFiles] = useState<UntarredFile[]>([]);
   const [selectedFile, setSelectedFile] = useState<UntarredFile | null>(null);
@@ -67,12 +61,15 @@ const FileBrowser = () => {
           if (data.urls?.large) {
             setUntarring(true);
             try {
-              const response = await fetch(data.urls.large);
-              const arrayBuffer = await response.arrayBuffer();
-              const uint8Array = new Uint8Array(arrayBuffer);
-              const decompressed = pako.ungzip(uint8Array);
-              const files = parseTar(decompressed);
+              const files = await untarFile(data.urls.large);
               setUntarredFiles(files);
+
+              if (fileName) {
+                const file = files.find((file) => file.name === fileName);
+                if (file) {
+                  setSelectedFile(file);
+                }
+              }
             } catch (err) {
               addErrorAlert(`Error loading file: ${humanReadableError(err)}`);
             } finally {
@@ -83,10 +80,19 @@ const FileBrowser = () => {
       } catch (err) {
         addErrorAlert(humanReadableError(err));
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     })();
-  }, [artifactId, auth.client, addErrorAlert, artifact]);
+  }, [artifactId, auth.client, addErrorAlert]);
+
+  useEffect(() => {
+    if (fileName && untarredFiles.length > 0) {
+      const file = untarredFiles.find((file) => file.name === fileName);
+      if (file) {
+        setSelectedFile(file);
+      }
+    }
+  }, [fileName, untarredFiles]);
 
   useEffect(() => {
     if (artifact) {
@@ -110,6 +116,9 @@ const FileBrowser = () => {
 
   const handleFileSelect = (file: UntarredFile) => {
     setSelectedFile(file);
+    navigate(ROUTES.FILE.buildPath({ artifactId, fileName: file.name }), {
+      replace: true,
+    });
   };
 
   const handleSaveEdit = async () => {
@@ -139,15 +148,11 @@ const FileBrowser = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center pt-8">
-        <Spinner />
-      </div>
-    );
-  }
-
-  return artifact?.urls.large ? (
+  return isLoading ? (
+    <div className="flex justify-center items-center pt-8">
+      <Spinner />
+    </div>
+  ) : artifact?.urls.large ? (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-2 min-w-0">
         {isEditing ? (
@@ -286,7 +291,7 @@ const FileBrowser = () => {
     </div>
   ) : (
     <div className="flex justify-center items-center pt-8">
-      <Spinner />
+      Error loading artifact
     </div>
   );
 };
