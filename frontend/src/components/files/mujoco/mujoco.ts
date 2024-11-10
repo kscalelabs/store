@@ -33,7 +33,7 @@ export const initializeMujoco = async ({
   const mj = await load_mujoco();
 
   // Set up file system and load XML model
-  // @ts-expect-error
+  // @ts-expect-error: mj.FS is not typed
   if (!mj.FS.analyzePath(MODEL_DIR).exists) {
     mj.FS.mkdir(MODEL_DIR);
   }
@@ -54,7 +54,7 @@ export const initializeMujoco = async ({
       let currentPath = MODEL_DIR;
       for (const dir of dirs.slice(0, -1)) {
         currentPath = `${currentPath}/${dir}`;
-        // @ts-expect-error
+        // @ts-expect-error: mj.FS is not typed
         if (!mj.FS.analyzePath(currentPath).exists) {
           mj.FS.mkdir(currentPath);
         }
@@ -226,15 +226,15 @@ export const setupModelGeometry = (refs: MujocoRefs) => {
       // Create corresponding Three.js geometry
       let geometry: THREE.BufferGeometry;
       switch (geomType) {
-        // @ts-expect-error
+        // @ts-expect-error: mj.mjtGeom is not typed
         case mj.mjtGeom.mjGEOM_PLANE.value:
           geometry = new THREE.PlaneGeometry(geomSize[0] * 2, geomSize[1] * 2);
           break;
-        // @ts-expect-error
+        // @ts-expect-error: mj.mjtGeom is not typed
         case mj.mjtGeom.mjGEOM_SPHERE.value:
           geometry = new THREE.SphereGeometry(geomSize[0], 32, 32);
           break;
-        // @ts-expect-error
+        // @ts-expect-error: mj.mjtGeom is not typed
         case mj.mjtGeom.mjGEOM_CAPSULE.value:
           // Capsule is a cylinder with hemispheres at the ends
           geometry = new THREE.CapsuleGeometry(
@@ -244,13 +244,13 @@ export const setupModelGeometry = (refs: MujocoRefs) => {
             32,
           );
           break;
-        // @ts-expect-error
+        // @ts-expect-error: mj.mjtGeom is not typed
         case mj.mjtGeom.mjGEOM_ELLIPSOID.value:
           // Create a sphere and scale it to make an ellipsoid
           geometry = new THREE.SphereGeometry(1, 32, 32);
           geometry.scale(geomSize[0], geomSize[1], geomSize[2]);
           break;
-        // @ts-expect-error
+        // @ts-expect-error: mj.mjtGeom is not typed
         case mj.mjtGeom.mjGEOM_CYLINDER.value:
           geometry = new THREE.CylinderGeometry(
             geomSize[0],
@@ -259,7 +259,7 @@ export const setupModelGeometry = (refs: MujocoRefs) => {
             32,
           );
           break;
-        // @ts-expect-error
+        // @ts-expect-error: mj.mjtGeom is not typed
         case mj.mjtGeom.mjGEOM_BOX.value:
           geometry = new THREE.BoxGeometry(
             geomSize[0] * 2,
@@ -267,7 +267,7 @@ export const setupModelGeometry = (refs: MujocoRefs) => {
             geomSize[2] * 2,
           );
           break;
-        // @ts-expect-error
+        // @ts-expect-error: mj.mjtGeom is not typed
         case mj.mjtGeom.mjGEOM_MESH.value:
           // Get mesh data from MuJoCo
           const meshId = model.geom_dataid[i];
@@ -315,7 +315,7 @@ export const setupModelGeometry = (refs: MujocoRefs) => {
             continue;
           }
           break;
-        // @ts-expect-error
+        // @ts-expect-error: mj.mjtGeom is not typed
         case mj.mjtGeom.mjGEOM_LINE.value:
           geometry = new THREE.BufferGeometry().setFromPoints([
             new THREE.Vector3(0, 0, 0),
@@ -426,11 +426,11 @@ export const getJoints = (refs: MujocoRefs) => {
 
   for (let i = 0; i < numJoints; i++) {
     const name = refs.simulationRef.current?.id2name(
-      // @ts-expect-error
+      // @ts-expect-error: mj.mjtObj is not typed
       mj.mjtObj.mjOBJ_ACTUATOR.value,
       i,
     );
-    // @ts-expect-error
+    // @ts-expect-error: mj.State is not typed
     const qpos = refs.stateRef.current?.qpos || [];
     jointNames.push({ name, value: qpos[i] || 0 });
   }
@@ -443,12 +443,12 @@ export const getJointNames = (refs: MujocoRefs, mj: mujoco) => {
 
   for (let i = 0; i < numJoints + 1; i++) {
     const name = refs.simulationRef.current?.id2name(
-      // @ts-expect-error
+      // @ts-expect-error: mj.mjtObj is not typed
       mj.mjtObj.mjOBJ_JOINT.value,
       i,
     );
     if (!name) continue;
-    // @ts-expect-error
+    // @ts-expect-error: mj.mjtObj is not typed
     const qpos = refs.stateRef.current?.qpos || [];
     jointNames.push({ name, value: qpos[i] || 0 });
   }
@@ -459,7 +459,7 @@ export const resetJoints = (
   refs: MujocoRefs,
   joints: { name: string; value: number }[],
 ) => {
-  // @ts-expect-error
+  // @ts-expect-error: mj.State is not typed
   const qpos = refs.stateRef.current?.qpos || [];
   return joints.map((joint, i) => ({
     ...joint,
