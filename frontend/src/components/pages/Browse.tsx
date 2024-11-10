@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { FaTimes } from "react-icons/fa";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 import ListingGrid from "@/components/listings/ListingGrid";
+import { CreateListingModal } from "@/components/modals/CreateListingModal";
 import { Input } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,6 @@ import {
 import { components, paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
-import ROUTES from "@/lib/types/routes";
 import { useDebounce } from "@uidotdev/usehooks";
 
 type SortOption = components["schemas"]["SortOption"];
@@ -29,7 +29,6 @@ const Browse = () => {
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
 
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +42,8 @@ const Browse = () => {
   const [sortOption, setSortOption] = useState<SortOption>("most_upvoted");
 
   const observerTarget = useRef<HTMLDivElement>(null);
+
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -166,7 +167,7 @@ const Browse = () => {
               </DropdownMenuContent>
             </DropdownMenu>
             <Button
-              onClick={() => navigate(ROUTES.BOTS.CREATE.path)}
+              onClick={() => setShowCreateModal(true)}
               variant="primary"
               size="lg"
               className="w-full md:w-auto"
@@ -186,6 +187,11 @@ const Browse = () => {
           </div>
         )}
       </div>
+
+      <CreateListingModal
+        isOpen={showCreateModal}
+        onOpenChange={setShowCreateModal}
+      />
     </Container>
   );
 };

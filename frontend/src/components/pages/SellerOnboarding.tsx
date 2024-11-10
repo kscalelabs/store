@@ -108,7 +108,6 @@ export default function SellerOnboarding() {
             <ConnectAccountOnboarding
               onExit={() => {
                 setOnboardingExited(true);
-                navigate(ROUTES.SELL.path);
               }}
             />
           </ConnectComponentsProvider>

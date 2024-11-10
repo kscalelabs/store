@@ -13,13 +13,12 @@ import { Input, TextArea } from "@/components/ui/Input/Input";
 import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
-import { NewListingSchema, NewListingType } from "@/lib/types";
+import { ShareListingSchema, ShareListingType } from "@/lib/types";
 import ROUTES from "@/lib/types/routes";
 import { slugify } from "@/lib/utils/formatString";
-import { convertToCents, convertToDecimal } from "@/lib/utils/priceFormat";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const Create = () => {
+const CreateShare = () => {
   const auth = useAuthentication();
   const { addAlert, addErrorAlert } = useAlertQueue();
   const navigate = useNavigate();
@@ -28,7 +27,6 @@ const Create = () => {
   const [slug, setSlug] = useState<string>("");
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [images, setImages] = useState<ImageListType>([]);
-  const [displayPrice, setDisplayPrice] = useState<string>("0.00");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -37,36 +35,16 @@ const Create = () => {
     formState: { errors },
     watch,
     setValue,
-    trigger,
-  } = useForm<NewListingType>({
-    resolver: zodResolver(NewListingSchema),
+  } = useForm<ShareListingType>({
+    resolver: zodResolver(ShareListingSchema),
     mode: "onChange",
     criteriaMode: "all",
     shouldFocusError: true,
-    defaultValues: {
-      price: 0,
-      stripe_link: "",
-    },
     shouldUseNativeValidation: false,
     reValidateMode: "onChange",
-    context: {
-      validate: (data: NewListingType) => {
-        const { price, stripe_link } = data;
-        if ((price && !stripe_link) || (!price && stripe_link)) {
-          return {
-            price: "Price and Stripe link must be provided together.",
-            stripe_link: "Price and Stripe link must be provided together.",
-          };
-        }
-        return {};
-      },
-    },
   });
 
   const name = watch("name");
-
-  const price = watch("price");
-  const stripeLink = watch("stripe_link");
 
   useEffect(() => {
     if (name) {
@@ -82,45 +60,17 @@ const Create = () => {
     }
   }, [auth.currentUser, slug]);
 
-  useEffect(() => {
-    if ((price && !stripeLink) || (!price && stripeLink)) {
-      trigger(["price", "stripe_link"]);
-    }
-  }, [price, stripeLink, trigger]);
-
   const handleImageChange = (imageList: ImageListType) => {
     setImages(imageList);
   };
 
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value.replace(/[^0-9]/g, "");
-
-    if (!inputValue) {
-      setDisplayPrice("");
-      setValue("price", undefined, { shouldValidate: true });
-      return;
-    }
-
-    const decimalValue = convertToDecimal(inputValue);
-    setDisplayPrice(decimalValue);
-    setValue("price", parseFloat(decimalValue), { shouldValidate: true });
-  };
-
-  const onSubmit = async ({
-    name,
-    description,
-    slug,
-    stripe_link,
-    price,
-  }: NewListingType) => {
+  const onSubmit = async ({ name, description, slug }: ShareListingType) => {
     setIsSubmitting(true);
 
     const formData = new FormData();
     formData.append("name", name);
     formData.append("description", description || "");
     formData.append("slug", slug || slugify(name));
-    formData.append("stripe_link", stripe_link || "");
-    formData.append("price", convertToCents(price).toString());
 
     // Append photos to formData
     images.forEach((image) => {
@@ -154,13 +104,6 @@ const Create = () => {
     }
   };
 
-  const validateFields = () => {
-    if ((price && !stripeLink) || (!price && stripeLink)) {
-      return "Price and Stripe link must be provided together or both left empty.";
-    }
-    return true;
-  };
-
   return (
     <RequireAuthentication>
       <div className="container mx-auto max-w-lg shadow-md rounded-lg bg-gray-2 text-gray-12">
@@ -170,15 +113,7 @@ const Create = () => {
           </CardHeader>
           <CardContent>
             <form
-              onSubmit={handleSubmit((data) => {
-                if (validateFields() !== true) {
-                  addErrorAlert(
-                    "Price and Stripe link must be provided together or both left empty.",
-                  );
-                  return;
-                }
-                onSubmit(data);
-              })}
+              onSubmit={handleSubmit(onSubmit)}
               className="grid grid-cols-1 space-y-6"
             >
               {/* Name */}
@@ -267,55 +202,6 @@ const Create = () => {
                 </div>
               )}
 
-              {/* Price */}
-              <div>
-                <label
-                  htmlFor="price"
-                  className="block mb-2 text-sm font-medium text-gray-12"
-                >
-                  Price
-                </label>
-                <Input
-                  id="price"
-                  placeholder="Enter price (e.g., 10.00)"
-                  type="text"
-                  value={displayPrice}
-                  onChange={handlePriceChange}
-                />
-                {errors?.price && (
-                  <ErrorMessage>
-                    {errors?.price?.message ||
-                      "Price and Stripe link must be provided together or both left empty."}
-                  </ErrorMessage>
-                )}
-                {displayPrice && (
-                  <p className="mt-1 text-sm text-gray-11">
-                    Entered price: ${displayPrice}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label
-                  htmlFor="stripe_link"
-                  className="block mb-2 text-sm font-medium text-gray-12"
-                >
-                  Stripe Link
-                </label>
-                <Input
-                  id="stripe_link"
-                  placeholder="Enter your Stripe product link"
-                  type="text"
-                  {...register("stripe_link")}
-                />
-                {errors?.stripe_link && (
-                  <ErrorMessage>
-                    {errors?.stripe_link?.message ||
-                      "Price and Stripe link must be provided together or both left empty."}
-                  </ErrorMessage>
-                )}
-              </div>
-
               {/* Photos */}
               <div>
                 <label className="block mb-2 text-sm font-medium text-gray-12">
@@ -338,4 +224,4 @@ const Create = () => {
   );
 };
 
-export default Create;
+export default CreateShare;

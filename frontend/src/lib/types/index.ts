@@ -66,7 +66,8 @@ export const SignUpSchema = z
 
 export type SignupType = z.infer<typeof SignUpSchema>;
 
-export const NewListingSchema = z.object({
+// Base listing schema with common fields
+const BaseListingSchema = z.object({
   name: z
     .string({ required_error: "Name is required." })
     .min(4, { message: "Name must be at least 4 characters long." }),
@@ -80,12 +81,26 @@ export const NewListingSchema = z.object({
       message:
         "Slug must contain only lowercase letters, numbers, and hyphens.",
     }),
-  stripe_link: z
-    .union([z.string().url("Invalid URL"), z.string().length(0)])
-    .optional(),
-  price: z.number().min(0).optional(),
 });
 
-export type NewListingType = z.infer<typeof NewListingSchema>;
+// Schema for sharing builds (no price/inventory)
+export const ShareListingSchema = BaseListingSchema;
+
+// Schema for selling builds (includes price and inventory)
+export const SellListingSchema = BaseListingSchema.extend({
+  price_amount: z.number().nullable(),
+  currency: z.string().default("usd"),
+  inventory_type: z
+    .enum(["finite", "infinite", "preorder"])
+    .default("infinite"),
+  inventory_quantity: z.number().nullable(),
+  preorder_release_date: z.number().nullable(),
+  is_reservation: z.boolean().default(false),
+  reservation_deposit_amount: z.number().nullable(),
+});
+
+// Export types
+export type ShareListingType = z.infer<typeof ShareListingSchema>;
+export type SellListingType = z.infer<typeof SellListingSchema>;
 
 export type FormType = "edit" | "string";

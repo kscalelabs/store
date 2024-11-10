@@ -380,7 +380,16 @@ class Listing(StoreBaseModel):
     onshape_url: str | None = None
     views: int = 0
     score: int = 0
-    stripe_link: str | None = None
+    stripe_product_id: str | None = None
+    stripe_price_id: str | None = None
+    stripe_deposit_price_id: str | None = None
+    price_amount: int | None = None  # in cents
+    currency: str = "usd"
+    inventory_type: Literal["finite", "infinite", "preorder"] = "infinite"
+    inventory_quantity: int | None = None
+    preorder_release_date: int | None = None
+    is_reservation: bool = False
+    reservation_deposit_amount: int | None = None  # in cents
 
     @classmethod
     def create(
@@ -391,7 +400,16 @@ class Listing(StoreBaseModel):
         child_ids: list[str],
         description: str | None = None,
         onshape_url: str | None = None,
-        stripe_link: str | None = None,
+        stripe_product_id: str | None = None,
+        stripe_price_id: str | None = None,
+        stripe_deposit_price_id: str | None = None,
+        price_amount: int | None = None,
+        currency: str = "usd",
+        inventory_type: Literal["finite", "infinite", "preorder"] = "infinite",
+        inventory_quantity: int | None = None,
+        preorder_release_date: int | None = None,
+        is_reservation: bool = False,
+        reservation_deposit_amount: int | None = None,
     ) -> Self:
         return cls(
             id=new_uuid(),
@@ -405,7 +423,16 @@ class Listing(StoreBaseModel):
             onshape_url=onshape_url,
             views=0,
             score=0,
-            stripe_link=stripe_link,
+            stripe_product_id=stripe_product_id,
+            stripe_price_id=stripe_price_id,
+            stripe_deposit_price_id=stripe_deposit_price_id,
+            price_amount=price_amount,
+            currency=currency,
+            inventory_type=inventory_type,
+            inventory_quantity=inventory_quantity,
+            preorder_release_date=preorder_release_date,
+            is_reservation=is_reservation,
+            reservation_deposit_amount=reservation_deposit_amount,
         )
 
 

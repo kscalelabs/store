@@ -37,6 +37,7 @@ const Listing = () => {
       }
     } catch (err) {
       addErrorAlert(err);
+      setIsFetched(true);
     }
   }, [username, slug, auth.client, addErrorAlert]);
 
@@ -58,8 +59,17 @@ const Listing = () => {
   return (
     <Container>
       <div className="flex-grow">
-        {isFetched && listing !== null ? (
-          <ListingRenderer listing={listing} />
+        {isFetched ? (
+          listing !== null ? (
+            <ListingRenderer listing={listing} />
+          ) : (
+            <div className="text-center py-8">
+              <h2 className="text-xl font-semibold">Listing Not Found</h2>
+              <p className="text-gray-600">
+                The requested listing could not be found.
+              </p>
+            </div>
+          )
         ) : (
           <ListingLoadingSkeleton />
         )}

@@ -29,6 +29,7 @@ const ROUTES = {
     {},
     {
       CREATE: route("create"),
+      SELL: route("sell"),
       BROWSE: route("browse"),
     },
   ),
@@ -51,6 +52,7 @@ const ROUTES = {
     {},
     {
       ONBOARDING: route("onboarding"),
+      DASHBOARD: route("dashboard"),
       DELETE: route("delete"),
     },
   ),

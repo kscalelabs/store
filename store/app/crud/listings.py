@@ -157,8 +157,16 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         description: str | None = None,
         tags: list[str] | None = None,
         onshape_url: str | None = None,
-        stripe_link: str | None = None,
         slug: str | None = None,
+        stripe_product_id: str | None = None,
+        stripe_price_id: str | None = None,
+        stripe_deposit_price_id: str | None = None,
+        price_amount: int | None = None,
+        inventory_type: str | None = None,
+        inventory_quantity: int | None = None,
+        preorder_release_date: int | None = None,
+        is_reservation: bool | None = None,
+        reservation_deposit_amount: int | None = None,
     ) -> None:
         listing = await self.get_listing(listing_id)
         if listing is None:
@@ -171,10 +179,26 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             updates["child_ids"] = child_ids
         if description is not None:
             updates["description"] = description
-        if stripe_link is not None:
-            updates["stripe_link"] = stripe_link
         if slug is not None:
             updates["slug"] = slug
+        if stripe_product_id is not None:
+            updates["stripe_product_id"] = stripe_product_id
+        if stripe_price_id is not None:
+            updates["stripe_price_id"] = stripe_price_id
+        if stripe_deposit_price_id is not None:
+            updates["stripe_deposit_price_id"] = stripe_deposit_price_id
+        if price_amount is not None:
+            updates["price_amount"] = price_amount
+        if inventory_type is not None:
+            updates["inventory_type"] = inventory_type
+        if inventory_quantity is not None:
+            updates["inventory_quantity"] = inventory_quantity
+        if preorder_release_date is not None:
+            updates["preorder_release_date"] = preorder_release_date
+        if is_reservation is not None:
+            updates["is_reservation"] = is_reservation
+        if reservation_deposit_amount is not None:
+            updates["reservation_deposit_amount"] = reservation_deposit_amount
 
         coroutines = []
         if tags is not None:

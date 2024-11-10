@@ -2,7 +2,7 @@
 
 import logging
 from enum import Enum
-from typing import Annotated, Any, Dict
+from typing import Annotated, Any, Dict, Literal
 
 import stripe
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, status
@@ -10,7 +10,10 @@ from pydantic import BaseModel
 
 from store.app.db import Crud
 from store.app.model import Order, User
-from store.app.security.user import get_session_user_with_read_permission
+from store.app.security.user import (
+    get_session_user_with_read_permission,
+    get_session_user_with_write_permission,
+)
 from store.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -246,76 +249,67 @@ class CreateCheckoutSessionResponse(BaseModel):
 @router.post("/create-checkout-session", response_model=CreateCheckoutSessionResponse)
 async def create_checkout_session(
     request: CreateCheckoutSessionRequest,
-    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+    user: User = Depends(get_session_user_with_read_permission),
+    crud: Crud = Depends(),
 ) -> CreateCheckoutSessionResponse:
     try:
-        product_id = request.product_id
-        cancel_url = request.cancel_url
-        logger.info("Creating checkout session for product: %s and user: %s", product_id, user.id)
+        # Get the listing
+        listing = await crud.get_listing(request.product_id)
+        if not listing or not listing.price_amount:
+            raise HTTPException(status_code=404, detail="Listing not found or has no price")
 
-        # Fetch the price associated with the product
-        prices = stripe.Price.list(product=product_id, active=True, limit=1)
-        if not prices.data:
-            raise HTTPException(status_code=400, detail="No active price found for this product")
-        price = prices.data[0]
+        if not listing.stripe_price_id:
+            raise HTTPException(status_code=400, detail="Listing has no associated Stripe price")
 
-        # Create a Checkout Session
+        seller = await crud.get_user(listing.user_id)
+        if not seller or not seller.stripe_connect_account_id:
+            raise HTTPException(status_code=400, detail="Seller not found or not connected to Stripe")
+
+        # Calculate maximum quantity
+        max_quantity = 10  # Default maximum
+        if listing.inventory_type == "finite" and listing.inventory_quantity is not None:
+            max_quantity = listing.inventory_quantity
+
+        # Calculate application fee (5% of price)
+        application_fee = 0  # Default fee
+        if listing.price_amount:
+            application_fee = int(listing.price_amount * 0.05)
+
+        # Create the session directly with parameters
         checkout_session = stripe.checkout.Session.create(
-            payment_method_types=["card", "affirm"],
+            mode="payment",
+            success_url=f"{settings.site.homepage}/success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{settings.site.homepage}{request.cancel_url}",
+            client_reference_id=user.id,
+            metadata={
+                "product_id": listing.id,
+                "user_email": user.email,
+            },
             line_items=[
                 {
-                    "price": price.id,
+                    "price": listing.stripe_price_id,
                     "quantity": 1,
                     "adjustable_quantity": {
                         "enabled": True,
                         "minimum": 1,
-                        "maximum": 10,
+                        "maximum": max_quantity,
                     },
                 }
             ],
-            automatic_tax={"enabled": True},
-            mode="payment",
-            success_url=f"{settings.site.homepage}/order/success?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{settings.site.homepage}{cancel_url}",
-            client_reference_id=user.id,
-            metadata={
-                "product_id": product_id,
-                "user_email": user.email,
-            },
-            shipping_address_collection={
-                "allowed_countries": ["US", "CA"],
-            },
-            currency="usd",
-            shipping_options=[
-                {
-                    "shipping_rate_data": {
-                        "type": "fixed_amount",
-                        "fixed_amount": {"amount": 0, "currency": "usd"},
-                        "display_name": "Free shipping",
-                        "delivery_estimate": {
-                            "minimum": {"unit": "business_day", "value": 5},
-                            "maximum": {"unit": "business_day", "value": 7},
-                        },
-                    },
+            shipping_address_collection={"allowed_countries": ["US", "CA"]},
+            payment_intent_data={
+                "application_fee_amount": application_fee,
+                "transfer_data": {
+                    "destination": seller.stripe_connect_account_id,
                 },
-                {
-                    "shipping_rate_data": {
-                        "type": "fixed_amount",
-                        "fixed_amount": {"amount": 2500, "currency": "usd"},
-                        "display_name": "Ground - Express",
-                        "delivery_estimate": {
-                            "minimum": {"unit": "business_day", "value": 3},
-                            "maximum": {"unit": "business_day", "value": 7},
-                        },
-                    },
-                },
-            ],
+            },
+            stripe_account=seller.stripe_connect_account_id,
         )
 
-        logger.info("Checkout session created: %s", checkout_session.id)
         return CreateCheckoutSessionResponse(session_id=checkout_session.id)
+
     except Exception as e:
-        logger.error("Error creating checkout session: %s", str(e))
+        logger.error(f"Error creating checkout session: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -430,4 +424,82 @@ async def delete_test_accounts(
         return {"success": True, "deleted_accounts": deleted_accounts, "count": len(deleted_accounts)}
     except Exception as e:
         logger.error("Error deleting test accounts: %s", str(e))
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/create-product", response_model=dict)
+async def create_stripe_product(
+    listing_id: str = Body(...),
+    price_amount: int = Body(...),  # in cents
+    inventory_type: Literal["finite", "infinite", "preorder"] = Body(...),
+    inventory_quantity: int | None = Body(None),
+    preorder_release_date: int | None = Body(None),
+    is_reservation: bool = Body(False),
+    reservation_deposit_amount: int | None = Body(None),
+    user: User = Depends(get_session_user_with_write_permission),
+    crud: Crud = Depends(),
+) -> dict:
+    try:
+        listing = await crud.get_listing(listing_id)
+        if not listing:
+            raise HTTPException(status_code=404, detail="Listing not found")
+
+        # Create product
+        product = stripe.Product.create(
+            name=listing.name,
+            description=listing.description or "",
+            metadata={
+                "listing_id": listing_id,
+                "seller_id": user.id,
+            },
+            stripe_account=user.stripe_connect_account_id,
+        )
+
+        # Create price metadata
+        metadata: dict[str, str] = {"listing_id": listing_id}
+        if inventory_type == "finite":
+            metadata["inventory_quantity"] = str(inventory_quantity)
+        elif inventory_type == "preorder" and preorder_release_date:
+            metadata["preorder_release_date"] = str(preorder_release_date)
+
+        # Create deposit price for reservations
+        deposit_price = None
+        if is_reservation and reservation_deposit_amount:
+            deposit_price = stripe.Price.create(
+                product=product.id,
+                currency="usd",
+                unit_amount=reservation_deposit_amount,
+                metadata={"is_deposit": "true", **metadata},
+                stripe_account=user.stripe_connect_account_id,
+            )
+
+        # Create main price
+        price = stripe.Price.create(
+            product=product.id,
+            currency="usd",
+            unit_amount=price_amount,
+            metadata=metadata,
+            stripe_account=user.stripe_connect_account_id,
+        )
+
+        await crud.edit_listing(
+            listing_id=listing.id,
+            stripe_product_id=product.id,
+            stripe_price_id=price.id,
+            price_amount=price_amount,
+            inventory_type=inventory_type,
+            inventory_quantity=inventory_quantity,
+            preorder_release_date=preorder_release_date,
+            is_reservation=is_reservation,
+            reservation_deposit_amount=reservation_deposit_amount,
+        )
+
+        return {
+            "product_id": product.id,
+            "price_id": price.id,
+            "deposit_price_id": deposit_price.id if deposit_price else None,
+        }
+
+    except stripe.StripeError as e:
+        logger.error(f"Stripe error: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
