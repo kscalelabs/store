@@ -44,6 +44,8 @@ export const initializeMujoco = async ({
   const state = new mj.State(model);
   const simulation = new mj.Simulation(model, state);
 
+  simulation.forward(); // Compute initial positions and orientations
+
   onInitialized?.();
   return { mj, model, state, simulation };
 };

@@ -45,21 +45,10 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
   const DEFAULT_TIMESTEP = 0.01;
 
   const setupModelGeometry = () => {
-    const { sceneRef, modelRef, mujocoRef, simulationRef } = refs;
-    if (
-      !sceneRef.current ||
-      !modelRef.current ||
-      !mujocoRef.current ||
-      !simulationRef.current
-    )
-      return;
+    const { sceneRef, modelRef, mujocoRef } = refs;
+    if (!sceneRef.current || !modelRef.current || !mujocoRef.current) return;
     const model = modelRef.current;
     const mj = mujocoRef.current;
-
-    // Create root object for MuJoCo scene
-    const mujocoRoot = new THREE.Group();
-    mujocoRoot.name = "MuJoCo Root";
-    sceneRef.current.add(mujocoRoot);
 
     // Create body groups first
     const bodies: { [key: number]: THREE.Group } = {};
@@ -68,14 +57,11 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
       bodies[b].name = `body_${b}`;
       bodies[b].userData.bodyId = b;
 
-      // Add to parent body based on MuJoCo's body hierarchy
-      if (b === 0) {
-        mujocoRoot.add(bodies[b]);
+      // Add to parent body or scene
+      if (b === 0 || !bodies[0]) {
+        sceneRef.current.add(bodies[b]);
       } else {
-        const parentId = model.body_parentid[b];
-        if (bodies[parentId]) {
-          bodies[parentId].add(bodies[b]);
-        }
+        bodies[0].add(bodies[b]);
       }
     }
 
@@ -166,16 +152,22 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
       // Update initial body positions and orientations
       for (let b = 0; b < model.nbody; b++) {
         if (bodies[b]) {
-          const pos = simulationRef.current.xpos.subarray(b * 3, b * 3 + 3);
+          const pos = refs.simulationRef.current!.xpos.subarray(
+            b * 3,
+            b * 3 + 3,
+          );
           bodies[b].position.set(pos[0], pos[2], -pos[1]);
 
-          const quat = simulationRef.current.xquat.subarray(b * 4, b * 4 + 4);
+          const quat = refs.simulationRef.current!.xquat.subarray(
+            b * 4,
+            b * 4 + 4,
+          );
           bodies[b].quaternion.set(-quat[1], -quat[3], quat[2], -quat[0]);
+
+          bodies[b].updateWorldMatrix(true, true);
         }
       }
 
-      // Update world matrices from root to leaves
-      mujocoRoot.updateWorldMatrix(true, true);
       setIsMujocoReady(true);
     } catch (error) {
       console.error(error);
@@ -220,23 +212,19 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
     if (!modelRef.current || !simulationRef.current || !sceneRef.current)
       return;
 
-    const mujocoRoot = sceneRef.current.getObjectByName("MuJoCo Root");
-    if (!mujocoRoot) return;
-
     // Update body transforms
     for (let b = 0; b < modelRef.current.nbody; b++) {
-      const body = mujocoRoot.getObjectByName(`body_${b}`);
+      const body = sceneRef.current.getObjectByName(`body_${b}`);
       if (body) {
         const pos = simulationRef.current.xpos.subarray(b * 3, b * 3 + 3);
         body.position.set(pos[0], pos[2], -pos[1]);
 
         const quat = simulationRef.current.xquat.subarray(b * 4, b * 4 + 4);
         body.quaternion.set(-quat[1], -quat[3], quat[2], -quat[0]);
+
+        body.updateWorldMatrix(true, true);
       }
     }
-
-    // Update world matrices from root to leaves
-    mujocoRoot.updateWorldMatrix(true, true);
   };
 
   const animate = (time: number) => {
