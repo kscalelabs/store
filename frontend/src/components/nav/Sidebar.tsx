@@ -2,7 +2,6 @@ import { FaDiscord, FaGithub, FaTimes } from "react-icons/fa";
 import {
   FaDownload,
   FaRegFileLines,
-  FaRobot,
   FaSearchengin,
   FaTerminal,
   FaWpexplorer,
@@ -66,7 +65,6 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
   const technicalItems = [
     { name: "Browse", path: "/browse", icon: <FaSearchengin /> },
     { name: "Downloads", path: "/downloads", icon: <FaDownload /> },
-    { name: "Playground", path: "/playground", icon: <FaRobot /> },
     { name: "Research", path: "/research", icon: <FaWpexplorer /> },
     {
       name: "Docs",

@@ -1,7 +1,7 @@
-import MJCFRenderer from "./MJCFRenderer";
-import STLRenderer from "./STLRenderer";
-import { UntarredFile } from "./Tarfile";
-import URDFRenderer from "./URDFRenderer";
+import MJCFRenderer from "@/components/files/MJCFRenderer";
+import STLRenderer from "@/components/files/STLRenderer";
+import URDFRenderer from "@/components/files/URDFRenderer";
+import { UntarredFile } from "@/components/files/untar";
 
 const isMJCFFile = (content: string, filename: string): boolean => {
   const extension = filename.split(".").pop()?.toLowerCase();
@@ -23,17 +23,16 @@ const FileRenderer: React.FC<{
     case "urdf":
       return (
         <URDFRenderer
-          urdfContent={new TextDecoder().decode(file.content)}
+          urdfContent={fileContent}
           files={allFiles}
           supportedThemes={["light", "dark"]}
         />
       );
-    case "stl":
-      return <STLRenderer stlContent={file.content.buffer} />;
     case "xml":
     case "mjcf":
       if (isMJCFFile(fileContent, file.name)) {
-        return <MJCFRenderer mjcfContent={fileContent} height="100%" />;
+        // return <MJCFRenderer mjcfContent={fileContent} files={allFiles} />;
+        return <MJCFRenderer />;
       } else {
         return (
           <div className="h-full w-full flex items-center justify-center">
@@ -41,6 +40,8 @@ const FileRenderer: React.FC<{
           </div>
         );
       }
+    case "stl":
+      return <STLRenderer stlContent={file.content.buffer} />;
     default:
       return (
         <div className="h-full w-full flex items-center justify-center">

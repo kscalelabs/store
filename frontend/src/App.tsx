@@ -13,7 +13,6 @@ import Navbar from "@/components/nav/Navbar";
 import APIKeys from "@/components/pages/APIKeys";
 import About from "@/components/pages/About";
 import Account from "@/components/pages/Account";
-import ArtifactPlayground from "@/components/pages/ArtifactPlayground";
 import Browse from "@/components/pages/Browse";
 import Create from "@/components/pages/Create";
 import DeleteConnect from "@/components/pages/DeleteConnect";
@@ -27,7 +26,6 @@ import Logout from "@/components/pages/Logout";
 import NotFound from "@/components/pages/NotFound";
 import OrderSuccess from "@/components/pages/OrderSuccess";
 import OrdersPage from "@/components/pages/Orders";
-import Playground from "@/components/pages/Playground";
 import PrivacyPolicy from "@/components/pages/PrivacyPolicy";
 import Profile from "@/components/pages/Profile";
 import ResearchPage from "@/components/pages/ResearchPage";
@@ -57,17 +55,6 @@ const App = () => {
                     <div className="mt-20 mb-6 mx-4 sm:mx-6 md:mx-10 xl:mx-16 2xl:mx-28 max-full">
                       <Routes>
                         <Route path={ROUTES.HOME.path} element={<Home />} />
-
-                        {/* Playground */}
-                        <Route
-                          path={ROUTES.PLAYGROUND.path}
-                          element={<Playground />}
-                        >
-                          <Route
-                            path={ROUTES.PLAYGROUND.WITH_ID.path}
-                            element={<ArtifactPlayground />}
-                          />
-                        </Route>
 
                         {/* General pages */}
                         <Route path={ROUTES.ABOUT.path} element={<About />} />
@@ -120,10 +107,11 @@ const App = () => {
                         />
 
                         {/* Seller */}
-                        <Route
-                          path={ROUTES.SELL.path}
-                          element={<SellerDashboard />}
-                        >
+                        <Route path={ROUTES.SELL.path}>
+                          <Route
+                            path={ROUTES.SELL.$.DASHBOARD.relativePath}
+                            element={<SellerDashboard />}
+                          />
                           <Route
                             path={ROUTES.SELL.$.ONBOARDING.relativePath}
                             element={<SellerOnboarding />}

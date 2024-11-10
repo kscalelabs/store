@@ -9,8 +9,7 @@ import ListingMetadata from "@/components/listing/ListingMetadata";
 import ListingName from "@/components/listing/ListingName";
 import ListingOnshape from "@/components/listing/ListingOnshape";
 import ListingRegisterRobot from "@/components/listing/ListingRegisterRobot";
-import { Artifact, ListingResponse } from "@/components/listing/types";
-import ListingPlaygroundButton from "./ListingPlaygroundButton";
+import { ListingResponse } from "@/components/listing/types";
 
 const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
   const {
@@ -71,7 +70,6 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
               listingId={listingId}
               initialFeatured={isFeatured}
             />
-            <ListingPlaygroundButton artifacts={artifacts} />
           </div>
 
           <hr className="border-gray-200 my-4" />

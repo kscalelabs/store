@@ -1,11 +1,11 @@
 import { useState } from "react";
 import {
-  FaBars,
-  FaGithub,
-  FaRegFileLines,
-  FaRobot,
-  FaWpexplorer,
-} from "react-icons/fa6";
+  FaChevronDown,
+  FaChevronUp,
+  FaExternalLinkAlt,
+  FaMicroscope,
+} from "react-icons/fa";
+import { FaBars, FaGithub, FaRegFileLines } from "react-icons/fa6";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import Logo from "@/components/Logo";
@@ -13,17 +13,12 @@ import { useFeaturedListings } from "@/components/listing/FeaturedListings";
 import Sidebar from "@/components/nav/Sidebar";
 import { useAuthentication } from "@/hooks/useAuth";
 import ROUTES from "@/lib/types/routes";
-import {
-  ChevronDownIcon,
-  ChevronUpIcon,
-  ExternalLinkIcon,
-  MagnifyingGlassIcon,
-} from "@radix-ui/react-icons";
 
 type NavItem = {
   name: string;
   path: string;
-  isExternal: boolean;
+  icon?: JSX.Element;
+  isExternal?: boolean;
 };
 
 const Navbar = () => {
@@ -34,32 +29,28 @@ const Navbar = () => {
   const [showDevelopersDropdown, setShowDevelopersDropdown] = useState(false);
   const { featuredListings } = useFeaturedListings();
 
-  let navItems: NavItem[] = [];
+  let navItems: NavItem[] = [
+    {
+      name: "Bots",
+      path: ROUTES.BOTS.BROWSE.path,
+    },
+  ];
 
   if (isAuthenticated) {
     navItems = [
-      { name: "Terminal", path: "/terminal", isExternal: false },
+      {
+        name: "Terminal",
+        path: "/terminal",
+      },
       ...navItems,
     ];
   }
 
-  const technicalItems = [
-    {
-      name: "Bots",
-      path: ROUTES.BOTS.BROWSE.path,
-      icon: <MagnifyingGlassIcon className="h-5 w-5" />,
-      isExternal: false,
-    },
-    {
-      name: "Playground",
-      path: ROUTES.PLAYGROUND.path,
-      icon: <FaRobot className="h-5 w-5" />,
-      isExternal: false,
-    },
+  const technicalItems: NavItem[] = [
     {
       name: "Research",
       path: ROUTES.RESEARCH.path,
-      icon: <FaWpexplorer className="h-5 w-5" />,
+      icon: <FaMicroscope className="h-5 w-5" />,
       isExternal: false,
     },
     {
@@ -99,9 +90,11 @@ const Navbar = () => {
             rel="noopener noreferrer"
           >
             <div className="flex items-center text-sm font-semibold leading-none">
-              <span className="mr-2">{icon}</span>
-              <span>{title}</span>
-              <ExternalLinkIcon className="ml-2 h-4 w-4" />
+              <div className="w-5 mr-3 flex items-center justify-center">
+                {icon}
+              </div>
+              <span className="flex-grow">{title}</span>
+              <FaExternalLinkAlt className="ml-2 h-3.5 w-3.5 opacity-80" />
             </div>
           </a>
         ) : (
@@ -110,8 +103,10 @@ const Navbar = () => {
             className={`block select-none rounded-md p-2 leading-none no-underline outline-none transition-colors hover:bg-gray-1 hover:text-primary-9 focus:bg-gray-1 focus:text-primary-9 ${className}`}
           >
             <div className="flex items-center text-sm font-semibold leading-none">
-              <span className="mr-2">{icon}</span>
-              <span>{title}</span>
+              <div className="w-5 mr-3 flex items-center justify-center">
+                {icon}
+              </div>
+              <span className="flex-grow">{title}</span>
             </div>
           </Link>
         )}
@@ -180,7 +175,7 @@ const Navbar = () => {
                     rel="noopener noreferrer"
                   >
                     {item.name}
-                    <ExternalLinkIcon className="ml-2 h-4 w-4" />
+                    <FaExternalLinkAlt className="ml-2 h-4 w-4" />
                   </a>
                 ) : (
                   <Link
@@ -192,7 +187,10 @@ const Navbar = () => {
                         : "text-gray-1 hover:bg-gray-1 hover:text-primary-9"
                     }`}
                   >
-                    {item.name}
+                    <div className="flex items-center gap-2">
+                      {item.icon}
+                      {item.name}
+                    </div>
                   </Link>
                 ),
               )}
@@ -204,9 +202,9 @@ const Navbar = () => {
               >
                 <button className="px-2 xl:px-3 py-2 rounded-md text-sm tracking-widest text-gray-1 hover:text-primary-9 flex items-center">
                   {showDevelopersDropdown ? (
-                    <ChevronUpIcon className="h-5 w-5" />
+                    <FaChevronUp className="h-5 w-5" />
                   ) : (
-                    <ChevronDownIcon className="h-5 w-5" />
+                    <FaChevronDown className="h-5 w-5" />
                   )}
                 </button>
                 <div
@@ -225,7 +223,7 @@ const Navbar = () => {
                           href={item.path}
                           icon={item.icon}
                           className="group text-gray-1"
-                          isExternal={item.isExternal}
+                          isExternal={item.isExternal || false}
                         />
                       ))}
                     </ul>

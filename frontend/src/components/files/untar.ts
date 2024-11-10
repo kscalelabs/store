@@ -1,3 +1,5 @@
+import pako from "pako";
+
 export interface UntarredFile {
   name: string;
   content: Uint8Array;
@@ -57,4 +59,19 @@ export const parseTar = (buffer: Uint8Array): UntarredFile[] => {
   }
 
   return files;
+};
+
+export const untarFile = async (url: string) => {
+  const response = await fetch(url);
+  const arrayBuffer = await response.arrayBuffer();
+  const uint8Array = new Uint8Array(arrayBuffer);
+  const decompressed = pako.ungzip(uint8Array);
+  const files = parseTar(decompressed);
+  return files;
+};
+
+export const cleanXml = (xml: string) => {
+  xml = xml.replace(/<\?xml version="1.0" encoding="UTF-8"\?>/, "");
+  xml = xml.replace(/\n/g, "");
+  return xml;
 };
