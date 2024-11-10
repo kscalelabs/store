@@ -1390,6 +1390,8 @@ export interface components {
         };
         /** CreateCheckoutSessionRequest */
         CreateCheckoutSessionRequest: {
+            /** Listing Id */
+            listing_id: string;
             /** Product Id */
             product_id: string;
             /** Cancel Url */

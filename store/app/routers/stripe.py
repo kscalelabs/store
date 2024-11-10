@@ -16,7 +16,20 @@ from store.app.security.user import (
 )
 from store.settings import settings
 
+# Configure logging
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+# Add a console handler if one doesn't exist
+if not logger.handlers:
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
+
+# Test logging
+logger.info("Stripe router initialized")
 
 router = APIRouter()
 stripe.api_key = settings.stripe.secret_key
@@ -252,6 +265,7 @@ async def notify_payment_failed(session: Dict[str, Any]) -> None:
 
 
 class CreateCheckoutSessionRequest(BaseModel):
+    listing_id: str
     product_id: str
     cancel_url: str
 
@@ -266,65 +280,110 @@ async def create_checkout_session(
     user: User = Depends(get_session_user_with_read_permission),
     crud: Crud = Depends(),
 ) -> CreateCheckoutSessionResponse:
-    try:
-        # Get the listing
-        listing = await crud.get_listing(request.product_id)
-        if not listing or not listing.price_amount:
-            raise HTTPException(status_code=404, detail="Listing not found or has no price")
+    async with crud:
+        try:
+            logger.info(f"Creating checkout session for listing_id: {request.listing_id}")
 
-        if not listing.stripe_price_id:
-            raise HTTPException(status_code=400, detail="Listing has no associated Stripe price")
+            # Get the listing
+            listing = await crud.get_listing(request.listing_id)
+            logger.info(f"Found listing: {listing.id if listing else 'None'}")
+            logger.info(f"Listing stripe_price_id: {listing.stripe_price_id if listing else 'None'}")
 
-        seller = await crud.get_user(listing.user_id)
-        if not seller or not seller.stripe_connect_account_id:
-            raise HTTPException(status_code=400, detail="Seller not found or not connected to Stripe")
+            if not listing or not listing.price_amount:
+                raise HTTPException(status_code=404, detail="Listing not found or has no price")
 
-        # Calculate maximum quantity
-        max_quantity = 10  # Default maximum
-        if listing.inventory_type == "finite" and listing.inventory_quantity is not None:
-            max_quantity = listing.inventory_quantity
+            if not listing.stripe_price_id:
+                raise HTTPException(status_code=400, detail="Listing has no associated Stripe price")
 
-        # Calculate application fee (5% of price)
-        application_fee = 0  # Default fee
-        if listing.price_amount:
-            application_fee = int(listing.price_amount * 0.05)
+            # Get seller details
+            seller = await crud.get_user(listing.user_id)
+            logger.info(f"Found seller: {seller.id if seller else 'None'}")
+            logger.info(f"Seller stripe_connect_account_id: {seller.stripe_connect_account_id if seller else 'None'}")
 
-        # Create the session directly with parameters
-        checkout_session = stripe.checkout.Session.create(
-            mode="payment",
-            success_url=f"{settings.site.homepage}/success?session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{settings.site.homepage}{request.cancel_url}",
-            client_reference_id=user.id,
-            metadata={
-                "product_id": listing.id,
-                "user_email": user.email,
-            },
-            line_items=[
-                {
-                    "price": listing.stripe_price_id,
-                    "quantity": 1,
-                    "adjustable_quantity": {
-                        "enabled": True,
-                        "minimum": 1,
-                        "maximum": max_quantity,
+            if not seller or not seller.stripe_connect_account_id:
+                raise HTTPException(status_code=400, detail="Seller not found or not connected to Stripe")
+
+            # Check if user is trying to buy their own listing
+            if seller.id == user.id:
+                raise HTTPException(status_code=400, detail="You cannot purchase your own listing")
+
+            # Retrieve the price from the seller's account to verify it exists
+            try:
+                logger.info(
+                    f"Attempting to retrieve price {listing.stripe_price_id} from seller account {seller.stripe_connect_account_id}"
+                )
+                price = stripe.Price.retrieve(listing.stripe_price_id, stripe_account=seller.stripe_connect_account_id)
+                logger.info(f"Successfully retrieved price: {price.id}")
+            except stripe.error.StripeError as e:
+                logger.error(f"Failed to retrieve price: {str(e)}")
+                raise HTTPException(status_code=400, detail=f"Invalid price ID or price not accessible: {str(e)}")
+
+            # Calculate maximum quantity and application fee
+            max_quantity = 10
+            if listing.inventory_type == "finite" and listing.inventory_quantity is not None:
+                max_quantity = listing.inventory_quantity
+
+            application_fee = int(listing.price_amount * 0.05) if listing.price_amount else 0
+
+            # Create the checkout session
+            logger.info("Creating checkout session with parameters:")
+            logger.info(f"Price ID: {price.id}")
+            logger.info(f"Seller Connect Account: {seller.stripe_connect_account_id}")
+            logger.info(f"Application Fee: {application_fee}")
+
+            # Create a clone of the price on the platform account
+            platform_price = stripe.Price.create(
+                unit_amount=listing.price_amount,
+                currency="usd",
+                product_data={
+                    "name": listing.name,
+                    "metadata": {
+                        "original_price_id": price.id,
+                        "seller_connect_account_id": seller.stripe_connect_account_id,
                     },
-                }
-            ],
-            shipping_address_collection={"allowed_countries": ["US", "CA"]},
-            payment_intent_data={
-                "application_fee_amount": application_fee,
-                "transfer_data": {
-                    "destination": seller.stripe_connect_account_id,
                 },
-            },
-            stripe_account=seller.stripe_connect_account_id,
-        )
+            )
 
-        return CreateCheckoutSessionResponse(session_id=checkout_session.id)
+            logger.info(f"Created platform price: {platform_price.id}")
 
-    except Exception as e:
-        logger.error(f"Error creating checkout session: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
+            checkout_session = stripe.checkout.Session.create(
+                line_items=[
+                    {
+                        "price": platform_price.id,  # Use the platform price
+                        "quantity": 1,
+                        "adjustable_quantity": {
+                            "enabled": True,
+                            "minimum": 1,
+                            "maximum": max_quantity,
+                        },
+                    }
+                ],
+                mode="payment",
+                success_url=f"{settings.site.homepage}/order/success?session_id={{CHECKOUT_SESSION_ID}}",
+                cancel_url=f"{settings.site.homepage}{request.cancel_url}",
+                client_reference_id=user.id,
+                metadata={
+                    "product_id": listing.id,
+                    "user_email": user.email,
+                },
+                shipping_address_collection={"allowed_countries": ["US", "CA"]},
+                payment_intent_data={
+                    "application_fee_amount": application_fee,
+                    "transfer_data": {
+                        "destination": seller.stripe_connect_account_id,
+                    },
+                },
+                # Remove the stripe_account parameter
+            )
+            logger.info(f"Successfully created checkout session: {checkout_session.id}")
+            return CreateCheckoutSessionResponse(session_id=checkout_session.id)
+
+        except stripe.error.StripeError as e:
+            logger.error(f"Stripe error: {str(e)}")
+            raise HTTPException(status_code=400, detail=str(e))
+        except Exception as e:
+            logger.error(f"Unexpected error: {str(e)}", exc_info=True)
+            raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/get-product/{product_id}")
