@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0"?>
 <mujoco model="Humanoid">
     <option timestep="0.005" />
 

@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { UntarredFile } from "@/components/files/untar";
 import load_mujoco, { mujoco } from "@/lib/mujoco/mujoco_wasm";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -18,14 +19,12 @@ export interface MujocoRefs {
 
 export interface MujocoInitOptions {
   modelXML: string;
-  refs: MujocoRefs;
-  onInitialized?: () => void;
-  onError?: (error: Error) => void;
+  files: UntarredFile[];
 }
 
 export const initializeMujoco = async ({
   modelXML,
-  onInitialized,
+  files,
 }: MujocoInitOptions) => {
   const MODEL_DIR = "/working";
   const MODEL_FILE = "model.xml";
@@ -38,15 +37,30 @@ export const initializeMujoco = async ({
   if (!mj.FS.analyzePath(MODEL_DIR).exists) {
     mj.FS.mkdir(MODEL_DIR);
   }
-  mj.FS.writeFile(MODEL_PATH, modelXML);
 
+  // Write all asset files to the filesystem
+  for (const file of files) {
+    const filePath = `${MODEL_DIR}/${file.name}`;
+    // Create subdirectories if needed
+    const dirs = file.name.split("/");
+    if (dirs.length > 1) {
+      let currentPath = MODEL_DIR;
+      for (const dir of dirs.slice(0, -1)) {
+        currentPath = `${currentPath}/${dir}`;
+        if (!mj.FS.analyzePath(currentPath).exists) {
+          mj.FS.mkdir(currentPath);
+        }
+      }
+    }
+    mj.FS.writeFile(filePath, file.content);
+  }
+
+  // Write the main model XML file
+  mj.FS.writeFile(MODEL_PATH, modelXML);
   const model = mj.Model.load_from_xml(MODEL_PATH);
   const state = new mj.State(model);
   const simulation = new mj.Simulation(model, state);
-
   simulation.forward(); // Compute initial positions and orientations
-
-  onInitialized?.();
   return { mj, model, state, simulation };
 };
 
@@ -359,4 +373,27 @@ export const getJoints = (refs: MujocoRefs) => {
     const qpos = refs.stateRef.current?.qpos || [];
     jointNames.push({ name, value: qpos[i] || 0 });
   }
-}
+};
+
+export const getJointNames = (refs: MujocoRefs, mj: mujoco) => {
+  const jointNames = [];
+  const numJoints = refs.modelRef.current.nu;
+
+  for (let i = 0; i < numJoints + 1; i++) {
+    const name = refs.simulationRef.current.id2name(
+      mj.mjtObj.mjOBJ_JOINT.value,
+      i,
+    );
+    const qpos = refs.stateRef.current?.qpos || [];
+    jointNames.push({ name, value: qpos[i] || 0 });
+  }
+  return jointNames;
+};
+
+export const resetJoints = (refs: MujocoRefs, joints: Joint[]) => {
+  const qpos = refs.stateRef.current.qpos || [];
+  return joints.map((joint, i) => ({
+    ...joint,
+    value: qpos[i] || 0,
+  }));
+};

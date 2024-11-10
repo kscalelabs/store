@@ -13,12 +13,15 @@ import humanoid from "@/components/files/demo/humanoid.xml";
 import {
   MujocoRefs,
   cleanupMujoco,
+  getJointNames,
   initializeMujoco,
   initializeThreeJS,
+  resetJoints,
   setupModelGeometry,
   setupScene,
   updateBodyTransforms,
 } from "@/components/files/mujoco/mujoco";
+import { UntarredFile } from "@/components/files/untar";
 import Spinner from "@/components/ui/Spinner";
 import { humanReadableError } from "@/hooks/useAlertQueue";
 import { mujoco } from "@/lib/mujoco/mujoco_wasm";
@@ -26,43 +29,12 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 interface Props {
+  mjcfContent: string;
+  files: UntarredFile[];
   useControls?: boolean;
-  showWireframe?: boolean;
-  supportedThemes?: Theme[];
-  overrideColor?: string | null;
 }
 
-type Theme = "light" | "dark";
-
-interface ThemeColors {
-  background: string;
-  text: string;
-  backgroundColor: number;
-}
-
-const getThemeColors = (theme: Theme): ThemeColors => {
-  switch (theme) {
-    case "light":
-      return {
-        background: "bg-[#f0f0f0]",
-        text: "text-gray-800",
-        backgroundColor: 0xf0f0f0,
-      };
-    case "dark":
-      return {
-        background: "bg-black",
-        text: "text-gray-200",
-        backgroundColor: 0x000000,
-      };
-  }
-};
-
-const MJCFRenderer = ({
-  useControls = true,
-  showWireframe = false,
-  supportedThemes = ["light", "dark"],
-  overrideColor = null,
-}: Props) => {
+const MJCFRenderer = ({ mjcfContent, files, useControls = true }: Props) => {
   const animationFrameRef = useRef<number>();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -95,9 +67,6 @@ const MJCFRenderer = ({
 
   // Add new state for joint controls
   const [joints, setJoints] = useState<{ name: string; value: number }[]>([]);
-
-  // Add theme state
-  const [theme, setTheme] = useState<Theme>(() => supportedThemes[0]);
 
   // Add new state for fullscreen
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -202,13 +171,7 @@ const MJCFRenderer = ({
 
       // Reset joint slider values
       if (refs.modelRef.current) {
-        const qpos = refs.stateRef.current.qpos || [];
-        setJoints(
-          joints.map((joint, i) => ({
-            ...joint,
-            value: qpos[i] || 0,
-          })),
-        );
+        setJoints(resetJoints(refs, joints));
       }
     }
   };
@@ -257,7 +220,7 @@ const MJCFRenderer = ({
         const humanoidXML = await fetch(humanoid).then((res) => res.text());
         const { mj, model, state, simulation } = await initializeMujoco({
           modelXML: humanoidXML,
-          refs,
+          files,
         });
 
         // Only set refs if component is still mounted
@@ -271,9 +234,7 @@ const MJCFRenderer = ({
           const { renderer, scene, camera, controls } = initializeThreeJS(
             containerRef.current,
             {
-              backgroundColor: new THREE.Color(
-                getThemeColors(theme).backgroundColor,
-              ),
+              backgroundColor: new THREE.Color("#f0f0f0"),
             },
           );
 
@@ -297,30 +258,16 @@ const MJCFRenderer = ({
           setupScene(refs);
           setIsMujocoReady(true);
 
-          // Add joint information after MuJoCo initialization
-          if (refs.modelRef.current) {
-            const jointNames = [];
-            const numJoints = refs.modelRef.current.nu;
+          // Get joint names and set initial joint values.
+          setJoints(getJointNames(refs, mj));
 
-            for (let i = 0; i < numJoints + 1; i++) {
-              const name = refs.simulationRef.current.id2name(
-                mj.mjtObj.mjOBJ_JOINT.value,
-                i,
-              );
-              const qpos = refs.stateRef.current?.qpos || [];
-              jointNames.push({ name, value: qpos[i] || 0 });
-            }
-            setJoints(jointNames);
-          }
-
-          // Start animation loop but don't start simulation
+          // Start animation loop.
           animate(performance.now());
-          // Don't auto-start simulation
+
           isSimulatingRef.current = false;
           setIsSimulating(false);
         }
       } catch (error) {
-        console.error(error);
         setError(error as Error);
       }
     })();
@@ -360,9 +307,7 @@ const MJCFRenderer = ({
 
       {useControls && showControls && (
         <div className="absolute top-0 right-0 bottom-0 w-64 z-30">
-          <div
-            className={`h-full overflow-y-auto ${getThemeColors(theme).background}`}
-          >
+          <div className="h-full overflow-y-auto bg-[#f0f0f0]">
             <div className="p-4 overflow-y-auto h-full">
               <div className="space-y-4">
                 <button
@@ -375,20 +320,14 @@ const MJCFRenderer = ({
 
                 {/* Add joint controls */}
                 <div className="space-y-2">
-                  <h3 className={`font-bold ${getThemeColors(theme).text}`}>
-                    Joint Controls
-                  </h3>
+                  <h3 className="font-bold text-[#333]">Joint Controls</h3>
                   {joints.map((joint, index) => (
                     <div key={index} className="text-sm">
                       <div className="flex justify-between items-center mb-1">
-                        <label
-                          className={`font-medium ${getThemeColors(theme).text}`}
-                        >
+                        <label className="font-medium text-[#333]">
                           {joint.name}
                         </label>
-                        <span
-                          className={`text-xs ${getThemeColors(theme).text}`}
-                        >
+                        <span className="text-xs text-[#333]">
                           {joint.value.toFixed(2)}
                         </span>
                       </div>
@@ -403,9 +342,7 @@ const MJCFRenderer = ({
                         }
                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                       />
-                      <div
-                        className={`flex justify-between text-xs ${getThemeColors(theme).text} mt-1`}
-                      >
+                      <div className="flex justify-between text-xs text-[#333] mt-1">
                         <span>{"-3.14"}</span>
                         <span>{"3.14"}</span>
                       </div>

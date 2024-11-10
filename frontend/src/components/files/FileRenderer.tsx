@@ -31,8 +31,7 @@ const FileRenderer: React.FC<{
     case "xml":
     case "mjcf":
       if (isMJCFFile(fileContent, file.name)) {
-        // return <MJCFRenderer mjcfContent={fileContent} files={allFiles} />;
-        return <MJCFRenderer />;
+        return <MJCFRenderer mjcfContent={fileContent} files={allFiles} />;
       } else {
         return (
           <div className="h-full w-full flex items-center justify-center">
