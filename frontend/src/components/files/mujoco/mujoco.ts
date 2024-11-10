@@ -1,3 +1,4 @@
+// @ts-nocheck
 import load_mujoco, { mujoco } from "@/lib/mujoco/mujoco_wasm";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -34,7 +35,6 @@ export const initializeMujoco = async ({
   const mj = await load_mujoco();
 
   // Set up file system and load XML model
-  // @ts-ignore
   if (!mj.FS.analyzePath(MODEL_DIR).exists) {
     mj.FS.mkdir(MODEL_DIR);
   }
@@ -114,16 +114,16 @@ export const initializeThreeJS = (
   scene.add(dirLight);
 
   // Add floor
-  // const floorGeometry = new THREE.PlaneGeometry(10, 10);
-  // const floorMaterial = new THREE.MeshStandardMaterial({
-  //   color: 0xe0e0e0,
-  //   roughness: 0.7,
-  //   metalness: 0.1,
-  // });
-  // const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-  // floor.rotation.x = -Math.PI / 2;
-  // floor.position.y = 0;
-  // scene.add(floor);
+  const floorGeometry = new THREE.PlaneGeometry(10, 10);
+  const floorMaterial = new THREE.MeshStandardMaterial({
+    color: 0xe0e0e0,
+    roughness: 0.7,
+    metalness: 0.1,
+  });
+  const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+  floor.rotation.x = -Math.PI / 2;
+  floor.position.y = 0;
+  scene.add(floor);
 
   return { renderer, scene, camera, controls };
 };
@@ -171,4 +171,178 @@ export const cleanupMujoco = (refs: MujocoRefs) => {
   refs.sceneRef.current = null;
   refs.cameraRef.current = null;
   refs.controlsRef.current = null;
+};
+
+export const setupModelGeometry = (refs: MujocoRefs) => {
+  const { sceneRef, modelRef, mujocoRef } = refs;
+  if (!sceneRef.current || !modelRef.current || !mujocoRef.current) return;
+  const model = modelRef.current;
+  const mj = mujocoRef.current;
+
+  // Create body groups first
+  const bodies: { [key: number]: THREE.Group } = {};
+  for (let b = 0; b < model.nbody; b++) {
+    bodies[b] = new THREE.Group();
+    bodies[b].name = `body_${b}`;
+    bodies[b].userData.bodyId = b;
+
+    // Add to parent body or scene
+    if (b === 0 || !bodies[0]) {
+      sceneRef.current.add(bodies[b]);
+    } else {
+      bodies[0].add(bodies[b]);
+    }
+  }
+
+  try {
+    for (let i = 0; i < model.ngeom; i++) {
+      // Get geom properties from the model
+      const geomType = model.geom_type[i];
+      const geomSize = model.geom_size.subarray(i * 3, i * 3 + 3);
+      const geomPos = model.geom_pos.subarray(i * 3, i * 3 + 3);
+
+      // Create corresponding Three.js geometry
+      let geometry: THREE.BufferGeometry;
+      switch (geomType) {
+        case mj.mjtGeom.mjGEOM_PLANE.value:
+          geometry = new THREE.PlaneGeometry(geomSize[0] * 2, geomSize[1] * 2);
+          break;
+        case mj.mjtGeom.mjGEOM_SPHERE.value:
+          geometry = new THREE.SphereGeometry(geomSize[0], 32, 32);
+          break;
+        case mj.mjtGeom.mjGEOM_CAPSULE.value:
+          // Capsule is a cylinder with hemispheres at the ends
+          geometry = new THREE.CapsuleGeometry(
+            geomSize[0],
+            geomSize[1] * 2,
+            4,
+            32,
+          );
+          break;
+        case mj.mjtGeom.mjGEOM_ELLIPSOID.value:
+          // Create a sphere and scale it to make an ellipsoid
+          geometry = new THREE.SphereGeometry(1, 32, 32);
+          geometry.scale(geomSize[0], geomSize[1], geomSize[2]);
+          break;
+        case mj.mjtGeom.mjGEOM_CYLINDER.value:
+          geometry = new THREE.CylinderGeometry(
+            geomSize[0],
+            geomSize[0],
+            geomSize[1] * 2,
+            32,
+          );
+          break;
+        case mj.mjtGeom.mjGEOM_BOX.value:
+          geometry = new THREE.BoxGeometry(
+            geomSize[0] * 2,
+            geomSize[1] * 2,
+            geomSize[2] * 2,
+          );
+          break;
+        case mj.mjtGeom.mjGEOM_MESH.value:
+          // For mesh, you'll need to load the actual mesh data
+          console.warn("Mesh geometry requires additional mesh data loading");
+          geometry = new THREE.BoxGeometry(1, 1, 1); // Placeholder
+          break;
+        case mj.mjtGeom.mjGEOM_LINE.value:
+          geometry = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(geomSize[0], 0, 0),
+          ]);
+          break;
+        default:
+          console.warn(`Unsupported geom type: ${geomType}`);
+          continue;
+      }
+
+      // Create material (you can customize this based on geom properties)
+      const material = new THREE.MeshPhongMaterial({ color: 0x808080 });
+
+      // Create mesh and add to corresponding body
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.userData.geomIndex = i;
+
+      const bodyId = model.geom_bodyid[i];
+      if (bodies[bodyId]) {
+        // Set local position and orientation relative to body
+        const pos = model.geom_pos.subarray(i * 3, i * 3 + 3);
+        mesh.position.set(pos[0], pos[2], -pos[1]);
+
+        const quat = model.geom_quat.subarray(i * 4, i * 4 + 4);
+        mesh.quaternion.set(-quat[1], -quat[3], quat[2], -quat[0]);
+
+        bodies[bodyId].add(mesh);
+      }
+    }
+
+    // Update initial body positions and orientations
+    for (let b = 0; b < model.nbody; b++) {
+      if (bodies[b]) {
+        const pos = refs.simulationRef.current!.xpos.subarray(b * 3, b * 3 + 3);
+        bodies[b].position.set(pos[0], pos[2], -pos[1]);
+
+        const quat = refs.simulationRef.current!.xquat.subarray(
+          b * 4,
+          b * 4 + 4,
+        );
+        bodies[b].quaternion.set(-quat[1], -quat[3], quat[2], -quat[0]);
+
+        bodies[b].updateWorldMatrix(true, true);
+      }
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export const setupScene = (refs: MujocoRefs) => {
+  if (!refs.sceneRef.current || !refs.cameraRef.current) return;
+
+  // Set up scene properties
+  refs.sceneRef.current.background = new THREE.Color(0.15, 0.25, 0.35);
+  refs.sceneRef.current.fog = new THREE.Fog(
+    refs.sceneRef.current.background,
+    30,
+    50,
+  );
+
+  // Add ambient light
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
+  ambientLight.name = "AmbientLight";
+  refs.sceneRef.current.add(ambientLight);
+
+  // Set up camera with wider view
+  refs.cameraRef.current.position.set(4.0, 3.4, 3.4);
+  refs.cameraRef.current.far = 100;
+  refs.cameraRef.current.updateProjectionMatrix();
+
+  // Update OrbitControls settings
+  if (refs.controlsRef.current) {
+    refs.controlsRef.current.target.set(0, 0.7, 0);
+    refs.controlsRef.current.panSpeed = 2;
+    refs.controlsRef.current.zoomSpeed = 1;
+    refs.controlsRef.current.enableDamping = true;
+    refs.controlsRef.current.dampingFactor = 0.1;
+    refs.controlsRef.current.screenSpacePanning = true;
+    refs.controlsRef.current.update();
+  }
+};
+
+export const updateBodyTransforms = (refs: MujocoRefs) => {
+  const { modelRef, simulationRef, sceneRef } = refs;
+  if (!modelRef.current || !simulationRef.current || !sceneRef.current) return;
+
+  // Update body transforms
+  for (let b = 0; b < modelRef.current.nbody; b++) {
+    const body = sceneRef.current.getObjectByName(`body_${b}`);
+    if (body) {
+      const pos = simulationRef.current.xpos.subarray(b * 3, b * 3 + 3);
+      body.position.set(pos[0], pos[2], -pos[1]);
+
+      const quat = simulationRef.current.xquat.subarray(b * 4, b * 4 + 4);
+      body.quaternion.set(-quat[1], -quat[3], quat[2], -quat[0]);
+
+      body.updateWorldMatrix(true, true);
+    }
+  }
 };

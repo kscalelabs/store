@@ -1,4 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import {
+  FaChevronLeft,
+  FaChevronRight,
+  FaPause,
+  FaPlay,
+  FaUndo,
+} from "react-icons/fa";
 
 import humanoid from "@/components/files/demo/humanoid.xml";
 import {
@@ -6,6 +13,9 @@ import {
   cleanupMujoco,
   initializeMujoco,
   initializeThreeJS,
+  setupModelGeometry,
+  setupScene,
+  updateBodyTransforms,
 } from "@/components/files/mujoco/mujoco";
 import Spinner from "@/components/ui/Spinner";
 import { humanReadableError } from "@/hooks/useAlertQueue";
@@ -36,194 +46,33 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
   // State management
   const isSimulatingRef = useRef(false);
   const mujocoTimeRef = useRef(0);
-  const tmpVecRef = useRef(new THREE.Vector3());
-  const tmpQuatRef = useRef(new THREE.Quaternion());
   const [isMujocoReady, setIsMujocoReady] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   // Constants
   const DEFAULT_TIMESTEP = 0.01;
 
-  const setupModelGeometry = () => {
-    const { sceneRef, modelRef, mujocoRef } = refs;
-    if (!sceneRef.current || !modelRef.current || !mujocoRef.current) return;
-    const model = modelRef.current;
-    const mj = mujocoRef.current;
+  // Add new state for sidebar visibility
+  const [showControls, setShowControls] = useState(true);
 
-    // Create body groups first
-    const bodies: { [key: number]: THREE.Group } = {};
-    for (let b = 0; b < model.nbody; b++) {
-      bodies[b] = new THREE.Group();
-      bodies[b].name = `body_${b}`;
-      bodies[b].userData.bodyId = b;
+  // Add state for simulation control
+  const [isSimulating, setIsSimulating] = useState(false);
 
-      // Add to parent body or scene
-      if (b === 0 || !bodies[0]) {
-        sceneRef.current.add(bodies[b]);
-      } else {
-        bodies[0].add(bodies[b]);
-      }
-    }
+  // Add new state for joint controls
+  const [joints, setJoints] = useState<{ name: string; value: number }[]>([]);
 
-    try {
-      for (let i = 0; i < model.ngeom; i++) {
-        // Get geom properties from the model
-        const geomType = model.geom_type[i];
-        const geomSize = model.geom_size.subarray(i * 3, i * 3 + 3);
-        const geomPos = model.geom_pos.subarray(i * 3, i * 3 + 3);
+  // Add function to update joint positions
+  const updateJointPosition = (index: number, value: number) => {
+    if (refs.stateRef.current && refs.simulationRef.current) {
+      const qpos = refs.stateRef.current?.qpos || [];
+      qpos[index] = value;
+      refs.stateRef.current.setQpos(qpos);
+      refs.simulationRef.current.forward();
+      updateBodyTransforms(refs);
 
-        // Create corresponding Three.js geometry
-        let geometry: THREE.BufferGeometry;
-        switch (geomType) {
-          case mj.mjtGeom.mjGEOM_PLANE.value:
-            geometry = new THREE.PlaneGeometry(
-              geomSize[0] * 2,
-              geomSize[1] * 2,
-            );
-            break;
-          case mj.mjtGeom.mjGEOM_SPHERE.value:
-            geometry = new THREE.SphereGeometry(geomSize[0], 32, 32);
-            break;
-          case mj.mjtGeom.mjGEOM_CAPSULE.value:
-            // Capsule is a cylinder with hemispheres at the ends
-            geometry = new THREE.CapsuleGeometry(
-              geomSize[0],
-              geomSize[1] * 2,
-              4,
-              32,
-            );
-            break;
-          case mj.mjtGeom.mjGEOM_ELLIPSOID.value:
-            // Create a sphere and scale it to make an ellipsoid
-            geometry = new THREE.SphereGeometry(1, 32, 32);
-            geometry.scale(geomSize[0], geomSize[1], geomSize[2]);
-            break;
-          case mj.mjtGeom.mjGEOM_CYLINDER.value:
-            geometry = new THREE.CylinderGeometry(
-              geomSize[0],
-              geomSize[0],
-              geomSize[1] * 2,
-              32,
-            );
-            break;
-          case mj.mjtGeom.mjGEOM_BOX.value:
-            geometry = new THREE.BoxGeometry(
-              geomSize[0] * 2,
-              geomSize[1] * 2,
-              geomSize[2] * 2,
-            );
-            break;
-          case mj.mjtGeom.mjGEOM_MESH.value:
-            // For mesh, you'll need to load the actual mesh data
-            console.warn("Mesh geometry requires additional mesh data loading");
-            geometry = new THREE.BoxGeometry(1, 1, 1); // Placeholder
-            break;
-          case mj.mjtGeom.mjGEOM_LINE.value:
-            geometry = new THREE.BufferGeometry().setFromPoints([
-              new THREE.Vector3(0, 0, 0),
-              new THREE.Vector3(geomSize[0], 0, 0),
-            ]);
-            break;
-          default:
-            console.warn(`Unsupported geom type: ${geomType}`);
-            continue;
-        }
-
-        // Create material (you can customize this based on geom properties)
-        const material = new THREE.MeshPhongMaterial({ color: 0x808080 });
-
-        // Create mesh and add to corresponding body
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.userData.geomIndex = i;
-
-        const bodyId = model.geom_bodyid[i];
-        if (bodies[bodyId]) {
-          // Set local position and orientation relative to body
-          const pos = model.geom_pos.subarray(i * 3, i * 3 + 3);
-          mesh.position.set(pos[0], pos[2], -pos[1]);
-
-          const quat = model.geom_quat.subarray(i * 4, i * 4 + 4);
-          mesh.quaternion.set(-quat[1], -quat[3], quat[2], -quat[0]);
-
-          bodies[bodyId].add(mesh);
-        }
-      }
-
-      // Update initial body positions and orientations
-      for (let b = 0; b < model.nbody; b++) {
-        if (bodies[b]) {
-          const pos = refs.simulationRef.current!.xpos.subarray(
-            b * 3,
-            b * 3 + 3,
-          );
-          bodies[b].position.set(pos[0], pos[2], -pos[1]);
-
-          const quat = refs.simulationRef.current!.xquat.subarray(
-            b * 4,
-            b * 4 + 4,
-          );
-          bodies[b].quaternion.set(-quat[1], -quat[3], quat[2], -quat[0]);
-
-          bodies[b].updateWorldMatrix(true, true);
-        }
-      }
-
-      setIsMujocoReady(true);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const setupScene = () => {
-    if (!refs.sceneRef.current || !refs.cameraRef.current) return;
-
-    // Set up scene properties
-    refs.sceneRef.current.background = new THREE.Color(0.15, 0.25, 0.35);
-    refs.sceneRef.current.fog = new THREE.Fog(
-      refs.sceneRef.current.background,
-      30,
-      50,
-    );
-
-    // Add ambient light
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
-    ambientLight.name = "AmbientLight";
-    refs.sceneRef.current.add(ambientLight);
-
-    // Set up camera with wider view
-    refs.cameraRef.current.position.set(4.0, 3.4, 3.4);
-    refs.cameraRef.current.far = 100;
-    refs.cameraRef.current.updateProjectionMatrix();
-
-    // Update OrbitControls settings
-    if (refs.controlsRef.current) {
-      refs.controlsRef.current.target.set(0, 0.7, 0);
-      refs.controlsRef.current.panSpeed = 2;
-      refs.controlsRef.current.zoomSpeed = 1;
-      refs.controlsRef.current.enableDamping = true;
-      refs.controlsRef.current.dampingFactor = 0.1;
-      refs.controlsRef.current.screenSpacePanning = true;
-      refs.controlsRef.current.update();
-    }
-  };
-
-  const updateBodyTransforms = () => {
-    const { modelRef, simulationRef, sceneRef } = refs;
-    if (!modelRef.current || !simulationRef.current || !sceneRef.current)
-      return;
-
-    // Update body transforms
-    for (let b = 0; b < modelRef.current.nbody; b++) {
-      const body = sceneRef.current.getObjectByName(`body_${b}`);
-      if (body) {
-        const pos = simulationRef.current.xpos.subarray(b * 3, b * 3 + 3);
-        body.position.set(pos[0], pos[2], -pos[1]);
-
-        const quat = simulationRef.current.xquat.subarray(b * 4, b * 4 + 4);
-        body.quaternion.set(-quat[1], -quat[3], quat[2], -quat[0]);
-
-        body.updateWorldMatrix(true, true);
-      }
+      setJoints((prev) =>
+        prev.map((joint, i) => (i === index ? { ...joint, value } : joint)),
+      );
     }
   };
 
@@ -248,7 +97,7 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
       }
 
       // Update body transforms after physics step
-      updateBodyTransforms();
+      updateBodyTransforms(refs);
     }
 
     // Update controls if enabled
@@ -266,54 +115,41 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
 
   const stopPhysicsSimulation = () => {
     isSimulatingRef.current = false;
+    setIsSimulating(false);
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
+    }
+  };
+
+  // Add a function to start physics simulation
+  const startPhysicsSimulation = () => {
+    isSimulatingRef.current = true;
+    setIsSimulating(true);
+    animate(performance.now());
+  };
+
+  // Toggle simulation function
+  const toggleSimulation = () => {
+    if (isSimulating) {
+      stopPhysicsSimulation();
+    } else {
+      startPhysicsSimulation();
+    }
+  };
+
+  // Add function to restart simulation
+  const restartSimulation = () => {
+    if (refs.stateRef.current && refs.simulationRef.current) {
+      refs.simulationRef.current.resetData();
+      refs.simulationRef.current.forward();
+      updateBodyTransforms(refs);
     }
   };
 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    (async () => {
-      try {
-        if (!containerRef.current) throw new Error("Container ref is null");
-
-        // Initialize MuJoCo with the humanoid model
-        const humanoidXML = await fetch(humanoid).then((res) => res.text());
-        const { mj, model, state, simulation } = await initializeMujoco({
-          modelXML: humanoidXML,
-          refs,
-        });
-
-        refs.mujocoRef.current = mj;
-        refs.modelRef.current = model;
-        refs.stateRef.current = state;
-        refs.simulationRef.current = simulation;
-
-        // Initialize Three.js scene
-        const { renderer, scene, camera, controls } = initializeThreeJS(
-          containerRef.current,
-        );
-        refs.rendererRef.current = renderer;
-        refs.sceneRef.current = scene;
-        refs.cameraRef.current = camera;
-        refs.controlsRef.current = controls;
-
-        // Add model-specific setup (bodies, geometries, etc.)
-        setupModelGeometry();
-
-        // Add new scene setup
-        setupScene();
-
-        // Start animation loop
-        animate(performance.now());
-      } catch (error) {
-        console.error(error);
-        setError(error as Error);
-      }
-    })();
-
-    // Handle window resize
+    // Define handleResize first
     const handleResize = () => {
       if (
         refs.rendererRef.current &&
@@ -330,27 +166,170 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
       }
     };
 
-    window.addEventListener("resize", handleResize);
-
-    return () => {
+    // Then define cleanup
+    const cleanup = () => {
       window.removeEventListener("resize", handleResize);
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
       cleanupMujoco(refs);
       stopPhysicsSimulation();
+      Object.keys(refs).forEach((key) => {
+        refs[key as keyof MujocoRefs].current = null;
+      });
     };
-  }, [useControls, containerRef.current]);
+
+    // Rest of the effect remains the same...
+    cleanup();
+
+    (async () => {
+      try {
+        if (!containerRef.current) throw new Error("Container ref is null");
+
+        // Initialize MuJoCo with the humanoid model
+        const humanoidXML = await fetch(humanoid).then((res) => res.text());
+        const { mj, model, state, simulation } = await initializeMujoco({
+          modelXML: humanoidXML,
+          refs,
+        });
+
+        // Only set refs if component is still mounted
+        if (containerRef.current) {
+          refs.mujocoRef.current = mj;
+          refs.modelRef.current = model;
+          refs.stateRef.current = state;
+          refs.simulationRef.current = simulation;
+
+          // Initialize Three.js scene
+          const { renderer, scene, camera, controls } = initializeThreeJS(
+            containerRef.current,
+          );
+          refs.rendererRef.current = renderer;
+          refs.sceneRef.current = scene;
+          refs.cameraRef.current = camera;
+          refs.controlsRef.current = controls;
+
+          // Add model-specific setup (bodies, geometries, etc.)
+          setupModelGeometry(refs);
+          setupScene(refs);
+          setIsMujocoReady(true);
+
+          // Add joint information after MuJoCo initialization
+          if (refs.modelRef.current) {
+            const jointNames = [];
+            const numJoints = refs.modelRef.current.nq;
+
+            for (let i = 0; i < numJoints; i++) {
+              const name = refs.simulationRef.current.id2name(
+                mj.mjtObj.mjOBJ_JOINT.value,
+                i,
+              );
+              const qpos = refs.stateRef.current?.qpos || [];
+              jointNames.push({ name, value: qpos[i] || 0 });
+            }
+            setJoints(jointNames);
+          }
+
+          // Start animation loop
+          animate(performance.now());
+        }
+      } catch (error) {
+        console.error(error);
+        setError(error as Error);
+      }
+    })();
+
+    window.addEventListener("resize", handleResize);
+    return cleanup;
+  }, []); // Empty dependency array
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full relative">
       <div ref={containerRef} className="w-full h-full" />
+
       {!isMujocoReady && (
         <div className="flex justify-center items-center w-full h-full">
           <Spinner />
         </div>
       )}
+
       {error && (
         <div className="flex justify-center items-center w-full h-full">
           <div className="text-red-500">{humanReadableError(error)}</div>
         </div>
+      )}
+
+      {useControls && showControls && (
+        <div className="absolute top-0 right-0 bottom-0 w-64 z-30">
+          <div className="h-full overflow-y-auto bg-gray-900">
+            <div className="p-4 overflow-y-auto h-full">
+              <div className="space-y-4">
+                <button
+                  onClick={toggleSimulation}
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded flex items-center justify-center gap-2"
+                >
+                  {isSimulating ? (
+                    <>
+                      <FaPause className="inline-block" />
+                      Stop Simulation
+                    </>
+                  ) : (
+                    <>
+                      <FaPlay className="inline-block" />
+                      Start Simulation
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={restartSimulation}
+                  className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded flex items-center justify-center gap-2"
+                >
+                  <FaUndo className="inline-block" />
+                  Restart Simulation
+                </button>
+                <button
+                  onClick={() => setShowControls(false)}
+                  className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded flex items-center justify-center gap-2"
+                >
+                  <FaChevronRight className="inline-block" />
+                  Hide Controls
+                </button>
+
+                {/* Add joint controls */}
+                <div className="space-y-2">
+                  <h3 className="text-white font-bold">Joint Controls</h3>
+                  {joints.map((joint, index) => (
+                    <div key={joint.name} className="space-y-1">
+                      <label className="text-white text-sm">
+                        {joint.name}: {joint.value.toFixed(2)}
+                      </label>
+                      <input
+                        type="range"
+                        min="-3.14"
+                        max="3.14"
+                        step="0.01"
+                        value={joint.value}
+                        onChange={(e) =>
+                          updateJointPosition(index, parseFloat(e.target.value))
+                        }
+                        className="w-full"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {useControls && !showControls && (
+        <button
+          onClick={() => setShowControls(true)}
+          className="absolute bottom-4 right-4 z-30 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-full shadow-md"
+        >
+          <FaChevronLeft />
+        </button>
       )}
     </div>
   );
