@@ -166,7 +166,7 @@ const Browse = () => {
             </DropdownMenu>
             <Button
               onClick={() => navigate(ROUTES.BOTS.CREATE.path)}
-              variant="primary"
+              variant="default"
               size="lg"
               className="w-full md:w-auto"
             >

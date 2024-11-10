@@ -37,7 +37,7 @@ const DownloadButton = ({ command, isFirst, prefix }: ButtonProps) => {
       onClick={() => copyToClipboard(command)}
       title={command}
       disabled={copied}
-      variant="secondary"
+      variant="default"
     >
       <code className="text-xs font-mono truncate flex-grow mr-2">
         {prefix ? `${prefix}: ${command}` : command}
@@ -62,7 +62,7 @@ const UrdfViewerButton = ({ artifact }: Props) => {
       onClick={() => {
         navigate(ROUTES.FILE.buildPath({ artifactId: artifact.artifact_id }));
       }}
-      variant="secondary"
+      variant="default"
     >
       <code className="text-xs font-mono truncate flex-grow mr-2">
         View Files
@@ -126,7 +126,7 @@ const TgzArtifact = ({ artifact }: Props) => {
       <Button
         className="p-3 w-full mt-2"
         onClick={() => setShowInstructions(!showInstructions)}
-        variant="secondary"
+        variant="default"
       >
         <span className="text-xs font-mono truncate flex-grow mr-2">
           {showInstructions

@@ -63,7 +63,7 @@ const UrlDisplay = ({ url, onCopy, disabled = false }: UrlDisplayProps) => (
     </a>
     <Button
       onClick={onCopy}
-      variant="secondary"
+      variant="default"
       disabled={disabled}
       className="flex items-center justify-center"
     >
@@ -78,13 +78,13 @@ const IconButton = ({
   icon: Icon,
   label,
   onClick,
-  variant = "secondary",
+  variant = "default",
   disabled = false,
 }: {
   icon: IconType;
   label: string;
   onClick: () => void;
-  variant?: "primary" | "secondary" | "destructive";
+  variant?: "default" | "destructive";
   disabled?: boolean;
 }) => (
   <Button onClick={onClick} variant={variant} disabled={disabled}>
@@ -100,7 +100,7 @@ const HelpButton = ({
   showInstructions: boolean;
   onToggle: () => void;
 }) => (
-  <Button onClick={onToggle} variant="secondary">
+  <Button onClick={onToggle} variant="default">
     <FaInfoCircle />
     <span className="ml-2">{showInstructions ? "Hide Help" : "Show Help"}</span>
   </Button>
@@ -146,7 +146,7 @@ const UpdateButtons = ({
         icon={FaSync}
         label="Sync"
         onClick={onReload}
-        variant="primary"
+        variant="default"
         disabled={disabled}
       />
     )}
@@ -412,7 +412,7 @@ const ListingOnshape = (props: Props) => {
     if (!url) {
       return (
         <div className="flex flex-wrap gap-2">
-          <Button onClick={() => setIsEditing(true)} variant="primary">
+          <Button onClick={() => setIsEditing(true)} variant="default">
             Add Onshape URL
           </Button>
           {edit && (

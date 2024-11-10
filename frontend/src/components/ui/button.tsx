@@ -9,10 +9,6 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary:
-          "bg-gray-12 text-gray-1 border border-transparent hover:border-gray-1",
-        secondary:
-          "bg-gray-12 text-gray-1 border border-transparent hover:border-gray-1",
         default:
           "bg-gray-12 text-gray-1 border border-transparent hover:border-gray-1",
         selected: "bg-gray-12 text-gray-1 border border-gray-1",

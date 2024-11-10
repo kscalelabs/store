@@ -330,7 +330,7 @@ const Create = () => {
               {/* Submit */}
               <div className="flex justify-end">
                 <Button
-                  variant="primary"
+                  variant="default"
                   type="submit"
                   disabled={isSubmitting}
                   className="bg-orange-500 hover:bg-orange-600 text-white"

@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef } from "react";
 
-interface PageHeaderProps {}
+interface Props {
+  children?: React.ReactNode;
+}
 
-const PageHeader: React.FC<PageHeaderProps> = () => {
+const PageHeader = ({ children }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gridRef = useRef<boolean[][]>([]);
   const intervalRef = useRef<number>();
@@ -296,6 +298,7 @@ const PageHeader: React.FC<PageHeaderProps> = () => {
   return (
     <div className="relative w-full h-[40vh] overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
+      {children}
     </div>
   );
 };

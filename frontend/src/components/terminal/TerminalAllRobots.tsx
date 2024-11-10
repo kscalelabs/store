@@ -32,7 +32,7 @@ const TerminalAllRobots = ({ robots, onDeleteRobot }: Props) => {
             No robots found.
           </p>
           <Button
-            variant="primary"
+            variant="default"
             onClick={() => navigate(ROUTES.BOTS.BROWSE.path)}
             className="flex items-center"
           >

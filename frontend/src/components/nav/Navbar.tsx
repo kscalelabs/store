@@ -35,9 +35,11 @@ const Navbar = () => {
           <div className="flex justify-between w-full lg:w-auto gap-3">
             <Link
               to={ROUTES.HOME.path}
-              className="flex items-center lg:flex-grow-0"
+              className="flex items-center lg:flex-grow-0 bg-black border border-gray-500 rounded-lg p-2"
             >
-              <span className="text-gray-1 text-lg font-semibold">K-Scale</span>
+              <span className="text-gray-1 text-lg font-semibold">
+                K-Scale Labs
+              </span>
             </Link>
             <Button
               onClick={() => setShowSidebar(true)}

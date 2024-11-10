@@ -78,7 +78,7 @@ const SingleKey = ({ token, permissions, onDelete }: SingleKeyProps) => {
         </Button>
         <Button
           onClick={() => setIsKeyVisible(!isKeyVisible)}
-          variant="primary"
+          variant="default"
         >
           {isKeyVisible ? "Hide" : "Show Key"}
         </Button>
@@ -191,7 +191,7 @@ const APIKeys = () => {
                 </label>
                 <Button
                   onClick={createKey}
-                  variant="primary"
+                  variant="default"
                   disabled={creatingKey}
                 >
                   Create {readonly ? "Read-only " : "Read-write "}Key

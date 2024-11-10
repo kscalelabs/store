@@ -88,7 +88,7 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
       <div className="flex gap-4 mb-4">
         <Button
           onClick={() => navigate(ROUTES.TERMINAL.path)}
-          variant="secondary"
+          variant="default"
           className="gap-4"
         >
           <FaArrowLeft /> All Robots
@@ -102,7 +102,7 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
               }),
             )
           }
-          variant="secondary"
+          variant="default"
         >
           Listing
         </Button>
@@ -123,14 +123,14 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
               <Button
                 onClick={handleNameSave}
                 disabled={isUpdatingName}
-                variant="secondary"
+                variant="default"
                 size="sm"
               >
                 {isUpdatingName ? "Saving..." : "Save"}
               </Button>
               <Button
                 onClick={() => setIsEditingName(false)}
-                variant="secondary"
+                variant="default"
                 size="sm"
               >
                 Cancel
@@ -162,14 +162,14 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
                 <Button
                   onClick={handleDescriptionSave}
                   disabled={isUpdatingDescription}
-                  variant="secondary"
+                  variant="default"
                   size="sm"
                 >
                   {isUpdatingDescription ? "Saving..." : "Save"}
                 </Button>
                 <Button
                   onClick={() => setIsEditingDescription(false)}
-                  variant="secondary"
+                  variant="default"
                   size="sm"
                 >
                   Cancel
@@ -194,14 +194,10 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
 
       {/* Connection controls */}
       <div className="mb-4 flex flex-wrap gap-4">
-        <Button onClick={handleConnect} variant="secondary" className="flex-1">
+        <Button onClick={handleConnect} variant="default" className="flex-1">
           Connect
         </Button>
-        <Button
-          onClick={handleDisconnect}
-          variant="secondary"
-          className="flex-1"
-        >
+        <Button onClick={handleDisconnect} variant="default" className="flex-1">
           Disconnect
         </Button>
       </div>
@@ -242,7 +238,7 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
               className="w-full h-full bg-black text-white border border-gray-700 p-2 font-mono resize-none focus:outline-none focus:ring-1 focus:border-white"
               placeholder="Enter code here..."
             />
-            <Button variant="secondary" className="w-full">
+            <Button variant="default" className="w-full">
               Execute
             </Button>
           </div>

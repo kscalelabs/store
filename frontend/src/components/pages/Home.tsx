@@ -32,7 +32,16 @@ const Home: React.FC = () => {
 const HeroSection: React.FC = () => {
   return (
     <section className="relative overflow-hidden h-[80vh] md:h-[40vh] rounded-lg">
-      <PageHeader />
+      <PageHeader>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black border border-gray-500 rounded-lg p-4">
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-1">
+            K-Scale Labs
+          </h1>
+          <p className="text-gray-400 mt-2">
+            Moving humanity up the Kardashev scale
+          </p>
+        </div>
+      </PageHeader>
     </section>
   );
 };
@@ -45,7 +54,7 @@ const OptionsSection: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {[
           {
-            title: "Browse Builds",
+            title: "Browse Robots",
             description:
               "Browse robot builds with linked CAD files, part lists, and related downloads.",
             icon: MagnifyingGlassIcon,

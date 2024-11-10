@@ -118,7 +118,7 @@ const ListingImageItem = ({
         <div className="absolute top-2 right-2 flex gap-2">
           {!artifact.is_main && artifact.artifact_type === "image" && (
             <Button
-              variant="secondary"
+              variant="default"
               onClick={handleSetMain}
               disabled={isUpdating}
               className="hover:bg-green-600 text-white"
