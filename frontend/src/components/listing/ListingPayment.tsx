@@ -58,7 +58,7 @@ const ListingPayment = ({
       <div className="flex justify-end">
         <CheckoutButton
           listingId={listingId}
-          productId={stripeProductId}
+          stripeProductId={stripeProductId}
           label="Purchase Now"
         />
       </div>

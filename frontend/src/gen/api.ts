@@ -1392,8 +1392,8 @@ export interface components {
         CreateCheckoutSessionRequest: {
             /** Listing Id */
             listing_id: string;
-            /** Product Id */
-            product_id: string;
+            /** Stripe Product Id */
+            stripe_product_id: string;
             /** Cancel Url */
             cancel_url: string;
         };
@@ -1743,8 +1743,6 @@ export interface components {
             stripe_checkout_session_id: string;
             /** Stripe Payment Intent Id */
             stripe_payment_intent_id: string;
-            /** Stripe Refund Id */
-            stripe_refund_id?: string | null;
             /** Created At */
             created_at: number;
             /** Updated At */
@@ -1761,7 +1759,9 @@ export interface components {
             /** Quantity */
             quantity: number;
             /** Product Id */
-            product_id?: string | null;
+            product_id: string;
+            /** Stripe Refund Id */
+            stripe_refund_id?: string | null;
             /** Shipping Name */
             shipping_name?: string | null;
             /** Shipping Address Line1 */

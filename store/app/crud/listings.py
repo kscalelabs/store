@@ -28,7 +28,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
 
     @classmethod
     def get_gsis(cls) -> set[str]:
-        return super().get_gsis().union({"listing_id", "name"})
+        return super().get_gsis().union({"listing_id", "name", "stripe_product_id"})
 
     @overload
     async def get_listing(self, listing_id: str, throw_if_missing: Literal[True]) -> Listing: ...
@@ -391,3 +391,11 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
                 "updated_at": int(time.time()),
             }
         )
+
+    async def get_listing_by_stripe_product_id(self, stripe_product_id: str) -> Listing | None:
+        """Get a listing by its stripe product ID."""
+        listings = await self._get_items_from_secondary_index(
+            secondary_index_name="stripe_product_id", secondary_index_value=stripe_product_id, item_class=Listing
+        )
+        # stripe_product_id should be unique, return the first item if it exists
+        return listings[0] if listings else None

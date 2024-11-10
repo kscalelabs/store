@@ -15,9 +15,9 @@ const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 const CheckoutButton: React.FC<{
   listingId: string;
-  productId: string;
+  stripeProductId: string;
   label?: string;
-}> = ({ listingId, productId, label = "Order Now" }) => {
+}> = ({ listingId, stripeProductId, label = "Order Now" }) => {
   const { addErrorAlert } = useAlertQueue();
   const [isLoading, setIsLoading] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -60,7 +60,7 @@ const CheckoutButton: React.FC<{
         {
           body: {
             listing_id: listingId,
-            product_id: productId,
+            stripe_product_id: stripeProductId,
             cancel_url: location.pathname,
           },
         },

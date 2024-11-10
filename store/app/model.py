@@ -587,14 +587,14 @@ class Order(StoreBaseModel):
     user_email: str
     stripe_checkout_session_id: str
     stripe_payment_intent_id: str
-    stripe_refund_id: str | None = None
     created_at: int
     updated_at: int
     status: OrderStatus
     amount: int
     currency: str
     quantity: int
-    product_id: str | None = None
+    stripe_product_id: str
+    stripe_refund_id: str | None = None
     shipping_name: str | None = None
     shipping_address_line1: str | None = None
     shipping_address_line2: str | None = None
@@ -613,8 +613,8 @@ class Order(StoreBaseModel):
         amount: int,
         currency: str,
         quantity: int,
+        stripe_product_id: str,
         stripe_refund_id: str | None = None,
-        product_id: str | None = None,
         status: OrderStatus = "processing",
         shipping_name: str | None = None,
         shipping_address_line1: str | None = None,
@@ -631,14 +631,14 @@ class Order(StoreBaseModel):
             user_email=user_email,
             stripe_checkout_session_id=stripe_checkout_session_id,
             stripe_payment_intent_id=stripe_payment_intent_id,
-            stripe_refund_id=stripe_refund_id,
             created_at=now,
             updated_at=now,
             status=status,
             amount=amount,
             currency=currency,
             quantity=quantity,
-            product_id=product_id,
+            stripe_product_id=stripe_product_id,
+            stripe_refund_id=stripe_refund_id,
             shipping_name=shipping_name,
             shipping_address_line1=shipping_address_line1,
             shipping_address_line2=shipping_address_line2,

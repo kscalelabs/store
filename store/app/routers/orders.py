@@ -1,6 +1,6 @@
 """Defines the router endpoints for handling Orders."""
 
-from typing import Dict, List
+from typing import Annotated, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
@@ -53,32 +53,32 @@ async def get_order(
 @router.get("/order-with-product/{order_id}", response_model=OrderWithProduct)
 async def get_order_with_product(
     order_id: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
     user: User = Depends(get_session_user_with_read_permission),
-    crud: Crud = Depends(Crud.get),
 ) -> OrderWithProduct:
     order = await crud.get_order(order_id)
     if order is None or order.user_id != user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
 
-    if order.product_id is None:
+    if order.stripe_product_id is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Order has no associated product")
 
-    product = await stripe.get_product(order.product_id)
+    product = await stripe.get_product(order.stripe_product_id, crud)
     return OrderWithProduct(order=order, product=ProductInfo(**product))
 
 
 @router.get("/user-orders-with-products", response_model=List[OrderWithProduct])
 async def get_user_orders_with_products(
+    crud: Annotated[Crud, Depends(Crud.get)],
     user: User = Depends(get_session_user_with_read_permission),
-    crud: Crud = Depends(Crud.get),
 ) -> List[OrderWithProduct]:
     try:
         orders = await crud.get_orders_by_user_id(user.id)
         orders_with_products = []
         for order in orders:
-            if order.product_id is None:
-                continue  # Skip orders without a product_id
-            product = await stripe.get_product(order.product_id)
+            if order.stripe_product_id is None:
+                continue  # Skip orders without a stripe_product_id
+            product = await stripe.get_product(order.stripe_product_id, crud)
             orders_with_products.append(OrderWithProduct(order=order, product=ProductInfo(**product)))
         return orders_with_products
     except ItemNotFoundError:

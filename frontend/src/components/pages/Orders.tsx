@@ -72,10 +72,10 @@ const OrdersPage: React.FC = () => {
         </div>
       ) : (
         <div className="flex flex-col gap-4 justify-center items-center p-10 rounded-lg max-w-3xl mx-auto">
-          <p className="text-gray-12 font-medium sm:text-lg">No orders yet.</p>
+          <p className="text-gray-1 font-medium sm:text-lg">No orders yet.</p>
           <Button
             onClick={() => navigate(ROUTES.BOTS.BROWSE.path)}
-            variant="default"
+            variant="outline"
           >
             Browse Robots
           </Button>
