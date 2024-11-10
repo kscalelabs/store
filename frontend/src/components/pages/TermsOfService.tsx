@@ -1,17 +1,18 @@
 const TermsOfService = () => {
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Terms of Service</h1>
-
-      <p className="text-gray-11 mb-8">Last updated: September 16, 2024</p>
-
+      <h1 className="text-3xl font-bold mb-2">Terms of Service</h1>
+      <p className="mb-4 text-sm text-gray-600">
+        Last updated {new Date().toLocaleDateString()}
+      </p>
       <section className="mb-6">
         <p className="mb-4">
-          Welcome to K-Scale Labs! These Terms of Service ("Terms") govern your
-          access to and use of our website, platform, services, and products
-          (collectively, the "Services"). By using or accessing K-Scale Labs,
-          you agree to comply with and be bound by these Terms. If you do not
-          agree to these Terms, you may not use our Services.
+          Welcome to K-Scale Labs! These Terms of Service (&ldquo;Terms&rdquo;)
+          govern your access to and use of our website, platform, services, and
+          products (collectively, the &ldquo;Services&rdquo;). By using or
+          accessing K-Scale Labs, you agree to comply with and be bound by these
+          Terms. If you do not agree to these Terms, you may not use our
+          Services.
         </p>
       </section>
 
@@ -37,7 +38,7 @@ const TermsOfService = () => {
           <strong>Ownership:</strong> You retain ownership of any content you
           upload to the platform, including but not limited to K-Lang programs,
           robot builds, kernel images, URDF files, and machine learning models
-          ("User Content").
+          (&ldquo;User Content&rdquo;).
         </p>
         <p className="mb-4">
           <strong>License to K-Scale Labs:</strong> By uploading User Content,
@@ -62,8 +63,8 @@ const TermsOfService = () => {
           <strong>K-Scale Labs Property:</strong> K-Scale Labs retains all
           rights to its trademarks, logos, and proprietary content, including
           but not limited to K-Lang, kernel images, documentation, and software
-          (the "K-Scale Labs Content"). You may not use our trademarks or
-          copyrighted materials without our prior written consent.
+          (the &ldquo;K-Scale Labs Content&rdquo;). You may not use our
+          trademarks or copyrighted materials without our prior written consent.
         </p>
         <p className="mb-4">
           <strong>Licensing of Resources:</strong> User Content shared on the
@@ -160,8 +161,8 @@ const TermsOfService = () => {
           8. No Warranty and Limitation of Liability
         </h2>
         <p className="mb-4">
-          <strong>No Warranty:</strong> Our Services are provided "as is,"
-          without any warranty of any kind, including warranties of
+          <strong>No Warranty:</strong> Our Services are provided &ldquo;as
+          is,&rdquo; without any warranty of any kind, including warranties of
           merchantability, fitness for a particular purpose, or
           non-infringement. We make no guarantees that the Services will be
           error-free or uninterrupted.

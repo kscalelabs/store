@@ -76,8 +76,12 @@ const extractImages = (htmlContent: string): string[] => {
 
 const MediumCard: React.FC<{ article: ResearchPost }> = ({ article }) => {
   const images = extractImages(article.content);
-  const fallbackImage = "https://miro.medium.com/v2/resize:fit:720/format:webp/1*gTRwcZ8ZBLvFtWw9-fq9_w.png";
-  const randomImage = images.length > 0 ? images[Math.floor(Math.random() * images.length)] : fallbackImage;
+  const fallbackImage =
+    "https://miro.medium.com/v2/resize:fit:720/format:webp/1*gTRwcZ8ZBLvFtWw9-fq9_w.png";
+  const randomImage =
+    images.length > 0
+      ? images[Math.floor(Math.random() * images.length)]
+      : fallbackImage;
 
   return (
     <Card className="bg-black border-gray-700 hover:border-white transition-all duration-300">

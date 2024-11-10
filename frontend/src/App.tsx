@@ -59,7 +59,7 @@ const App = () => {
                         {/* General pages */}
                         <Route path={ROUTES.ABOUT.path} element={<About />} />
                         <Route
-                          path={ROUTES.BLOG.path}
+                          path={ROUTES.RESEARCH.path}
                           element={<ResearchPage />}
                         />
                         <Route
