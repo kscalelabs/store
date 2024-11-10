@@ -346,3 +346,17 @@ export const updateBodyTransforms = (refs: MujocoRefs) => {
     }
   }
 };
+
+export const getJoints = (refs: MujocoRefs) => {
+  const jointNames = [];
+  const numJoints = refs.modelRef.current.nu;
+
+  for (let i = 0; i < numJoints; i++) {
+    const name = refs.simulationRef.current.id2name(
+      mj.mjtObj.mjOBJ_ACTUATOR.value,
+      i,
+    );
+    const qpos = refs.stateRef.current?.qpos || [];
+    jointNames.push({ name, value: qpos[i] || 0 });
+  }
+}

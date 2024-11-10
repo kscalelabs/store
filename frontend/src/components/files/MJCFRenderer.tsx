@@ -25,9 +25,42 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 interface Props {
   useControls?: boolean;
+  showWireframe?: boolean;
+  supportedThemes?: Theme[];
+  overrideColor?: string | null;
 }
 
-const MJCFRenderer = ({ useControls = true }: Props) => {
+type Theme = "light" | "dark";
+
+interface ThemeColors {
+  background: string;
+  text: string;
+  backgroundColor: number;
+}
+
+const getThemeColors = (theme: Theme): ThemeColors => {
+  switch (theme) {
+    case "light":
+      return {
+        background: "bg-[#f0f0f0]",
+        text: "text-gray-800",
+        backgroundColor: 0xf0f0f0,
+      };
+    case "dark":
+      return {
+        background: "bg-black",
+        text: "text-gray-200",
+        backgroundColor: 0x000000,
+      };
+  }
+};
+
+const MJCFRenderer = ({
+  useControls = true,
+  showWireframe = false,
+  supportedThemes = ["light", "dark"],
+  overrideColor = null,
+}: Props) => {
   const animationFrameRef = useRef<number>();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -50,7 +83,7 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
   const [error, setError] = useState<Error | null>(null);
 
   // Constants
-  const DEFAULT_TIMESTEP = 0.01;
+  const DEFAULT_TIMESTEP = 0.002;
 
   // Add new state for sidebar visibility
   const [showControls, setShowControls] = useState(true);
@@ -61,15 +94,22 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
   // Add new state for joint controls
   const [joints, setJoints] = useState<{ name: string; value: number }[]>([]);
 
+  // Add theme state
+  const [theme, setTheme] = useState<Theme>(() => supportedThemes[0]);
+
   // Add function to update joint positions
   const updateJointPosition = (index: number, value: number) => {
-    if (refs.stateRef.current && refs.simulationRef.current) {
-      const qpos = refs.stateRef.current?.qpos || [];
-      qpos[index] = value;
-      refs.stateRef.current.setQpos(qpos);
+    if (
+      refs.stateRef.current &&
+      refs.simulationRef.current &&
+      refs.modelRef.current
+    ) {
+      const qposAddr = refs.modelRef.current.jnt_qposadr[index];
+      refs.simulationRef.current.qpos[qposAddr] = value;
       refs.simulationRef.current.forward();
       updateBodyTransforms(refs);
 
+      // Update state
       setJoints((prev) =>
         prev.map((joint, i) => (i === index ? { ...joint, value } : joint)),
       );
@@ -143,6 +183,17 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
       refs.simulationRef.current.resetData();
       refs.simulationRef.current.forward();
       updateBodyTransforms(refs);
+
+      // Reset joint slider values
+      if (refs.modelRef.current) {
+        const qpos = refs.stateRef.current.qpos || [];
+        setJoints(
+          joints.map((joint, i) => ({
+            ...joint,
+            value: qpos[i] || 0,
+          })),
+        );
+      }
     }
   };
 
@@ -203,7 +254,23 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
           // Initialize Three.js scene
           const { renderer, scene, camera, controls } = initializeThreeJS(
             containerRef.current,
+            {
+              backgroundColor: new THREE.Color(
+                getThemeColors(theme).backgroundColor,
+              ),
+            },
           );
+
+          // Add camera positioning
+          camera.position.set(2, 2, 2); // Set initial camera position
+          camera.lookAt(0, 0, 0);
+
+          // Configure controls
+          controls.enableDamping = true;
+          controls.dampingFactor = 0.05;
+          controls.maxDistance = 10;
+          controls.minDistance = 0.5;
+
           refs.rendererRef.current = renderer;
           refs.sceneRef.current = scene;
           refs.cameraRef.current = camera;
@@ -217,9 +284,9 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
           // Add joint information after MuJoCo initialization
           if (refs.modelRef.current) {
             const jointNames = [];
-            const numJoints = refs.modelRef.current.nq;
+            const numJoints = refs.modelRef.current.nu;
 
-            for (let i = 0; i < numJoints; i++) {
+            for (let i = 0; i < numJoints + 1; i++) {
               const name = refs.simulationRef.current.id2name(
                 mj.mjtObj.mjOBJ_JOINT.value,
                 i,
@@ -230,8 +297,11 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
             setJoints(jointNames);
           }
 
-          // Start animation loop
+          // Start animation loop but don't start simulation
           animate(performance.now());
+          // Don't auto-start simulation
+          isSimulatingRef.current = false;
+          setIsSimulating(false);
         }
       } catch (error) {
         console.error(error);
@@ -261,12 +331,14 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
 
       {useControls && showControls && (
         <div className="absolute top-0 right-0 bottom-0 w-64 z-30">
-          <div className="h-full overflow-y-auto bg-gray-900">
+          <div
+            className={`h-full overflow-y-auto ${getThemeColors(theme).background}`}
+          >
             <div className="p-4 overflow-y-auto h-full">
               <div className="space-y-4">
                 <button
                   onClick={toggleSimulation}
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded flex items-center justify-center gap-2"
+                  className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded flex items-center justify-center gap-2"
                 >
                   {isSimulating ? (
                     <>
@@ -282,14 +354,14 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
                 </button>
                 <button
                   onClick={restartSimulation}
-                  className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded flex items-center justify-center gap-2"
+                  className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded flex items-center justify-center gap-2"
                 >
                   <FaUndo className="inline-block" />
                   Restart Simulation
                 </button>
                 <button
                   onClick={() => setShowControls(false)}
-                  className="w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded flex items-center justify-center gap-2"
+                  className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded flex items-center justify-center gap-2"
                 >
                   <FaChevronRight className="inline-block" />
                   Hide Controls
@@ -297,12 +369,23 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
 
                 {/* Add joint controls */}
                 <div className="space-y-2">
-                  <h3 className="text-white font-bold">Joint Controls</h3>
+                  <h3 className={`font-bold ${getThemeColors(theme).text}`}>
+                    Joint Controls
+                  </h3>
                   {joints.map((joint, index) => (
-                    <div key={joint.name} className="space-y-1">
-                      <label className="text-white text-sm">
-                        {joint.name}: {joint.value.toFixed(2)}
-                      </label>
+                    <div key={index} className="space-y-1">
+                      <div className="flex justify-between items-center mb-1">
+                        <label
+                          className={`font-medium ${getThemeColors(theme).text}`}
+                        >
+                          {joint.name}
+                        </label>
+                        <span
+                          className={`text-xs ${getThemeColors(theme).text}`}
+                        >
+                          {joint.value.toFixed(2)}
+                        </span>
+                      </div>
                       <input
                         type="range"
                         min="-3.14"
@@ -312,7 +395,7 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
                         onChange={(e) =>
                           updateJointPosition(index, parseFloat(e.target.value))
                         }
-                        className="w-full"
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                       />
                     </div>
                   ))}
