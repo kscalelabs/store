@@ -12,6 +12,7 @@ import { FeaturedListingsProvider } from "@/components/listing/FeaturedListings"
 import Navbar from "@/components/nav/Navbar";
 import APIKeys from "@/components/pages/APIKeys";
 import About from "@/components/pages/About";
+import Onboarding from "@/components/pages/Onboarding";
 import Account from "@/components/pages/Account";
 import Browse from "@/components/pages/Browse";
 import Create from "@/components/pages/Create";
@@ -61,6 +62,11 @@ const App = () => {
                         <Route
                           path={ROUTES.PLAYGROUND.path}
                           element={<Playground />}
+                        />
+
+                        <Route
+                          path={ROUTES.ONBOARDING.path}
+                          element={<Onboarding />}
                         />
 
                         {/* General pages */}

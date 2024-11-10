@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package hal_pb;
+
+service ServoControl {
+  rpc GetPositions (Empty) returns (JointPositions);
+  rpc SetPositions (JointPositions) returns (Empty);
+  rpc SetWifiInfo (WifiCredentials) returns (Empty);
+  rpc GetServoInfo (ServoId) returns (ServoInfoResponse);
+  rpc Scan (Empty) returns (ServoIds);
+  rpc ChangeId (IdChange) returns (ChangeIdResponse);
+  rpc StartCalibration (ServoId) returns (CalibrationResponse);
+  rpc CancelCalibration (ServoId) returns (CalibrationResponse);
+  rpc StartVideoStream (Empty) returns (Empty);
+  rpc StopVideoStream (Empty) returns (Empty);
+  rpc GetVideoStreamUrls (Empty) returns (VideoStreamUrls);
+  rpc GetCalibrationStatus (Empty) returns (CalibrationStatus);
+}
+
+message Empty {}
+
+message JointPosition {
+  int32 id = 1;
+  float position = 2;
+}
+
+message JointPositions {
+  repeated JointPosition positions = 1;
+}
+
+message WifiCredentials {
+  string ssid = 1;
+  string password = 2;
+}
+
+message ServoId {
+  int32 id = 1;
+}
+
+message ServoInfo {
+  int32 id = 1;
+  float temperature = 2;
+  float current = 3;
+  float voltage = 4;
+  float speed = 5;
+  float current_position = 6;
+  float min_position = 7;
+  float max_position = 8;
+}
+
+message ServoInfoResponse {
+  oneof result {
+    ServoInfo info = 1;
+    ErrorInfo error = 2;
+  }
+}
+
+message ChangeIdResponse {
+  oneof result {
+    bool success = 1;
+    ErrorInfo error = 2;
+  }
+}
+
+message ErrorInfo {
+  string message = 1;
+  int32 code = 2;
+}
+
+message ServoIds {
+  repeated int32 ids = 1;
+}
+
+message IdChange {
+  int32 old_id = 1;
+  int32 new_id = 2;
+}
+
+message VideoStreamUrls {
+  repeated string webrtc = 1;
+  repeated string hls = 2;
+  repeated string hls_ll = 3;
+  repeated string mse = 4;
+  repeated string rtsp = 5;
+}
+
+message CalibrationResponse {
+  oneof result {
+    bool success = 1;
+    ErrorInfo error = 2;
+  }
+}
+
+message CalibrationStatus {
+  bool is_calibrating = 1;
+  int32 calibrating_servo_id = 2;
+}
