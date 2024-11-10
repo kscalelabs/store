@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   FaChevronLeft,
   FaChevronRight,
+  FaCompress,
+  FaExpand,
   FaPause,
   FaPlay,
   FaUndo,
@@ -96,6 +98,20 @@ const MJCFRenderer = ({
 
   // Add theme state
   const [theme, setTheme] = useState<Theme>(() => supportedThemes[0]);
+
+  // Add new state for fullscreen
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const toggleFullScreen = useCallback(() => {
+    if (!parentRef.current) return;
+
+    if (!document.fullscreenElement) {
+      parentRef.current.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  }, []);
 
   // Add function to update joint positions
   const updateJointPosition = (index: number, value: number) => {
@@ -310,11 +326,24 @@ const MJCFRenderer = ({
     })();
 
     window.addEventListener("resize", handleResize);
-    return cleanup;
+
+    // Add fullscreen change listener
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+
+    return () => {
+      // ... existing cleanup code ...
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
   }, []); // Empty dependency array
 
   return (
-    <div className="w-full h-full relative">
+    <div
+      ref={parentRef}
+      className={`relative ${isFullscreen ? "h-screen" : "h-full"}`}
+    >
       <div ref={containerRef} className="w-full h-full" />
 
       {!isMujocoReady && (
@@ -337,29 +366,6 @@ const MJCFRenderer = ({
             <div className="p-4 overflow-y-auto h-full">
               <div className="space-y-4">
                 <button
-                  onClick={toggleSimulation}
-                  className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded flex items-center justify-center gap-2"
-                >
-                  {isSimulating ? (
-                    <>
-                      <FaPause className="inline-block" />
-                      Stop Simulation
-                    </>
-                  ) : (
-                    <>
-                      <FaPlay className="inline-block" />
-                      Start Simulation
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={restartSimulation}
-                  className="w-full bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded flex items-center justify-center gap-2"
-                >
-                  <FaUndo className="inline-block" />
-                  Restart Simulation
-                </button>
-                <button
                   onClick={() => setShowControls(false)}
                   className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded flex items-center justify-center gap-2"
                 >
@@ -373,7 +379,7 @@ const MJCFRenderer = ({
                     Joint Controls
                   </h3>
                   {joints.map((joint, index) => (
-                    <div key={index} className="space-y-1">
+                    <div key={index} className="text-sm">
                       <div className="flex justify-between items-center mb-1">
                         <label
                           className={`font-medium ${getThemeColors(theme).text}`}
@@ -397,6 +403,12 @@ const MJCFRenderer = ({
                         }
                         className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                       />
+                      <div
+                        className={`flex justify-between text-xs ${getThemeColors(theme).text} mt-1`}
+                      >
+                        <span>{"-3.14"}</span>
+                        <span>{"3.14"}</span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -414,6 +426,27 @@ const MJCFRenderer = ({
           <FaChevronLeft />
         </button>
       )}
+
+      <div className="absolute bottom-4 left-4 z-50 flex gap-2">
+        <button
+          onClick={toggleSimulation}
+          className="bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center"
+        >
+          {isSimulating ? <FaPause /> : <FaPlay />}
+        </button>
+        <button
+          onClick={restartSimulation}
+          className="bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center"
+        >
+          <FaUndo />
+        </button>
+        <button
+          onClick={toggleFullScreen}
+          className="bg-purple-500 hover:bg-purple-600 text-white font-bold w-8 h-8 rounded-full shadow-md flex items-center justify-center"
+        >
+          {isFullscreen ? <FaCompress /> : <FaExpand />}
+        </button>
+      </div>
     </div>
   );
 };
