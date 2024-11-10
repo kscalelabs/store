@@ -45,7 +45,7 @@ const UploadContent: FC<UploadContentProps> = ({ images, onChange }) => {
   }, [images]);
 
   return (
-    <div className="p-6 bg-black border border-gray-500 rounded-lg">
+    <div className="p-6 bg-gray-12 border border-gray-11 rounded-lg">
       <ImageUploading
         multiple
         value={images}
@@ -65,15 +65,17 @@ const UploadContent: FC<UploadContentProps> = ({ images, onChange }) => {
           <div className="upload__image-wrapper">
             {/* Dropzone Area */}
             <div
-              className={`border-2 border-dashed p-5 rounded-lg flex flex-col items-center justify-center h-64 transition-colors duration-300 ${
-                isDragging
-                  ? "border-orange-900 bg-orange-300"
-                  : "border-gray-6 bg-gray-900"
-              }`}
+              className={`
+                border-2 border-dashed p-5 rounded-lg flex flex-col items-center justify-center h-64 transition-colors duration-300 hover:cursor-pointer hover:bg-gray-10 hover:border-gray-1
+                ${
+                  isDragging
+                    ? "border-gray-1 bg-gray-10"
+                    : "border-gray-5 bg-gray-11"
+                }`}
               onClick={onImageUpload}
               {...dragProps}
             >
-              <p className="text-gray-300">
+              <p className="text-gray-1">
                 Drag & drop images here, click to select files, or paste an
                 image from your clipboard
               </p>

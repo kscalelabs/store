@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTypedParams } from "react-router-typesafe-routes/dom";
 
 import MyListingGrid from "@/components/listings/MyListingGrid";
@@ -421,12 +421,12 @@ export const RenderProfile = (props: RenderProfileProps) => {
                 </Button>
               </Tooltip>
             ) : (
-              <Link
-                to={`https://dashboard.stripe.com/${auth.currentUser?.stripe_connect_account_id}`}
-                className="text-sm"
+              <Button
+                onClick={() => navigate(ROUTES.SELL.DASHBOARD.path)}
+                variant="outline"
               >
                 Seller Dashboard
-              </Link>
+              </Button>
             )}
           </div>
           <div className="flex flex-col items-center space-y-4">

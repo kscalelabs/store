@@ -19,6 +19,8 @@ import { slugify } from "@/lib/utils/formatString";
 import { convertToCents, convertToDecimal } from "@/lib/utils/priceFormat";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import Container from "../ui/container";
+
 const CreateSell = () => {
   const auth = useAuthentication();
   const { addAlert, addErrorAlert } = useAlertQueue();
@@ -309,10 +311,10 @@ const CreateSell = () => {
 
   return (
     <RequireAuthentication>
-      <div className="container mx-auto max-w-lg shadow-md rounded-lg bg-gray-2 text-gray-12">
-        <Card className="shadow-md">
+      <Container className="max-w-xl">
+        <Card>
           <CardHeader>
-            <Header title="Post new build" />
+            <Header title="List your robot for sale" />
           </CardHeader>
           <CardContent>
             <form
@@ -331,7 +333,7 @@ const CreateSell = () => {
               <div>
                 <label
                   htmlFor="name"
-                  className="block mb-2 text-sm font-medium text-gray-12"
+                  className="block mb-2 text-sm font-medium text-gray-1"
                 >
                   Name
                 </label>
@@ -350,7 +352,7 @@ const CreateSell = () => {
               <div className="relative">
                 <label
                   htmlFor="description"
-                  className="block mb-2 text-sm font-medium text-gray-12"
+                  className="block mb-2 text-sm font-medium text-gray-1"
                 >
                   Description (supports Markdown formatting)
                 </label>
@@ -379,7 +381,7 @@ const CreateSell = () => {
               <div>
                 <label
                   htmlFor="slug"
-                  className="block mb-2 text-sm font-medium text-gray-12"
+                  className="block mb-2 text-sm font-medium text-gray-1"
                 >
                   Slug
                 </label>
@@ -404,10 +406,10 @@ const CreateSell = () => {
               {/* URL Preview */}
               {previewUrl && (
                 <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-12">
+                  <label className="block mb-2 text-sm font-medium text-gray-1">
                     Listing URL Preview
                   </label>
-                  <div className="p-2 bg-gray-3 rounded-md text-gray-11">
+                  <div className="p-2 bg-gray-5 rounded-md text-gray-12">
                     {previewUrl}
                   </div>
                 </div>
@@ -415,15 +417,15 @@ const CreateSell = () => {
 
               {/* Payment Section */}
               <div className="space-y-4 border-t border-gray-6 pt-4">
-                <h3 className="font-semibold">Payment Settings</h3>
+                <h3 className="font-semibold text-lg">Payment Information</h3>
 
                 {/* Price */}
                 <div>
                   <label
                     htmlFor="price"
-                    className="block mb-2 text-sm font-medium text-gray-12"
+                    className="block mb-2 text-sm font-medium text-gray-1"
                   >
-                    Price
+                    Price (USD)
                   </label>
                   <Input
                     id="price"
@@ -436,7 +438,7 @@ const CreateSell = () => {
                     <ErrorMessage>{errors?.price_amount?.message}</ErrorMessage>
                   )}
                   {displayPrice && (
-                    <p className="mt-1 text-sm text-gray-11">
+                    <p className="mt-1 text-sm text-gray-9">
                       Entered price: ${displayPrice}
                     </p>
                   )}
@@ -445,11 +447,11 @@ const CreateSell = () => {
                 {/* Inventory Type */}
                 {price_amount && price_amount > 0 && (
                   <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-12">
+                    <label className="block mb-2 text-sm font-medium text-gray-1">
                       Inventory Type
                     </label>
                     <select
-                      className="w-full p-2 rounded-md border border-gray-7 bg-gray-3"
+                      className="w-full p-2 rounded-md border border-gray-7 bg-gray-3 text-gray-12"
                       {...register("inventory_type")}
                       onChange={(e) => {
                         setInventoryType(
@@ -471,7 +473,7 @@ const CreateSell = () => {
                 {/* Finite Inventory Quantity */}
                 {inventoryType === "finite" && (
                   <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-12">
+                    <label className="block mb-2 text-sm font-medium text-gray-1">
                       Available Quantity
                     </label>
                     <Input
@@ -495,7 +497,7 @@ const CreateSell = () => {
                 {/* Pre-order Release Date */}
                 {inventoryType === "preorder" && (
                   <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-12">
+                    <label className="block mb-2 text-sm font-medium text-gray-1">
                       Release Date
                     </label>
                     <Input
@@ -529,14 +531,14 @@ const CreateSell = () => {
                           }}
                           className="rounded border-gray-7"
                         />
-                        <span className="text-sm font-medium text-gray-12">
+                        <span className="text-sm font-medium text-gray-1">
                           Enable Reservation
                         </span>
                       </label>
 
                       {isReservation && (
                         <div>
-                          <label className="block mb-2 text-sm font-medium text-gray-12">
+                          <label className="block mb-2 text-sm font-medium text-gray-1">
                             Reservation Deposit Amount
                           </label>
                           <Input
@@ -563,7 +565,7 @@ const CreateSell = () => {
 
               {/* Photos */}
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-12">
+                <label className="block mb-2 text-sm font-medium text-gray-1">
                   Photos
                 </label>
                 <UploadContent images={images} onChange={handleImageChange} />
@@ -571,14 +573,14 @@ const CreateSell = () => {
 
               {/* Submit */}
               <div className="flex justify-end">
-                <Button variant="primary" type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Posting..." : "Post build"}
+                <Button variant="outline" type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Listing..." : "List robot"}
                 </Button>
               </div>
             </form>
           </CardContent>
         </Card>
-      </div>
+      </Container>
     </RequireAuthentication>
   );
 };

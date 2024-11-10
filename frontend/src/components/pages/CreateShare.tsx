@@ -110,7 +110,7 @@ const CreateShare = () => {
       <Container className="max-w-xl">
         <Card>
           <CardHeader>
-            <Header title="Post new build" />
+            <Header title="Share your robot" />
           </CardHeader>
           <CardContent className="p-6">
             <form
@@ -121,7 +121,7 @@ const CreateShare = () => {
               <div>
                 <label
                   htmlFor="name"
-                  className="block mb-2 text-sm font-medium text-gray-300"
+                  className="block mb-2 text-sm font-medium text-gray-1"
                 >
                   Name
                 </label>
@@ -140,7 +140,7 @@ const CreateShare = () => {
               <div className="relative">
                 <label
                   htmlFor="description"
-                  className="block mb-2 text-sm font-medium text-gray-300"
+                  className="block mb-2 text-sm font-medium text-gray-1"
                 >
                   Description (supports Markdown formatting)
                 </label>
@@ -160,9 +160,7 @@ const CreateShare = () => {
               {/* Render Description */}
               {description && (
                 <div className="relative">
-                  <h3 className="font-semibold mb-2 text-gray-300">
-                    Description Preview
-                  </h3>
+                  <h3 className="font-semibold mb-2">Description Preview</h3>
                   <RenderDescription description={description} />
                 </div>
               )}
@@ -196,10 +194,10 @@ const CreateShare = () => {
               {/* URL Preview */}
               {previewUrl && (
                 <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-300">
+                  <label className="block mb-2 text-sm font-medium text-gray-1">
                     Listing URL Preview
                   </label>
-                  <div className="p-2 bg-gray-900 rounded-md text-gray-400">
+                  <div className="p-2 bg-gray-5 rounded-md text-gray-12">
                     {previewUrl}
                   </div>
                 </div>
@@ -207,7 +205,7 @@ const CreateShare = () => {
 
               {/* Photos */}
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-300">
+                <label className="block mb-2 text-sm font-medium text-gray-1">
                   Photos
                 </label>
                 <UploadContent images={images} onChange={handleImageChange} />
@@ -215,13 +213,8 @@ const CreateShare = () => {
 
               {/* Submit */}
               <div className="flex justify-end">
-                <Button
-                  variant="default"
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="bg-orange-500 hover:bg-orange-600 text-white"
-                >
-                  {isSubmitting ? "Posting..." : "Post build"}
+                <Button variant="outline" type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Posting..." : "Share Robot"}
                 </Button>
               </div>
             </form>

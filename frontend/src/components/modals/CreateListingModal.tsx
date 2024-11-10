@@ -27,7 +27,7 @@ export const CreateListingModal = ({ isOpen, onOpenChange }: Props) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] bg-gray-1 text-gray-12 border border-gray-3 rounded-lg shadow-lg">
+      <DialogContent className="sm:max-w-[600px] bg-gray-12 text-gray-1 border border-gray-1 rounded-lg shadow-lg">
         <DialogHeader>
           <DialogTitle>What would you like to do?</DialogTitle>
         </DialogHeader>
@@ -38,11 +38,11 @@ export const CreateListingModal = ({ isOpen, onOpenChange }: Props) => {
                 `${ROUTES.BOTS.path}/${ROUTES.BOTS.$.CREATE.relativePath}`,
               )
             }
-            className="flex flex-col items-center justify-center p-6 rounded-lg border border-gray-6 hover:border-gray-8 cursor-pointer transition-all"
+            className="flex flex-col items-center justify-center p-6 rounded-lg border border-gray-7 hover:border-gray-1 hover:bg-gray-11 cursor-pointer transition-all"
           >
             <Share2 className="w-12 h-12 mb-4" />
             <h3 className="text-lg font-semibold">Share a Robot</h3>
-            <p className="text-sm text-gray-11 text-center mt-2">
+            <p className="text-sm text-gray-7 text-center mt-2">
               Share your Robot with the community
             </p>
           </div>
@@ -56,13 +56,13 @@ export const CreateListingModal = ({ isOpen, onOpenChange }: Props) => {
             }
             className={`flex flex-col items-center justify-center p-6 rounded-lg border ${
               canSell
-                ? "border-gray-6 hover:border-gray-8 cursor-pointer"
+                ? "border-gray-7 hover:border-gray-1 hover:bg-gray-11 cursor-pointer"
                 : "border-gray-4 opacity-50 cursor-not-allowed"
             } transition-all`}
           >
             <ShoppingBag className="w-12 h-12 mb-4" />
             <h3 className="text-lg font-semibold">Sell a Robot</h3>
-            <p className="text-sm text-gray-11 text-center mt-2">
+            <p className="text-sm text-gray-7 text-center mt-2">
               {canSell
                 ? "List your Robot for sale"
                 : "Complete Seller onboarding to sell"}
