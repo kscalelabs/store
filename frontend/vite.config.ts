@@ -20,4 +20,5 @@ export default defineConfig({
   build: {
     outDir: "dist",
   },
+  assetsInclude: ["**/*.xml"],
 });

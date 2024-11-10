@@ -50,7 +50,7 @@ const OrdersPage: React.FC = () => {
   }
 
   return (
-    <div className="p-6 min-h-screen rounded-xl bg-gray-3">
+    <div className="p-6 min-h-screen rounded-xl">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Your Orders</h1>
         <p className="text-gray-11">
@@ -58,7 +58,7 @@ const OrdersPage: React.FC = () => {
         </p>
       </div>
       {isLoading || loadingOrders ? (
-        <div className="flex justify-center items-center bg-gray-4 p-4 md:p-10 rounded-lg max-w-md mx-auto">
+        <div className="flex justify-center items-center p-4 md:p-10 rounded-lg max-w-md mx-auto">
           <Spinner className="p-1" />
         </div>
       ) : orders && orders.length > 0 ? (
@@ -71,11 +71,11 @@ const OrdersPage: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="flex flex-col gap-4 justify-center items-center bg-gray-4 p-10 rounded-lg max-w-3xl mx-auto">
+        <div className="flex flex-col gap-4 justify-center items-center p-10 rounded-lg max-w-3xl mx-auto">
           <p className="text-gray-12 font-medium sm:text-lg">No orders yet.</p>
           <Button
             onClick={() => navigate(ROUTES.BOTS.BROWSE.path)}
-            variant="primary"
+            variant="default"
           >
             Browse Robots
           </Button>

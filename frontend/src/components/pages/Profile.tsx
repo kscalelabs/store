@@ -217,7 +217,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
             <div className="flex flex-wrap gap-2 justify-center">
               <Button
                 onClick={() => navigate(ROUTES.KEYS.path)}
-                variant="primary"
+                variant="default"
               >
                 API Keys
               </Button>
@@ -349,7 +349,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
                     </Button>
                     <Button
                       type="submit"
-                      variant="primary"
+                      variant="default"
                       disabled={isUsernameChanged && !isUsernameAvailable}
                     >
                       Save Changes
@@ -361,7 +361,6 @@ export const RenderProfile = (props: RenderProfileProps) => {
           ) : (
             <div className="space-y-6">
               <div>
-                <h2 className="text-lg font-medium mb-2">Bio</h2>
                 {user.bio ? (
                   <p>{user.bio}</p>
                 ) : (
@@ -397,7 +396,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
           <div className="flex gap-2 mb-4">
             <Button
               onClick={() => navigate(ROUTES.ORDERS.path)}
-              variant="primary"
+              variant="default"
             >
               Orders
             </Button>

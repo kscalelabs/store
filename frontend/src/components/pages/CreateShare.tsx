@@ -11,6 +11,7 @@ import ErrorMessage from "@/components/ui/ErrorMessage";
 import Header from "@/components/ui/Header";
 import { Input, TextArea } from "@/components/ui/Input/Input";
 import { Button } from "@/components/ui/button";
+import Container from "@/components/ui/container";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { ShareListingSchema, ShareListingType } from "@/lib/types";
@@ -106,12 +107,12 @@ const CreateShare = () => {
 
   return (
     <RequireAuthentication>
-      <div className="container mx-auto max-w-lg shadow-md rounded-lg bg-gray-2 text-gray-12">
-        <Card className="shadow-md">
+      <Container className="max-w-xl">
+        <Card>
           <CardHeader>
             <Header title="Post new build" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-6">
             <form
               onSubmit={handleSubmit(onSubmit)}
               className="grid grid-cols-1 space-y-6"
@@ -120,7 +121,7 @@ const CreateShare = () => {
               <div>
                 <label
                   htmlFor="name"
-                  className="block mb-2 text-sm font-medium text-gray-12"
+                  className="block mb-2 text-sm font-medium text-gray-300"
                 >
                   Name
                 </label>
@@ -139,7 +140,7 @@ const CreateShare = () => {
               <div className="relative">
                 <label
                   htmlFor="description"
-                  className="block mb-2 text-sm font-medium text-gray-12"
+                  className="block mb-2 text-sm font-medium text-gray-300"
                 >
                   Description (supports Markdown formatting)
                 </label>
@@ -159,7 +160,9 @@ const CreateShare = () => {
               {/* Render Description */}
               {description && (
                 <div className="relative">
-                  <h3 className="font-semibold mb-2">Description Preview</h3>
+                  <h3 className="font-semibold mb-2 text-gray-300">
+                    Description Preview
+                  </h3>
                   <RenderDescription description={description} />
                 </div>
               )}
@@ -168,7 +171,7 @@ const CreateShare = () => {
               <div>
                 <label
                   htmlFor="slug"
-                  className="block mb-2 text-sm font-medium text-gray-12"
+                  className="block mb-2 text-sm font-medium text-gray-300"
                 >
                   Slug
                 </label>
@@ -193,10 +196,10 @@ const CreateShare = () => {
               {/* URL Preview */}
               {previewUrl && (
                 <div>
-                  <label className="block mb-2 text-sm font-medium text-gray-12">
+                  <label className="block mb-2 text-sm font-medium text-gray-300">
                     Listing URL Preview
                   </label>
-                  <div className="p-2 bg-gray-3 rounded-md text-gray-11">
+                  <div className="p-2 bg-gray-900 rounded-md text-gray-400">
                     {previewUrl}
                   </div>
                 </div>
@@ -204,7 +207,7 @@ const CreateShare = () => {
 
               {/* Photos */}
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-12">
+                <label className="block mb-2 text-sm font-medium text-gray-300">
                   Photos
                 </label>
                 <UploadContent images={images} onChange={handleImageChange} />
@@ -212,14 +215,19 @@ const CreateShare = () => {
 
               {/* Submit */}
               <div className="flex justify-end">
-                <Button variant="primary" type="submit" disabled={isSubmitting}>
+                <Button
+                  variant="default"
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-orange-500 hover:bg-orange-600 text-white"
+                >
                   {isSubmitting ? "Posting..." : "Post build"}
                 </Button>
               </div>
             </form>
           </CardContent>
         </Card>
-      </div>
+      </Container>
     </RequireAuthentication>
   );
 };

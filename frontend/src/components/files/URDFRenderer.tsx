@@ -10,7 +10,7 @@ import {
   FaUndo,
 } from "react-icons/fa";
 
-import { UntarredFile } from "@/components/files/Tarfile";
+import { UntarredFile } from "@/components/files/untar";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { STLLoader } from "three/examples/jsm/loaders/STLLoader";

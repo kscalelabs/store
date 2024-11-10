@@ -2,7 +2,6 @@ import { route, string } from "react-router-typesafe-routes/dom";
 
 const ROUTES = {
   HOME: route(""),
-  PLAYGROUND: route("playground"),
 
   // General pages
   ABOUT: route("about"),
@@ -42,8 +41,8 @@ const ROUTES = {
   PROFILE: route("profile/:id?", {
     params: { id: string() },
   }),
-  FILE: route("file/:artifactId", {
-    params: { artifactId: string().defined() },
+  FILE: route("file/:artifactId/:fileName?", {
+    params: { artifactId: string().defined(), fileName: string() },
   }),
 
   // Sell.
@@ -51,6 +50,7 @@ const ROUTES = {
     "sell",
     {},
     {
+      DASHBOARD: route("dashboard"),
       ONBOARDING: route("onboarding"),
       DASHBOARD: route("dashboard"),
       DELETE: route("delete"),

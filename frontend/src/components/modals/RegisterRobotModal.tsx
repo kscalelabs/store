@@ -113,7 +113,7 @@ export function RegisterRobotModal({
           <Button
             onClick={handleAdd}
             disabled={!name || isLoading}
-            variant="primary"
+            variant="default"
             className="flex items-center"
           >
             {isLoading ? (

@@ -57,13 +57,13 @@ const UrlDisplay = ({ url, onCopy, disabled = false }: UrlDisplayProps) => (
       href={url || ""}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex-1 px-4 py-2 bg-gray-50 rounded-md hover:underline truncate"
+      className="flex-1 px-4 py-2 bg-gray-12 rounded-md hover:underline truncate text-gray-1"
     >
       Linked Onshape Document
     </a>
     <Button
       onClick={onCopy}
-      variant="secondary"
+      variant="default"
       disabled={disabled}
       className="flex items-center justify-center"
     >
@@ -78,13 +78,13 @@ const IconButton = ({
   icon: Icon,
   label,
   onClick,
-  variant = "secondary",
+  variant = "default",
   disabled = false,
 }: {
   icon: IconType;
   label: string;
   onClick: () => void;
-  variant?: "primary" | "secondary" | "destructive";
+  variant?: "default" | "destructive";
   disabled?: boolean;
 }) => (
   <Button onClick={onClick} variant={variant} disabled={disabled}>
@@ -100,7 +100,7 @@ const HelpButton = ({
   showInstructions: boolean;
   onToggle: () => void;
 }) => (
-  <Button onClick={onToggle} variant="secondary">
+  <Button onClick={onToggle} variant="default">
     <FaInfoCircle />
     <span className="ml-2">{showInstructions ? "Hide Help" : "Show Help"}</span>
   </Button>
@@ -146,7 +146,7 @@ const UpdateButtons = ({
         icon={FaSync}
         label="Sync"
         onClick={onReload}
-        variant="primary"
+        variant="default"
         disabled={disabled}
       />
     )}
@@ -368,23 +368,23 @@ const ListingOnshape = (props: Props) => {
   };
 
   const renderUrdfInstructions = (listingId: string) => (
-    <div className="mt-6 p-8 bg-gray-50 rounded-xl shadow-lg w-full border border-gray-200">
-      <h4 className="text-2xl font-semibold mb-6 text-blue-600">
+    <div className="mt-6 p-8 bg-gray-12 rounded-xl shadow-lg w-full border border-gray-200">
+      <h4 className="text-2xl font-semibold mb-6 text-gray-1">
         URDF Upload Instructions
       </h4>
-      <ol className="list-decimal list-outside ml-6 space-y-6 text-base">
+      <ol className="list-decimal list-outside ml-6 space-y-6 text-base text-gray-1">
         <li className="leading-relaxed">
           Install the K-Scale CLI:
           <CopyableCode
             code="pip install kscale"
-            className="bg-gray-100 text-green-600 p-4 rounded-lg mt-3 font-mono text-sm border border-gray-200"
+            className="bg-gray-12 text-green-600 p-4 rounded-lg mt-3 font-mono text-sm border border-gray-200"
           />
         </li>
         <li className="leading-relaxed">
           Upload your URDF file:
           <CopyableCode
             code={`kscale urdf upload ${listingId} /path/to/your/urdf/directory/`}
-            className="bg-gray-100 text-green-600 p-4 rounded-lg mt-3 font-mono text-sm border border-gray-200"
+            className="bg-gray-12 text-green-600 p-4 rounded-lg mt-3 font-mono text-sm border border-gray-200"
           />
         </li>
       </ol>
@@ -412,7 +412,7 @@ const ListingOnshape = (props: Props) => {
     if (!url) {
       return (
         <div className="flex flex-wrap gap-2">
-          <Button onClick={() => setIsEditing(true)} variant="primary">
+          <Button onClick={() => setIsEditing(true)} variant="default">
             Add Onshape URL
           </Button>
           {edit && (

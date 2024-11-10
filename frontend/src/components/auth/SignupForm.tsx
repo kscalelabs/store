@@ -104,7 +104,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ signupTokenId }) => {
         .
       </div>
       {/* Signup Button */}
-      <Button variant="primary">Sign up</Button>
+      <Button variant="default">Sign up</Button>
     </form>
   );
 };

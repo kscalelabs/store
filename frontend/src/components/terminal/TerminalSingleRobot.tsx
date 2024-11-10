@@ -2,11 +2,10 @@ import { useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-import "@/components/terminal/Terminal.css";
-
 import AudioIcon from "@/components/icons/AudioIcon";
 import TerminalRobotModel from "@/components/terminal/TerminalRobotModel";
 import { SingleRobotResponse } from "@/components/terminal/types";
+import { Button } from "@/components/ui/button";
 import ROUTES from "@/lib/types/routes";
 
 interface Props {
@@ -84,16 +83,17 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 p-4 font-mono text-green-500 rounded-xl">
+    <div className="min-h-screen bg-black p-4 font-mono text-white">
       {/* Navigation buttons */}
       <div className="flex gap-4 mb-4">
-        <button
+        <Button
           onClick={() => navigate(ROUTES.TERMINAL.path)}
-          className="border border-green-500 px-4 py-2 hover:bg-green-500 hover:text-black transition-colors flex items-center gap-2"
+          variant="default"
+          className="gap-4"
         >
           <FaArrowLeft /> All Robots
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={() =>
             navigate(
               ROUTES.BOT.buildPath({
@@ -102,10 +102,10 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
               }),
             )
           }
-          className="border border-green-500 px-4 py-2 hover:bg-green-500 hover:text-black transition-colors"
+          variant="default"
         >
           Listing
-        </button>
+        </Button>
       </div>
 
       {/* Robot Details */}
@@ -117,29 +117,31 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="flex-1 bg-black border border-green-500 px-2 py-1 text-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                className="flex-1 bg-black border border-gray-700 px-2 py-1 text-white focus:outline-none focus:ring-1 focus:border-white"
                 autoFocus
               />
-              <button
+              <Button
                 onClick={handleNameSave}
                 disabled={isUpdatingName}
-                className="border border-green-500 px-4 py-1 hover:bg-green-500 hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                variant="default"
+                size="sm"
               >
                 {isUpdatingName ? "Saving..." : "Save"}
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => setIsEditingName(false)}
-                className="border border-green-500 px-4 py-1 hover:bg-green-500 hover:text-black transition-colors"
+                variant="default"
+                size="sm"
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-between gap-2">
               <h1 className="text-xl font-bold">{name || "Unnamed Robot"}</h1>
               <button
                 onClick={() => setIsEditingName(true)}
-                className="text-sm border border-green-500 px-2 py-1 hover:bg-green-500 hover:text-black transition-colors"
+                className="text-sm border border-gray-700 px-2 py-1 hover:bg-gray-700 transition-colors"
               >
                 Edit
               </button>
@@ -153,23 +155,25 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
               <textarea
                 value={description || ""}
                 onChange={(e) => setDescription(e.target.value)}
-                className="flex-1 bg-black border border-green-500 px-2 py-1 text-green-500 focus:outline-none focus:ring-1 focus:ring-green-500 min-h-[80px]"
+                className="flex-1 bg-black border border-gray-700 px-2 py-1 text-white focus:outline-none focus:ring-1 focus:border-white min-h-[80px] font-mono"
                 autoFocus
               />
               <div className="flex flex-col gap-2">
-                <button
+                <Button
                   onClick={handleDescriptionSave}
                   disabled={isUpdatingDescription}
-                  className="border border-green-500 px-4 py-1 hover:bg-green-500 hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  variant="default"
+                  size="sm"
                 >
                   {isUpdatingDescription ? "Saving..." : "Save"}
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => setIsEditingDescription(false)}
-                  className="border border-green-500 px-4 py-1 hover:bg-green-500 hover:text-black transition-colors"
+                  variant="default"
+                  size="sm"
                 >
                   Cancel
-                </button>
+                </Button>
               </div>
             </div>
           ) : (
@@ -179,7 +183,7 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
               </p>
               <button
                 onClick={() => setIsEditingDescription(true)}
-                className="text-sm border border-green-500 px-2 py-1 hover:bg-green-500 hover:text-black transition-colors"
+                className="text-sm border border-gray-700 px-2 py-1 hover:bg-gray-700 transition-colors"
               >
                 Edit
               </button>
@@ -190,28 +194,22 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
 
       {/* Connection controls */}
       <div className="mb-4 flex flex-wrap gap-4">
-        <button
-          onClick={handleConnect}
-          className="flex-1 border border-green-500 px-4 py-2 hover:bg-green-500 hover:text-black transition-colors"
-        >
+        <Button onClick={handleConnect} variant="default" className="flex-1">
           Connect
-        </button>
-        <button
-          onClick={handleDisconnect}
-          className="flex-1 border border-green-500 px-4 py-2 hover:bg-green-500 hover:text-black transition-colors"
-        >
+        </Button>
+        <Button onClick={handleDisconnect} variant="default" className="flex-1">
           Disconnect
-        </button>
+        </Button>
       </div>
 
       {/* Main grid layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[calc(100vh-8rem)]">
         {/* Video and Audio feed panel */}
-        <div className="border bg-black rounded-lg overflow-hidden flex flex-col">
+        <div className="border border-gray-700 bg-black rounded-lg overflow-hidden flex flex-col">
           <div className="p-4 space-y-4 flex-1 flex flex-col justify-center">
             {/* Video container */}
             <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
-              <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center border-2 border-dashed border-green-500 p-4">
+              <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center border-2 border-dashed border-gray-700 p-4">
                 Waiting for video connection...
               </div>
             </div>
@@ -221,33 +219,33 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
               <div className="flex-shrink-0">
                 <AudioIcon />
               </div>
-              <div className="flex-1 h-2 bg-green-900 rounded-full overflow-hidden">
-                <div className="h-full w-0 bg-green-500 rounded-full animate-pulse"></div>
+              <div className="flex-1 h-2 bg-gray-900 rounded-full overflow-hidden">
+                <div className="h-full w-0 bg-gray-700 rounded-full animate-pulse"></div>
               </div>
             </div>
           </div>
         </div>
 
         {/* 3D Mesh Visualization panel */}
-        <div className="border border-green-500 bg-black rounded-xl h-full w-full overflow-hidden">
+        <div className="border border-gray-700 bg-black rounded-lg h-full w-full overflow-hidden">
           <TerminalRobotModel listingId={robot.listing_id} />
         </div>
 
         {/* Klang Input panel */}
-        <div className="border bg-black rounded-lg overflow-hidden min-h-[300px]">
+        <div className="border border-gray-700 bg-black rounded-lg overflow-hidden min-h-[300px]">
           <div className="p-4 h-full flex flex-col gap-4">
             <textarea
-              className="w-full h-full bg-black text-green-500 border border-green-500 p-2 font-mono resize-none focus:outline-none focus:ring-1 focus:ring-green-500"
+              className="w-full h-full bg-black text-white border border-gray-700 p-2 font-mono resize-none focus:outline-none focus:ring-1 focus:border-white"
               placeholder="Enter code here..."
             />
-            <button className="w-full border border-green-500 px-4 py-2 hover:bg-green-500 hover:text-black transition-colors">
+            <Button variant="default" className="w-full">
               Execute
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Console output panel */}
-        <div className="border bg-black rounded-lg overflow-hidden min-h-[300px]">
+        <div className="border border-gray-700 bg-black rounded-lg overflow-hidden min-h-[300px]">
           <div className="p-4 h-full overflow-auto whitespace-pre-wrap">
             {[...terminalMessages].reverse().map((message, index) => (
               <div key={index}>{message}</div>

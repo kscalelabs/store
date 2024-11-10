@@ -63,7 +63,7 @@ const ListingDeleteButton = (props: Props) => {
             undone.
           </p>
           <div className="flex justify-end space-x-4">
-            <Button onClick={() => setConfirmDelete(false)} variant="secondary">
+            <Button onClick={() => setConfirmDelete(false)} variant="default">
               Cancel
             </Button>
             <Button
