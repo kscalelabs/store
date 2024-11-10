@@ -394,7 +394,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
               </p>
             ) : null}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 mb-4">
             <Button
               onClick={() => navigate(ROUTES.ORDERS.path)}
               variant="primary"
@@ -407,7 +407,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
                   onClick={() => navigate(ROUTES.SELL.ONBOARDING.path)}
                   variant="outline"
                 >
-                  Sell Robots
+                  Sell Robots - Start Seller Onboarding
                 </Button>
               </Tooltip>
             ) : !user.stripe_connect_onboarding_completed ? (
@@ -416,12 +416,12 @@ export const RenderProfile = (props: RenderProfileProps) => {
                   onClick={() => navigate(ROUTES.SELL.ONBOARDING.path)}
                   variant="outline"
                 >
-                  Complete Seller Setup
+                  Complete Seller Onboarding
                 </Button>
               </Tooltip>
             ) : (
               <Button
-                onClick={() => navigate(ROUTES.SELL.path)}
+                onClick={() => navigate(ROUTES.SELL.DASHBOARD.path)}
                 variant="outline"
               >
                 Seller Dashboard

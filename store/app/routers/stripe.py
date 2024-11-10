@@ -110,14 +110,19 @@ async def refund_payment_intent(
 
 @router.post("/webhook")
 async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Dict[str, str]:
+    print("DEBUG: Webhook received")
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
 
-    logger.info("Received Stripe webhook. Signature: %s", sig_header)
+    logger.info("Received Stripe webhook with signature: %s", sig_header)
+    logger.info("Webhook payload: %s", payload.decode())
 
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, settings.stripe.webhook_secret)
         logger.info("Webhook verified. Event type: %s", event["type"])
+
+        # Log the full event for debugging
+        logger.info("Full webhook event: %s", event)
     except ValueError as e:
         logger.error("Invalid payload: %s", str(e))
         raise HTTPException(status_code=400, detail="Invalid payload")
@@ -149,8 +154,17 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
                     logger.warning("No user found for Connect account: %s", account["id"])
             except Exception as e:
                 logger.error("Error updating user Connect status: %s", str(e))
+                # Add more detailed logging
+                logger.error("Full error details:", exc_info=True)
         else:
-            logger.info("Account %s not fully onboarded yet. Capabilities: %s", account["id"], capabilities)
+            # Add more detailed logging about why it's not considered fully onboarded
+            logger.info(
+                "Account %s not fully onboarded yet. Status: details_submitted=%s, payouts_enabled=%s, capabilities=%s",
+                account["id"],
+                account.get("details_submitted"),
+                account.get("payouts_enabled"),
+                capabilities,
+            )
 
     elif event["type"] == "checkout.session.completed":
         session = event["data"]["object"]

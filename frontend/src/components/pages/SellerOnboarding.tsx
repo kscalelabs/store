@@ -33,7 +33,7 @@ export default function SellerOnboarding() {
 
   useEffect(() => {
     if (auth.currentUser?.stripe_connect_onboarding_completed) {
-      navigate(ROUTES.SELL.path);
+      navigate(ROUTES.SELL.DASHBOARD.path);
     }
   }, [auth.currentUser, navigate]);
 

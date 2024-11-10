@@ -65,7 +65,7 @@ export const CreateListingModal = ({ isOpen, onOpenChange }: Props) => {
             <p className="text-sm text-gray-11 text-center mt-2">
               {canSell
                 ? "List your Robot for sale"
-                : "Complete Stripe onboarding to sell"}
+                : "Complete Seller onboarding to sell"}
             </p>
           </div>
         </div>

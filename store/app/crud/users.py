@@ -42,7 +42,7 @@ class UserNotFoundError(Exception):
 class UserCrud(BaseCrud):
     @classmethod
     def get_gsis(cls) -> set[str]:
-        return super().get_gsis().union({"user_id", "email", "user_token", "username"})
+        return super().get_gsis().union({"user_id", "email", "user_token", "username", "stripe_connect_account_id"})
 
     @overload
     async def get_user(self, id: str, throw_if_missing: Literal[True]) -> User: ...
