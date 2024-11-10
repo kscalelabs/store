@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Spinner from "@/components/ui/Spinner";
+import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { useStripeConnect } from "@/hooks/useStripeConnect";
@@ -33,7 +34,7 @@ export default function SellerOnboarding() {
 
   useEffect(() => {
     if (auth.currentUser?.stripe_connect_onboarding_completed) {
-      navigate(ROUTES.SELL.path);
+      navigate(ROUTES.SELL.DASHBOARD.path);
     }
   }, [auth.currentUser, navigate]);
 
@@ -82,7 +83,7 @@ export default function SellerOnboarding() {
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Start Selling on K-Scale</h1>
+        <h1 className="text-3xl font-bold my-8">Start Selling on K-Scale</h1>
 
         {!connectedAccountId && (
           <div className="mb-8">
@@ -91,15 +92,15 @@ export default function SellerOnboarding() {
               robots and receiving payments.
             </p>
 
-            <button
+            <Button
               onClick={handleCreateAccount}
               disabled={accountCreatePending}
-              className="w-full text-white px-6 py-3 rounded-lg disabled:opacity-50"
+              variant="outline"
             >
               {accountCreatePending
                 ? "Creating account..."
                 : "Start seller onboarding"}
-            </button>
+            </Button>
           </div>
         )}
 
@@ -108,7 +109,10 @@ export default function SellerOnboarding() {
             <ConnectAccountOnboarding
               onExit={() => {
                 setOnboardingExited(true);
-                navigate(ROUTES.SELL.path);
+                auth.fetchCurrentUser();
+                if (auth.currentUser?.stripe_connect_onboarding_completed) {
+                  navigate(ROUTES.SELL.DASHBOARD.path);
+                }
               }}
             />
           </ConnectComponentsProvider>
@@ -123,7 +127,7 @@ export default function SellerOnboarding() {
                 </span>
                 <div className="flex items-center gap-2">
                   Connected account ID:{" "}
-                  <code className="font-mono bg-gray-5 rounded-md p-1">
+                  <code className="font-mono bg-gray-11 rounded-md p-1">
                     {connectedAccountId}
                   </code>
                 </div>

@@ -7,15 +7,17 @@ import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { STRIPE_PUBLISHABLE_KEY } from "@/lib/constants/env";
+import { ApiError } from "@/lib/types/api";
 import ROUTES from "@/lib/types/routes";
 import { loadStripe } from "@stripe/stripe-js";
 
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
-const CheckoutButton: React.FC<{ productId: string; label?: string }> = ({
-  productId,
-  label = "Order Now",
-}) => {
+const CheckoutButton: React.FC<{
+  listingId: string;
+  stripeProductId: string;
+  label?: string;
+}> = ({ listingId, stripeProductId, label = "Order Now" }) => {
   const { addErrorAlert } = useAlertQueue();
   const [isLoading, setIsLoading] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -53,15 +55,22 @@ const CheckoutButton: React.FC<{ productId: string; label?: string }> = ({
     }
 
     try {
-      const { data } = await auth.client.POST(
+      const { data, error } = await auth.client.POST(
         "/stripe/create-checkout-session",
         {
           body: {
-            product_id: productId,
+            listing_id: listingId,
+            stripe_product_id: stripeProductId,
             cancel_url: location.pathname,
           },
         },
       );
+
+      if (error) {
+        addErrorAlert(`Unable to start checkout: ${error.detail}`);
+        setIsLoading(false);
+        return;
+      }
 
       if (!data || !data.session_id) {
         throw new Error("Invalid response from server");
@@ -76,10 +85,8 @@ const CheckoutButton: React.FC<{ productId: string; label?: string }> = ({
         throw result.error;
       }
     } catch (error) {
-      console.error("Error:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error";
-      addErrorAlert(errorMessage);
+      const apiError = error as ApiError;
+      addErrorAlert(`Unable to start checkout: ${apiError.detail}`);
     } finally {
       setIsLoading(false);
     }
@@ -90,7 +97,7 @@ const CheckoutButton: React.FC<{ productId: string; label?: string }> = ({
       <Button
         onClick={handleClick}
         disabled={isLoading}
-        className="flex items-center justify-center"
+        className="flex items-center justify-center bg-primary"
         variant="default"
       >
         {isLoading ? <FaSpinner className="animate-spin mr-2" /> : null}

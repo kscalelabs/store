@@ -201,7 +201,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
                 {user.username}
               </p>
               {user.permissions && (
-                <p className="text-sm text-primary-9 bg-primary-3 px-3 py-1 rounded-md">
+                <p className="text-sm text-primary-12 bg-gray-4 px-3 py-1 rounded-md">
                   {getRoleName(user.permissions)}
                 </p>
               )}
@@ -391,9 +391,11 @@ export const RenderProfile = (props: RenderProfileProps) => {
               <p className="text-gray-11 text-sm">
                 Stripe account setup complete.
               </p>
-            ) : null}
+            ) : (
+              <p>You must complete seller onboarding to sell robots</p>
+            )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 mb-8">
             <Button
               onClick={() => navigate(ROUTES.ORDERS.path)}
               variant="default"
@@ -401,26 +403,26 @@ export const RenderProfile = (props: RenderProfileProps) => {
               Orders
             </Button>
             {!user.stripe_connect_account_id ? (
-              <Tooltip content="Start seller onboarding" position="bottom">
+              <Tooltip content="Start selling on K-Scale" position="bottom">
                 <Button
                   onClick={() => navigate(ROUTES.SELL.ONBOARDING.path)}
                   variant="outline"
                 >
-                  Sell Robots
+                  Start Seller Onboarding
                 </Button>
               </Tooltip>
             ) : !user.stripe_connect_onboarding_completed ? (
-              <Tooltip content="Continue seller onboarding" position="bottom">
+              <Tooltip content="Continue onboarding" position="bottom">
                 <Button
                   onClick={() => navigate(ROUTES.SELL.ONBOARDING.path)}
                   variant="outline"
                 >
-                  Complete Seller Setup
+                  Complete Seller Onboarding
                 </Button>
               </Tooltip>
             ) : (
               <Button
-                onClick={() => navigate(ROUTES.SELL.path)}
+                onClick={() => navigate(ROUTES.SELL.DASHBOARD.path)}
                 variant="outline"
               >
                 Seller Dashboard

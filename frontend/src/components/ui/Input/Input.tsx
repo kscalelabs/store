@@ -11,13 +11,14 @@ const Input = React.forwardRef<
       type={type}
       className={cn(
         `flex h-10 w-full rounded-md
-        border border-input px-3 py-2 text-sm
-        ring-offset-background file:border-0 bg-transparent
+        border border-gray-7 px-3 py-2 text-sm
+        ring-offset-background file:border-0 bg-gray-3
         file:text-sm file:font-medium
-        placeholder:text-gray-10
+        placeholder:text-gray-9
         focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring
         focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50
-        focus:border-primary-9 focus:ring focus:ring-primary-9 focus:ring-opacity-50`,
+        focus:border-primary-9 focus:ring focus:ring-primary-9 focus:ring-opacity-50
+        text-gray-12`,
         className,
       )}
       ref={ref}
@@ -34,7 +35,13 @@ const TextArea = React.forwardRef<
   return (
     <textarea
       className={cn(
-        "flex w-full rounded-md border border-input px-3 py-2 text-sm ring-offset-background file:border-0 bg-transparent file:text-sm file:font-medium placeholder:text-gray-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+        `flex w-full rounded-md border border-gray-7 px-3 py-2 text-sm
+        ring-offset-background file:border-0 bg-gray-3
+        file:text-sm file:font-medium placeholder:text-gray-9
+        focus-visible:outline-none focus-visible:ring-2
+        focus-visible:ring-ring focus-visible:ring-offset-2
+        disabled:cursor-not-allowed disabled:opacity-50
+        text-gray-12`,
         className,
       )}
       ref={ref}

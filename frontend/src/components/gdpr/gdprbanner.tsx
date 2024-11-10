@@ -71,7 +71,7 @@ const GDPRBanner: React.FC = () => {
               Opt out
             </button>
             <button
-              className="bg-primary-9 text-white rounded-full px-4 py-2 transition-colors duration-300 hover:bg-primary-8"
+              className="bg-gray-1 text-gray-12 rounded-full px-4 py-2 transition-colors duration-300 hover:bg-gray-11"
               onClick={handleAccept}
             >
               Accept

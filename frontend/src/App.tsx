@@ -14,7 +14,8 @@ import APIKeys from "@/components/pages/APIKeys";
 import About from "@/components/pages/About";
 import Account from "@/components/pages/Account";
 import Browse from "@/components/pages/Browse";
-import Create from "@/components/pages/Create";
+import CreateSell from "@/components/pages/CreateSell";
+import CreateShare from "@/components/pages/CreateShare";
 import DeleteConnect from "@/components/pages/DeleteConnect";
 import EmailSignup from "@/components/pages/EmailSignup";
 import FileBrowser from "@/components/pages/FileBrowser";
@@ -90,6 +91,7 @@ const App = () => {
                         />
 
                         {/* Listings */}
+                        <Route path={"/create"} element={<CreateSell />} />
                         <Route path={ROUTES.BOTS.path}>
                           <Route
                             path={ROUTES.BOTS.$.BROWSE.relativePath}
@@ -97,7 +99,11 @@ const App = () => {
                           />
                           <Route
                             path={ROUTES.BOTS.$.CREATE.relativePath}
-                            element={<Create />}
+                            element={<CreateShare />}
+                          />
+                          <Route
+                            path={ROUTES.BOTS.$.SELL.relativePath}
+                            element={<CreateSell />}
                           />
                         </Route>
                         <Route path={ROUTES.BOT.path} element={<Listing />} />
@@ -109,12 +115,12 @@ const App = () => {
                         {/* Seller */}
                         <Route path={ROUTES.SELL.path}>
                           <Route
-                            path={ROUTES.SELL.$.DASHBOARD.relativePath}
-                            element={<SellerDashboard />}
-                          />
-                          <Route
                             path={ROUTES.SELL.$.ONBOARDING.relativePath}
                             element={<SellerOnboarding />}
+                          />
+                          <Route
+                            path={ROUTES.SELL.$.DASHBOARD.relativePath}
+                            element={<SellerDashboard />}
                           />
                           <Route
                             path={ROUTES.SELL.$.DELETE.relativePath}

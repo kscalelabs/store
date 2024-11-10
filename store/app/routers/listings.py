@@ -2,8 +2,9 @@
 
 import asyncio
 import logging
-from typing import Annotated, List
+from typing import Annotated, List, Literal
 
+import stripe
 from fastapi import (
     APIRouter,
     Depends,
@@ -256,7 +257,13 @@ class NewListingRequest(BaseModel):
     description: str | None
     child_ids: list[str]
     slug: str
-    stripe_link: str | None
+    price_amount: int | None = None  # in cents
+    currency: str = "usd"
+    inventory_type: Literal["finite", "infinite", "preorder"] = "infinite"
+    inventory_quantity: int | None = None
+    preorder_release_date: int | None = None
+    is_reservation: bool = False
+    reservation_deposit_amount: int | None = None
 
 
 class NewListingResponse(BaseModel):
@@ -272,27 +279,125 @@ async def add_listing(
     name: str = Form(...),
     description: str | None = Form(None),
     child_ids: str = Form(""),
-    slug: str = Form(""),
-    stripe_link: str | None = Form(None),
+    slug: str = Form(...),
+    price_amount: int | None = Form(None),
+    currency: str = Form("usd"),
+    inventory_type: Literal["finite", "infinite", "preorder"] = Form("infinite"),
+    inventory_quantity: int | None = Form(None),
+    preorder_release_date: int | None = Form(None),
+    is_reservation: bool = Form(False),
+    reservation_deposit_amount: int | None = Form(None),
     photos: List[UploadFile] = File(None),
 ) -> NewListingResponse:
     logger.info(f"Received {len(photos) if photos else 0} photos")
 
-    # Creates a new listing.
+    # Initialize Stripe-related variables
+    stripe_product_id = None
+    stripe_price_id = None
+    deposit_price_id = None
+
+    # Validate the input
+    if price_amount is not None and price_amount <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Price amount must be greater than 0",
+        )
+
+    if inventory_type == "finite" and (inventory_quantity is None or inventory_quantity <= 0):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Finite inventory requires a positive quantity",
+        )
+
+    if inventory_type == "preorder" and not preorder_release_date:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Preorder requires a release date",
+        )
+
+    if is_reservation and (not reservation_deposit_amount or reservation_deposit_amount <= 0):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Reservations require a deposit amount",
+        )
+
+    if is_reservation and (
+        not price_amount or not reservation_deposit_amount or price_amount <= reservation_deposit_amount
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Full price must be greater than deposit amount",
+        )
+
+    # Create Stripe product if price is set
+
+    if price_amount is not None and user.stripe_connect_account_id:
+        try:
+            product = stripe.Product.create(
+                name=name,
+                description=description or "",
+                metadata={
+                    "user_id": user.id,
+                },
+                stripe_account=user.stripe_connect_account_id,
+            )
+
+            price = stripe.Price.create(
+                product=product.id,
+                currency=currency,
+                unit_amount=price_amount,
+                metadata={
+                    "inventory_quantity": str(inventory_quantity) if inventory_type == "finite" else "",
+                    "preorder_release_date": str(preorder_release_date) if inventory_type == "preorder" else "",
+                },
+                stripe_account=user.stripe_connect_account_id,
+            )
+
+            if is_reservation and reservation_deposit_amount:
+                deposit_price = stripe.Price.create(
+                    product=product.id,
+                    currency=currency,
+                    unit_amount=reservation_deposit_amount,
+                    metadata={"is_deposit": "true"},
+                    stripe_account=user.stripe_connect_account_id,
+                )
+                deposit_price_id = deposit_price.id
+
+            stripe_product_id = product.id
+            stripe_price_id = price.id
+
+        except stripe.StripeError as e:
+            logger.error(f"Stripe error: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Error creating Stripe product: {str(e)}",
+            )
+
+    # Create the listing
     listing = Listing.create(
         name=name,
         description=description or "",
         child_ids=child_ids.split(",") if child_ids else [],
         slug=slug,
         user_id=user.id,
-        stripe_link=stripe_link,
+        price_amount=price_amount,
+        currency=currency,
+        inventory_type=inventory_type,
+        inventory_quantity=inventory_quantity,
+        preorder_release_date=preorder_release_date,
+        is_reservation=is_reservation,
+        reservation_deposit_amount=reservation_deposit_amount,
+        stripe_product_id=stripe_product_id,
+        stripe_price_id=stripe_price_id,
+        stripe_deposit_price_id=deposit_price_id,
     )
+
     await crud.add_listing(listing)
 
     # Handle photo uploads
     if photos:
         for photo in photos:
-            if photo.filename:  # Add this check
+            if photo.filename:
                 await crud.upload_artifact(
                     name=photo.filename,
                     file=photo,
@@ -328,9 +433,17 @@ class UpdateListingRequest(BaseModel):
     child_ids: list[str] | None = None
     description: str | None = None
     tags: list[str] | None = None
-    stripe_link: str | None = None
     onshape_url: str | None = None
     slug: str | None = None
+    stripe_product_id: str | None = None
+    stripe_price_id: str | None = None
+    stripe_deposit_price_id: str | None = None
+    price_amount: int | None = None
+    inventory_type: Literal["finite", "infinite", "preorder"] | None = None
+    inventory_quantity: int | None = None
+    preorder_release_date: int | None = None
+    is_reservation: bool | None = None
+    reservation_deposit_amount: int | None = None
 
 
 @router.put("/edit/{id}", response_model=bool)
@@ -370,8 +483,16 @@ async def edit_listing(
         description=listing.description,
         tags=listing.tags,
         onshape_url=listing.onshape_url,
-        stripe_link=listing.stripe_link,
         slug=listing.slug,
+        stripe_product_id=listing.stripe_product_id,
+        stripe_price_id=listing.stripe_price_id,
+        stripe_deposit_price_id=listing.stripe_deposit_price_id,
+        price_amount=listing.price_amount,
+        inventory_type=listing.inventory_type,
+        inventory_quantity=listing.inventory_quantity,
+        preorder_release_date=listing.preorder_release_date,
+        is_reservation=listing.is_reservation,
+        reservation_deposit_amount=listing.reservation_deposit_amount,
     )
     return True
 
@@ -407,8 +528,16 @@ class GetListingResponse(BaseModel):
     can_edit: bool
     user_vote: bool | None
     onshape_url: str | None
-    stripe_link: str | None
     is_featured: bool
+    stripe_product_id: str | None = None
+    stripe_price_id: str | None = None
+    price_amount: int | None = None
+    currency: str | None = None
+    inventory_type: str | None = None
+    inventory_quantity: int | None = None
+    preorder_release_date: int | None = None
+    is_reservation: bool | None = None
+    reservation_deposit_amount: int | None = None
 
 
 async def get_listing_common(
@@ -458,7 +587,15 @@ async def get_listing_common(
         can_edit=user is not None and await can_write_listing(user, listing),
         user_vote=user_vote,
         onshape_url=listing.onshape_url,
-        stripe_link=listing.stripe_link,
+        stripe_product_id=listing.stripe_product_id,
+        stripe_price_id=listing.stripe_price_id,
+        price_amount=listing.price_amount,
+        currency=listing.currency,
+        inventory_type=listing.inventory_type,
+        inventory_quantity=listing.inventory_quantity,
+        preorder_release_date=listing.preorder_release_date,
+        is_reservation=listing.is_reservation,
+        reservation_deposit_amount=listing.reservation_deposit_amount,
         is_featured=is_featured,
         score=listing.score,
     )
@@ -513,3 +650,58 @@ async def remove_vote(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
 ) -> None:
     await crud.handle_vote(user.id, id, None)
+
+
+@router.post("/{listing_id}/convert")
+async def convert_listing_type(
+    listing_id: str,
+    new_type: Literal["standard", "preorder", "reservation"],
+    crud: Annotated[Crud, Depends(Crud.get)],
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+) -> dict:
+    """Convert a listing from one type to another."""
+    listing = await crud.get_listing(listing_id)
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    if not listing.stripe_product_id:
+        raise HTTPException(status_code=400, detail="Listing has no associated Stripe product")
+
+    try:
+        # Archive old price
+        if listing.stripe_price_id:
+            stripe.Price.modify(
+                listing.stripe_price_id,
+                active=False,
+                stripe_account=user.stripe_connect_account_id,
+            )
+
+        # Create new price
+        if not listing.price_amount:
+            raise HTTPException(status_code=400, detail="Listing has no price amount")
+
+        if new_type == "standard":
+            # Convert to standard product
+            price = stripe.Price.create(
+                product=listing.stripe_product_id,
+                currency=listing.currency or "usd",
+                unit_amount=listing.price_amount,
+                stripe_account=user.stripe_connect_account_id,
+            )
+
+        # Update listing
+        await crud.edit_listing(
+            listing_id=listing.id,
+            stripe_product_id=listing.stripe_product_id,
+            stripe_price_id=price.id,
+            inventory_type="infinite",
+            preorder_release_date=None,
+            is_reservation=False,
+            reservation_deposit_amount=None,
+        )
+
+        return {"success": True, "new_type": new_type}
+
+    except stripe.StripeError as e:
+        logger.error(f"Stripe error: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))

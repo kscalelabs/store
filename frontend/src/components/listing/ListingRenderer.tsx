@@ -8,6 +8,7 @@ import ListingImageGallery from "@/components/listing/ListingImageGallery";
 import ListingMetadata from "@/components/listing/ListingMetadata";
 import ListingName from "@/components/listing/ListingName";
 import ListingOnshape from "@/components/listing/ListingOnshape";
+import ListingPayment from "@/components/listing/ListingPayment";
 import ListingRegisterRobot from "@/components/listing/ListingRegisterRobot";
 import { ListingResponse } from "@/components/listing/types";
 
@@ -27,9 +28,17 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
     user_vote: userVote,
     onshape_url: onshapeUrl,
     is_featured: isFeatured,
+    stripe_product_id: stripeProductId,
+    price_amount: priceAmount,
+    inventory_type: inventoryType,
+    inventory_quantity: inventoryQuantity,
+    preorder_release_date: preorderReleaseDate,
+    is_reservation: isReservation,
+    reservation_deposit_amount: reservationDepositAmount,
   } = listing;
   const [artifacts, setArtifacts] = useState(initialArtifacts);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const isForSale = priceAmount && stripeProductId && inventoryType;
 
   return (
     <div className="max-w-6xl mx-auto p-4 pt-12">
@@ -61,7 +70,26 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
             userVote={userVote}
           />
 
-          <hr className="border-gray-200 my-4" />
+          {/* Add payment section if price exists */}
+          {isForSale && (
+            <>
+              <hr className="border-gray-2 my-4" />
+              <ListingPayment
+                listingId={listingId}
+                stripeProductId={stripeProductId}
+                priceAmount={priceAmount}
+                inventoryType={
+                  inventoryType as "finite" | "infinite" | "preorder"
+                }
+                inventoryQuantity={inventoryQuantity || undefined}
+                preorderReleaseDate={preorderReleaseDate || undefined}
+                isReservation={isReservation || false}
+                reservationDepositAmount={reservationDepositAmount || undefined}
+              />
+            </>
+          )}
+
+          <hr className="border-gray-2 my-4" />
 
           {/* Build this robot */}
           <div className="flex items-baseline gap-4">

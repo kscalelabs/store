@@ -39,30 +39,27 @@ export default function SellerDashboard() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Seller Dashboard</h1>
+    <div className="container mx-auto">
+      <div className="max-w-2xl mx-auto p-8">
+        <h1 className="text-3xl font-bold my-4">Seller Dashboard</h1>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold mb-4">Account Status</h2>
-          <div className="flex gap-2 text-green-600">
-            <Check />
-            <p>
-              Your K-Scale seller account is active and ready to receive
-              payments.
-            </p>
-          </div>
+        <h2 className="text-xl font-semibold mb-4">Account Status</h2>
+        <div className="flex gap-2 bg-gray-11 text-gray-1 px-3 py-2 items-center rounded-lg">
+          <Check />
+          <p>
+            Your K-Scale seller account is active and ready to receive payments.
+          </p>
+        </div>
 
-          <div className="mt-6">
-            <a
-              href={`https://dashboard.stripe.com/${auth.currentUser?.stripe_connect_account_id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-primary-9 text-white px-6 py-3 rounded-lg hover:bg-primary-9/80 inline-block"
-            >
-              Open Stripe Dashboard
-            </a>
-          </div>
+        <div className="mt-6">
+          <a
+            href={`https://dashboard.stripe.com/${auth.currentUser?.stripe_connect_account_id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-primary-9 text-primary-12 px-6 py-3 rounded-lg hover:bg-primary-12 hover:text-primary-9 inline-block"
+          >
+            Open Stripe Dashboard
+          </a>
         </div>
       </div>
     </div>
