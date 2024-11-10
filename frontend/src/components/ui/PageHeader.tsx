@@ -255,7 +255,7 @@ const PageHeader = ({ children }: Props) => {
               (1 + Math.sin(fakeMouseAngleRef.current) ** 2),
         };
 
-        fakeMouseAngleRef.current += isMobile ? 0.03 : 0.02;
+        fakeMouseAngleRef.current += isMobile ? 0.015 : 0.01;
       }
 
       // Update current position
@@ -271,7 +271,7 @@ const PageHeader = ({ children }: Props) => {
           const dy = targetY - currentY;
           const distance = Math.sqrt(dx * dx + dy * dy);
 
-          const maxSpeed = 15;
+          const maxSpeed = 5;
           const speed = Math.min(distance * 0.2, maxSpeed);
 
           if (distance > 0.1) {
