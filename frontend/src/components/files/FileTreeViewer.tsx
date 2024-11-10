@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FaFile, FaFolder, FaFolderOpen } from "react-icons/fa";
 
-import { UntarredFile } from "./Tarfile";
+import { UntarredFile } from "@/components/files/untar";
 
 interface FileTreeNode {
   name: string;

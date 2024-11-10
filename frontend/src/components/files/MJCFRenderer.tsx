@@ -9,7 +9,6 @@ import {
   FaUndo,
 } from "react-icons/fa";
 
-import humanoid from "@/components/files/demo/humanoid.xml";
 import {
   MujocoRefs,
   cleanupMujoco,
@@ -217,9 +216,8 @@ const MJCFRenderer = ({ mjcfContent, files, useControls = true }: Props) => {
         if (!containerRef.current) throw new Error("Container ref is null");
 
         // Initialize MuJoCo with the humanoid model
-        const humanoidXML = await fetch(humanoid).then((res) => res.text());
         const { mj, model, state, simulation } = await initializeMujoco({
-          modelXML: humanoidXML,
+          modelXML: mjcfContent,
           files,
         });
 
@@ -259,7 +257,9 @@ const MJCFRenderer = ({ mjcfContent, files, useControls = true }: Props) => {
           setIsMujocoReady(true);
 
           // Get joint names and set initial joint values.
-          setJoints(getJointNames(refs, mj));
+          if (mj) {
+            setJoints(getJointNames(refs, mj));
+          }
 
           // Start animation loop.
           animate(performance.now());
@@ -320,6 +320,7 @@ const MJCFRenderer = ({ mjcfContent, files, useControls = true }: Props) => {
                     <a
                       className="underline"
                       target="_blank"
+                      rel="noreferrer"
                       href="https://github.com/kscalelabs/urdf2mjcf"
                     >
                       here

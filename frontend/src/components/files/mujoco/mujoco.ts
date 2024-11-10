@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { UntarredFile } from "@/components/files/untar";
 import load_mujoco, { mujoco } from "@/lib/mujoco/mujoco_wasm";
 import * as THREE from "three";
@@ -34,6 +33,7 @@ export const initializeMujoco = async ({
   const mj = await load_mujoco();
 
   // Set up file system and load XML model
+  // @ts-ignore
   if (!mj.FS.analyzePath(MODEL_DIR).exists) {
     mj.FS.mkdir(MODEL_DIR);
   }
@@ -47,6 +47,7 @@ export const initializeMujoco = async ({
       let currentPath = MODEL_DIR;
       for (const dir of dirs.slice(0, -1)) {
         currentPath = `${currentPath}/${dir}`;
+        // @ts-ignore
         if (!mj.FS.analyzePath(currentPath).exists) {
           mj.FS.mkdir(currentPath);
         }
@@ -213,17 +214,19 @@ export const setupModelGeometry = (refs: MujocoRefs) => {
       // Get geom properties from the model
       const geomType = model.geom_type[i];
       const geomSize = model.geom_size.subarray(i * 3, i * 3 + 3);
-      const geomPos = model.geom_pos.subarray(i * 3, i * 3 + 3);
 
       // Create corresponding Three.js geometry
       let geometry: THREE.BufferGeometry;
       switch (geomType) {
+        // @ts-ignore
         case mj.mjtGeom.mjGEOM_PLANE.value:
           geometry = new THREE.PlaneGeometry(geomSize[0] * 2, geomSize[1] * 2);
           break;
+        // @ts-ignore
         case mj.mjtGeom.mjGEOM_SPHERE.value:
           geometry = new THREE.SphereGeometry(geomSize[0], 32, 32);
           break;
+        // @ts-ignore
         case mj.mjtGeom.mjGEOM_CAPSULE.value:
           // Capsule is a cylinder with hemispheres at the ends
           geometry = new THREE.CapsuleGeometry(
@@ -233,11 +236,13 @@ export const setupModelGeometry = (refs: MujocoRefs) => {
             32,
           );
           break;
+        // @ts-ignore
         case mj.mjtGeom.mjGEOM_ELLIPSOID.value:
           // Create a sphere and scale it to make an ellipsoid
           geometry = new THREE.SphereGeometry(1, 32, 32);
           geometry.scale(geomSize[0], geomSize[1], geomSize[2]);
           break;
+        // @ts-ignore
         case mj.mjtGeom.mjGEOM_CYLINDER.value:
           geometry = new THREE.CylinderGeometry(
             geomSize[0],
@@ -246,6 +251,7 @@ export const setupModelGeometry = (refs: MujocoRefs) => {
             32,
           );
           break;
+        // @ts-ignore
         case mj.mjtGeom.mjGEOM_BOX.value:
           geometry = new THREE.BoxGeometry(
             geomSize[0] * 2,
@@ -253,11 +259,13 @@ export const setupModelGeometry = (refs: MujocoRefs) => {
             geomSize[2] * 2,
           );
           break;
+        // @ts-ignore
         case mj.mjtGeom.mjGEOM_MESH.value:
           // For mesh, you'll need to load the actual mesh data
           console.warn("Mesh geometry requires additional mesh data loading");
           geometry = new THREE.BoxGeometry(1, 1, 1); // Placeholder
           break;
+        // @ts-ignore
         case mj.mjtGeom.mjGEOM_LINE.value:
           geometry = new THREE.BufferGeometry().setFromPoints([
             new THREE.Vector3(0, 0, 0),
@@ -363,35 +371,46 @@ export const updateBodyTransforms = (refs: MujocoRefs) => {
 
 export const getJoints = (refs: MujocoRefs) => {
   const jointNames = [];
-  const numJoints = refs.modelRef.current.nu;
+  const numJoints = refs.modelRef.current?.nu;
+  if (!numJoints) return [];
 
   for (let i = 0; i < numJoints; i++) {
-    const name = refs.simulationRef.current.id2name(
+    const name = refs.simulationRef.current?.id2name(
+      // @ts-ignore
       mj.mjtObj.mjOBJ_ACTUATOR.value,
       i,
     );
+    // @ts-ignore
     const qpos = refs.stateRef.current?.qpos || [];
     jointNames.push({ name, value: qpos[i] || 0 });
   }
 };
 
 export const getJointNames = (refs: MujocoRefs, mj: mujoco) => {
-  const jointNames = [];
-  const numJoints = refs.modelRef.current.nu;
+  const jointNames: { name: string; value: number }[] = [];
+  const numJoints = refs.modelRef.current?.nu;
+  if (!numJoints) return jointNames;
 
   for (let i = 0; i < numJoints + 1; i++) {
-    const name = refs.simulationRef.current.id2name(
+    const name = refs.simulationRef.current?.id2name(
+      // @ts-ignore
       mj.mjtObj.mjOBJ_JOINT.value,
       i,
     );
+    if (!name) continue;
+    // @ts-ignore
     const qpos = refs.stateRef.current?.qpos || [];
     jointNames.push({ name, value: qpos[i] || 0 });
   }
   return jointNames;
 };
 
-export const resetJoints = (refs: MujocoRefs, joints: Joint[]) => {
-  const qpos = refs.stateRef.current.qpos || [];
+export const resetJoints = (
+  refs: MujocoRefs,
+  joints: { name: string; value: number }[],
+) => {
+  // @ts-ignore
+  const qpos = refs.stateRef.current?.qpos || [];
   return joints.map((joint, i) => ({
     ...joint,
     value: qpos[i] || 0,
