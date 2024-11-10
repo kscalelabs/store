@@ -167,7 +167,7 @@ const Browse = () => {
             </DropdownMenu>
             <Button
               onClick={() => setShowCreateModal(true)}
-              variant="default"
+              variant="outline"
               size="lg"
               className="w-full md:w-auto"
             >
