@@ -50,7 +50,6 @@ const ROUTES = {
     "sell",
     {},
     {
-      DASHBOARD: route("dashboard"),
       ONBOARDING: route("onboarding"),
       DASHBOARD: route("dashboard"),
       DELETE: route("delete"),

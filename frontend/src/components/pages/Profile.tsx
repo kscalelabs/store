@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTypedParams } from "react-router-typesafe-routes/dom";
 
 import MyListingGrid from "@/components/listings/MyListingGrid";
@@ -201,7 +201,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
                 {user.username}
               </p>
               {user.permissions && (
-                <p className="text-sm text-primary-9 bg-primary-3 px-3 py-1 rounded-md">
+                <p className="text-sm text-primary-12 bg-gray-4 px-3 py-1 rounded-md">
                   {getRoleName(user.permissions)}
                 </p>
               )}
@@ -391,9 +391,11 @@ export const RenderProfile = (props: RenderProfileProps) => {
               <p className="text-gray-11 text-sm">
                 Stripe account setup complete.
               </p>
-            ) : null}
+            ) : (
+              <p>You must complete seller onboarding to sell robots</p>
+            )}
           </div>
-          <div className="flex gap-2 mb-4">
+          <div className="flex gap-2 mb-8">
             <Button
               onClick={() => navigate(ROUTES.ORDERS.path)}
               variant="default"
@@ -401,16 +403,16 @@ export const RenderProfile = (props: RenderProfileProps) => {
               Orders
             </Button>
             {!user.stripe_connect_account_id ? (
-              <Tooltip content="Start seller onboarding" position="bottom">
+              <Tooltip content="Start selling on K-Scale" position="bottom">
                 <Button
                   onClick={() => navigate(ROUTES.SELL.ONBOARDING.path)}
                   variant="outline"
                 >
-                  Sell Robots - Start Seller Onboarding
+                  Start Seller Onboarding
                 </Button>
               </Tooltip>
             ) : !user.stripe_connect_onboarding_completed ? (
-              <Tooltip content="Continue seller onboarding" position="bottom">
+              <Tooltip content="Continue onboarding" position="bottom">
                 <Button
                   onClick={() => navigate(ROUTES.SELL.ONBOARDING.path)}
                   variant="outline"
@@ -419,12 +421,12 @@ export const RenderProfile = (props: RenderProfileProps) => {
                 </Button>
               </Tooltip>
             ) : (
-              <Button
-                onClick={() => navigate(ROUTES.SELL.DASHBOARD.path)}
-                variant="outline"
+              <Link
+                to={`https://dashboard.stripe.com/${auth.currentUser?.stripe_connect_account_id}`}
+                className="text-sm"
               >
                 Seller Dashboard
-              </Button>
+              </Link>
             )}
           </div>
           <div className="flex flex-col items-center space-y-4">
