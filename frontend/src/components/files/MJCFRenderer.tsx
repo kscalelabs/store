@@ -9,7 +9,6 @@ import {
   FaUndo,
 } from "react-icons/fa";
 
-import humanoid from "@/components/files/demo/humanoid.xml";
 import {
   MujocoRefs,
   cleanupMujoco,
@@ -29,7 +28,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 interface Props {
-  mjcfContent?: string;
+  mjcfContent: string;
   files: UntarredFile[];
   useControls?: boolean;
 }
@@ -218,8 +217,7 @@ const MJCFRenderer = ({ mjcfContent, files, useControls = true }: Props) => {
 
         // Initialize MuJoCo with the humanoid model
         const { mj, model, state, simulation } = await initializeMujoco({
-          modelXML:
-            mjcfContent || (await fetch(humanoid).then((r) => r.text())),
+          modelXML: mjcfContent,
           files,
         });
 
@@ -317,10 +315,8 @@ const MJCFRenderer = ({ mjcfContent, files, useControls = true }: Props) => {
                 {/* Add notification banner */}
                 <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4">
                   <p className="text-sm">
-                    The MuJoCo renderer is currently under development. A
-                    placeholder humanoid model is being used for demonstration
-                    purposes. If you would like to contribute, see the project
-                    repository{" "}
+                    The MuJoCo renderer is currently under development. If you
+                    would like to contribute, see the project repository{" "}
                     <a
                       className="underline"
                       target="_blank"

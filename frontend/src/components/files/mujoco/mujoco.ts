@@ -40,8 +40,15 @@ export const initializeMujoco = async ({
 
   // Write all asset files to the filesystem
   for (const file of files) {
+    // Skip non-mesh files
+    if (
+      !file.name.toLowerCase().endsWith(".stl") &&
+      !file.name.toLowerCase().endsWith(".obj")
+    ) {
+      continue;
+    }
+
     const filePath = `${MODEL_DIR}/${file.name}`;
-    // Create subdirectories if needed
     const dirs = file.name.split("/");
     if (dirs.length > 1) {
       let currentPath = MODEL_DIR;
