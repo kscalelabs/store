@@ -25,7 +25,7 @@ const FileRenderer: React.FC<{
         <URDFRenderer
           urdfContent={fileContent}
           files={allFiles}
-          supportedThemes={["light", "dark"]}
+          supportedThemes={["dark", "light"]}
         />
       );
     case "xml":
