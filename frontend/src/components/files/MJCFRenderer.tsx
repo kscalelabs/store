@@ -36,6 +36,8 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
   // State management
   const isSimulatingRef = useRef(false);
   const mujocoTimeRef = useRef(0);
+  const tmpVecRef = useRef(new THREE.Vector3());
+  const tmpQuatRef = useRef(new THREE.Quaternion());
   const [isMujocoReady, setIsMujocoReady] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
@@ -43,79 +45,198 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
   const DEFAULT_TIMESTEP = 0.01;
 
   const setupModelGeometry = () => {
-    const { sceneRef, modelRef } = refs;
-    if (!sceneRef.current || !modelRef.current) return;
+    const { sceneRef, modelRef, mujocoRef, simulationRef } = refs;
+    if (
+      !sceneRef.current ||
+      !modelRef.current ||
+      !mujocoRef.current ||
+      !simulationRef.current
+    )
+      return;
     const model = modelRef.current;
+    const mj = mujocoRef.current;
 
-    // Loop over all geoms in the model
-    for (let i = 0; i < model.ngeom; i++) {
-      // Get geom properties from the model
-      const geomType = model.geom_type[i];
-      const geomSize = model.geom_size.subarray(i * 3, i * 3 + 3);
-      const geomPos = model.geom_pos.subarray(i * 3, i * 3 + 3);
-      const geomMat = model.geom_mat.subarray(i * 9, i * 9 + 9);
+    // Create root object for MuJoCo scene
+    const mujocoRoot = new THREE.Group();
+    mujocoRoot.name = "MuJoCo Root";
+    sceneRef.current.add(mujocoRoot);
 
-      // Create corresponding Three.js geometry
-      let geometry: THREE.BufferGeometry;
-      switch (geomType) {
-        case mj.mjtGeom.mjGEOM_BOX:
-          geometry = new THREE.BoxGeometry(
-            geomSize[0] * 2,
-            geomSize[1] * 2,
-            geomSize[2] * 2,
-          );
-          break;
-        case mj.mjtGeom.mjGEOM_SPHERE:
-          geometry = new THREE.SphereGeometry(geomSize[0], 32, 32);
-          break;
-        case mj.mjtGeom.mjGEOM_CYLINDER:
-          geometry = new THREE.CylinderGeometry(
-            geomSize[0],
-            geomSize[0],
-            geomSize[1] * 2,
-            32,
-          );
-          break;
-        // Add cases for other geom types as needed
-        default:
-          console.warn(`Unsupported geom type: ${geomType}`);
-          continue;
+    // Create body groups first
+    const bodies: { [key: number]: THREE.Group } = {};
+    for (let b = 0; b < model.nbody; b++) {
+      bodies[b] = new THREE.Group();
+      bodies[b].name = `body_${b}`;
+      bodies[b].userData.bodyId = b;
+
+      // Add to parent body based on MuJoCo's body hierarchy
+      if (b === 0) {
+        mujocoRoot.add(bodies[b]);
+      } else {
+        const parentId = model.body_parentid[b];
+        if (bodies[parentId]) {
+          bodies[parentId].add(bodies[b]);
+        }
+      }
+    }
+
+    try {
+      for (let i = 0; i < model.ngeom; i++) {
+        // Get geom properties from the model
+        const geomType = model.geom_type[i];
+        const geomSize = model.geom_size.subarray(i * 3, i * 3 + 3);
+        const geomPos = model.geom_pos.subarray(i * 3, i * 3 + 3);
+
+        // Create corresponding Three.js geometry
+        let geometry: THREE.BufferGeometry;
+        switch (geomType) {
+          case mj.mjtGeom.mjGEOM_PLANE.value:
+            geometry = new THREE.PlaneGeometry(
+              geomSize[0] * 2,
+              geomSize[1] * 2,
+            );
+            break;
+          case mj.mjtGeom.mjGEOM_SPHERE.value:
+            geometry = new THREE.SphereGeometry(geomSize[0], 32, 32);
+            break;
+          case mj.mjtGeom.mjGEOM_CAPSULE.value:
+            // Capsule is a cylinder with hemispheres at the ends
+            geometry = new THREE.CapsuleGeometry(
+              geomSize[0],
+              geomSize[1] * 2,
+              4,
+              32,
+            );
+            break;
+          case mj.mjtGeom.mjGEOM_ELLIPSOID.value:
+            // Create a sphere and scale it to make an ellipsoid
+            geometry = new THREE.SphereGeometry(1, 32, 32);
+            geometry.scale(geomSize[0], geomSize[1], geomSize[2]);
+            break;
+          case mj.mjtGeom.mjGEOM_CYLINDER.value:
+            geometry = new THREE.CylinderGeometry(
+              geomSize[0],
+              geomSize[0],
+              geomSize[1] * 2,
+              32,
+            );
+            break;
+          case mj.mjtGeom.mjGEOM_BOX.value:
+            geometry = new THREE.BoxGeometry(
+              geomSize[0] * 2,
+              geomSize[1] * 2,
+              geomSize[2] * 2,
+            );
+            break;
+          case mj.mjtGeom.mjGEOM_MESH.value:
+            // For mesh, you'll need to load the actual mesh data
+            console.warn("Mesh geometry requires additional mesh data loading");
+            geometry = new THREE.BoxGeometry(1, 1, 1); // Placeholder
+            break;
+          case mj.mjtGeom.mjGEOM_LINE.value:
+            geometry = new THREE.BufferGeometry().setFromPoints([
+              new THREE.Vector3(0, 0, 0),
+              new THREE.Vector3(geomSize[0], 0, 0),
+            ]);
+            break;
+          default:
+            console.warn(`Unsupported geom type: ${geomType}`);
+            continue;
+        }
+
+        // Create material (you can customize this based on geom properties)
+        const material = new THREE.MeshPhongMaterial({ color: 0x808080 });
+
+        // Create mesh and add to corresponding body
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.userData.geomIndex = i;
+
+        const bodyId = model.geom_bodyid[i];
+        if (bodies[bodyId]) {
+          // Set local position and orientation relative to body
+          const pos = model.geom_pos.subarray(i * 3, i * 3 + 3);
+          mesh.position.set(pos[0], pos[2], -pos[1]);
+
+          const quat = model.geom_quat.subarray(i * 4, i * 4 + 4);
+          mesh.quaternion.set(-quat[1], -quat[3], quat[2], -quat[0]);
+
+          bodies[bodyId].add(mesh);
+        }
       }
 
-      // Create material (you can customize this based on geom properties)
-      const material = new THREE.MeshPhongMaterial({ color: 0x808080 });
+      // Update initial body positions and orientations
+      for (let b = 0; b < model.nbody; b++) {
+        if (bodies[b]) {
+          const pos = simulationRef.current.xpos.subarray(b * 3, b * 3 + 3);
+          bodies[b].position.set(pos[0], pos[2], -pos[1]);
 
-      // Create mesh and set initial position and orientation
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.set(geomPos[0], geomPos[1], geomPos[2]);
+          const quat = simulationRef.current.xquat.subarray(b * 4, b * 4 + 4);
+          bodies[b].quaternion.set(-quat[1], -quat[3], quat[2], -quat[0]);
+        }
+      }
 
-      // Set orientation from geomMat
-      const rotationMatrix = new THREE.Matrix4().fromArray([
-        geomMat[0],
-        geomMat[3],
-        geomMat[6],
-        0,
-        geomMat[1],
-        geomMat[4],
-        geomMat[7],
-        0,
-        geomMat[2],
-        geomMat[5],
-        geomMat[8],
-        0,
-        0,
-        0,
-        0,
-        1,
-      ]);
-      mesh.setRotationFromMatrix(rotationMatrix);
-
-      // Store geom index for later updates
-      mesh.userData.geomIndex = i;
-
-      // Add mesh to the scene
-      sceneRef.current.add(mesh);
+      // Update world matrices from root to leaves
+      mujocoRoot.updateWorldMatrix(true, true);
+      setIsMujocoReady(true);
+    } catch (error) {
+      console.error(error);
     }
+  };
+
+  const setupScene = () => {
+    if (!refs.sceneRef.current || !refs.cameraRef.current) return;
+
+    // Set up scene properties
+    refs.sceneRef.current.background = new THREE.Color(0.15, 0.25, 0.35);
+    refs.sceneRef.current.fog = new THREE.Fog(
+      refs.sceneRef.current.background,
+      30,
+      50,
+    );
+
+    // Add ambient light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.1);
+    ambientLight.name = "AmbientLight";
+    refs.sceneRef.current.add(ambientLight);
+
+    // Set up camera with wider view
+    refs.cameraRef.current.position.set(4.0, 3.4, 3.4);
+    refs.cameraRef.current.far = 100;
+    refs.cameraRef.current.updateProjectionMatrix();
+
+    // Update OrbitControls settings
+    if (refs.controlsRef.current) {
+      refs.controlsRef.current.target.set(0, 0.7, 0);
+      refs.controlsRef.current.panSpeed = 2;
+      refs.controlsRef.current.zoomSpeed = 1;
+      refs.controlsRef.current.enableDamping = true;
+      refs.controlsRef.current.dampingFactor = 0.1;
+      refs.controlsRef.current.screenSpacePanning = true;
+      refs.controlsRef.current.update();
+    }
+  };
+
+  const updateBodyTransforms = () => {
+    const { modelRef, simulationRef, sceneRef } = refs;
+    if (!modelRef.current || !simulationRef.current || !sceneRef.current)
+      return;
+
+    const mujocoRoot = sceneRef.current.getObjectByName("MuJoCo Root");
+    if (!mujocoRoot) return;
+
+    // Update body transforms
+    for (let b = 0; b < modelRef.current.nbody; b++) {
+      const body = mujocoRoot.getObjectByName(`body_${b}`);
+      if (body) {
+        const pos = simulationRef.current.xpos.subarray(b * 3, b * 3 + 3);
+        body.position.set(pos[0], pos[2], -pos[1]);
+
+        const quat = simulationRef.current.xquat.subarray(b * 4, b * 4 + 4);
+        body.quaternion.set(-quat[1], -quat[3], quat[2], -quat[0]);
+      }
+    }
+
+    // Update world matrices from root to leaves
+    mujocoRoot.updateWorldMatrix(true, true);
   };
 
   const animate = (time: number) => {
@@ -123,14 +244,23 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
       !refs.rendererRef.current ||
       !refs.sceneRef.current ||
       !refs.cameraRef.current
-    ) {
+    )
       return;
-    }
 
     // Update physics if simulating
     if (isSimulatingRef.current && refs.simulationRef.current) {
-      mujocoTimeRef.current += DEFAULT_TIMESTEP;
-      refs.simulationRef.current.step();
+      const timestep = DEFAULT_TIMESTEP;
+      if (time - mujocoTimeRef.current > 35.0) {
+        mujocoTimeRef.current = time;
+      }
+
+      while (mujocoTimeRef.current < time) {
+        refs.simulationRef.current.step();
+        mujocoTimeRef.current += timestep * 1000.0;
+      }
+
+      // Update body transforms after physics step
+      updateBodyTransforms();
     }
 
     // Update controls if enabled
@@ -143,8 +273,6 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
       refs.sceneRef.current,
       refs.cameraRef.current,
     );
-
-    // Request next frame
     animationFrameRef.current = requestAnimationFrame(animate);
   };
 
@@ -163,10 +291,12 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
         if (!containerRef.current) throw new Error("Container ref is null");
 
         // Initialize MuJoCo with the humanoid model
+        const humanoidXML = await fetch(humanoid).then((res) => res.text());
         const { mj, model, state, simulation } = await initializeMujoco({
-          modelXML: humanoid,
+          modelXML: humanoidXML,
           refs,
         });
+
         refs.mujocoRef.current = mj;
         refs.modelRef.current = model;
         refs.stateRef.current = state;
@@ -184,9 +314,13 @@ const MJCFRenderer = ({ useControls = true }: Props) => {
         // Add model-specific setup (bodies, geometries, etc.)
         setupModelGeometry();
 
+        // Add new scene setup
+        setupScene();
+
         // Start animation loop
         animate(performance.now());
       } catch (error) {
+        console.error(error);
         setError(error as Error);
       }
     })();

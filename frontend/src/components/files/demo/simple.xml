@@ -1,11 +1,28 @@
 <mujoco>
-    <compiler angle="radian" />
     <option gravity="0 0 -9.81" />
     <worldbody>
         <light diffuse=".5 .5 .5" pos="0 0 3" dir="0 0 -1" />
+        <geom type="plane" size="5 5 0.1" rgba=".9 .9 .9 1" />
         <body name="torso" pos="0 0 0.5">
             <freejoint name="root" />
             <inertial pos="0 0 0" mass="1" diaginertia="0.1 0.1 0.1" />
+            <geom type="box" size="0.15 0.1 0.1" rgba="0.5 0.5 1 1" />
+
+            <body name="left_leg" pos="-0.1 0 0">
+                <inertial pos="0 0 -0.15" mass="0.2" diaginertia="0.01 0.01 0.01" />
+                <joint name="left_leg" type="hinge" axis="1 0 0" pos="0 0 0" />
+                <geom type="box" pos="0 0 -0.15" size="0.05 0.05 0.15" rgba="0.5 0.5 0.5 1" />
+            </body>
+
+            <body name="right_leg" pos="0.1 0 0">
+                <inertial pos="0 0 -0.15" mass="0.2" diaginertia="0.01 0.01 0.01" />
+                <joint name="right_leg" type="hinge" axis="1 0 0" pos="0 0 0" />
+                <geom type="box" pos="0 0 -0.15" size="0.05 0.05 0.15" rgba="0.5 0.5 0.5 1" />
+            </body>
         </body>
     </worldbody>
+    <actuator>
+        <motor joint="left_leg" name="left_motor" />
+        <motor joint="right_leg" name="right_motor" />
+    </actuator>
 </mujoco>

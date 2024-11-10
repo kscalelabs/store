@@ -1,4 +1,4 @@
-import load_mujoco, { mujoco } from "@/lib/mujoco/mujoco_wasm.js";
+import load_mujoco, { mujoco } from "@/lib/mujoco/mujoco_wasm";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
@@ -40,7 +40,7 @@ export const initializeMujoco = async ({
   }
   mj.FS.writeFile(MODEL_PATH, modelXML);
 
-  const model = new mj.Model(MODEL_PATH);
+  const model = mj.Model.load_from_xml(MODEL_PATH);
   const state = new mj.State(model);
   const simulation = new mj.Simulation(model, state);
 
@@ -112,16 +112,16 @@ export const initializeThreeJS = (
   scene.add(dirLight);
 
   // Add floor
-  const floorGeometry = new THREE.PlaneGeometry(10, 10);
-  const floorMaterial = new THREE.MeshStandardMaterial({
-    color: 0xe0e0e0,
-    roughness: 0.7,
-    metalness: 0.1,
-  });
-  const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-  floor.rotation.x = -Math.PI / 2;
-  floor.position.y = 0;
-  scene.add(floor);
+  // const floorGeometry = new THREE.PlaneGeometry(10, 10);
+  // const floorMaterial = new THREE.MeshStandardMaterial({
+  //   color: 0xe0e0e0,
+  //   roughness: 0.7,
+  //   metalness: 0.1,
+  // });
+  // const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+  // floor.rotation.x = -Math.PI / 2;
+  // floor.position.y = 0;
+  // scene.add(floor);
 
   return { renderer, scene, camera, controls };
 };
