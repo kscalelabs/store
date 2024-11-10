@@ -1,17 +1,11 @@
-import { FaDiscord, FaGithub, FaTimes } from "react-icons/fa";
-import {
-  FaDownload,
-  FaRegFileLines,
-  FaSearchengin,
-  FaTerminal,
-  FaWpexplorer,
-  FaXTwitter,
-} from "react-icons/fa6";
+import { FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 import Logo from "@/components/Logo";
 import { useFeaturedListings } from "@/components/listing/FeaturedListings";
 import { useAuthentication } from "@/hooks/useAuth";
+
+import { getNavItems } from "./navigation";
 
 interface SidebarItemProps {
   title: string;
@@ -36,48 +30,12 @@ const SidebarItem = ({ icon, title, onClick }: SidebarItemProps) => (
   </li>
 );
 
-type NavItem = {
-  name: string;
-  path: string;
-  isExternal: boolean;
-  icon?: JSX.Element;
-};
-
 const Sidebar = ({ show, onClose }: SidebarProps) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthentication();
   const { featuredListings } = useFeaturedListings();
 
-  let navItems: NavItem[] = [];
-
-  if (isAuthenticated) {
-    navItems = [
-      {
-        name: "Terminal",
-        path: "/terminal",
-        isExternal: false,
-        icon: <FaTerminal />,
-      },
-      ...navItems,
-    ];
-  }
-
-  const technicalItems = [
-    { name: "Browse", path: "/browse", icon: <FaSearchengin /> },
-    { name: "Downloads", path: "/downloads", icon: <FaDownload /> },
-    { name: "Research", path: "/research", icon: <FaWpexplorer /> },
-    {
-      name: "Docs",
-      path: "https://docs.kscale.dev/",
-      icon: <FaRegFileLines />,
-    },
-    { name: "Code", path: "https://github.com/kscalelabs", icon: <FaGithub /> },
-  ];
-
-  const communityItems = [
-    { name: "Discord", path: "https://discord.gg/kscale", icon: <FaDiscord /> },
-    { name: "Twitter", path: "https://x.com/kscalelabs", icon: <FaXTwitter /> },
-  ];
+  const navItems = getNavItems(isAuthenticated);
 
   const handleItemClick = (path: string, isExternal?: boolean) => {
     if (isExternal) {
@@ -122,41 +80,19 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
                     <div className="border-t border-gray-1 my-2"></div>
                   </>
                 )}
-                {isAuthenticated && (
-                  <>
-                    {navItems.map((item) => (
-                      <SidebarItem
-                        key={item.name}
-                        title={item.name}
-                        icon={item.icon}
-                        onClick={() => handleItemClick(item.path)}
-                      />
-                    ))}
-                    <div className="border-t border-gray-1 my-2"></div>
-                  </>
-                )}
-                {technicalItems.map((item) => (
-                  <SidebarItem
-                    key={item.name}
-                    title={item.name}
-                    icon={item.icon}
-                    onClick={() =>
-                      handleItemClick(item.path, item.path.startsWith("http"))
-                    }
-                  />
-                ))}
-                <div className="border-t border-gray-1 my-2"></div>
-                {communityItems.map((item) => (
-                  <SidebarItem
-                    key={item.name}
-                    title={item.name}
-                    icon={item.icon}
-                    onClick={() => handleItemClick(item.path, true)}
-                  />
-                ))}
-                <div className="border-t border-gray-1 my-2"></div>
+                <div className="flex flex-col gap-2 py-4">
+                  {navItems.map((item) => (
+                    <SidebarItem
+                      key={item.name}
+                      title={item.name}
+                      icon={item.icon}
+                      onClick={() => handleItemClick(item.path)}
+                    />
+                  ))}
+                </div>
+                <div className="border-t border-gray-1"></div>
                 {isAuthenticated ? (
-                  <>
+                  <div className="flex flex-col gap-2 py-4">
                     <SidebarItem
                       title="Account"
                       onClick={() => handleItemClick("/account")}
@@ -165,9 +101,9 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
                       title="Logout"
                       onClick={() => handleItemClick("/logout")}
                     />
-                  </>
+                  </div>
                 ) : (
-                  <>
+                  <div className="flex flex-col gap-2 py-4">
                     <SidebarItem
                       title="Sign In"
                       onClick={() => handleItemClick("/login")}
@@ -176,7 +112,7 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
                       title="Sign Up"
                       onClick={() => handleItemClick("/signup")}
                     />
-                  </>
+                  </div>
                 )}
               </ul>
             </nav>
