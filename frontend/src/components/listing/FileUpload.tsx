@@ -339,7 +339,7 @@ export const FileSubmitButton = forwardRef<
       ref={ref}
       type="button"
       className={cn(
-        buttonVariants({ variant: "primary" }),
+        buttonVariants({ variant: "default" }),
         "w-full",
         className,
       )}

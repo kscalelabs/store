@@ -30,16 +30,14 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="fixed w-full z-50 top-0 start-0 bg-background/50 backdrop-blur-sm">
-        <div className="relative flex justify-between py-3 mx-4 sm:mx-6 md:mx-10 xl:mx-16 2xl:mx-28">
+      <nav className="fixed w-full z-50 top-0 start-0 bg-background border-b border-gray-1/10">
+        <div className="relative flex justify-between py-3 mx-4 sm:mx-6 md:mx-10 xl:mx-16 2xl:mx-28 font-mono">
           <div className="flex justify-between w-full lg:w-auto gap-3">
             <Link
               to={ROUTES.HOME.path}
-              className="flex items-center lg:flex-grow-0 bg-black border border-gray-500 rounded-lg p-2"
+              className="flex items-center lg:flex-grow-0 bg-black border border-gray-1 p-2"
             >
-              <span className="text-gray-1 text-lg font-semibold">
-                K-Scale Labs
-              </span>
+              <span className="text-gray-1 text-lg">K-Scale Labs</span>
             </Link>
             <Button
               onClick={() => setShowSidebar(true)}
