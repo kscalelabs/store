@@ -1,4 +1,4 @@
-import { FaTimes } from "react-icons/fa";
+import { FaExternalLinkAlt, FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 import Logo from "@/components/Logo";
@@ -11,6 +11,7 @@ interface SidebarItemProps {
   title: string;
   icon?: JSX.Element;
   onClick: () => void;
+  isExternal?: boolean;
 }
 
 interface SidebarProps {
@@ -18,14 +19,22 @@ interface SidebarProps {
   onClose: () => void;
 }
 
-const SidebarItem = ({ icon, title, onClick }: SidebarItemProps) => (
+const SidebarItem = ({
+  icon,
+  title,
+  onClick,
+  isExternal,
+}: SidebarItemProps) => (
   <li>
     <button
       onClick={onClick}
       className="w-full flex items-center py-2 px-3 text-xl text-gray-1 hover:bg-gray-1 hover:text-primary-9 rounded-md"
     >
       {icon && <span className="mr-2">{icon}</span>}
-      {title}
+      <span className="flex items-center gap-2">
+        {title}
+        {isExternal && <FaExternalLinkAlt className="h-3 w-3" />}
+      </span>
     </button>
   </li>
 );
@@ -72,7 +81,7 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
                         title={listing.name}
                         onClick={() =>
                           handleItemClick(
-                            `/item/${listing.username}/${listing.slug || listing.id}`,
+                            `/bot/${listing.username}/${listing.slug || listing.id}`,
                           )
                         }
                       />
@@ -86,7 +95,10 @@ const Sidebar = ({ show, onClose }: SidebarProps) => {
                       key={item.name}
                       title={item.name}
                       icon={item.icon}
-                      onClick={() => handleItemClick(item.path)}
+                      onClick={() =>
+                        handleItemClick(item.path, item.isExternal)
+                      }
+                      isExternal={item.isExternal}
                     />
                   ))}
                 </div>

@@ -4,14 +4,17 @@ import { FaPencilAlt, FaSave, FaTimes } from "react-icons/fa";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 
+import ListingVote from "./ListingVote";
+
 interface Props {
   listingId: string;
   name: string;
   edit: boolean;
+  userVote: boolean | null;
 }
 
 const ListingName = (props: Props) => {
-  const { listingId, name: initialName, edit } = props;
+  const { listingId, name: initialName, edit, userVote } = props;
 
   const auth = useAuthentication();
   const { addAlert, addErrorAlert } = useAlertQueue();
@@ -98,6 +101,7 @@ const ListingName = (props: Props) => {
           </>
         )}
       </h1>
+      <ListingVote listingId={listingId} userVote={userVote} />
     </div>
   );
 };

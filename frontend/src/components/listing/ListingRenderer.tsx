@@ -54,7 +54,12 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
         {/* Right side - Header and details - full width on mobile, half width on desktop */}
         <div className="w-full md:w-1/2 mt-8">
           {/* Header */}
-          <ListingName listingId={listingId} name={name} edit={canEdit} />
+          <ListingName
+            listingId={listingId}
+            name={name}
+            edit={canEdit}
+            userVote={userVote}
+          />
 
           <hr className="border-gray-200 my-4" />
 
@@ -91,6 +96,14 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
 
           <hr className="border-gray-2 my-4" />
 
+          <ListingDescription
+            listingId={listingId}
+            description={description}
+            edit={canEdit}
+          />
+
+          <hr className="border-gray-200 my-4" />
+
           {/* Build this robot */}
           <div className="flex items-baseline gap-4">
             <ListingRegisterRobot listingId={listingId} />
@@ -99,15 +112,6 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
               initialFeatured={isFeatured}
             />
           </div>
-
-          <hr className="border-gray-200 my-4" />
-
-          {/* Description */}
-          <ListingDescription
-            listingId={listingId}
-            description={description}
-            edit={canEdit}
-          />
         </div>
       </div>
 
