@@ -3,5 +3,5 @@ crypto:
 dynamo:
   table_name: robolist
 site:
-  homepage: https://kscale.store
+  homepage: https://kscale.dev
   artifact_base_url: https://media.kscale.store/

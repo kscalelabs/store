@@ -25,7 +25,10 @@ const AuthBlock: React.FC<AuthBlockProps> = ({ title, onClosed, signup }) => {
   return (
     <Card className="w-[400px] bg-gray-12 text-gray-12 rounded-lg">
       <CardHeader>
-        <Header title={title} onClosed={onClosed} />
+        <Header
+          title={title ? title : signup ? "Signup" : "Login"}
+          onClosed={onClosed}
+        />
       </CardHeader>
       <AuthBlockInner initialSignup={signup} />
     </Card>
