@@ -16,14 +16,14 @@ import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 
 interface AuthBlockProps {
-  title?: string;
+  title?: string | React.ReactNode;
   onClosed?: () => void;
   signup?: boolean;
 }
 
 const AuthBlock: React.FC<AuthBlockProps> = ({ title, onClosed, signup }) => {
   return (
-    <Card className="w-[400px] bg-gray-2 text-gray-12 rounded-lg">
+    <Card className="w-[400px] bg-gray-12 text-gray-12 rounded-lg">
       <CardHeader>
         <Header title={title} onClosed={onClosed} />
       </CardHeader>

@@ -56,7 +56,12 @@ const SignupWithEmail = () => {
         {errors?.email && <ErrorMessage>{errors?.email?.message}</ErrorMessage>}
       </div>
       {/* Signup Button */}
-      <Button variant="default">Sign up with email</Button>
+      <Button
+        variant="outline"
+        className="bg-gray-12 text-gray-2 hover:bg-gray-9"
+      >
+        Sign up with email
+      </Button>
     </form>
   );
 };
