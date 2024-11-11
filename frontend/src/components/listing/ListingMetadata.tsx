@@ -59,12 +59,10 @@ const ListingMetadata = ({
         </div>
 
         {/* Stats */}
-        <span className="flex items-center gap-1 text-gray-600">
+        <span className="flex items-center gap-1">
           <FaEye /> {views} views
         </span>
-        <span className="text-gray-600">
-          Posted {new Date(createdAt * 1000).toLocaleDateString()}
-        </span>
+        <span>Posted {new Date(createdAt * 1000).toLocaleDateString()}</span>
       </div>
     </>
   );

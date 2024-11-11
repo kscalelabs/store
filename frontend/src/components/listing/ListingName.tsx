@@ -63,7 +63,7 @@ const ListingName = (props: Props) => {
               type="text"
               value={newName}
               onChange={handleChange}
-              className="border rounded px-2 py-1"
+              className="border rounded px-2 py-1 bg-black text-white"
               disabled={submitting}
             />
             <button

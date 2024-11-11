@@ -72,7 +72,6 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
             creatorUsername={creatorUsername}
             views={views}
             createdAt={createdAt}
-            userVote={userVote}
           />
 
           {/* Add payment section if price exists */}
