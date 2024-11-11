@@ -186,4 +186,4 @@ LOCALHOST_URLS = [
 
 
 def get_cors_origins() -> list[str]:
-    return list({settings.site.homepage, "https://kscale.store", "https://kscale.dev", *LOCALHOST_URLS})
+    return list({settings.site.homepage, "https://kscale.dev", *LOCALHOST_URLS})
