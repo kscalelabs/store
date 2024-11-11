@@ -28,7 +28,7 @@ const About = () => {
         <div className="space-y-12">
           <div>
             <div className="gap-4">
-              <a href="https://blog.kscale.dev">Blog</a>
+              <a href="https://kscale.dev/research">Blog</a>
               <a href="https://docs.kscale.dev">Docs</a>
               <a href="https://discord.gg/kscale">Discord</a>
               <a href="https://forms.gle/sKytq8jsJXNEfaFy7">Feedback</a>
@@ -61,7 +61,7 @@ const About = () => {
               <a href="https://www.linkedin.com/in/denys-bezmenov/">Denys</a>
               <a href="https://ivntsng.github.io/ivntsng/">Ivan</a>
               <a href="https://www.jingxiangmo.com/">Jingxiang</a>
-              <a href="https://budzianowski.github.io/">Pawel</a>
+              <a href="https://budzianowski.github.io/">Paweł</a>
               <a href="https://www.linkedin.com/in/ruixu/">Rui</a>
               <a href="https://www.linkedin.com/in/virajtipnis/">Viraj</a>
               <a href="https://wesleymaa.com/">Wesley</a>
