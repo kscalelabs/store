@@ -78,7 +78,7 @@ const SingleKey = ({ token, permissions, onDelete }: SingleKeyProps) => {
         </Button>
         <Button
           onClick={() => setIsKeyVisible(!isKeyVisible)}
-          variant="default"
+          variant="outline"
         >
           {isKeyVisible ? "Hide" : "Show Key"}
         </Button>
@@ -150,7 +150,7 @@ const APIKeys = () => {
 
   return (
     <RequireAuthentication>
-      <div className="container mx-auto max-w-4xl shadow-md rounded-lg bg-gray-1 text-gray-12 border bg-card text-card-foreground relative">
+      <div className="container mx-auto max-w-4xl shadow-md rounded-lg bg-gray-12 text-gray-2 border bg-card text-card-foreground relative">
         <div className="p-6">
           <h1 className="text-3xl font-extrabold mb-4">API Keys</h1>
           {apiKeys === null ? (
@@ -191,7 +191,7 @@ const APIKeys = () => {
                 </label>
                 <Button
                   onClick={createKey}
-                  variant="default"
+                  variant="outline"
                   disabled={creatingKey}
                 >
                   Create {readonly ? "Read-only " : "Read-write "}Key

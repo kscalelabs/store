@@ -8,7 +8,7 @@ from pydantic.main import BaseModel
 
 from store.app.db import Crud
 from store.app.model import APIKeyPermission, User
-from store.app.security.user import get_session_user_with_admin_permission
+from store.app.security.user import get_session_user
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class NewKeyResponse(BaseModel):
 @router.post("/new", response_model=NewKeyResponse)
 async def new_key(
     data: NewKeyRequest,
-    user: Annotated[User, Depends(get_session_user_with_admin_permission)],
+    user: Annotated[User, Depends(get_session_user)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> NewKeyResponse:
     api_key = await crud.add_api_key(
@@ -54,7 +54,7 @@ class ListKeysResponse(BaseModel):
 
 @router.get("/list", response_model=ListKeysResponse)
 async def list_keys(
-    user: Annotated[User, Depends(get_session_user_with_admin_permission)],
+    user: Annotated[User, Depends(get_session_user)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> ListKeysResponse:
     keys = await crud.list_api_keys(user.id)
@@ -72,7 +72,7 @@ async def list_keys(
 @router.delete("/delete/{key}")
 async def delete_key(
     key: str,
-    user: Annotated[User, Depends(get_session_user_with_admin_permission)],
+    user: Annotated[User, Depends(get_session_user)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> None:
     await crud.delete_api_key(key)
