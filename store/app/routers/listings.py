@@ -260,20 +260,6 @@ async def get_my_listings(
     return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
 
-class NewListingRequest(BaseModel):
-    name: str
-    description: str | None
-    child_ids: list[str]
-    slug: str
-    price_amount: int | None = None  # in cents
-    currency: str = "usd"
-    inventory_type: Literal["finite", "infinite", "preorder"] = "infinite"
-    inventory_quantity: int | None = None
-    preorder_release_date: int | None = None
-    is_reservation: bool = False
-    reservation_deposit_amount: int | None = None
-
-
 class NewListingResponse(BaseModel):
     listing_id: str
     username: str
@@ -338,7 +324,6 @@ async def add_listing(
         )
 
     # Create Stripe product if price is set
-
     if price_amount is not None and user.stripe_connect_account_id:
         try:
             product = stripe.Product.create(
