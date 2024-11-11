@@ -74,6 +74,14 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
             createdAt={createdAt}
           />
 
+          <hr className="border-gray-2 my-4" />
+
+          <ListingDescription
+            listingId={listingId}
+            description={description}
+            edit={canEdit}
+          />
+
           {/* Add payment section if price exists */}
           {isForSale && (
             <>
@@ -92,14 +100,6 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
               />
             </>
           )}
-
-          <hr className="border-gray-2 my-4" />
-
-          <ListingDescription
-            listingId={listingId}
-            description={description}
-            edit={canEdit}
-          />
 
           <hr className="border-gray-200 my-4" />
 

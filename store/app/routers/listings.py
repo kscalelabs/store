@@ -143,6 +143,10 @@ class ListingInfoResponse(BaseModel):
     views: int
     score: int
     user_vote: bool | None
+    price_amount: int | None
+    currency: str | None
+    inventory_type: Literal["finite", "infinite", "preorder"] | None
+    inventory_quantity: int | None
 
 
 class GetBatchListingsResponse(BaseModel):
@@ -203,6 +207,10 @@ async def get_batch_listing_info(
                     views=listing.views,
                     score=listing.score,
                     user_vote=user_votes.get(listing.id),
+                    price_amount=listing.price_amount,
+                    currency=listing.currency,
+                    inventory_type=listing.inventory_type,
+                    inventory_quantity=listing.inventory_quantity,
                 )
                 listing_responses.append(listing_response)
             except Exception as e:

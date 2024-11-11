@@ -40,26 +40,6 @@ class ConnectAccountStatus(str, Enum):
     COMPLETE = "complete"
 
 
-@router.post("/create-payment-intent")
-async def create_payment_intent(request: Request) -> Dict[str, Any]:
-    try:
-        data = await request.json()
-        amount = data.get("amount")
-
-        # Create a PaymentIntent with the order amount and currency
-        intent = stripe.PaymentIntent.create(
-            amount=amount,
-            currency="usd",
-            automatic_payment_methods={
-                "enabled": True,
-            },
-        )
-
-        return {"clientSecret": intent.client_secret}
-    except Exception as e:
-        return {"error": str(e)}
-
-
 class CancelReason(BaseModel):
     reason: str
     details: str
@@ -197,8 +177,15 @@ async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud)
         product_id = session["metadata"].get("product_id")
         if product_id:
             listing = await crud.get_listing_by_stripe_product_id(product_id)
-            if listing and listing.inventory_type == "finite":
-                if listing.inventory_quantity is not None and quantity is not None:
+            if listing:
+                # Only decrement inventory for finite listings with successful payments
+                if (
+                    listing.inventory_type == "finite"
+                    and listing.inventory_quantity is not None
+                    and quantity is not None
+                    and session["payment_status"] == "paid"
+                ):
+
                     new_quantity = max(0, listing.inventory_quantity - quantity)
                     await asyncio.gather(
                         crud.create_order(order_data),
@@ -206,10 +193,14 @@ async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud)
                     )
                     logger.info("Updated listing inventory from %d to %d", listing.inventory_quantity, new_quantity)
                     return
+                else:
+                    # Just create the order without updating inventory
+                    await crud.create_order(order_data)
+                    return
 
         # If no inventory update needed, just create the order
-        new_order = await crud.create_order(order_data)
-        logger.info("New order created: %s", new_order.id)
+        await crud.create_order(order_data)
+        logger.info("New order created: %s", order_data.get("id"))
 
     except Exception as e:
         logger.error("Error processing checkout session: %s", str(e))
