@@ -16,6 +16,8 @@ from store.app.security.user import (
     get_session_user_with_admin_permission,
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
+    verify_admin_permission,
+    verify_target_not_admin,
 )
 from store.app.utils.email import send_delete_email
 
@@ -268,14 +270,10 @@ async def set_moderator(
     admin_user: Annotated[User, Depends(get_session_user_with_admin_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UserPublic:
-    # Get the target user first to check their permissions
-    target_user = await crud.get_user(request.user_id, throw_if_missing=True)
+    verify_admin_permission(admin_user, "modify moderator status")
 
-    # Prevent modifying admin users' moderator status
-    if target_user.permissions and "admin" in target_user.permissions:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Cannot modify moderator status of admin users"
-        )
+    target_user = await crud.get_user(request.user_id, throw_if_missing=True)
+    verify_target_not_admin(target_user, "modify moderator status")
 
     updated_user = await crud.set_moderator(request.user_id, request.is_mod)
     return UserPublic(**updated_user.model_dump())
@@ -302,12 +300,10 @@ async def set_content_manager(
     admin_user: Annotated[User, Depends(get_session_user_with_admin_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UserPublic:
-    target_user = await crud.get_user(request.user_id, throw_if_missing=True)
+    verify_admin_permission(admin_user, "modify content manager status")
 
-    if target_user.permissions and "admin" in target_user.permissions:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Cannot modify content manager status of admin users"
-        )
+    target_user = await crud.get_user(request.user_id, throw_if_missing=True)
+    verify_target_not_admin(target_user, "modify content manager status")
 
     try:
         updated_user = await crud.set_content_manager(request.user_id, request.is_content_manager)
