@@ -129,7 +129,7 @@ const GDPRBanner: React.FC = () => {
               Back
             </button>
             <button
-              className="bg-primary-9 text-white rounded-full px-4 py-2 transition-colors duration-300 hover:bg-primary-8"
+              className="bg-primary-9 text-black rounded-full px-4 py-2 transition-colors duration-300 hover:bg-gray-11"
               onClick={handleSaveOptOutPreferences}
             >
               Save Preferences

@@ -170,7 +170,7 @@ const ListingDescription = (props: Props) => {
                   setNewDescription(e.target.value);
                   setHasChanged(true);
                 }}
-                className="border-b border-gray-5 mb-2 font-mono min-h-[200px] h-auto resize-none"
+                className="border-b border-gray-5 mb-2 font-mono min-h-[200px] h-auto resize-none bg-black text-white"
                 style={{
                   height: `${Math.max(200, newDescription.split("\n").length * 24)}px`,
                 }}

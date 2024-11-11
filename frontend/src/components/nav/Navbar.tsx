@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FaExternalLinkAlt } from "react-icons/fa";
 import { FaBars } from "react-icons/fa6";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
@@ -75,8 +76,10 @@ const Navbar = () => {
                       href={item.path}
                       target="_blank"
                       rel="noopener noreferrer"
+                      className="flex items-center gap-2"
                     >
                       {item.name}
+                      <FaExternalLinkAlt className="h-3 w-3 text-gray-1" />
                     </a>
                   </Button>
                 ) : (
