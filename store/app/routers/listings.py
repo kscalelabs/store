@@ -143,6 +143,10 @@ class ListingInfoResponse(BaseModel):
     views: int
     score: int
     user_vote: bool | None
+    price_amount: int | None
+    currency: str | None
+    inventory_type: Literal["finite", "infinite", "preorder"] | None
+    inventory_quantity: int | None
 
 
 class GetBatchListingsResponse(BaseModel):
@@ -203,6 +207,10 @@ async def get_batch_listing_info(
                     views=listing.views,
                     score=listing.score,
                     user_vote=user_votes.get(listing.id),
+                    price_amount=listing.price_amount,
+                    currency=listing.currency,
+                    inventory_type=listing.inventory_type,
+                    inventory_quantity=listing.inventory_quantity,
                 )
                 listing_responses.append(listing_response)
             except Exception as e:
@@ -250,20 +258,6 @@ async def get_my_listings(
     listings, has_next = await crud.get_user_listings(user.id, page)
     listing_infos = [ListingInfo(id=listing.id, username=user.username, slug=listing.slug) for listing in listings]
     return ListListingsResponse(listings=listing_infos, has_next=has_next)
-
-
-class NewListingRequest(BaseModel):
-    name: str
-    description: str | None
-    child_ids: list[str]
-    slug: str
-    price_amount: int | None = None  # in cents
-    currency: str = "usd"
-    inventory_type: Literal["finite", "infinite", "preorder"] = "infinite"
-    inventory_quantity: int | None = None
-    preorder_release_date: int | None = None
-    is_reservation: bool = False
-    reservation_deposit_amount: int | None = None
 
 
 class NewListingResponse(BaseModel):
@@ -330,7 +324,6 @@ async def add_listing(
         )
 
     # Create Stripe product if price is set
-
     if price_amount is not None and user.stripe_connect_account_id:
         try:
             product = stripe.Product.create(

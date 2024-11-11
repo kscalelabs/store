@@ -1,6 +1,5 @@
 """Stripe integration router for handling payments and webhooks."""
 
-import asyncio
 import logging
 from enum import Enum
 from typing import Annotated, Any, Dict, Literal
@@ -38,26 +37,6 @@ class ConnectAccountStatus(str, Enum):
     NOT_CREATED = "not_created"
     INCOMPLETE = "incomplete"
     COMPLETE = "complete"
-
-
-@router.post("/create-payment-intent")
-async def create_payment_intent(request: Request) -> Dict[str, Any]:
-    try:
-        data = await request.json()
-        amount = data.get("amount")
-
-        # Create a PaymentIntent with the order amount and currency
-        intent = stripe.PaymentIntent.create(
-            amount=amount,
-            currency="usd",
-            automatic_payment_methods={
-                "enabled": True,
-            },
-        )
-
-        return {"clientSecret": intent.client_secret}
-    except Exception as e:
-        return {"error": str(e)}
 
 
 class CancelReason(BaseModel):
@@ -165,6 +144,7 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
 
 
 async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud) -> None:
+    logger.info("Processing checkout session: %s", session["id"])
     try:
         shipping_details = session.get("shipping_details", {})
         shipping_address = shipping_details.get("address", {})
@@ -193,23 +173,19 @@ async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud)
             "shipping_country": shipping_address.get("country"),
         }
 
-        # Create order and update inventory in parallel
         product_id = session["metadata"].get("product_id")
         if product_id:
             listing = await crud.get_listing_by_stripe_product_id(product_id)
-            if listing and listing.inventory_type == "finite":
-                if listing.inventory_quantity is not None and quantity is not None:
+            if listing:
+                if (
+                    listing.inventory_type == "finite"
+                    and listing.inventory_quantity is not None
+                    and quantity is not None
+                ):
                     new_quantity = max(0, listing.inventory_quantity - quantity)
-                    await asyncio.gather(
-                        crud.create_order(order_data),
-                        crud.edit_listing(listing_id=listing.id, inventory_quantity=new_quantity),
-                    )
-                    logger.info("Updated listing inventory from %d to %d", listing.inventory_quantity, new_quantity)
-                    return
+                    await crud.edit_listing(listing_id=listing.id, inventory_quantity=new_quantity)
 
-        # If no inventory update needed, just create the order
-        new_order = await crud.create_order(order_data)
-        logger.info("New order created: %s", new_order.id)
+        await crud.create_order(order_data)
 
     except Exception as e:
         logger.error("Error processing checkout session: %s", str(e))
@@ -274,7 +250,15 @@ async def create_checkout_session(
             # Get the listing
             listing = await crud.get_listing(request.listing_id)
             if not listing or not listing.price_amount:
+                logger.error(f"Listing not found or has no price: {request.listing_id}")
                 raise HTTPException(status_code=404, detail="Listing not found or has no price")
+
+            # Validate inventory
+            if listing.inventory_type == "finite":
+                if listing.inventory_quantity is None:
+                    raise HTTPException(status_code=400, detail="Invalid inventory configuration")
+                if listing.inventory_quantity <= 0:
+                    raise HTTPException(status_code=400, detail="This item is out of stock")
 
             if not listing.stripe_price_id:
                 raise HTTPException(status_code=400, detail="Listing has no associated Stripe price")
@@ -288,10 +272,10 @@ async def create_checkout_session(
             if seller.id == user.id:
                 raise HTTPException(status_code=400, detail="You cannot purchase your own listing")
 
-            # Calculate maximum quantity and application fee
+            # Calculate maximum quantity
             max_quantity = 10
             if listing.inventory_type == "finite" and listing.inventory_quantity is not None:
-                max_quantity = listing.inventory_quantity
+                max_quantity = min(listing.inventory_quantity, 10)
 
             application_fee = int(listing.price_amount * 0.02)  # 2% fee for our platform
 
@@ -308,9 +292,9 @@ async def create_checkout_session(
                 },
             )
 
-            # Ensure stripe_product_id is not None before adding to metadata
-            metadata = {
+            metadata: dict[str, str] = {
                 "user_email": user.email,
+                "product_id": listing.stripe_product_id or "",
             }
             if listing.stripe_product_id:
                 metadata["stripe_product_id"] = listing.stripe_product_id
@@ -320,15 +304,21 @@ async def create_checkout_session(
                     {
                         "price": platform_price.id,
                         "quantity": 1,
-                        "adjustable_quantity": {
-                            "enabled": True,
-                            "minimum": 1,
-                            "maximum": max_quantity,
-                        },
+                        **(
+                            {
+                                "adjustable_quantity": {
+                                    "enabled": True,
+                                    "minimum": 1,
+                                    "maximum": max_quantity,
+                                }
+                            }
+                            if max_quantity > 1
+                            else {}
+                        ),
                     }
                 ],
                 mode="payment",
-                payment_method_types=["card", "affirm"],
+                payment_method_types=(["card", "affirm"] if listing.price_amount >= 5000 else ["card"]),
                 success_url=f"{settings.site.homepage}/order/success?session_id={{CHECKOUT_SESSION_ID}}",
                 cancel_url=f"{settings.site.homepage}{request.cancel_url}",
                 client_reference_id=user.id,
@@ -341,10 +331,11 @@ async def create_checkout_session(
                     },
                 },
             )
+
             return CreateCheckoutSessionResponse(session_id=checkout_session.id)
 
         except stripe.StripeError as e:
-            logger.error(f"Stripe error: {str(e)}")
+            logger.error(f"Stripe error: {str(e)}", exc_info=True)
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
             logger.error(f"Unexpected error: {str(e)}", exc_info=True)
@@ -392,9 +383,6 @@ async def create_connect_account(
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> CreateConnectAccountResponse:
     try:
-        logger.info("Starting new account creation for user %s", user.id)
-
-        # Create a Standard Connect account
         account = stripe.Account.create(
             type="standard",
             country="US",
@@ -406,10 +394,8 @@ async def create_connect_account(
             business_type="individual",
         )
 
-        logger.info("Created new Connect account: %s for user: %s", account.id, user.id)
+        logger.info("Created Connect account %s for user %s", account.id, user.id)
 
-        # Update user record with new Connect account ID
-        logger.info("Updating user record with new Connect account ID")
         await crud.update_user(
             user.id,
             {
@@ -420,7 +406,7 @@ async def create_connect_account(
 
         return CreateConnectAccountResponse(account_id=account.id)
     except Exception as e:
-        logger.error("Error creating Connect account: %s", str(e), exc_info=True)
+        logger.error("Error creating Connect account: %s", str(e))
         raise HTTPException(status_code=400, detail=str(e))
 
 

@@ -13,17 +13,33 @@ import { loadStripe } from "@stripe/stripe-js";
 
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
-const CheckoutButton: React.FC<{
+interface Props {
   listingId: string;
   stripeProductId: string;
   label?: string;
-}> = ({ listingId, stripeProductId, label = "Order Now" }) => {
+  inventoryType?: "finite" | "infinite" | "preorder";
+  inventoryQuantity?: number;
+}
+
+const CheckoutButton: React.FC<Props> = ({
+  listingId,
+  stripeProductId,
+  label = "Order Now",
+  inventoryType,
+  inventoryQuantity,
+}) => {
   const { addErrorAlert } = useAlertQueue();
   const [isLoading, setIsLoading] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const auth = useAuthentication();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const isOutOfStock =
+    inventoryType === "finite" &&
+    (inventoryQuantity === undefined || inventoryQuantity <= 0);
+
+  const buttonLabel = isOutOfStock ? "Out of Stock" : label;
 
   const handleClick = async () => {
     setIsLoading(true);
@@ -96,12 +112,14 @@ const CheckoutButton: React.FC<{
     <>
       <Button
         onClick={handleClick}
-        disabled={isLoading}
-        className="flex items-center justify-center bg-primary"
+        disabled={isLoading || isOutOfStock}
+        className={`flex items-center justify-center ${
+          isOutOfStock ? "bg-gray-600" : "bg-primary"
+        }`}
         variant="default"
       >
         {isLoading ? <FaSpinner className="animate-spin mr-2" /> : null}
-        {isLoading ? "Starting checkout..." : label}
+        {isLoading ? "Starting checkout..." : buttonLabel}
       </Button>
 
       <Drawer open={isDrawerOpen} setOpen={setIsDrawerOpen}>

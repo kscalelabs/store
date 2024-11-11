@@ -1,10 +1,14 @@
+import { useNavigate } from "react-router-dom";
+
 import AuthBlock from "@/components/auth/AuthBlock";
 
 const Login = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="mx-8">
       <div className="flex justify-center items-center">
-        <AuthBlock title={<span className="text-gray-2">Welcome back!</span>} />
+        <AuthBlock title="Welcome back!" onClosed={() => navigate(-1)} />
       </div>
     </div>
   );

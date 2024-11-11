@@ -20,7 +20,7 @@ const OrderSuccess: React.FC = () => {
 
   return (
     <div className="pt-4 min-h-screen">
-      <Card className="mt-8">
+      <Card className="mt-8 max-w-4xl mx-auto">
         <CardContent className="p-6 flex flex-col items-center">
           <CheckCircle className="w-16 h-16 text-green-500 mb-4" />
           <h2 className="text-2xl font-bold mb-2">Order Successful!</h2>
@@ -37,7 +37,7 @@ const OrderSuccess: React.FC = () => {
             <Button asChild>
               <a href="/">Return to Home</a>
             </Button>
-            <Button asChild variant="default">
+            <Button asChild variant="outline">
               <a href="/orders">View Your Orders</a>
             </Button>
           </div>

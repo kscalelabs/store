@@ -60,6 +60,8 @@ const ListingPayment = ({
           listingId={listingId}
           stripeProductId={stripeProductId}
           label="Purchase Now"
+          inventoryType={inventoryType}
+          inventoryQuantity={inventoryQuantity}
         />
       </div>
     </div>
