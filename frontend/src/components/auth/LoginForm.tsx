@@ -62,7 +62,7 @@ const LoginForm = () => {
       {/* Submit Button */}
       <Button
         variant="outline"
-        className="bg-gray-2 text-black hover:bg-gray-8"
+        className="bg-gray-12 text-gray-2 hover:bg-gray-9"
       >
         Login
       </Button>
