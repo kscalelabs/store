@@ -501,6 +501,7 @@ const CreateSell = () => {
                     <Input
                       type="number"
                       min="1"
+                      onWheel={(e) => (e.target as HTMLInputElement).blur()} // prevent changing value when scrolling
                       {...register("inventory_quantity", {
                         valueAsNumber: true,
                         validate: (value) =>
