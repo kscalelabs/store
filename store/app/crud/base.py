@@ -406,6 +406,12 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     async def _upload_to_s3(self, data: IO[bytes], name: str, filename: str, content_type: str) -> None:
         """Uploads some data to S3."""
         try:
+            import time
+            from datetime import datetime
+
+            logger.info(f"Container UTC time: {datetime.utcnow().isoformat()}")
+            logger.info(f"Container local time: {datetime.now().isoformat()}")
+            logger.info(f"Container timezone: {time.tzname}")
             logger.info("=== S3 Upload Debug Info ===")
             logger.info(f"Bucket: {settings.s3.bucket}")
             logger.info(f"Key: {settings.s3.prefix}{filename}")
