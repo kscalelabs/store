@@ -3,7 +3,7 @@
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Callable
 
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException, Request, status
@@ -12,6 +12,7 @@ from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.security import APIKeyCookie, APIKeyHeader
+from starlette.responses import Response
 
 from store.app.db import create_tables
 from store.app.errors import (
@@ -81,9 +82,9 @@ app.add_middleware(
 
 
 @app.middleware("http")
-async def log_requests(request: Request, call_next):
+async def log_requests(request: Request, call_next: Callable[[Request], Response]) -> Response:
     logger.info(f"Request: {request.method} {request.url}")
-    response = await call_next(request)
+    response = call_next(request)
     logger.info(f"Response status: {response.status_code}")
     return response
 
