@@ -4,8 +4,8 @@ import { useTypedParams } from "react-router-typesafe-routes/dom";
 
 import MyListingGrid from "@/components/listings/MyListingGrid";
 import UpvotedGrid from "@/components/listings/UpvotedGrid";
+import EditProfileForm from "@/components/profile/EditProfileForm";
 import { Card, CardContent, CardHeader } from "@/components/ui/Card";
-import { Input, TextArea } from "@/components/ui/Input/Input";
 import Spinner from "@/components/ui/Spinner";
 import { Tooltip } from "@/components/ui/ToolTip";
 import { Button } from "@/components/ui/button";
@@ -73,6 +73,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
       console.error("Failed to update profile", error);
     } finally {
       setIsSubmitting(false);
+      auth.fetchCurrentUser();
     }
   };
 
@@ -195,18 +196,18 @@ export const RenderProfile = (props: RenderProfileProps) => {
                 ? `${user.first_name || ""} ${user.last_name || ""}`
                 : "Anonymous Creator"}
             </h1>
-            <div className="flex gap-2">
-              <p className="text-sm text-gray-1 bg-gray-10 px-3 py-1 rounded-md">
+            <div className="flex gap-2 text-sm">
+              <p className="text-gray-1 bg-gray-10 px-3 py-1 rounded-md">
                 <span className="font-semibold mr-0.5 select-none">@</span>
                 {user.username}
               </p>
               {user.permissions && (
-                <p className="text-sm text-primary-12 bg-gray-4 px-3 py-1 rounded-md">
+                <p className="text-primary-12 bg-gray-4 px-3 py-1 rounded-md">
                   {getRoleName(user.permissions)}
                 </p>
               )}
             </div>
-            <p className="text-sm text-gray-11">
+            <p className="text-sm text-gray-6">
               Joined on{" "}
               {user.created_at
                 ? formatJoinDate(user.created_at)
@@ -243,128 +244,30 @@ export const RenderProfile = (props: RenderProfileProps) => {
         </CardHeader>
         <CardContent>
           {isEditing ? (
-            <div className="flex justify-center space-y-4">
-              <form
-                onSubmit={handleSubmit}
-                className="w-full max-w-lg space-y-4"
-              >
-                <div>
-                  <label
-                    htmlFor="username"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Username
-                  </label>
-                  <p className="text-xs text-gray-10 italic">
-                    Changing your username will change the URL for all your
-                    posted listings.
-                  </p>
-                  <Input
-                    id="username"
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="mt-1 block w-full"
-                  />
-                  {isCheckingUsername && (
-                    <p className="text-sm text-gray-500">
-                      Checking username...
-                    </p>
-                  )}
-                  {!isCheckingUsername && isUsernameChanged && (
-                    <p
-                      className={`text-sm ${
-                        isUsernameAvailable && !usernameError
-                          ? "text-green-500"
-                          : "text-red-500"
-                      }`}
-                    >
-                      {usernameError ||
-                        (isUsernameAvailable
-                          ? "Username is available"
-                          : "Username is not available")}
-                    </p>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label
-                      htmlFor="first_name"
-                      className="block text-lg font-medium"
-                    >
-                      First Name
-                    </label>
-                    <Input
-                      id="first_name"
-                      type="text"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      className="mt-1 block w-full"
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="last_name"
-                      className="block text-lg font-medium"
-                    >
-                      Last Name
-                    </label>
-                    <Input
-                      id="last_name"
-                      type="text"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      className="mt-1 block w-full"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="bio" className="block text-lg font-medium">
-                    Bio
-                  </label>
-                  <TextArea
-                    id="bio"
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-11 shadow-sm focus:border-primary-9 focus:ring focus:ring-primary-9 focus:ring-opacity-50"
-                    rows={3}
-                  />
-                </div>
-
-                {isSubmitting ? (
-                  <div className="mt-4 flex justify-center items-center">
-                    <Spinner />
-                  </div>
-                ) : (
-                  <div className="mt-4 flex justify-center space-x-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setIsEditing(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="submit"
-                      variant="default"
-                      disabled={isUsernameChanged && !isUsernameAvailable}
-                    >
-                      Save Changes
-                    </Button>
-                  </div>
-                )}
-              </form>
-            </div>
+            <EditProfileForm
+              username={username}
+              firstName={firstName}
+              lastName={lastName}
+              bio={bio}
+              isCheckingUsername={isCheckingUsername}
+              isUsernameChanged={isUsernameChanged}
+              isUsernameAvailable={isUsernameAvailable}
+              usernameError={usernameError}
+              isSubmitting={isSubmitting}
+              setUsername={setUsername}
+              setFirstName={setFirstName}
+              setLastName={setLastName}
+              setBio={setBio}
+              setIsEditing={setIsEditing}
+              handleSubmit={handleSubmit}
+            />
           ) : (
             <div className="space-y-6">
               <div>
                 {user.bio ? (
                   <p>{user.bio}</p>
                 ) : (
-                  <p className="text-gray-11 text-sm">
+                  <p className="text-gray-6 text-sm">
                     No bio set. Edit your profile to add a bio.
                   </p>
                 )}
@@ -382,14 +285,14 @@ export const RenderProfile = (props: RenderProfileProps) => {
           <div className="mb-4">
             {user.stripe_connect_account_id &&
             !user.stripe_connect_onboarding_completed ? (
-              <p className="text-gray-11 text-sm">
+              <p className="text-gray-6 text-sm">
                 Your Stripe account setup is not complete. Please resolve
                 outstanding requirements to begin selling robots. It may take
                 some time for Stripe to process your info between submissions.
               </p>
             ) : user.stripe_connect_onboarding_completed ? (
-              <p className="text-gray-11 text-sm">
-                Stripe account setup complete.
+              <p className="text-gray-6 text-sm">
+                You are set up to sell robots on K-Scale.
               </p>
             ) : (
               <p>You must complete seller onboarding to sell robots</p>
@@ -421,12 +324,17 @@ export const RenderProfile = (props: RenderProfileProps) => {
                 </Button>
               </Tooltip>
             ) : (
-              <Button
-                onClick={() => navigate(ROUTES.SELL.DASHBOARD.path)}
-                variant="outline"
+              <Tooltip
+                content="Sell Robots or View Your Dashboard"
+                position="bottom"
               >
-                Seller Dashboard
-              </Button>
+                <Button
+                  onClick={() => navigate(ROUTES.SELL.DASHBOARD.path)}
+                  variant="outline"
+                >
+                  Seller Dashboard
+                </Button>
+              </Tooltip>
             )}
           </div>
           <div className="flex flex-col items-center space-y-4">
@@ -438,15 +346,15 @@ export const RenderProfile = (props: RenderProfileProps) => {
               <TabsList className="flex justify-center space-x-4 mb-4">
                 <TabsTrigger
                   value="own"
-                  className="text-sm px-3 py-1.5 rounded-md transition-colors duration-300 hover:bg-gray-9 hover:text-gray-1 data-[state=active]:bg-gray-12 data-[state=active]:text-gray-1"
+                  className="text-sm px-3 py-1.5 rounded-md transition-colors duration-300 hover:bg-gray-11 hover:text-gray-1 data-[state=active]:bg-gray-1 data-[state=active]:text-gray-12"
                 >
-                  Your Listings
+                  Your Bot Listings
                 </TabsTrigger>
                 <TabsTrigger
                   value="upvoted"
-                  className="text-sm px-3 py-1.5 rounded-md transition-colors duration-300 hover:bg-gray-9 hover:text-gray-1 data-[state=active]:bg-gray-12 data-[state=active]:text-gray-1"
+                  className="text-sm px-3 py-1.5 rounded-md transition-colors duration-300 hover:bg-gray-9 hover:text-gray-1 data-[state=active]:bg-gray-1 data-[state=active]:text-gray-12"
                 >
-                  Upvoted
+                  Upvoted Bots
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="own">

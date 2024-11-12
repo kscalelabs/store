@@ -72,14 +72,14 @@ const MyListingGrid = ({ userId }: MyListingGridProps) => {
     };
 
     fetchListings();
-  }, [userId]);
+  }, [userId, auth.currentUser?.username]);
 
   return listingInfos === null ? (
     <div className="flex justify-center items-center h-64">
       <Spinner />
     </div>
   ) : (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 3xl:grid-cols-4 gap-4 sm:gap-6">
       {listingInfos.map((info) => (
         <Link
           to={ROUTES.BOT.buildPath({
