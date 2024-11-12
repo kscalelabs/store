@@ -3,7 +3,8 @@
 import asyncio
 import logging
 import os
-from typing import Annotated, Self
+from datetime import datetime, timedelta
+from typing import Annotated, Literal, Self
 
 from boto3.dynamodb.conditions import Key
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
@@ -24,7 +25,10 @@ from store.app.model import (
     get_artifact_url,
     get_artifact_urls,
 )
-from store.app.security.user import get_session_user_with_write_permission, maybe_get_user_from_api_key
+from store.app.security.user import (
+    get_session_user_with_write_permission,
+    maybe_get_user_from_api_key,
+)
 from store.app.utils.cloudfront_signer import CloudFrontUrlSigner
 from store.settings import settings
 
@@ -81,7 +85,7 @@ async def artifact_url(
 
     # Create and sign URL for production environment
     if settings.environment != "local":
-        policy = signer.create_custom_policy(url=base_url, expire_days=1 / 24)  # 1 hour expiration
+        policy = signer.create_custom_policy(url=base_url, expire_days=180)
         base_url = signer.generate_presigned_url(base_url, policy=policy)
 
     return RedirectResponse(url=base_url)
@@ -90,14 +94,37 @@ async def artifact_url(
 class ArtifactUrls(BaseModel):
     small: str | None = None
     large: str
+    expires_at: int
 
 
 def get_artifact_url_response(artifact: Artifact) -> ArtifactUrls:
     artifact_urls = get_artifact_urls(artifact=artifact)
-    return ArtifactUrls(
-        small=artifact_urls.get("small"),
-        large=artifact_urls["large"],
-    )
+    expiration_time = None
+
+    # If in production, sign both URLs
+    if settings.environment != "local":
+        logger.debug(f"Original URLs for artifact {artifact.id}: {artifact_urls}")
+
+        signer = CloudFrontUrlSigner(
+            key_id=settings.cloudfront.key_id,
+            private_key_path=settings.cloudfront.private_key_path,
+        )
+
+        expire_days = 180
+        expiration_time = int((datetime.utcnow() + timedelta(days=expire_days)).timestamp())
+
+        # Explicitly iterate over the literal types
+        sizes: list[Literal["small", "large"]] = ["small", "large"]
+        for size in sizes:
+            try:
+                url = artifact_urls[size]
+                cf_url = f"https://{settings.cloudfront.domain}/{url}"
+                policy = signer.create_custom_policy(url=cf_url, expire_days=expire_days)
+                artifact_urls[size] = signer.generate_presigned_url(cf_url, policy=policy)
+            except KeyError:
+                continue
+
+    return ArtifactUrls(small=artifact_urls.get("small"), large=artifact_urls["large"], expires_at=expiration_time or 0)
 
 
 class SingleArtifactResponse(BaseModel):

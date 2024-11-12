@@ -47,7 +47,7 @@ class CloudFrontUrlSigner:
             if not isinstance(private_key, RSAPrivateKey):
                 raise ValueError("The provided key is not an RSA private key")
 
-            return private_key.sign(message, padding.PKCS1v15(), hashes.SHA1())  # CloudFront requires SHA-1
+            return private_key.sign(message, padding.PKCS1v15(), hashes.SHA1())
 
     def generate_presigned_url(self, url: str, policy: Optional[str] = None) -> str:
         """Generate a presigned URL for CloudFront using an optional custom policy.
