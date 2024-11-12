@@ -80,7 +80,7 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
   return (
     <div className="bg-gray-1 shadow-md rounded-lg p-4 md:p-6 w-full">
       <h2 className="text-gray-12 font-bold text-2xl mb-1">{product.name}</h2>
-      <p className="text-gray-11 mb-2 sm:text-lg">
+      <p className="text-gray-11 mb-1 sm:text-lg">
         Status:{" "}
         <span className={`font-semibold ${getTextColor(order.status)}`}>
           {normalizeStatus(order.status)}
@@ -199,8 +199,8 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
         </p>
       )}
 
-      <div className="mt-4 text-sm bg-gray-3 p-3 rounded-md text-gray-12">
-        <h3 className="font-semibold text-lg">Shipping Address</h3>
+      <div className="mt-4 text-xs bg-gray-3 p-3 rounded-md text-gray-12">
+        <h3 className="font-semibold">Shipping Address</h3>
         <p>{order.shipping_name}</p>
         <p>{order.shipping_address_line1}</p>
         {order.shipping_address_line2 && <p>{order.shipping_address_line2}</p>}

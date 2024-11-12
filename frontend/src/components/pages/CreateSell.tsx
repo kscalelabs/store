@@ -142,7 +142,7 @@ const CreateSell = () => {
 
   useEffect(() => {
     if (auth.currentUser && slug) {
-      setPreviewUrl(`/item/${auth.currentUser.username}/${slug}`);
+      setPreviewUrl(`/bot/${auth.currentUser.username}/${slug}`);
     }
   }, [auth.currentUser, slug]);
 
@@ -309,6 +309,35 @@ const CreateSell = () => {
     return true;
   };
 
+  const handleInventoryTypeChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ) => {
+    const newType = e.target.value as typeof inventoryType;
+    setInventoryType(newType);
+    setValue("inventory_type", newType);
+
+    // Reset related fields based on inventory type
+    if (newType === "infinite") {
+      setValue("inventory_quantity", null);
+      setValue("preorder_release_date", null);
+    } else if (newType === "preorder") {
+      setValue("inventory_quantity", null);
+      setIsReservation(false);
+      setValue("is_reservation", false);
+      setValue("reservation_deposit_amount", null);
+    } else if (newType === "finite") {
+      setValue("preorder_release_date", null);
+    }
+
+    // Trigger validation
+    trigger([
+      "inventory_quantity",
+      "preorder_release_date",
+      "is_reservation",
+      "reservation_deposit_amount",
+    ]);
+  };
+
   return (
     <RequireAuthentication>
       <Container className="max-w-xl">
@@ -453,15 +482,8 @@ const CreateSell = () => {
                     <select
                       className="w-full p-2 rounded-md border border-gray-7 bg-gray-3 text-gray-12"
                       {...register("inventory_type")}
-                      onChange={(e) => {
-                        setInventoryType(
-                          e.target.value as typeof inventoryType,
-                        );
-                        setValue(
-                          "inventory_type",
-                          e.target.value as typeof inventoryType,
-                        );
-                      }}
+                      onChange={handleInventoryTypeChange}
+                      value={inventoryType}
                     >
                       <option value="infinite">Unlimited</option>
                       <option value="finite">Limited Quantity</option>
@@ -479,6 +501,7 @@ const CreateSell = () => {
                     <Input
                       type="number"
                       min="1"
+                      onWheel={(e) => (e.target as HTMLInputElement).blur()} // prevent changing value when scrolling
                       {...register("inventory_quantity", {
                         valueAsNumber: true,
                         validate: (value) =>

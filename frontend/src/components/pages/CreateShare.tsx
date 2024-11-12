@@ -57,7 +57,7 @@ const CreateShare = () => {
 
   useEffect(() => {
     if (auth.currentUser && slug) {
-      setPreviewUrl(`/item/${auth.currentUser.username}/${slug}`);
+      setPreviewUrl(`/bot/${auth.currentUser.username}/${slug}`);
     }
   }, [auth.currentUser, slug]);
 

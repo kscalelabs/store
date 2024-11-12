@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 import AuthBlock from "@/components/auth/AuthBlock";
+import Container from "@/components/ui/container";
 import { useAuthentication } from "@/hooks/useAuth";
 
 interface Props {
@@ -24,16 +25,16 @@ const RequireAuthentication = (props: Props) => {
   return isAuthenticated ? (
     <>{children}</>
   ) : (
-    <>
-      <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
-        <div className="relative w-auto my-6 mx-auto max-w-3xl">
-          <div className="border-0 rounded-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
-            <AuthBlock onClosed={onClosed} />
-          </div>
+    <Container className="flex justify-center items-center max-w-xl">
+      <div className="flex flex-col justify-center items-center my-6">
+        <h2 className="text-gray-1 text-xl font-bold mb-4">
+          You must be logged in to view this page
+        </h2>
+        <div className="border-0 rounded-lg">
+          <AuthBlock onClosed={onClosed} />
         </div>
       </div>
-      <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
-    </>
+    </Container>
   );
 };
 

@@ -15,7 +15,6 @@ from typing import (
 )
 
 import aioboto3
-import boto3
 from aiobotocore.response import StreamingBody
 from boto3.dynamodb.conditions import Attr, ComparisonCondition, Key
 from botocore.exceptions import ClientError
@@ -406,37 +405,27 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
     async def _upload_to_s3(self, data: IO[bytes], name: str, filename: str, content_type: str) -> None:
         """Uploads some data to S3."""
         try:
-            import time
-            from datetime import datetime
+            bucket = await self.s3.Bucket(settings.s3.bucket)
 
-            logger.info(f"Container UTC time: {datetime.utcnow().isoformat()}")
+            import time
+            from datetime import UTC, datetime
+
+            logger.info("=== Time Debug Info ===")
+            logger.info(f"Container UTC time: {datetime.now(UTC).isoformat()}")
             logger.info(f"Container local time: {datetime.now().isoformat()}")
             logger.info(f"Container timezone: {time.tzname}")
-            logger.info("=== S3 Upload Debug Info ===")
-            logger.info(f"Bucket: {settings.s3.bucket}")
-            logger.info(f"Key: {settings.s3.prefix}{filename}")
-            logger.info(f"Content Type: {content_type}")
+            logger.info(f"Container time.time(): {time.time()}")
 
-            # Get AWS configuration
-            session = boto3.Session()
-            credentials = session.get_credentials()
-            logger.info(f"Using AWS Region: {session.region_name}")
-            logger.info(f"Access Key ID: {credentials.access_key[:4]}...")  # Log only first 4 chars
-            logger.info(f"Using endpoint URL: {self.s3.meta.client.meta.endpoint_url}")
-
-            bucket = await self.s3.Bucket(settings.s3.bucket)
             await bucket.put_object(
                 Key=f"{settings.s3.prefix}{filename}",
                 Body=data,
                 ContentType=content_type,
                 ContentDisposition=f'attachment; filename="{name}"',
             )
-            logger.info("Upload completed successfully")
-
-        except Exception as e:
-            logger.error(f"S3 upload failed with error: {str(e)}")
-            logger.error(f"Error type: {type(e)}")
-            logger.error(f"Error details: {getattr(e, 'response', {}).get('Error', {})}")
+            logger.info("S3 upload successful")
+        except ClientError as e:
+            logger.error(f"S3 upload failed: {str(e)}")
+            logger.error(f"Error details: {e.response['Error']}")
             raise
 
     async def _download_from_s3(self, filename: str) -> StreamingBody:

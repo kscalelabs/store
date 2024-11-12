@@ -105,7 +105,7 @@ const MediumCard: React.FC<{ article: ResearchPost }> = ({ article }) => {
         <div className="p-4">
           <div className="flex items-center gap-2 mb-2">
             <img
-              src={`https://unavatar.io/${article.author}`}
+              src={getAuthorImage(article.author)}
               alt={article.author}
               className="rounded-full h-6 w-6"
             />
@@ -142,6 +142,17 @@ const MediumCard: React.FC<{ article: ResearchPost }> = ({ article }) => {
       </CardContent>
     </Card>
   );
+};
+
+const getAuthorImage = (author: string): string => {
+  switch (author.toLowerCase()) {
+    case "ben bolte":
+      return "https://miro.medium.com/v2/resize:fill:176:176/1*EuQxKArtHb0orCJcWTPHkA.jpeg";
+    case "paweł budzianowski":
+      return "https://miro.medium.com/v2/resize:fill:40:40/1*REeM2VDUPg7VWMU1UwnsBw.png";
+    default:
+      return "https://miro.medium.com/v2/resize:fill:40:40/1*REeM2VDUPg7VWMU1UwnsBw.png";
+  }
 };
 
 export default MediumArticles;

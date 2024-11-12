@@ -897,23 +897,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/stripe/create-payment-intent": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create Payment Intent */
-        post: operations["create_payment_intent_stripe_create_payment_intent_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/stripe/refunds/{order_id}": {
         parameters: {
             query?: never;
@@ -1666,6 +1649,14 @@ export interface components {
             score: number;
             /** User Vote */
             user_vote: boolean | null;
+            /** Price Amount */
+            price_amount: number | null;
+            /** Currency */
+            currency: string | null;
+            /** Inventory Type */
+            inventory_type: ("finite" | "infinite" | "preorder") | null;
+            /** Inventory Quantity */
+            inventory_quantity: number | null;
         };
         /** LoginRequest */
         LoginRequest: {
@@ -1758,8 +1749,8 @@ export interface components {
             currency: string;
             /** Quantity */
             quantity: number;
-            /** Product Id */
-            product_id: string;
+            /** Stripe Product Id */
+            stripe_product_id: string;
             /** Stripe Refund Id */
             stripe_refund_id?: string | null;
             /** Shipping Name */
@@ -3671,26 +3662,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    create_payment_intent_stripe_create_payment_intent_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
                 };
             };
         };

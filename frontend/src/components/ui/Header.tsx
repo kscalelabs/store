@@ -1,16 +1,24 @@
 import { FaTimes } from "react-icons/fa";
 
+import { cn } from "@/lib/utils";
+
 interface HeaderProps {
   title: string | React.ReactNode;
   label?: string;
   onClosed?: () => void;
+  className?: string;
 }
 
-const Header = ({ title, label, onClosed }: HeaderProps) => {
+const Header = ({ title, label, onClosed, className }: HeaderProps) => {
   return (
-    <div className="w-full flex flex-col items-center justify-center gap-y-4">
-      <h1 className="text-3xl font-semibold text-primary py-4">{title}</h1>
-      {label && <p className="text-muted-foreground text-s,">{label}</p>}
+    <div
+      className={cn(
+        "w-full flex flex-col items-center justify-center gap-y-4",
+        className,
+      )}
+    >
+      <h1 className="text-3xl font-semibold text-gray-1 py-4">{title}</h1>
+      {label && <p className="text-gray-3 text-sm">{label}</p>}
       {onClosed && (
         <button
           onClick={onClosed}

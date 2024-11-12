@@ -123,7 +123,7 @@ const Navbar = () => {
                     variant="ghost"
                     className="px-3 py-2 text-gray-1"
                   >
-                    <Link to={ROUTES.LOGIN.path}>Sign In</Link>
+                    <Link to={ROUTES.LOGIN.path}>Log In</Link>
                   </Button>
                   <Button
                     asChild
