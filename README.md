@@ -19,7 +19,7 @@
 
 </div>
 
-# K-Scale Store
+# K-Scale
 
 This is the codebase for our website.
 

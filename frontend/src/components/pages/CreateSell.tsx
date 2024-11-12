@@ -233,10 +233,16 @@ const CreateSell = () => {
       "inventory_quantity",
       data.inventory_quantity?.toString() || "",
     );
+
+    // Convert preorder_release_date to a timestamp
+    const preorderReleaseDate = data.preorder_release_date
+      ? new Date(data.preorder_release_date).getTime() / 1000
+      : null;
     formData.append(
       "preorder_release_date",
-      data.preorder_release_date?.toString() || "",
+      preorderReleaseDate ? preorderReleaseDate.toString() : "",
     );
+
     formData.append("is_reservation", data.is_reservation?.toString() || "");
     formData.append(
       "reservation_deposit_amount",
