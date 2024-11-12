@@ -64,7 +64,7 @@ async def artifact_url(
     # Initialize CloudFront signer
     signer = CloudFrontUrlSigner(
         key_id=settings.cloudfront.key_id,
-        private_key_path=settings.cloudfront.private_key_path,
+        private_key=settings.cloudfront.private_key,
     )
 
     # Always use CloudFront domain and sign the URL
@@ -95,7 +95,7 @@ def get_artifact_url_response(artifact: Artifact) -> ArtifactUrls:
 
         signer = CloudFrontUrlSigner(
             key_id=settings.cloudfront.key_id,
-            private_key_path=settings.cloudfront.private_key_path,
+            private_key=settings.cloudfront.private_key,
         )
 
         expire_days = 180
