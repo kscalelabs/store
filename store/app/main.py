@@ -3,7 +3,7 @@
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncGenerator, Callable
+from typing import AsyncGenerator, Awaitable, Callable
 
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException, Request, status
@@ -82,9 +82,9 @@ app.add_middleware(
 
 
 @app.middleware("http")
-async def log_requests(request: Request, call_next: Callable[[Request], Response]) -> Response:
+async def log_requests(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
     logger.info(f"Request: {request.method} {request.url}")
-    response = call_next(request)
+    response = await call_next(request)
     logger.info(f"Response status: {response.status_code}")
     return response
 
