@@ -4,4 +4,4 @@ dynamo:
   table_name: robolist
 site:
   homepage: https://kscale.dev
-  artifact_base_url: https://d33spkt6ke3oka.cloudfront.net/
+  artifact_base_url: https://media.kscale.store/
