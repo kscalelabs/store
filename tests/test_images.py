@@ -1,27 +1,10 @@
 """Runs tests on the image uploading APIs."""
 
 from pathlib import Path
-from typing import Generator
-from unittest.mock import patch
 
-import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 from PIL import Image
-
-
-@pytest.fixture(autouse=True)
-def mock_env_vars() -> Generator[None, None, None]:
-    """Mock the required environment variables for CloudFront."""
-    with patch.dict(
-        "os.environ",
-        {
-            "CLOUDFRONT_KEY_ID": "dummy_key_id",
-            "CLOUDFRONT_PRIVATE_KEY": "dummy_private_key",
-            "CLOUDFRONT_DOMAIN": "dummy.cloudfront.net",
-        },
-    ):
-        yield
 
 
 def test_user_auth_functions(test_client: TestClient, tmpdir: Path) -> None:
