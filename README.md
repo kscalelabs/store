@@ -19,7 +19,7 @@
 
 </div>
 
-# K-Scale
+# K-Scale Website
 
 This is the codebase for our website.
 
