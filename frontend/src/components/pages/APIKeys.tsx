@@ -150,7 +150,7 @@ const APIKeys = () => {
 
   return (
     <RequireAuthentication>
-      <div className="container mx-auto max-w-4xl shadow-md rounded-lg bg-gray-12 text-gray-2 border bg-card text-card-foreground relative">
+      <div className="container mx-auto max-w-4xl shadow-md rounded-lg bg-gray-12 text-gray-2 border relative">
         <div className="p-6">
           <h1 className="text-3xl font-extrabold mb-4">API Keys</h1>
           {apiKeys === null ? (
