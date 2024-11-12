@@ -5,6 +5,8 @@ import { useAuthentication } from "@/hooks/useAuth";
 import ROUTES from "@/lib/types/routes";
 import { Check } from "lucide-react";
 
+import { Button } from "../ui/button";
+
 export default function SellerDashboard() {
   const navigate = useNavigate();
   const auth = useAuthentication();
@@ -52,14 +54,22 @@ export default function SellerDashboard() {
         </div>
 
         <div className="mt-6">
-          <a
-            href={`https://dashboard.stripe.com/${auth.currentUser?.stripe_connect_account_id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-primary-9 text-primary-12 px-6 py-3 rounded-lg hover:bg-primary-12 hover:text-primary-9 inline-block"
-          >
-            Open Stripe Dashboard
-          </a>
+          <div className="flex gap-2 items-center">
+            <Button
+              variant="outline"
+              onClick={() => navigate(ROUTES.BOTS.SELL.path)}
+            >
+              Sell a Robot on K-Scale
+            </Button>
+            <a
+              href={`https://dashboard.stripe.com/${auth.currentUser?.stripe_connect_account_id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-primary-9 text-primary-12 px-4 py-2 rounded-lg hover:bg-primary-12 hover:text-primary-9 inline-block"
+            >
+              Open Stripe Dashboard
+            </a>
+          </div>
         </div>
       </div>
     </div>

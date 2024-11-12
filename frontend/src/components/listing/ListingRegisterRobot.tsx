@@ -13,15 +13,19 @@ const ListingRegisterRobot = ({ listingId }: Props) => {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
   return (
-    <div className="flex items-center gap-2 mt-2">
+    <div className="flex flex-col items-start gap-3 mt-2">
       <Button
-        variant="default"
+        variant="outline"
         className="flex items-center"
         onClick={() => setIsRegisterModalOpen(true)}
       >
         <FaPlus className="mr-2 h-4 w-4" />
         <span className="mr-2">Register Robot</span>
       </Button>
+
+      <p className="text-xs text-gray-6">
+        You can interact with your registered robots in the terminal.
+      </p>
 
       <RegisterRobotModal
         isOpen={isRegisterModalOpen}

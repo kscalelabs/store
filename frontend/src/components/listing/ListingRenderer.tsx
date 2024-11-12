@@ -41,7 +41,7 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
   const isForSale = priceAmount && stripeProductId && inventoryType;
 
   return (
-    <div className="max-w-6xl mx-auto p-4 pt-12">
+    <div className="max-w-6xl mx-auto sm:p-4 sm:pt-8">
       {/* Main content area - flex column on mobile, row on desktop */}
       <div className="flex flex-col md:flex-row gap-8 mb-8">
         <ListingImageFlipper

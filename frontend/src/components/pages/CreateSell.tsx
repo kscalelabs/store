@@ -215,40 +215,33 @@ const CreateSell = () => {
     });
   };
 
-  const onSubmit = async ({
-    name,
-    description,
-    slug,
-    price_amount,
-    currency,
-    inventory_type,
-    inventory_quantity,
-    preorder_release_date,
-    is_reservation,
-    reservation_deposit_amount,
-  }: SellListingType) => {
+  const onSubmit = async (data: SellListingType) => {
+    console.log("Submitting data:", data);
     setIsSubmitting(true);
 
     const formData = new FormData();
-    formData.append("name", name);
-    formData.append("description", description || "");
-    formData.append("slug", slug || slugify(name));
+    formData.append("name", data.name);
+    formData.append("description", data.description || "");
+    formData.append("slug", data.slug || slugify(data.name));
     formData.append(
       "price_amount",
-      price_amount ? convertToCents(price_amount).toString() : "",
+      data.price_amount ? convertToCents(data.price_amount).toString() : "",
     );
-    formData.append("currency", currency);
-    formData.append("inventory_type", inventory_type);
-    formData.append("inventory_quantity", inventory_quantity?.toString() || "");
+    formData.append("currency", data.currency);
+    formData.append("inventory_type", data.inventory_type);
+    formData.append(
+      "inventory_quantity",
+      data.inventory_quantity?.toString() || "",
+    );
     formData.append(
       "preorder_release_date",
-      preorder_release_date?.toString() || "",
+      data.preorder_release_date?.toString() || "",
     );
-    formData.append("is_reservation", is_reservation?.toString() || "");
+    formData.append("is_reservation", data.is_reservation?.toString() || "");
     formData.append(
       "reservation_deposit_amount",
-      reservation_deposit_amount
-        ? convertToCents(reservation_deposit_amount).toString()
+      data.reservation_deposit_amount
+        ? convertToCents(data.reservation_deposit_amount).toString()
         : "",
     );
 
@@ -260,10 +253,19 @@ const CreateSell = () => {
     });
 
     try {
-      // @ts-expect-error Server accepts FormData but TypeScript doesn't recognize it
-      const { data: responseData } = await auth.client.POST("/listings/add", {
-        body: formData,
-      } as { body: FormData });
+      const { data: responseData, error } = await auth.client.POST(
+        "/listings/add",
+        // @ts-expect-error Server accepts FormData but TypeScript doesn't recognize it
+        {
+          body: formData,
+        } as { body: FormData },
+      );
+
+      if (error) {
+        console.error("Server error:", error.detail);
+        addErrorAlert(`Failed to create listing: ${error.detail}`);
+        return;
+      }
 
       if (responseData && responseData.username && responseData.slug) {
         addAlert("New listing was created successfully", "success");
@@ -277,8 +279,8 @@ const CreateSell = () => {
         throw new Error("Invalid response data");
       }
     } catch (error) {
-      addErrorAlert("Failed to create listing");
       console.error("Error creating listing:", error);
+      addErrorAlert("Failed to create listing");
     } finally {
       setIsSubmitting(false);
     }
