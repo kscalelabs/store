@@ -3,7 +3,7 @@
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Awaitable, Callable
 
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException, Request, status
@@ -12,6 +12,7 @@ from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.security import APIKeyCookie, APIKeyHeader
+from starlette.responses import Response
 
 from store.app.db import create_tables
 from store.app.errors import (
@@ -32,6 +33,18 @@ from store.app.routers.stripe import router as stripe_router
 from store.app.routers.teleop import router as teleop_router
 from store.app.routers.users import router as users_router
 from store.utils import get_cors_origins
+
+# Configure logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+# Add a console handler if one doesn't exist
+if not logger.handlers:
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
 
 
 @asynccontextmanager
@@ -68,8 +81,17 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def log_requests(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
+    logger.info(f"Request: {request.method} {request.url}")
+    response = await call_next(request)
+    logger.info(f"Response status: {response.status_code}")
+    return response
+
+
 @app.exception_handler(ValueError)
 async def value_error_exception_handler(request: Request, exc: ValueError) -> JSONResponse:
+    logger.error(f"ValueError: {str(exc)}")
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
         content={"message": "The request was invalid.", "detail": str(exc)},
@@ -78,6 +100,7 @@ async def value_error_exception_handler(request: Request, exc: ValueError) -> JS
 
 @app.exception_handler(ItemNotFoundError)
 async def item_not_found_exception_handler(request: Request, exc: ItemNotFoundError) -> JSONResponse:
+    logger.error(f"ItemNotFoundError: {str(exc)}")
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
         content={"message": "Item not found.", "detail": str(exc)},
@@ -86,6 +109,7 @@ async def item_not_found_exception_handler(request: Request, exc: ItemNotFoundEr
 
 @app.exception_handler(InternalError)
 async def internal_error_exception_handler(request: Request, exc: InternalError) -> JSONResponse:
+    logger.error(f"InternalError: {str(exc)}")
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"message": "Internal error.", "detail": str(exc)},
@@ -94,6 +118,7 @@ async def internal_error_exception_handler(request: Request, exc: InternalError)
 
 @app.exception_handler(NotAuthenticatedError)
 async def not_authenticated_exception_handler(request: Request, exc: NotAuthenticatedError) -> JSONResponse:
+    logger.error(f"NotAuthenticatedError: {str(exc)}")
     return JSONResponse(
         status_code=status.HTTP_401_UNAUTHORIZED,
         content={"message": "Not authenticated.", "detail": str(exc)},
@@ -102,6 +127,7 @@ async def not_authenticated_exception_handler(request: Request, exc: NotAuthenti
 
 @app.exception_handler(NotAuthorizedError)
 async def not_authorized_exception_handler(request: Request, exc: NotAuthorizedError) -> JSONResponse:
+    logger.error(f"NotAuthorizedError: {str(exc)}")
     return JSONResponse(
         status_code=status.HTTP_403_FORBIDDEN,
         content={"message": "Not authorized.", "detail": str(exc)},
@@ -110,6 +136,7 @@ async def not_authorized_exception_handler(request: Request, exc: NotAuthorizedE
 
 @app.exception_handler(BadArtifactError)
 async def bad_artifact_exception_handler(request: Request, exc: BadArtifactError) -> JSONResponse:
+    logger.error(f"BadArtifactError: {str(exc)}")
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
         content={"message": f"Bad artifact: {exc}", "detail": str(exc)},
@@ -189,7 +216,6 @@ app.include_router(robots_router, prefix="/robots", tags=["robots"])
 app.include_router(stripe_router, prefix="/stripe", tags=["stripe"])
 app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(teleop_router, prefix="/teleop", tags=["teleop"])
-
 
 # For running with debugger
 if __name__ == "__main__":
