@@ -45,7 +45,7 @@ export default function SellerDashboard() {
       <div className="max-w-2xl mx-auto p-8">
         <h1 className="text-3xl font-bold my-4">Seller Dashboard</h1>
 
-        <h2 className="text-xl font-semibold mb-4">Account Status</h2>
+        <h2 className="text-lg font-semibold mb-2">Account Status</h2>
         <div className="flex gap-2 bg-gray-11 text-gray-1 px-3 py-2 items-center rounded-lg">
           <Check />
           <p>
@@ -53,7 +53,7 @@ export default function SellerDashboard() {
           </p>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-8">
           <div className="flex gap-2 items-center">
             <Button
               variant="outline"
