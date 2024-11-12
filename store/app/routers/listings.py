@@ -26,6 +26,10 @@ from store.app.security.user import (
     get_session_user_with_write_permission,
     maybe_get_user_from_api_key,
 )
+from store.settings.environment import EnvironmentSettings
+
+# Create settings instance
+settings = EnvironmentSettings()
 
 router = APIRouter()
 
@@ -605,7 +609,16 @@ async def get_listing(
     listing = await crud.get_listing(listing_id)
     if listing is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
-    return await get_listing_common(listing, user, crud)
+
+    response = await get_listing_common(listing, user, crud)
+
+    # Verify URLs are signed in production
+    if settings.environment != "local":
+        for artifact in response.artifacts:
+            if not any("Key-Pair-Id=" in url for url in [artifact.urls.small, artifact.urls.large] if url is not None):
+                logger.error(f"Unsigned URLs found for artifact {artifact.artifact_id} in listing {listing_id}")
+
+    return response
 
 
 @router.get("/{username}/{slug}", response_model=GetListingResponse)
