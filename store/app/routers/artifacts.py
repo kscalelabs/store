@@ -22,7 +22,6 @@ from store.app.model import (
     can_write_listing,
     check_content_type,
     get_artifact_type,
-    get_artifact_url,
     get_artifact_urls,
 )
 from store.app.security.user import (
@@ -65,30 +64,19 @@ async def artifact_url(
     # Initialize CloudFront signer
     signer = CloudFrontUrlSigner(
         key_id=settings.cloudfront.key_id,
-        private_key_path=settings.cloudfront.private_key_path,
+        private_key=settings.cloudfront.private_key,
     )
 
-    # Generate base URL based on environment
-    if settings.environment == "local":
-        base_url = get_artifact_url(
-            artifact_type=artifact.artifact_type,
-            artifact_id=artifact.id,
-            listing_id=listing_id,
-            name=s3_filename,
-            size=size,
-        )
-    else:
-        # For production, use CloudFront domain
-        base_url = f"https://{settings.cloudfront.domain}/{artifact.artifact_type}/{listing_id}/{s3_filename}"
-        if size and artifact.artifact_type == "image":
-            base_url = f"{base_url}_{size}"
+    # Always use CloudFront domain and sign the URL
+    base_url = f"https://{settings.cloudfront.domain}/{artifact.artifact_type}/{listing_id}/{s3_filename}"
+    if size and artifact.artifact_type == "image":
+        base_url = f"{base_url}_{size}"
 
-    # Create and sign URL for production environment
-    if settings.environment != "local":
-        policy = signer.create_custom_policy(url=base_url, expire_days=180)
-        base_url = signer.generate_presigned_url(base_url, policy=policy)
+    # Create and sign URL
+    policy = signer.create_custom_policy(url=base_url, expire_days=180)
+    signed_url = signer.generate_presigned_url(base_url, policy=policy)
 
-    return RedirectResponse(url=base_url)
+    return RedirectResponse(url=signed_url)
 
 
 class ArtifactUrls(BaseModel):
@@ -107,18 +95,24 @@ def get_artifact_url_response(artifact: Artifact) -> ArtifactUrls:
 
         signer = CloudFrontUrlSigner(
             key_id=settings.cloudfront.key_id,
-            private_key_path=settings.cloudfront.private_key_path,
+            private_key=settings.cloudfront.private_key,
         )
 
         expire_days = 180
         expiration_time = int((datetime.utcnow() + timedelta(days=expire_days)).timestamp())
 
-        # Explicitly iterate over the literal types
         sizes: list[Literal["small", "large"]] = ["small", "large"]
         for size in sizes:
             try:
-                url = artifact_urls[size]
-                cf_url = f"https://{settings.cloudfront.domain}/{url}"
+                cf_url = (
+                    f"https://{settings.cloudfront.domain}/{artifact.artifact_type}/{artifact.listing_id}/{artifact.id}"
+                )
+                if size == "small":
+                    cf_url += "_small_256x256"
+                elif size == "large":
+                    cf_url += "_large_1536x1536"
+                cf_url += f"_{artifact.name}"
+
                 policy = signer.create_custom_policy(url=cf_url, expire_days=expire_days)
                 artifact_urls[size] = signer.generate_presigned_url(cf_url, policy=policy)
             except KeyError:
