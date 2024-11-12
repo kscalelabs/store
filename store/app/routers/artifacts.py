@@ -25,6 +25,7 @@ from store.app.model import (
     get_artifact_urls,
 )
 from store.app.security.user import get_session_user_with_write_permission, maybe_get_user_from_api_key
+from store.app.utils.cloudfront_signer import CloudFrontUrlSigner
 from store.settings import settings
 
 router = APIRouter()
@@ -57,16 +58,33 @@ async def artifact_url(
     _, file_extension = os.path.splitext(name)
     s3_filename = f"{artifact.id}{file_extension}"
 
-    # TODO: Use CloudFront API to return a signed CloudFront URL.
-    return RedirectResponse(
-        url=get_artifact_url(
+    # Initialize CloudFront signer
+    signer = CloudFrontUrlSigner(
+        key_id=settings.cloudfront.key_id,
+        private_key_path=settings.cloudfront.private_key_path,
+    )
+
+    # Generate base URL based on environment
+    if settings.environment == "local":
+        base_url = get_artifact_url(
             artifact_type=artifact.artifact_type,
             artifact_id=artifact.id,
             listing_id=listing_id,
             name=s3_filename,
             size=size,
         )
-    )
+    else:
+        # For production, use CloudFront domain
+        base_url = f"https://{settings.cloudfront.domain}/{artifact.artifact_type}/{listing_id}/{s3_filename}"
+        if size and artifact.artifact_type == "image":
+            base_url = f"{base_url}_{size}"
+
+    # Create and sign URL for production environment
+    if settings.environment != "local":
+        policy = signer.create_custom_policy(url=base_url, expire_days=1 / 24)  # 1 hour expiration
+        base_url = signer.generate_presigned_url(base_url, policy=policy)
+
+    return RedirectResponse(url=base_url)
 
 
 class ArtifactUrls(BaseModel):

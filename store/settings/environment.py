@@ -72,6 +72,13 @@ class StripeSettings:
 
 
 @dataclass
+class CloudFrontSettings:
+    domain: str = field(default=II("oc.env:CLOUDFRONT_DOMAIN"))
+    key_id: str = field(default=II("oc.env:CLOUDFRONT_KEY_ID"))
+    private_key_path: str = field(default=II("oc.env:CLOUDFRONT_PRIVATE_KEY_PATH"))
+
+
+@dataclass
 class EnvironmentSettings:
     oauth: OauthSettings = field(default_factory=OauthSettings)
     user: UserSettings = field(default_factory=UserSettings)
@@ -81,5 +88,7 @@ class EnvironmentSettings:
     s3: S3Settings = field(default_factory=S3Settings)
     dynamo: DynamoSettings = field(default_factory=DynamoSettings)
     site: SiteSettings = field(default_factory=SiteSettings)
+    cloudfront: CloudFrontSettings = field(default_factory=CloudFrontSettings)
     debug: bool = field(default=False)
     stripe: StripeSettings = field(default_factory=StripeSettings)
+    environment: str = field(default="local")
