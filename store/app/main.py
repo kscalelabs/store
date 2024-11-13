@@ -190,7 +190,6 @@ app.include_router(stripe_router, prefix="/stripe", tags=["stripe"])
 app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(teleop_router, prefix="/teleop", tags=["teleop"])
 
-
 # For running with debugger
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8080)

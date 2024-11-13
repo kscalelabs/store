@@ -75,7 +75,7 @@ class StripeSettings:
 class CloudFrontSettings:
     domain: str = field(default=II("oc.env:CLOUDFRONT_DOMAIN"))
     key_id: str = field(default=II("oc.env:CLOUDFRONT_KEY_ID"))
-    private_key_path: str = field(default=II("oc.env:CLOUDFRONT_PRIVATE_KEY_PATH"))
+    private_key: str = field(default=II("oc.env:CLOUDFRONT_PRIVATE_KEY"))
 
 
 @dataclass

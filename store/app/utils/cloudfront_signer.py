@@ -16,14 +16,14 @@ from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 class CloudFrontUrlSigner:
     """A class to generate signed URLs for AWS CloudFront using RSA keys."""
 
-    def __init__(self, key_id: str, private_key_path: str) -> None:
-        """Initialize the CloudFrontUrlSigner with a key ID and the path to the private key file.
+    def __init__(self, key_id: str, private_key: str) -> None:
+        """Initialize the CloudFrontUrlSigner with a key ID and private key content.
 
         :param key_id: The CloudFront key ID associated with the public key in your CloudFront key group.
-        :param private_key_path: The path to the private key PEM file.
+        :param private_key: The private key content in PEM format.
         """
         self.key_id = key_id
-        self.private_key_path = private_key_path
+        self.private_key = private_key
         self.cf_signer = CloudFrontSigner(key_id, self._rsa_signer)
 
     def _rsa_signer(self, message: bytes) -> bytes:
@@ -38,16 +38,15 @@ class CloudFrontUrlSigner:
         Raises:
             ValueError: If the loaded key is not an RSA private key.
         """
-        with open(self.private_key_path, "rb") as key_file:
-            private_key = serialization.load_pem_private_key(
-                key_file.read(),
-                password=None,
-            )
+        private_key = serialization.load_pem_private_key(
+            self.private_key.encode("utf-8"),
+            password=None,
+        )
 
-            if not isinstance(private_key, RSAPrivateKey):
-                raise ValueError("The provided key is not an RSA private key")
+        if not isinstance(private_key, RSAPrivateKey):
+            raise ValueError("The provided key is not an RSA private key")
 
-            return private_key.sign(message, padding.PKCS1v15(), hashes.SHA1())
+        return private_key.sign(message, padding.PKCS1v15(), hashes.SHA1())
 
     def generate_presigned_url(self, url: str, policy: Optional[str] = None) -> str:
         """Generate a presigned URL for CloudFront using an optional custom policy.

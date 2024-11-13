@@ -287,124 +287,108 @@ async def add_listing(
     reservation_deposit_amount: int | None = Form(None),
     photos: List[UploadFile] = File(None),
 ) -> NewListingResponse:
-    logger.info(f"Received {len(photos) if photos else 0} photos")
+    try:
+        logger.info("Starting to process add listing request")
 
-    # Initialize Stripe-related variables
-    stripe_product_id = None
-    stripe_price_id = None
-    deposit_price_id = None
+        # Initialize variables
+        stripe_product_id = None
+        stripe_price_id = None
+        deposit_price_id = None  # Initialize here
 
-    # Validate the input
-    if price_amount is not None and price_amount <= 0:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Price amount must be greater than 0",
-        )
-
-    if inventory_type == "finite" and (inventory_quantity is None or inventory_quantity <= 0):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Finite inventory requires a positive quantity",
-        )
-
-    if inventory_type == "preorder" and not preorder_release_date:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Preorder requires a release date",
-        )
-
-    if is_reservation and (not reservation_deposit_amount or reservation_deposit_amount <= 0):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Reservations require a deposit amount",
-        )
-
-    if is_reservation and (
-        not price_amount or not reservation_deposit_amount or price_amount <= reservation_deposit_amount
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Full price must be greater than deposit amount",
-        )
-
-    # Create Stripe product if price is set
-    if price_amount is not None and user.stripe_connect_account_id:
-        try:
-            product = stripe.Product.create(
-                name=name,
-                description=description or "",
-                metadata={
-                    "user_id": user.id,
-                },
-                stripe_account=user.stripe_connect_account_id,
-            )
-
-            price = stripe.Price.create(
-                product=product.id,
-                currency=currency,
-                unit_amount=price_amount,
-                metadata={
-                    "inventory_quantity": str(inventory_quantity) if inventory_type == "finite" else "",
-                    "preorder_release_date": str(preorder_release_date) if inventory_type == "preorder" else "",
-                },
-                stripe_account=user.stripe_connect_account_id,
-            )
-
-            if is_reservation and reservation_deposit_amount:
-                deposit_price = stripe.Price.create(
-                    product=product.id,
-                    currency=currency,
-                    unit_amount=reservation_deposit_amount,
-                    metadata={"is_deposit": "true"},
-                    stripe_account=user.stripe_connect_account_id,
-                )
-                deposit_price_id = deposit_price.id
-
-            stripe_product_id = product.id
-            stripe_price_id = price.id
-
-        except stripe.StripeError as e:
-            logger.error(f"Stripe error: {str(e)}")
+        # Validation checks
+        if price_amount is not None and price_amount <= 0:
+            logger.error("Validation failed: Price amount must be greater than 0")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Error creating Stripe product: {str(e)}",
+                detail="Price amount must be greater than 0",
             )
 
-    # Create the listing
-    listing = Listing.create(
-        name=name,
-        description=description or "",
-        child_ids=child_ids.split(",") if child_ids else [],
-        slug=slug,
-        user_id=user.id,
-        price_amount=price_amount,
-        currency=currency,
-        inventory_type=inventory_type,
-        inventory_quantity=inventory_quantity,
-        preorder_release_date=preorder_release_date,
-        is_reservation=is_reservation,
-        reservation_deposit_amount=reservation_deposit_amount,
-        stripe_product_id=stripe_product_id,
-        stripe_price_id=stripe_price_id,
-        stripe_deposit_price_id=deposit_price_id,
-    )
-
-    await crud.add_listing(listing)
-
-    # Handle photo uploads
-    if photos:
-        for photo in photos:
-            if photo.filename:
-                await crud.upload_artifact(
-                    name=photo.filename,
-                    file=photo,
-                    listing=listing,
-                    artifact_type="image",
+        # Create Stripe product if price is set
+        if price_amount is not None and user.stripe_connect_account_id:
+            try:
+                product = stripe.Product.create(
+                    name=name,
+                    description=description or "",
+                    metadata={
+                        "user_id": user.id,
+                    },
+                    stripe_account=user.stripe_connect_account_id,
                 )
-            else:
-                logger.warning("Skipping photo upload due to missing filename")
 
-    return NewListingResponse(listing_id=listing.id, username=user.username, slug=slug)
+                price = stripe.Price.create(
+                    product=product.id,
+                    currency=currency,
+                    unit_amount=price_amount,
+                    metadata={
+                        "inventory_quantity": str(inventory_quantity) if inventory_type == "finite" else "",
+                        "preorder_release_date": str(preorder_release_date) if inventory_type == "preorder" else "",
+                    },
+                    stripe_account=user.stripe_connect_account_id,
+                )
+
+                if is_reservation and reservation_deposit_amount:
+                    deposit_price = stripe.Price.create(
+                        product=product.id,
+                        currency=currency,
+                        unit_amount=reservation_deposit_amount,
+                        metadata={"is_deposit": "true"},
+                        stripe_account=user.stripe_connect_account_id,
+                    )
+                    deposit_price_id = deposit_price.id
+
+                stripe_product_id = product.id
+                stripe_price_id = price.id
+
+            except stripe.StripeError as e:
+                logger.error(f"Stripe error: {str(e)}")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Error creating Stripe product: {str(e)}",
+                )
+
+        # Create the listing
+        listing = Listing.create(
+            name=name,
+            description=description or "",
+            child_ids=child_ids.split(",") if child_ids else [],
+            slug=slug,
+            user_id=user.id,
+            price_amount=price_amount,
+            currency=currency,
+            inventory_type=inventory_type,
+            inventory_quantity=inventory_quantity,
+            preorder_release_date=preorder_release_date,
+            is_reservation=is_reservation,
+            reservation_deposit_amount=reservation_deposit_amount,
+            stripe_product_id=stripe_product_id,
+            stripe_price_id=stripe_price_id,
+            stripe_deposit_price_id=deposit_price_id,
+        )
+
+        await crud.add_listing(listing)
+        logger.info("Listing created successfully")
+
+        # Handle photo uploads
+        if photos:
+            for photo in photos:
+                if photo.filename:
+                    await crud.upload_artifact(
+                        name=photo.filename,
+                        file=photo,
+                        listing=listing,
+                        artifact_type="image",
+                    )
+                else:
+                    logger.warning("Skipping photo upload due to missing filename")
+
+        return NewListingResponse(listing_id=listing.id, username=user.username, slug=slug)
+
+    except HTTPException as e:
+        logger.error(f"HTTPException: {e.detail}")
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/delete/{listing_id}", response_model=bool)

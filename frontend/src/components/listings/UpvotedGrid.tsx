@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import ListingGridCard from "@/components/listings/ListingGridCard";
 import Spinner from "@/components/ui/Spinner";
@@ -7,6 +7,8 @@ import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import ROUTES from "@/lib/types/routes";
+
+import { Button } from "../ui/button";
 
 type ListingInfo =
   paths["/listings/upvotes"]["get"]["responses"][200]["content"]["application/json"]["listings"][number];
@@ -22,6 +24,7 @@ interface UpvotedGridProps {
 const UpvotedGrid = ({ page, setPage }: UpvotedGridProps) => {
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
+  const navigate = useNavigate();
 
   const [listingInfos, setListingInfos] = useState<ListingInfo[] | null>(null);
   const [listingDetails, setListingDetails] = useState<Record<
@@ -132,9 +135,15 @@ const UpvotedGrid = ({ page, setPage }: UpvotedGridProps) => {
       </div>
     </div>
   ) : (
-    <p className="flex justify-center items-center h-64">
-      You have not upvoted any listings
-    </p>
+    <div className="flex flex-col justify-center items-center h-64 gap-4">
+      <p>You have not upvoted any bots</p>
+      <Button
+        variant="outline"
+        onClick={() => navigate(ROUTES.BOTS.BROWSE.path)}
+      >
+        Browse Robots
+      </Button>
+    </div>
   );
 };
 
