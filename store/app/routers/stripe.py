@@ -301,13 +301,12 @@ async def create_checkout_session(
                 metadata["stripe_product_id"] = listing.stripe_product_id
 
             # Determine payment methods based on listing type and price
-            payment_methods = ["card"]
+            payment_methods: list[str] = ["card"]
             if listing.price_amount >= 5000 and listing.inventory_type != "preorder":
-                # Only add Affirm for non-preorder items
                 payment_methods.append("affirm")
 
             # Base checkout session parameters
-            checkout_params = {
+            checkout_params: dict[str, Any] = {
                 "line_items": [
                     {
                         "price": platform_price.id,
@@ -343,8 +342,9 @@ async def create_checkout_session(
 
             # Add setup_future_usage for preorders to save payment method
             if listing.inventory_type == "preorder":
+                if "payment_intent_data" not in checkout_params:
+                    checkout_params["payment_intent_data"] = {}
                 checkout_params["payment_intent_data"]["setup_future_usage"] = "off_session"
-                # Add custom text about saving payment info for preorders
                 checkout_params["custom_text"] = {
                     "submit": {
                         "message": (
