@@ -71,6 +71,14 @@ const Footer = () => {
             <Link to={ROUTES.RESEARCH.path} className="hover:text-primary-9">
               Research
             </Link>
+            <Link
+              to="https://mailchi.mp/b08142c91d72/subscribe-for-updates"
+              className="hover:text-primary-9"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Subscribe for Updates
+            </Link>
           </div>
           <div className="flex flex-col items-start gap-2">
             <h2 className="text-base font-bold mb-1">Legal</h2>
