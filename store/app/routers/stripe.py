@@ -1,6 +1,8 @@
 """Stripe integration router for handling payments and webhooks."""
 
+import asyncio
 import logging
+from datetime import datetime
 from enum import Enum
 from typing import Annotated, Any, Dict, Literal
 
@@ -11,6 +13,7 @@ from pydantic import BaseModel
 from store.app.db import Crud
 from store.app.model import Order, User
 from store.app.security.user import (
+    get_session_user_with_admin_permission,
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
 )
@@ -132,7 +135,93 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
 
         elif event["type"] == "checkout.session.completed":
             session = event["data"]["object"]
-            await handle_checkout_session_completed(session, crud)
+
+            # Handle setup completion for preorders
+            if session["mode"] == "setup":
+                try:
+                    setup_intent = stripe.SetupIntent.retrieve(session["setup_intent"], expand=["payment_method"])
+                    if not setup_intent.payment_method or isinstance(setup_intent.payment_method, str):
+                        raise ValueError("Invalid payment method")
+                    seller_connect_account_id = session["metadata"].get("seller_connect_account_id")
+
+                    # Retry logic for customer creation
+                    max_retries = 3
+                    retry_delay = 1  # seconds
+
+                    for attempt in range(max_retries):
+                        try:
+                            # Create customer on the connected account
+                            connected_customer = stripe.Customer.create(
+                                email=session["customer_details"]["email"],
+                                metadata={
+                                    "user_id": session["client_reference_id"],
+                                    "platform_customer_id": session["customer"],
+                                },
+                                stripe_account=seller_connect_account_id,
+                            )
+
+                            # Wait briefly to ensure customer is fully created
+                            await asyncio.sleep(0.5)
+
+                            # Clone the payment method to the connected account
+                            connected_payment_method = stripe.PaymentMethod.create(
+                                customer=connected_customer.id,
+                                payment_method=setup_intent.payment_method.id,
+                                stripe_account=seller_connect_account_id,
+                            )
+
+                            # Create order for preorder
+                            order_data = {
+                                "user_id": session["client_reference_id"],
+                                "user_email": session["customer_details"]["email"],
+                                "stripe_checkout_session_id": session["id"],
+                                "stripe_payment_intent_id": None,
+                                "amount": int(session["metadata"]["price_amount"]),
+                                "currency": "usd",
+                                "status": "in_development",
+                                "quantity": 1,
+                                "stripe_product_id": session["metadata"].get("stripe_product_id"),
+                                "stripe_customer_id": connected_customer.id,
+                                "stripe_payment_method_id": connected_payment_method.id,
+                                # ... rest of the order data ...
+                            }
+
+                            # Add shipping details if available
+                            shipping_details = session.get("shipping_details", {})
+                            if shipping_details:
+                                shipping_address = shipping_details.get("address", {})
+                                order_data.update(
+                                    {
+                                        "shipping_name": shipping_details.get("name"),
+                                        "shipping_address_line1": shipping_address.get("line1"),
+                                        "shipping_address_line2": shipping_address.get("line2"),
+                                        "shipping_city": shipping_address.get("city"),
+                                        "shipping_state": shipping_address.get("state"),
+                                        "shipping_postal_code": shipping_address.get("postal_code"),
+                                        "shipping_country": shipping_address.get("country"),
+                                    }
+                                )
+
+                            await crud.create_order(order_data)
+                            logger.info(
+                                "Created preorder with customer ID: %s, payment method ID: %s",
+                                connected_customer.id,
+                                connected_payment_method.id,
+                            )
+                            break  # Success, exit retry loop
+
+                        except stripe.StripeError as e:
+                            if attempt == max_retries - 1:  # Last attempt
+                                raise  # Re-raise the last error
+                            logger.warning(f"Attempt {attempt + 1}/{max_retries} failed: {str(e)}. Retrying...")
+                            await asyncio.sleep(retry_delay)
+
+                except Exception as e:
+                    logger.error("Error processing preorder webhook: %s", str(e))
+                    raise
+            else:
+                # Handle regular checkout completion
+                await handle_checkout_session_completed(session, crud)
         elif event["type"] == "payment_intent.succeeded":
             payment_intent = event["data"]["object"]
             logger.info("Payment intent succeeded: %s", payment_intent["id"])
@@ -141,6 +230,9 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
     except ValueError as e:
         logger.error("Invalid payload: %s", str(e))
         raise HTTPException(status_code=400, detail="Invalid payload")
+    except Exception as e:
+        logger.error("Error processing webhook: %s", str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud) -> None:
@@ -342,17 +434,37 @@ async def create_checkout_session(
 
             # Add setup_future_usage for preorders to save payment method
             if listing.inventory_type == "preorder":
-                if "payment_intent_data" not in checkout_params:
-                    checkout_params["payment_intent_data"] = {}
-                checkout_params["payment_intent_data"]["setup_future_usage"] = "off_session"
-                checkout_params["custom_text"] = {
-                    "submit": {
-                        "message": (
-                            "By placing this pre-order, you agree to save your payment method for future "
-                            f"charging when the item is ready to ship (estimated {listing.preorder_release_date})."
-                        )
-                    }
+                checkout_params = {
+                    "mode": "setup",
+                    "payment_method_types": ["card"],
+                    "success_url": f"{settings.site.homepage}/order/success?session_id={{CHECKOUT_SESSION_ID}}",
+                    "cancel_url": f"{settings.site.homepage}{request.cancel_url}",
+                    "client_reference_id": user.id,
+                    "metadata": {
+                        **metadata,
+                        "listing_id": listing.id,
+                        "price_amount": str(listing.price_amount),
+                        "seller_connect_account_id": seller.stripe_connect_account_id,
+                    },
+                    "customer_creation": "always",
+                    "setup_intent_data": {
+                        "metadata": metadata,
+                    },
+                    "shipping_address_collection": {"allowed_countries": ["US", "CA"]},
                 }
+
+                # Format the preorder date for display
+                if listing.preorder_release_date:
+                    formatted_date = datetime.fromtimestamp(listing.preorder_release_date).strftime("%B %d, %Y")
+                    checkout_params["custom_text"] = {
+                        "submit": {
+                            "message": (
+                                "By placing this pre-order, you agree to save your payment method. "
+                                f"You will be charged ${listing.price_amount/100:,.2f} when the item is ready "
+                                f"to ship (estimated {formatted_date})."
+                            )
+                        }
+                    }
 
             checkout_session = stripe.checkout.Session.create(**checkout_params)
 
@@ -403,7 +515,7 @@ class CreateConnectAccountResponse(BaseModel):
 
 @router.post("/connect/account", response_model=CreateConnectAccountResponse)
 async def create_connect_account(
-    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> CreateConnectAccountResponse:
     try:
@@ -567,3 +679,57 @@ async def create_stripe_product(
     except stripe.StripeError as e:
         logger.error(f"Stripe error: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/process-preorder/{order_id}")
+async def process_preorder(
+    order_id: str,
+    user: User = Depends(get_session_user_with_admin_permission),
+    crud: Crud = Depends(),
+) -> Dict[str, Any]:
+    async with crud:
+        try:
+            order = await crud.get_order(order_id)
+            if not order or not order.stripe_customer_id or not order.stripe_payment_method_id:
+                raise HTTPException(status_code=404, detail="Order not found or missing payment details")
+
+            # Get the listing and seller info
+            listing = await crud.get_listing_by_stripe_product_id(order.stripe_product_id)
+            if not listing:
+                raise HTTPException(status_code=404, detail="Listing not found")
+
+            seller = await crud.get_user(listing.user_id)
+            if not seller or not seller.stripe_connect_account_id:
+                raise HTTPException(status_code=400, detail="Seller not found or not connected to Stripe")
+
+            # Calculate platform fee
+            application_fee = int(order.amount * 0.02)  # 2% fee
+
+            # Create and confirm payment intent using the stored payment method
+            payment_intent = stripe.PaymentIntent.create(
+                amount=order.amount,
+                currency=order.currency,
+                customer=order.stripe_customer_id,
+                payment_method=order.stripe_payment_method_id,
+                off_session=True,
+                confirm=True,
+                application_fee_amount=application_fee,
+                transfer_data={
+                    "destination": seller.stripe_connect_account_id,
+                },
+            )
+
+            # Update order status
+            await crud.update_order(
+                order_id,
+                {
+                    "status": "processing",
+                    "stripe_payment_intent_id": payment_intent.id,
+                },
+            )
+
+            return {"status": "success", "payment_intent_id": payment_intent.id}
+
+        except stripe.StripeError as e:
+            logger.error(f"Stripe error processing preorder: {str(e)}")
+            raise HTTPException(status_code=400, detail=str(e))
