@@ -90,9 +90,7 @@ export const ShareListingSchema = BaseListingSchema;
 export const SellListingSchema = BaseListingSchema.extend({
   price_amount: z.number().nullable(),
   currency: z.string().default("usd"),
-  inventory_type: z
-    .enum(["finite", "infinite", "preorder"])
-    .default("infinite"),
+  inventory_type: z.enum(["finite", "preorder"]).default("finite"),
   inventory_quantity: z.number().nullable(),
   preorder_release_date: z.number().nullable(),
   is_reservation: z.boolean().default(false),

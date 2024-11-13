@@ -39,7 +39,12 @@ const CheckoutButton: React.FC<Props> = ({
     inventoryType === "finite" &&
     (inventoryQuantity === undefined || inventoryQuantity <= 0);
 
-  const buttonLabel = isOutOfStock ? "Out of Stock" : label;
+  const buttonLabel =
+    inventoryType === "preorder"
+      ? "Pre-order Now"
+      : isOutOfStock
+        ? "Out of Stock"
+        : label;
 
   const handleClick = async () => {
     setIsLoading(true);

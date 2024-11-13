@@ -295,12 +295,20 @@ async def create_checkout_session(
             metadata: dict[str, str] = {
                 "user_email": user.email,
                 "product_id": listing.stripe_product_id or "",
+                "listing_type": listing.inventory_type,
             }
             if listing.stripe_product_id:
                 metadata["stripe_product_id"] = listing.stripe_product_id
 
-            checkout_session = stripe.checkout.Session.create(
-                line_items=[
+            # Determine payment methods based on listing type and price
+            payment_methods = ["card"]
+            if listing.price_amount >= 5000 and listing.inventory_type != "preorder":
+                # Only add Affirm for non-preorder items
+                payment_methods.append("affirm")
+
+            # Base checkout session parameters
+            checkout_params = {
+                "line_items": [
                     {
                         "price": platform_price.id,
                         "quantity": 1,
@@ -317,20 +325,36 @@ async def create_checkout_session(
                         ),
                     }
                 ],
-                mode="payment",
-                payment_method_types=(["card", "affirm"] if listing.price_amount >= 5000 else ["card"]),
-                success_url=f"{settings.site.homepage}/order/success?session_id={{CHECKOUT_SESSION_ID}}",
-                cancel_url=f"{settings.site.homepage}{request.cancel_url}",
-                client_reference_id=user.id,
-                metadata=metadata,
-                shipping_address_collection={"allowed_countries": ["US", "CA"]},
-                payment_intent_data={
+                "mode": "payment",
+                "payment_method_types": payment_methods,
+                "success_url": f"{settings.site.homepage}/order/success?session_id={{CHECKOUT_SESSION_ID}}",
+                "cancel_url": f"{settings.site.homepage}{request.cancel_url}",
+                "client_reference_id": user.id,
+                "metadata": metadata,
+                "shipping_address_collection": {"allowed_countries": ["US", "CA"]},
+                "customer_creation": "always",
+                "payment_intent_data": {
                     "application_fee_amount": application_fee,
                     "transfer_data": {
                         "destination": seller.stripe_connect_account_id,
                     },
                 },
-            )
+            }
+
+            # Add setup_future_usage for preorders to save payment method
+            if listing.inventory_type == "preorder":
+                checkout_params["payment_intent_data"]["setup_future_usage"] = "off_session"
+                # Add custom text about saving payment info for preorders
+                checkout_params["custom_text"] = {
+                    "submit": {
+                        "message": (
+                            "By placing this pre-order, you agree to save your payment method for future "
+                            f"charging when the item is ready to ship (estimated {listing.preorder_release_date})."
+                        )
+                    }
+                }
+
+            checkout_session = stripe.checkout.Session.create(**checkout_params)
 
             return CreateCheckoutSessionResponse(session_id=checkout_session.id)
 

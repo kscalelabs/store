@@ -1269,6 +1269,8 @@ export interface components {
             small?: string | null;
             /** Large */
             large: string;
+            /** Expires At */
+            expires_at: number;
         };
         /** AuthResponse */
         AuthResponse: {
@@ -1289,7 +1291,7 @@ export interface components {
             /** Slug */
             slug: string;
             /** Price Amount */
-            price_amount?: number | null;
+            price_amount?: string | null;
             /**
              * Currency
              * @default usd
@@ -1297,21 +1299,21 @@ export interface components {
             currency: string;
             /**
              * Inventory Type
-             * @default infinite
+             * @default finite
              * @enum {string}
              */
-            inventory_type: "finite" | "infinite" | "preorder";
+            inventory_type: "finite" | "preorder";
             /** Inventory Quantity */
-            inventory_quantity?: number | null;
+            inventory_quantity?: string | null;
             /** Preorder Release Date */
-            preorder_release_date?: number | null;
+            preorder_release_date?: string | null;
             /**
              * Is Reservation
              * @default false
              */
             is_reservation: boolean;
             /** Reservation Deposit Amount */
-            reservation_deposit_amount?: number | null;
+            reservation_deposit_amount?: string | null;
             /** Photos */
             photos?: string[];
         };

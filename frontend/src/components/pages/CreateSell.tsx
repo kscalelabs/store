@@ -27,23 +27,15 @@ const CreateSell = () => {
   const navigate = useNavigate();
 
   const [description, setDescription] = useState<string>("");
-  const [slug, setSlug] = useState<string>("");
-  const [previewUrl, setPreviewUrl] = useState<string>("");
   const [images, setImages] = useState<ImageListType>([]);
   const [displayPrice, setDisplayPrice] = useState<string>("0.00");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [inventoryType, setInventoryType] = useState<
-    "infinite" | "finite" | "preorder"
-  >("infinite");
+  const [slug, setSlug] = useState<string>("");
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [price_amount, setPriceAmount] = useState<number>(0);
   const [isReservation, setIsReservation] = useState(false);
   const [displayDepositAmount, setDisplayDepositAmount] =
     useState<string>("0.00");
-
-  useEffect(() => {
-    if (!auth.currentUser?.stripe_connect_onboarding_completed) {
-      navigate(`${ROUTES.BOTS.path}/${ROUTES.BOTS.$.CREATE.relativePath}`);
-    }
-  }, [auth.currentUser, navigate]);
 
   const {
     register,
@@ -51,86 +43,21 @@ const CreateSell = () => {
     formState: { errors },
     watch,
     setValue,
-    trigger,
   } = useForm<SellListingType>({
     resolver: zodResolver(SellListingSchema),
-    mode: "onChange",
-    criteriaMode: "all",
-    shouldFocusError: true,
     defaultValues: {
       price_amount: 0,
       currency: "usd",
-      inventory_type: "infinite",
+      inventory_type: "finite",
       inventory_quantity: null,
       preorder_release_date: null,
       is_reservation: false,
       reservation_deposit_amount: null,
     },
-    shouldUseNativeValidation: false,
-    reValidateMode: "onChange",
-    context: {
-      validate: (data: SellListingType) => {
-        const {
-          price_amount,
-          currency,
-          inventory_type,
-          inventory_quantity,
-          preorder_release_date,
-          is_reservation,
-          reservation_deposit_amount,
-        } = data;
-        if ((price_amount && !currency) || (!price_amount && currency)) {
-          return {
-            price_amount:
-              "Price amount and currency must be provided together.",
-            currency: "Price amount and currency must be provided together.",
-          };
-        }
-        if (
-          (inventory_type && !inventory_quantity) ||
-          (!inventory_type && inventory_quantity)
-        ) {
-          return {
-            inventory_type:
-              "Inventory type and quantity must be provided together.",
-            inventory_quantity:
-              "Inventory type and quantity must be provided together.",
-          };
-        }
-        if (
-          (preorder_release_date && !is_reservation) ||
-          (!preorder_release_date && is_reservation)
-        ) {
-          return {
-            preorder_release_date:
-              "Preorder release date and reservation must be provided together.",
-            is_reservation:
-              "Preorder release date and reservation must be provided together.",
-          };
-        }
-        if (
-          (is_reservation && !reservation_deposit_amount) ||
-          (!is_reservation && reservation_deposit_amount)
-        ) {
-          return {
-            reservation_deposit_amount:
-              "Reservation deposit amount must be provided if reservation is true.",
-            is_reservation:
-              "Reservation deposit amount must be provided if reservation is true.",
-          };
-        }
-        return {};
-      },
-    },
   });
 
+  const inventoryType = watch("inventory_type");
   const name = watch("name");
-
-  const price_amount = watch("price_amount");
-  const currency = watch("currency");
-  const inventory_quantity = watch("inventory_quantity");
-  const preorder_release_date = watch("preorder_release_date");
-  const reservation_deposit_amount = watch("reservation_deposit_amount");
 
   useEffect(() => {
     if (name) {
@@ -142,119 +69,88 @@ const CreateSell = () => {
 
   useEffect(() => {
     if (auth.currentUser && slug) {
-      setPreviewUrl(`/bot/${auth.currentUser.username}/${slug}`);
+      setPreviewUrl(
+        `https://kscale.dev/bot/${auth.currentUser.username}/${slug}`,
+      );
     }
   }, [auth.currentUser, slug]);
 
-  useEffect(() => {
-    if ((price_amount && !currency) || (!price_amount && currency)) {
-      trigger(["price_amount", "currency"]);
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value.replace(/[^0-9]/g, "");
+    if (!inputValue) {
+      setPriceAmount(0);
+      setDisplayPrice("");
+      setValue("price_amount", null);
+      return;
     }
-  }, [price_amount, currency, trigger]);
+    const decimalValue = convertToDecimal(inputValue);
+    setPriceAmount(parseFloat(decimalValue));
+    setDisplayPrice(decimalValue);
+    setValue("price_amount", parseFloat(decimalValue));
+  };
 
-  useEffect(() => {
-    if (
-      (inventory_quantity && !inventoryType) ||
-      (!inventory_quantity && inventoryType)
-    ) {
-      trigger(["inventory_quantity", "inventory_type"]);
-    }
-  }, [inventory_quantity, inventoryType, trigger]);
-
-  useEffect(() => {
-    if (
-      (preorder_release_date && !isReservation) ||
-      (!preorder_release_date && isReservation)
-    ) {
-      trigger(["preorder_release_date", "is_reservation"]);
-    }
-  }, [preorder_release_date, isReservation, trigger]);
-
-  useEffect(() => {
-    if (
-      (isReservation && !reservation_deposit_amount) ||
-      (!isReservation && reservation_deposit_amount)
-    ) {
-      trigger(["reservation_deposit_amount", "is_reservation"]);
-    }
-  }, [reservation_deposit_amount, isReservation, trigger]);
+  const handleDepositChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value.replace(/[^0-9]/g, "");
+    setDisplayDepositAmount(inputValue);
+    setValue("reservation_deposit_amount", parseFloat(inputValue));
+  };
 
   const handleImageChange = (imageList: ImageListType) => {
     setImages(imageList);
   };
 
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value.replace(/[^0-9]/g, "");
-
-    if (!inputValue) {
-      setDisplayPrice("");
-      setValue("price_amount", null, { shouldValidate: true });
-      return;
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const date = e.target.value;
+    if (date) {
+      // Convert the date to Unix timestamp in seconds
+      const timestamp = Math.floor(new Date(date).getTime() / 1000);
+      setValue("preorder_release_date", timestamp);
+    } else {
+      setValue("preorder_release_date", null);
     }
-
-    const decimalValue = convertToDecimal(inputValue);
-    setDisplayPrice(decimalValue);
-    setValue("price_amount", parseFloat(decimalValue), {
-      shouldValidate: true,
-    });
-  };
-
-  const handleDepositChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value.replace(/[^0-9]/g, "");
-
-    if (!inputValue) {
-      setDisplayDepositAmount("");
-      setValue("reservation_deposit_amount", null, { shouldValidate: true });
-      return;
-    }
-
-    const decimalValue = convertToDecimal(inputValue);
-    setDisplayDepositAmount(decimalValue);
-    setValue("reservation_deposit_amount", parseFloat(decimalValue), {
-      shouldValidate: true,
-    });
   };
 
   const onSubmit = async (data: SellListingType) => {
-    console.log("Submitting data:", data);
     setIsSubmitting(true);
 
     const formData = new FormData();
     formData.append("name", data.name);
     formData.append("description", data.description || "");
-    formData.append("slug", data.slug || slugify(data.name));
-    formData.append(
-      "price_amount",
-      data.price_amount ? convertToCents(data.price_amount).toString() : "",
-    );
-    formData.append("currency", data.currency);
+    formData.append("slug", slugify(data.name));
+
+    if (data.price_amount) {
+      formData.append(
+        "price_amount",
+        convertToCents(data.price_amount).toString(),
+      );
+    }
+
+    formData.append("currency", "usd");
     formData.append("inventory_type", data.inventory_type);
-    formData.append(
-      "inventory_quantity",
-      data.inventory_quantity?.toString() || "",
-    );
 
-    // Convert preorder_release_date to a timestamp
-    const preorderReleaseDate = data.preorder_release_date
-      ? new Date(data.preorder_release_date).getTime() / 1000
-      : null;
-    formData.append(
-      "preorder_release_date",
-      preorderReleaseDate ? preorderReleaseDate.toString() : "",
-    );
+    if (data.inventory_type === "finite" && data.inventory_quantity) {
+      formData.append("inventory_quantity", data.inventory_quantity.toString());
+    }
 
-    formData.append("is_reservation", data.is_reservation?.toString() || "");
-    formData.append(
-      "reservation_deposit_amount",
-      data.reservation_deposit_amount
-        ? convertToCents(data.reservation_deposit_amount).toString()
-        : "",
-    );
+    if (data.inventory_type === "preorder" && data.preorder_release_date) {
+      formData.append(
+        "preorder_release_date",
+        data.preorder_release_date.toString(),
+      );
+    }
 
-    // Append photos to formData
+    formData.append("is_reservation", data.is_reservation.toString());
+    if (data.is_reservation && data.reservation_deposit_amount) {
+      formData.append(
+        "reservation_deposit_amount",
+        data.reservation_deposit_amount.toString(),
+      );
+    }
+
+    // Append photos
     images.forEach((image) => {
       if (image.file) {
-        formData.append(`photos`, image.file);
+        formData.append("photos", image.file);
       }
     });
 
@@ -268,7 +164,6 @@ const CreateSell = () => {
       );
 
       if (error) {
-        console.error("Server error:", error.detail);
         addErrorAlert(`Failed to create listing: ${error.detail}`);
         return;
       }
@@ -281,8 +176,6 @@ const CreateSell = () => {
             slug: responseData.slug,
           }),
         );
-      } else {
-        throw new Error("Invalid response data");
       }
     } catch (error) {
       console.error("Error creating listing:", error);
@@ -290,60 +183,6 @@ const CreateSell = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const validateFields = () => {
-    if ((price_amount && !currency) || (!price_amount && currency)) {
-      return "Price amount and currency must be provided together or both left empty.";
-    }
-    if (
-      (inventory_quantity && !inventoryType) ||
-      (!inventory_quantity && inventoryType)
-    ) {
-      return "Inventory quantity and type must be provided together or both left empty.";
-    }
-    if (
-      (preorder_release_date && !isReservation) ||
-      (!preorder_release_date && isReservation)
-    ) {
-      return "Preorder release date and reservation must be provided together or both left empty.";
-    }
-    if (
-      (isReservation && !reservation_deposit_amount) ||
-      (!isReservation && reservation_deposit_amount)
-    ) {
-      return "Reservation deposit amount must be provided if reservation is true or both left empty.";
-    }
-    return true;
-  };
-
-  const handleInventoryTypeChange = (
-    e: React.ChangeEvent<HTMLSelectElement>,
-  ) => {
-    const newType = e.target.value as typeof inventoryType;
-    setInventoryType(newType);
-    setValue("inventory_type", newType);
-
-    // Reset related fields based on inventory type
-    if (newType === "infinite") {
-      setValue("inventory_quantity", null);
-      setValue("preorder_release_date", null);
-    } else if (newType === "preorder") {
-      setValue("inventory_quantity", null);
-      setIsReservation(false);
-      setValue("is_reservation", false);
-      setValue("reservation_deposit_amount", null);
-    } else if (newType === "finite") {
-      setValue("preorder_release_date", null);
-    }
-
-    // Trigger validation
-    trigger([
-      "inventory_quantity",
-      "preorder_release_date",
-      "is_reservation",
-      "reservation_deposit_amount",
-    ]);
   };
 
   return (
@@ -355,46 +194,38 @@ const CreateSell = () => {
           </CardHeader>
           <CardContent>
             <form
-              onSubmit={handleSubmit((data) => {
-                if (validateFields() !== true) {
-                  addErrorAlert(
-                    "Price amount and currency must be provided together or both left empty. Inventory quantity and type must be provided together or both left empty. Preorder release date and reservation must be provided together or both left empty. Reservation deposit amount must be provided if reservation is true or both left empty.",
-                  );
-                  return;
-                }
-                onSubmit(data);
-              })}
+              onSubmit={handleSubmit(onSubmit)}
               className="grid grid-cols-1 space-y-6"
             >
               {/* Name */}
               <div>
-                <label
-                  htmlFor="name"
-                  className="block mb-2 text-sm font-medium text-gray-1"
-                >
+                <label className="block mb-2 text-sm font-medium text-gray-1">
                   Name
                 </label>
                 <Input
-                  id="name"
                   placeholder="Name (at least 4 characters)"
                   type="text"
                   {...register("name")}
                 />
                 {errors?.name && (
-                  <ErrorMessage>{errors?.name?.message}</ErrorMessage>
+                  <ErrorMessage>{errors.name.message}</ErrorMessage>
+                )}
+                {previewUrl && (
+                  <div className="mt-3 text-sm">
+                    <p className="text-gray-1 font-medium">Preview URL:</p>
+                    <p className="text-gray-3 bg-gray-10 p-2 rounded-md">
+                      {previewUrl}
+                    </p>
+                  </div>
                 )}
               </div>
 
-              {/* Description Input */}
-              <div className="relative">
-                <label
-                  htmlFor="description"
-                  className="block mb-2 text-sm font-medium text-gray-1"
-                >
+              {/* Description */}
+              <div>
+                <label className="block mb-2 text-sm font-medium text-gray-1">
                   Description (supports Markdown formatting)
                 </label>
                 <TextArea
-                  id="description"
                   placeholder="Description (at least 6 characters)"
                   rows={4}
                   {...register("description", {
@@ -402,197 +233,131 @@ const CreateSell = () => {
                   })}
                 />
                 {errors?.description && (
-                  <ErrorMessage>{errors?.description?.message}</ErrorMessage>
+                  <ErrorMessage>{errors.description.message}</ErrorMessage>
                 )}
               </div>
 
-              {/* Render Description */}
+              {/* Description Preview */}
               {description && (
-                <div className="relative">
+                <div>
                   <h3 className="font-semibold mb-2">Description Preview</h3>
                   <RenderDescription description={description} />
                 </div>
               )}
 
-              {/* Slug */}
+              {/* Price */}
               <div>
-                <label
-                  htmlFor="slug"
-                  className="block mb-2 text-sm font-medium text-gray-1"
-                >
-                  Slug
+                <label className="block mb-2 text-sm font-medium text-gray-1">
+                  Price (USD)
                 </label>
                 <Input
-                  id="slug"
-                  placeholder="Unique identifier for your listing"
+                  placeholder="Enter price (e.g., 10.00)"
                   type="text"
-                  {...register("slug", {
-                    onChange: (e) => {
-                      const newSlug = slugify(e.target.value);
-                      setSlug(newSlug);
-                      setValue("slug", newSlug, { shouldValidate: true });
-                    },
-                  })}
-                  value={slug}
+                  value={displayPrice}
+                  onChange={handlePriceChange}
                 />
-                {errors?.slug && (
-                  <ErrorMessage>{errors?.slug?.message}</ErrorMessage>
+                {errors?.price_amount && (
+                  <ErrorMessage>{errors.price_amount.message}</ErrorMessage>
                 )}
               </div>
 
-              {/* URL Preview */}
-              {previewUrl && (
+              {/* Inventory Type */}
+              <div>
+                <label className="block mb-2 text-sm font-medium text-gray-1">
+                  Listing Type
+                </label>
+                <select
+                  className="w-full p-2 rounded-md border border-gray-7 bg-gray-3 text-gray-12"
+                  {...register("inventory_type")}
+                >
+                  <option value="finite">Limited Quantity</option>
+                  <option value="preorder">Pre-order</option>
+                </select>
+              </div>
+
+              {/* Quantity (for finite inventory) */}
+              {inventoryType === "finite" && (
                 <div>
                   <label className="block mb-2 text-sm font-medium text-gray-1">
-                    Listing URL Preview
+                    Available Quantity
                   </label>
-                  <div className="p-2 bg-gray-5 rounded-md text-gray-12">
-                    {previewUrl}
-                  </div>
+                  <Input
+                    type="number"
+                    min="1"
+                    {...register("inventory_quantity", { valueAsNumber: true })}
+                  />
+                  {errors?.inventory_quantity && (
+                    <ErrorMessage>
+                      {errors.inventory_quantity.message}
+                    </ErrorMessage>
+                  )}
                 </div>
               )}
 
-              {/* Payment Section */}
-              <div className="space-y-4 border-t border-gray-6 pt-4">
-                <h3 className="font-semibold text-lg">Payment Information</h3>
-
-                {/* Price */}
+              {/* Release Date (for pre-orders) */}
+              {inventoryType === "preorder" && (
                 <div>
-                  <label
-                    htmlFor="price"
-                    className="block mb-2 text-sm font-medium text-gray-1"
-                  >
-                    Price (USD)
+                  <label className="block mb-2 text-sm font-medium text-gray-1">
+                    Release Date
                   </label>
                   <Input
-                    id="price"
-                    placeholder="Enter price (e.g., 10.00)"
-                    type="text"
-                    value={displayPrice}
-                    onChange={handlePriceChange}
+                    type="date"
+                    min={new Date().toISOString().split("T")[0]}
+                    onChange={handleDateChange}
                   />
-                  {errors?.price_amount && (
-                    <ErrorMessage>{errors?.price_amount?.message}</ErrorMessage>
-                  )}
-                  {displayPrice && (
-                    <p className="mt-1 text-sm text-gray-9">
-                      Entered price: ${displayPrice}
-                    </p>
+                  {errors?.preorder_release_date && (
+                    <ErrorMessage>
+                      {errors.preorder_release_date.message}
+                    </ErrorMessage>
                   )}
                 </div>
+              )}
 
-                {/* Inventory Type */}
-                {price_amount && price_amount > 0 && (
-                  <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-1">
-                      Inventory Type
+              {/* Reservation Option */}
+              {price_amount &&
+                price_amount > 0 &&
+                inventoryType !== "preorder" && (
+                  <div className="space-y-4">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        {...register("is_reservation")}
+                        onChange={(e) => {
+                          setIsReservation(e.target.checked);
+                          setValue("is_reservation", e.target.checked);
+                        }}
+                        className="rounded border-gray-7"
+                      />
+                      <span className="text-sm font-medium text-gray-1">
+                        Enable Reservation
+                      </span>
                     </label>
-                    <select
-                      className="w-full p-2 rounded-md border border-gray-7 bg-gray-3 text-gray-12"
-                      {...register("inventory_type")}
-                      onChange={handleInventoryTypeChange}
-                      value={inventoryType}
-                    >
-                      <option value="infinite">Unlimited</option>
-                      <option value="finite">Limited Quantity</option>
-                      <option value="preorder">Pre-order</option>
-                    </select>
-                  </div>
-                )}
 
-                {/* Finite Inventory Quantity */}
-                {inventoryType === "finite" && (
-                  <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-1">
-                      Available Quantity
-                    </label>
-                    <Input
-                      type="number"
-                      min="1"
-                      onWheel={(e) => (e.target as HTMLInputElement).blur()} // prevent changing value when scrolling
-                      {...register("inventory_quantity", {
-                        valueAsNumber: true,
-                        validate: (value) =>
-                          (value && value > 0) ||
-                          "Quantity must be greater than 0",
-                      })}
-                    />
-                    {errors?.inventory_quantity && (
-                      <ErrorMessage>
-                        {errors?.inventory_quantity?.message}
-                      </ErrorMessage>
-                    )}
-                  </div>
-                )}
-
-                {/* Pre-order Release Date */}
-                {inventoryType === "preorder" && (
-                  <div>
-                    <label className="block mb-2 text-sm font-medium text-gray-1">
-                      Release Date
-                    </label>
-                    <Input
-                      type="date"
-                      min={new Date().toISOString().split("T")[0]}
-                      {...register("preorder_release_date", {
-                        setValueAs: (value) =>
-                          value ? new Date(value).getTime() / 1000 : null,
-                      })}
-                    />
-                    {errors?.preorder_release_date && (
-                      <ErrorMessage>
-                        {errors?.preorder_release_date?.message}
-                      </ErrorMessage>
-                    )}
-                  </div>
-                )}
-
-                {/* Reservation Option */}
-                {price_amount &&
-                  price_amount > 0 &&
-                  inventoryType !== "preorder" && (
-                    <div className="space-y-4">
-                      <label className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          {...register("is_reservation")}
-                          onChange={(e) => {
-                            setIsReservation(e.target.checked);
-                            setValue("is_reservation", e.target.checked);
-                          }}
-                          className="rounded border-gray-7"
+                    {isReservation && (
+                      <div>
+                        <label className="block mb-2 text-sm font-medium text-gray-1">
+                          Reservation Deposit Amount
+                        </label>
+                        <Input
+                          placeholder="Enter deposit amount"
+                          type="text"
+                          value={displayDepositAmount}
+                          onChange={handleDepositChange}
                         />
-                        <span className="text-sm font-medium text-gray-1">
-                          Enable Reservation
-                        </span>
-                      </label>
-
-                      {isReservation && (
-                        <div>
-                          <label className="block mb-2 text-sm font-medium text-gray-1">
-                            Reservation Deposit Amount
-                          </label>
-                          <Input
-                            placeholder="Enter deposit amount"
-                            type="text"
-                            value={displayDepositAmount}
-                            onChange={handleDepositChange}
-                          />
-                          {errors?.reservation_deposit_amount && (
-                            <ErrorMessage>
-                              {errors?.reservation_deposit_amount?.message}
-                            </ErrorMessage>
-                          )}
-                          {displayDepositAmount && (
-                            <p className="mt-1 text-sm text-gray-11">
-                              Deposit amount: ${displayDepositAmount}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-              </div>
+                        {errors?.reservation_deposit_amount && (
+                          <ErrorMessage>
+                            {errors?.reservation_deposit_amount?.message}
+                          </ErrorMessage>
+                        )}
+                        {displayDepositAmount && (
+                          <p className="mt-1 text-sm text-gray-11">
+                            Deposit amount: ${displayDepositAmount}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
 
               {/* Photos */}
               <div>
