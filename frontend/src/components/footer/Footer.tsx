@@ -72,7 +72,7 @@ const Footer = () => {
               Research
             </Link>
             <Link
-              to="https://mailchi.mp/b08142c91d72/subscribe-for-updates"
+              to="https://mailchi.mp/kscale/subscribe"
               className="hover:text-primary-9"
               target="_blank"
               rel="noopener noreferrer"
