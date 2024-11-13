@@ -145,29 +145,29 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
                     seller_connect_account_id = session["metadata"].get("seller_connect_account_id")
 
                     # Retry logic for customer creation
-                    max_retries = 3
+                    max_retries = 1
                     retry_delay = 1  # seconds
 
                     for attempt in range(max_retries):
                         try:
-                            # Create customer on the connected account
+                            # Create customer on the connected account, specifying the account
                             connected_customer = stripe.Customer.create(
                                 email=session["customer_details"]["email"],
                                 metadata={
                                     "user_id": session["client_reference_id"],
                                     "platform_customer_id": session["customer"],
                                 },
-                                stripe_account=seller_connect_account_id,
+                                stripe_account=seller_connect_account_id,  # Specify the connected account
                             )
 
                             # Wait briefly to ensure customer is fully created
-                            await asyncio.sleep(0.5)
+                            await asyncio.sleep(10)
 
-                            # Clone the payment method to the connected account
+                            # Clone the payment method to the connected account, specifying the account
                             connected_payment_method = stripe.PaymentMethod.create(
                                 customer=connected_customer.id,
                                 payment_method=setup_intent.payment_method.id,
-                                stripe_account=seller_connect_account_id,
+                                stripe_account=seller_connect_account_id,  # Specify the connected account
                             )
 
                             # Create order for preorder
@@ -178,12 +178,11 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
                                 "stripe_payment_intent_id": None,
                                 "amount": int(session["metadata"]["price_amount"]),
                                 "currency": "usd",
-                                "status": "in_development",
+                                "status": "processing",
                                 "quantity": 1,
                                 "stripe_product_id": session["metadata"].get("stripe_product_id"),
                                 "stripe_customer_id": connected_customer.id,
                                 "stripe_payment_method_id": connected_payment_method.id,
-                                # ... rest of the order data ...
                             }
 
                             # Add shipping details if available
@@ -450,7 +449,7 @@ async def create_checkout_session(
                     "setup_intent_data": {
                         "metadata": metadata,
                     },
-                    "shipping_address_collection": {"allowed_countries": ["US", "CA"]},
+                    "shipping_address_collection": {"allowed_countries": ["US"]},
                 }
 
                 # Format the preorder date for display

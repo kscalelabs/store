@@ -42,7 +42,7 @@ const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
   const MAX_REASON_LENGTH = 500;
 
   const [cancellation, setCancellation] = useState({
-    payment_intent_id: order["stripe_payment_intent_id"],
+    payment_intent_id: order["stripe_payment_intent_id"] || "",
     cancel_reason: { reason: "", details: "" },
     amount: order["amount"],
   });
@@ -79,6 +79,12 @@ const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!cancellation.payment_intent_id) {
+      addErrorAlert("Invalid payment information");
+      return;
+    }
+
     try {
       const { data, error } = await client.PUT("/stripe/refunds/{order_id}", {
         params: { path: { order_id: order.id } },
