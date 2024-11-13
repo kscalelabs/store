@@ -52,11 +52,11 @@ const TerminalInner = () => {
           } else {
             if (FEATURE_FLAGS.DEMO_ROBOT_ENABLED && data.robots.length === 0) {
               const demoRobot: SingleRobotResponse = {
-                robot_id: "3688c9a4af0b58e1",
+                robot_id: "d38afe50c9d6b936",
                 name: "K-Scale Demo",
-                description: "Welcome to the demo of K-Scale terminal!",
+                description: "Click on the robot name to start the demo!",
                 listing_id: "3f26c2bc2c072f50",
-                user_id: "17be4471544ed525",
+                user_id: "",
                 username: "K-Scale",
                 slug: "demo",
                 created_at: Date.now() / 1000,
