@@ -407,20 +407,13 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         try:
             bucket = await self.s3.Bucket(settings.s3.bucket)
 
-            import time
-            from datetime import UTC, datetime
-
-            logger.info("=== Time Debug Info ===")
-            logger.info(f"Container UTC time: {datetime.now(UTC).isoformat()}")
-            logger.info(f"Container local time: {datetime.now().isoformat()}")
-            logger.info(f"Container timezone: {time.tzname}")
-            logger.info(f"Container time.time(): {time.time()}")
+            sanitized_name = name.replace("\u202f", " ").replace("\xa0", " ")
 
             await bucket.put_object(
                 Key=f"{settings.s3.prefix}{filename}",
                 Body=data,
                 ContentType=content_type,
-                ContentDisposition=f'attachment; filename="{name}"',
+                ContentDisposition=f'attachment; filename="{sanitized_name}"',
             )
             logger.info("S3 upload successful")
         except ClientError as e:

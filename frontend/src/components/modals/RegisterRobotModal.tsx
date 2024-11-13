@@ -69,13 +69,13 @@ export function RegisterRobotModal({
         onClose();
       }}
     >
-      <DialogContent className="sm:max-w-[425px] bg-gray-1 text-gray-12 border border-gray-3 rounded-lg shadow-lg">
+      <DialogContent className="sm:max-w-[425px] bg-gray-12 text-gray-2 border border-gray-3 rounded-lg shadow-lg">
         <DialogHeader>
-          <DialogTitle>Register New Robot</DialogTitle>
+          <DialogTitle>Create New Robot Instance</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="name" className="text-sm font-medium text-gray-12">
+            <Label htmlFor="name" className="text-sm font-medium text-gray-2">
               Name
             </Label>
             <Input
@@ -92,7 +92,7 @@ export function RegisterRobotModal({
           <div className="grid gap-2">
             <Label
               htmlFor="description"
-              className="text-sm font-medium text-gray-12"
+              className="text-sm font-medium text-gray-2"
             >
               Description
             </Label>
@@ -113,7 +113,7 @@ export function RegisterRobotModal({
           <Button
             onClick={handleAdd}
             disabled={!name || isLoading}
-            variant="default"
+            variant="outline"
             className="flex items-center"
           >
             {isLoading ? (

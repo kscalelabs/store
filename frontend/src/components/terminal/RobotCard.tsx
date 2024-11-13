@@ -6,6 +6,7 @@ import { SingleRobotResponse } from "@/components/terminal/types";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/button";
 import ROUTES from "@/lib/types/routes";
+import { FEATURE_FLAGS } from "@/lib/utils/featureFlags";
 import { formatDate } from "@/lib/utils/formatDate";
 
 import { DeleteRobotModal } from "../modals/DeleteRobotModal";
@@ -18,6 +19,9 @@ interface RobotCardProps {
 
 export default function RobotCard({ robot, onDeleteRobot }: RobotCardProps) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const isDemo =
+    FEATURE_FLAGS.DEMO_ROBOT_ENABLED && robot.robot_id === "3688c9a4af0b58e1";
 
   return (
     <Card className="w-full bg-black border border-gray-700 hover:border-white transition-all duration-300">
@@ -36,11 +40,14 @@ export default function RobotCard({ robot, onDeleteRobot }: RobotCardProps) {
               </h3>
             </div>
           </Link>
-          <Tooltip content="Delete robot">
+          <Tooltip
+            content={isDemo ? "Demo robot cannot be deleted" : "Delete robot"}
+          >
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsDeleteModalOpen(true)}
+              disabled={isDemo}
               className="h-10 w-10 rounded-lg bg-gray-900 text-white hover:bg-gray-800 transition-colors"
             >
               <FaTrash className="h-4 w-4" />
@@ -56,23 +63,29 @@ export default function RobotCard({ robot, onDeleteRobot }: RobotCardProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
             <div>
               <p className="text-gray-400">Listing</p>
-              <Tooltip
-                content="View listing associated with robot"
-                position="bottom"
-              >
-                <Link
-                  to={ROUTES.BOT.buildPath({
-                    username: robot.username,
-                    slug: robot.slug,
-                  })}
-                  className="text-white hover:text-primary-9 flex items-center gap-1 group transition-colors"
+              {FEATURE_FLAGS.DEMO_ROBOT_ENABLED ? (
+                <p className="text-white flex items-center gap-1">
+                  {robot.username}/{robot.slug}
+                </p>
+              ) : (
+                <Tooltip
+                  content="View listing associated with robot"
+                  position="bottom"
                 >
-                  <span className="group-hover:underline">
-                    {robot.username}/{robot.slug}
-                  </span>
-                  <FaExternalLinkAlt className="h-3 w-3" />
-                </Link>
-              </Tooltip>
+                  <Link
+                    to={ROUTES.BOT.buildPath({
+                      username: robot.username,
+                      slug: robot.slug,
+                    })}
+                    className="text-white hover:text-primary-9 flex items-center gap-1 group transition-colors"
+                  >
+                    <span className="group-hover:underline">
+                      {robot.username}/{robot.slug}
+                    </span>
+                    <FaExternalLinkAlt className="h-3 w-3" />
+                  </Link>
+                </Tooltip>
+              )}
             </div>
             <div>
               <p className="text-gray-400">Registered</p>

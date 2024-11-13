@@ -8,6 +8,7 @@ import Spinner from "@/components/ui/Spinner";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import ROUTES from "@/lib/types/routes";
+import { FEATURE_FLAGS } from "@/lib/utils/featureFlags";
 
 import RequireAuthentication from "../auth/RequireAuthentication";
 
@@ -49,7 +50,21 @@ const TerminalInner = () => {
           if (error) {
             addErrorAlert(error);
           } else {
-            setRobots(data.robots);
+            if (FEATURE_FLAGS.DEMO_ROBOT_ENABLED && data.robots.length === 0) {
+              const demoRobot: SingleRobotResponse = {
+                robot_id: "d38afe50c9d6b936",
+                name: "K-Scale Demo",
+                description: "Click on the robot name to start the demo!",
+                listing_id: "3f26c2bc2c072f50",
+                user_id: "",
+                username: "K-Scale",
+                slug: "demo",
+                created_at: Date.now() / 1000,
+              };
+              setRobots([demoRobot]);
+            } else {
+              setRobots(data.robots);
+            }
           }
         } catch (error) {
           addErrorAlert(error);
@@ -61,6 +76,11 @@ const TerminalInner = () => {
   }, [api, currentUser, isAuthenticated]);
 
   const handleDeleteRobot = async (robotId: string) => {
+    if (FEATURE_FLAGS.DEMO_ROBOT_ENABLED && robotId === "3688c9a4af0b58e1") {
+      addErrorAlert("Demo robot cannot be deleted");
+      return;
+    }
+
     try {
       const { error } = await api.client.DELETE("/robots/delete/{robot_id}", {
         params: {
@@ -92,6 +112,11 @@ const TerminalInner = () => {
     robotId: string,
     updates: { name?: string; description?: string },
   ) => {
+    if (FEATURE_FLAGS.DEMO_ROBOT_ENABLED && robotId === "3688c9a4af0b58e1") {
+      addErrorAlert("Demo robot cannot be modified");
+      return;
+    }
+
     try {
       const { error } = await api.client.PUT("/robots/update/{robot_id}", {
         params: {
