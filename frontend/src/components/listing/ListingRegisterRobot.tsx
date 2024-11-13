@@ -3,6 +3,7 @@ import { FaPlus } from "react-icons/fa";
 
 import { Button } from "@/components/ui/button";
 import { useAuthentication } from "@/hooks/useAuth";
+import { FEATURE_FLAGS } from "@/lib/utils/featureFlags";
 
 import { RegisterRobotModal } from "../modals/RegisterRobotModal";
 
@@ -14,7 +15,7 @@ const ListingRegisterRobot = ({ listingId }: Props) => {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const { isAuthenticated } = useAuthentication();
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || FEATURE_FLAGS.DEMO_ROBOT_ENABLED) {
     return null;
   }
 
