@@ -47,6 +47,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const { addErrorAlert, addAlert } = useAlertQueue();
   const debouncedUsername = useDebounce(username, 500);
+  const [value, setValue] = useState("own");
 
   const formatJoinDate = (timestamp: number) => {
     const date = new Date(timestamp * 1000); // Convert seconds to milliseconds
@@ -117,12 +118,6 @@ export const RenderProfile = (props: RenderProfileProps) => {
         message: "Failed to set content manager status",
         detail: error,
       });
-    }
-  };
-
-  const handleTabChange = (tab: string) => {
-    if (tab === "own") {
-      setUpvotedPage(1);
     }
   };
 
@@ -206,7 +201,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
                 </p>
               )}
             </div>
-            <p className="text-sm text-gray-11">
+            <p className="text-sm">
               Joined on{" "}
               {user.created_at
                 ? formatJoinDate(user.created_at)
@@ -217,7 +212,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
             <div className="flex flex-wrap gap-2 justify-center">
               <Button
                 onClick={() => navigate(ROUTES.KEYS.path)}
-                variant="default"
+                variant="outline"
               >
                 API Keys
               </Button>
@@ -364,7 +359,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
                 {user.bio ? (
                   <p>{user.bio}</p>
                 ) : (
-                  <p className="text-gray-11 text-sm">
+                  <p className="text-sm">
                     No bio set. Edit your profile to add a bio.
                   </p>
                 )}
@@ -398,7 +393,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
           <div className="flex gap-2 mb-8">
             <Button
               onClick={() => navigate(ROUTES.ORDERS.path)}
-              variant="default"
+              variant="outline"
             >
               Orders
             </Button>
@@ -433,21 +428,22 @@ export const RenderProfile = (props: RenderProfileProps) => {
             <Tabs
               defaultValue="own"
               className="w-full"
-              onValueChange={handleTabChange}
+              onValueChange={setValue}
+              value={value}
             >
               <TabsList className="flex justify-center space-x-4 mb-4">
-                <TabsTrigger
-                  value="own"
-                  className="text-sm px-3 py-1.5 rounded-md transition-colors duration-300 hover:bg-gray-9 hover:text-gray-1 data-[state=active]:bg-gray-12 data-[state=active]:text-gray-1"
+                <Button
+                  variant={value === "own" ? "default" : "outline"}
+                  asChild
                 >
-                  Your Listings
-                </TabsTrigger>
-                <TabsTrigger
-                  value="upvoted"
-                  className="text-sm px-3 py-1.5 rounded-md transition-colors duration-300 hover:bg-gray-9 hover:text-gray-1 data-[state=active]:bg-gray-12 data-[state=active]:text-gray-1"
+                  <TabsTrigger value="own">Your Listings</TabsTrigger>
+                </Button>
+                <Button
+                  variant={value === "upvoted" ? "default" : "outline"}
+                  asChild
                 >
-                  Upvoted
-                </TabsTrigger>
+                  <TabsTrigger value="upvoted">Upvoted</TabsTrigger>
+                </Button>
               </TabsList>
               <TabsContent value="own">
                 <MyListingGrid userId={user.id} />

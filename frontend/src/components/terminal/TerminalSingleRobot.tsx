@@ -7,6 +7,7 @@ import TerminalRobotModel from "@/components/terminal/TerminalRobotModel";
 import { SingleRobotResponse } from "@/components/terminal/types";
 import { Button } from "@/components/ui/button";
 import ROUTES from "@/lib/types/routes";
+import { FEATURE_FLAGS } from "@/lib/utils/featureFlags";
 
 interface Props {
   robot: SingleRobotResponse;
@@ -192,55 +193,99 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
         </div>
       </div>
 
-      {/* Connection controls */}
-      <div className="mb-4 flex flex-wrap gap-4">
-        <Button onClick={handleConnect} variant="default" className="flex-1">
-          Connect
-        </Button>
-        <Button onClick={handleDisconnect} variant="default" className="flex-1">
-          Disconnect
-        </Button>
-      </div>
+      {/* Connection controls - Only show if ROBOT_STREAMING is enabled */}
+      {FEATURE_FLAGS.ROBOT_STREAMING && (
+        <div className="mb-4 flex flex-wrap gap-4">
+          <Button onClick={handleConnect} variant="default" className="flex-1">
+            Connect
+          </Button>
+          <Button
+            onClick={handleDisconnect}
+            variant="default"
+            className="flex-1"
+          >
+            Disconnect
+          </Button>
+        </div>
+      )}
 
       {/* Main grid layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[calc(100vh-8rem)]">
-        {/* Video and Audio feed panel */}
-        <div className="border border-gray-700 bg-black rounded-lg overflow-hidden flex flex-col">
-          <div className="p-4 space-y-4 flex-1 flex flex-col justify-center">
-            {/* Video container */}
-            <div className="relative w-full" style={{ paddingTop: "56.25%" }}>
-              <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center border-2 border-dashed border-gray-700 p-4">
-                Waiting for video connection...
+        {FEATURE_FLAGS.ROBOT_STREAMING ? (
+          <>
+            {/* Video and Audio feed panel */}
+            <div className="border border-gray-700 bg-black rounded-lg overflow-hidden flex flex-col">
+              <div className="p-4 space-y-4 flex-1 flex flex-col justify-center">
+                {/* Video container */}
+                <div
+                  className="relative w-full"
+                  style={{ paddingTop: "56.25%" }}
+                >
+                  <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center border-2 border-dashed border-gray-700 p-4">
+                    Waiting for video connection...
+                  </div>
+                </div>
+
+                {/* Audio indicator */}
+                <div className="flex items-center gap-2">
+                  <div className="flex-shrink-0">
+                    <AudioIcon />
+                  </div>
+                  <div className="flex-1 h-2 bg-gray-900 rounded-full overflow-hidden">
+                    <div className="h-full w-0 bg-gray-700 rounded-full animate-pulse"></div>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Audio indicator */}
-            <div className="flex items-center gap-2">
-              <div className="flex-shrink-0">
-                <AudioIcon />
-              </div>
-              <div className="flex-1 h-2 bg-gray-900 rounded-full overflow-hidden">
-                <div className="h-full w-0 bg-gray-700 rounded-full animate-pulse"></div>
-              </div>
+            {/* 3D Mesh Visualization panel */}
+            <div className="border border-gray-700 bg-black rounded-lg h-full w-full overflow-hidden">
+              <TerminalRobotModel listingId={robot.listing_id} />
             </div>
+          </>
+        ) : (
+          // When streaming is disabled, 3D viewer takes full width and combined height
+          <div className="border border-gray-700 bg-black rounded-lg w-full overflow-hidden md:col-span-2 h-[calc(100vh-24rem)]">
+            <TerminalRobotModel listingId={robot.listing_id} />
           </div>
-        </div>
-
-        {/* 3D Mesh Visualization panel */}
-        <div className="border border-gray-700 bg-black rounded-lg h-full w-full overflow-hidden">
-          <TerminalRobotModel listingId={robot.listing_id} />
-        </div>
+        )}
 
         {/* Klang Input panel */}
         <div className="border border-gray-700 bg-black rounded-lg overflow-hidden min-h-[300px]">
           <div className="p-4 h-full flex flex-col gap-4">
-            <textarea
-              className="w-full h-full bg-black text-white border border-gray-700 p-2 font-mono resize-none focus:outline-none focus:ring-1 focus:border-white"
-              placeholder="Enter code here..."
-            />
-            <Button variant="default" className="w-full">
-              Execute
-            </Button>
+            {FEATURE_FLAGS.KLANG_EXECUTION ? (
+              <>
+                <textarea
+                  className="w-full h-full bg-black text-white border border-gray-700 p-2 font-mono resize-none focus:outline-none focus:ring-1 focus:border-white"
+                  placeholder="Enter code here..."
+                />
+                <Button variant="default" className="w-full">
+                  Execute
+                </Button>
+              </>
+            ) : (
+              <>
+                <div className="relative flex-1">
+                  <textarea
+                    className="w-full h-full bg-black text-gray-500 border border-gray-700 p-2 font-mono resize-none focus:outline-none cursor-not-allowed"
+                    placeholder="Klang code execution coming soon..."
+                    disabled
+                  />
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    <span className="px-2 py-1 bg-gray-800 text-gray-400 rounded text-sm">
+                      Demo - In Development
+                    </span>
+                  </div>
+                </div>
+                <Button
+                  variant="outline"
+                  className="w-full opacity-50 cursor-not-allowed"
+                  disabled
+                >
+                  Execute
+                </Button>
+              </>
+            )}
           </div>
         </div>
 

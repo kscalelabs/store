@@ -53,19 +53,19 @@ export function DeleteRobotModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-gray-1 text-gray-12 border border-gray-3 rounded-lg shadow-lg">
+      <DialogContent className="sm:max-w-[425px] bg-gray-12 border border-gray-3 rounded-lg shadow-lg">
         <DialogHeader>
           <DialogTitle>Delete Robot</DialogTitle>
-          <DialogDescription className="text-gray-11">
+          <DialogDescription>
             <div className="flex flex-col gap-2">
               <span>
                 Are you sure you want to delete robot{" "}
-                <span className="text-primary-9 font-medium">
+                <span className="text-gray-9 font-medium">
                   &quot;{robot.name}&quot;
                 </span>
                 ? This action cannot be undone.
               </span>
-              <span className="text-gray-11 font-light text-xs">
+              <span className="font-light text-xs">
                 Data associated with this robot will be deleted and no longer
                 accessible.
               </span>
@@ -73,7 +73,7 @@ export function DeleteRobotModal({
           </DialogDescription>
         </DialogHeader>
         {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-between gap-2">
           <Button onClick={onClose} variant="outline" disabled={isLoading}>
             Cancel
           </Button>

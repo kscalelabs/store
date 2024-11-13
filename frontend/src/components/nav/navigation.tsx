@@ -16,7 +16,7 @@ export interface NavItem extends BaseNavItem {
 
 export const DEFAULT_NAV_ITEMS: BaseNavItem[] = [
   {
-    name: "Bots",
+    name: "Robots Hub",
     path: ROUTES.BOTS.BROWSE.path,
     icon: <FaRobot />,
   },
