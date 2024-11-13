@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "format": "prettier --write src/ && eslint 'src/**/*.{js,jsx,ts,tsx}' --fix",
-    "lint": "prettier --check src/ && eslint 'src/**/*.{js,jsx,ts,tsx}'"
+    "lint": "prettier --check src/ && eslint 'src/**/*.{js,jsx,ts,tsx}'",
+    "gen-proto": "protoc --ts_out ./src/lib/openlch-server-grpc/ --proto_path src/lib/protos/ src/lib/protos/hal_pb.proto"
   },
   "browserslist": {
     "production": [
@@ -26,6 +27,8 @@
     "@codemirror/lang-javascript": "^6.2.2",
     "@formspree/react": "^2.5.1",
     "@hookform/resolvers": "^3.9.0",
+    "@protobuf-ts/grpcweb-transport": "^2.9.4",
+    "@protobuf-ts/plugin": "^2.9.4",
     "@radix-ui/react-alert-dialog": "^1.1.2",
     "@radix-ui/react-checkbox": "^1.1.1",
     "@radix-ui/react-dropdown-menu": "^2.1.1",
@@ -52,6 +55,7 @@
     "date-fns": "^3.6.0",
     "eventsource": "^2.0.2",
     "framer-motion": "^11.5.4",
+    "grpc-web": "^1.5.0",
     "hamburger-react": "^2.5.1",
     "leva": "^0.9.35",
     "lucide-react": "^0.424.0",
