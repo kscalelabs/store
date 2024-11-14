@@ -9,7 +9,6 @@ import {
   FaUndo,
 } from "react-icons/fa";
 
-import humanoidXML from "@/components/files/mujoco/humanoid.xml";
 import {
   MujocoRefs,
   cleanupMujoco,
@@ -29,7 +28,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 interface Props {
-  mjcfContent?: string;
+  mjcfContent: string;
   files?: UntarredFile[];
   useControls?: boolean;
 }
@@ -218,8 +217,7 @@ const MJCFRenderer = ({ mjcfContent, files, useControls = true }: Props) => {
 
         // Initialize MuJoCo with the humanoid model
         const { mj, model, state, simulation } = await initializeMujoco({
-          modelXML:
-            mjcfContent ?? (await fetch(humanoidXML).then((res) => res.text())),
+          modelXML: mjcfContent,
           files: files ?? [],
         });
 

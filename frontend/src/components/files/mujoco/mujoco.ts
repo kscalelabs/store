@@ -15,11 +15,124 @@ export interface MujocoRefs {
   cameraRef: React.MutableRefObject<THREE.PerspectiveCamera | null>;
   controlsRef: React.MutableRefObject<OrbitControls | null>;
 }
-
 export interface MujocoInitOptions {
   modelXML: string;
   files: UntarredFile[];
 }
+
+const formatXML = (xmlDoc: Document): string => {
+  const format = (node: Node, level: number): string => {
+    const indent = "  ".repeat(level);
+
+    if (node.nodeType === 3) {
+      // Text node
+      const text = node.textContent?.trim() || "";
+      return text ? `${indent}${text}` : "";
+    }
+
+    if (node.nodeType === 8) {
+      // Comment node
+      return `${indent}<!--${node.nodeValue}-->`;
+    }
+
+    if (node.nodeType !== 1) return ""; // Not an element node
+
+    const element = node as Element;
+    let result = `${indent}<${element.tagName}`;
+
+    // Add attributes
+    for (const attr of Array.from(element.attributes)) {
+      result += ` ${attr.name}="${attr.value}"`;
+    }
+
+    if (!element.childNodes.length) {
+      return `${result}/>`;
+    }
+
+    result += ">";
+
+    // Handle child nodes
+    const children = Array.from(element.childNodes)
+      .map((child) => format(child, level + 1))
+      .filter(Boolean);
+
+    if (children.length) {
+      result += "\n" + children.join("\n");
+      result += `\n${indent}`;
+    }
+
+    result += `</${element.tagName}>`;
+    return result;
+  };
+
+  return format(xmlDoc.documentElement, 0);
+};
+
+const processModelXML = (modelXML: string) => {
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(modelXML, "text/xml");
+
+  // Add timestep option if not present
+  const optionElements = xmlDoc.getElementsByTagName("option");
+  if (optionElements.length === 0) {
+    const optionElement = xmlDoc.createElement("option");
+    optionElement.setAttribute("timestep", "0.005");
+    const mujocoElement = xmlDoc.getElementsByTagName("mujoco")[0];
+    mujocoElement.insertBefore(optionElement, mujocoElement.firstChild);
+  } else {
+    const optionElement = optionElements[0];
+    if (!optionElement.hasAttribute("timestep")) {
+      optionElement.setAttribute("timestep", "0.005");
+    }
+  }
+
+  // Process joint elements and collect joint names
+  const jointElements = xmlDoc.getElementsByTagName("joint");
+  const jointNames: string[] = [];
+
+  for (let i = 0; i < jointElements.length; i++) {
+    const joint = jointElements[i];
+    const name = joint.getAttribute("name");
+    const pos = joint.getAttribute("pos");
+    const axis = joint.getAttribute("axis");
+
+    if (name) jointNames.push(name);
+
+    // Remove all attributes
+    while (joint.attributes.length > 0) {
+      joint.removeAttribute(joint.attributes[0].name);
+    }
+
+    // Add back only the desired attributes
+    if (name) joint.setAttribute("name", name);
+    if (pos) joint.setAttribute("pos", pos);
+    if (axis) joint.setAttribute("axis", axis);
+  }
+
+  // Handle actuator section
+  let actuatorElement = xmlDoc.getElementsByTagName("actuator")[0];
+  if (!actuatorElement) {
+    actuatorElement = xmlDoc.createElement("actuator");
+    xmlDoc.documentElement.appendChild(actuatorElement);
+  } else {
+    // Clear existing actuator content
+    while (actuatorElement.firstChild) {
+      actuatorElement.removeChild(actuatorElement.firstChild);
+    }
+  }
+
+  // Add motor elements for each joint
+  jointNames.forEach((jointName) => {
+    const motorElement = xmlDoc.createElement("motor");
+    motorElement.setAttribute("name", jointName);
+    motorElement.setAttribute("joint", jointName);
+    motorElement.setAttribute("gear", "40"); // Default gear value
+    actuatorElement.appendChild(motorElement);
+  });
+
+  // Convert back to string and format
+  return formatXML(xmlDoc);
+};
 
 export const initializeMujoco = async ({
   modelXML,
@@ -62,6 +175,10 @@ export const initializeMujoco = async ({
     }
     mj.FS.writeFile(filePath, file.content);
   }
+
+  modelXML = processModelXML(modelXML);
+
+  console.log(modelXML);
 
   // Write the main model XML file
   mj.FS.writeFile(MODEL_PATH, modelXML);
@@ -443,7 +560,7 @@ export const getJointNames = (refs: MujocoRefs, mj: mujoco) => {
   const numJoints = refs.modelRef.current?.nu;
   if (!numJoints) return jointNames;
 
-  for (let i = 0; i < numJoints + 1; i++) {
+  for (let i = 0; i < numJoints; i++) {
     const name = refs.simulationRef.current?.id2name(
       // @ts-expect-error: mj.mjtObj is not typed
       mj.mjtObj.mjOBJ_JOINT.value,
