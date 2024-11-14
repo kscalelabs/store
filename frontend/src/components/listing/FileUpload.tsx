@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { MouseEvent } from "react";
 import {
   DropzoneOptions,
   DropzoneState,
@@ -306,11 +307,7 @@ export const FileInput = forwardRef<
   const { dropzoneState, isFileTooBig } = useFileUpload();
   const rootProps = dropzoneState.getRootProps();
 
-  const handleClick = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest("button")) {
-      e.stopPropagation();
-      return;
-    }
+  const handleClick = (e: MouseEvent<HTMLElement>) => {
     rootProps.onClick?.(e);
   };
 
