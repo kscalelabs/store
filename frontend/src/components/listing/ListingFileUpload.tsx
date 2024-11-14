@@ -43,7 +43,28 @@ const ListingFileUpload = (props: Props) => {
         addErrorAlert(error);
       } else {
         setFiles(null);
-        addArtifacts(data.artifacts);
+
+        if (data.artifacts && data.artifacts.length > 0) {
+          try {
+            await auth.client.PUT("/artifacts/list/{listing_id}/main", {
+              params: {
+                path: { listing_id: listingId },
+                query: {
+                  artifact_id: data.artifacts[0].artifact_id,
+                },
+              },
+            });
+            addArtifacts(
+              data.artifacts.map((a: Artifact, index: number) => ({
+                ...a,
+                is_main: index === 0,
+              })),
+            );
+          } catch (err) {
+            addErrorAlert(err);
+            addArtifacts(data.artifacts);
+          }
+        }
       }
       setUploading(false);
     })();
