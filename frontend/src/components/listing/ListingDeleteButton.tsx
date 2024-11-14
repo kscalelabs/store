@@ -46,24 +46,24 @@ const ListingDeleteButton = (props: Props) => {
     <>
       <Button
         onClick={() => setConfirmDelete(true)}
-        variant={deleting ? "ghost" : "destructive"}
+        variant="outline"
         disabled={deleting}
-        className="flex items-center space-x-2 !px-3 !py-1 !rounded-lg transition-all duration-300 bg-red-500 hover:bg-red-600 text-white"
+        className="flex items-center space-x-2 text-red-500 hover:text-red-600 hover:bg-red-100/10 w-full sm:w-auto"
       >
         <FaTrash className="text-lg" />
         <span>{deleting ? "Deleting..." : "Delete Listing"}</span>
       </Button>
       <Modal isOpen={confirmDelete} onClose={() => setConfirmDelete(false)}>
-        <div className="p-8 bg-gray-3 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-bold mb-4 text-gray-12">
+        <div className="p-8 bg-gray-12 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold mb-4 text-gray-2">
             Confirm Deletion
           </h2>
-          <p className="mb-6 text-gray-11">
+          <p className="mb-6 text-gray-9">
             Are you sure you want to delete this listing? This action cannot be
             undone.
           </p>
           <div className="flex justify-end space-x-4">
-            <Button onClick={() => setConfirmDelete(false)} variant="default">
+            <Button onClick={() => setConfirmDelete(false)} variant="outline">
               Cancel
             </Button>
             <Button
@@ -72,7 +72,6 @@ const ListingDeleteButton = (props: Props) => {
                 setConfirmDelete(false);
               }}
               variant="destructive"
-              className="rounded-lg bg-red-500 hover:bg-red-600 text-white"
             >
               Yes, delete
             </Button>

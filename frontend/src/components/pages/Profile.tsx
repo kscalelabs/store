@@ -186,7 +186,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
       <Card className="w-full max-w-4xl mx-auto">
         <CardHeader className="flex flex-col items-center space-y-4">
           <div className="flex flex-col items-center space-y-2">
-            <h1 className="text-3xl font-bold text-primary-9">
+            <h1 className="text-3xl font-bold text-primary-9 text-center">
               {user.first_name || user.last_name
                 ? `${user.first_name || ""} ${user.last_name || ""}`
                 : "Anonymous Creator"}
@@ -339,18 +339,30 @@ export const RenderProfile = (props: RenderProfileProps) => {
               onValueChange={setValue}
               value={value}
             >
-              <TabsList className="flex justify-center space-x-4 mb-4">
+              <TabsList className="flex justify-center space-x-2 sm:space-x-4 mb-4">
                 <Button
-                  variant={value === "own" ? "default" : "outline"}
+                  variant="outline"
                   asChild
+                  className={`text-xs sm:text-sm px-2 sm:px-4 hover:bg-transparent ${value === "own" ? "border-0 bg-transparent hover:bg-transparent" : ""}`}
                 >
-                  <TabsTrigger value="own">Your Robot Listings</TabsTrigger>
+                  <TabsTrigger
+                    value="own"
+                    className="data-[state=active]:bg-transparent"
+                  >
+                    Your Robot Listings
+                  </TabsTrigger>
                 </Button>
                 <Button
-                  variant={value === "upvoted" ? "default" : "outline"}
+                  variant="outline"
                   asChild
+                  className={`text-xs sm:text-sm px-2 sm:px-4 hover:bg-transparent ${value === "upvoted" ? "border-0 bg-transparent hover:bg-transparent" : ""}`}
                 >
-                  <TabsTrigger value="upvoted">Upvoted Robots</TabsTrigger>
+                  <TabsTrigger
+                    value="upvoted"
+                    className="data-[state=active]:bg-transparent"
+                  >
+                    Upvoted Robots
+                  </TabsTrigger>
                 </Button>
               </TabsList>
               <TabsContent value="own">

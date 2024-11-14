@@ -117,6 +117,14 @@ const Browse = () => {
   return (
     <Container>
       <div className="py-8">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold mb-2">Community Robots Hub</h1>
+          <p className="text-gray-2 text-lg">
+            Explore and share robot designs from the community! Upload your
+            OnShape CAD models and instantly convert them to URDF and MJCF
+            formats for simulation and visualization
+          </p>
+        </div>
         <div className="flex flex-col md:flex-row justify-center items-center gap-2">
           <div className="relative w-full md:w-auto">
             <Input
