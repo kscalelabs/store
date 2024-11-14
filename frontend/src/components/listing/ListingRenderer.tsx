@@ -115,12 +115,12 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
           <hr className="border-gray-200 my-4" />
 
           {/* Build this robot */}
-          <div className="flex items-baseline gap-4">
-            <ListingRegisterRobot listingId={listingId} />
+          <div className="flex flex-col sm:flex-row sm:items-baseline gap-4">
             <ListingFeatureButton
               listingId={listingId}
               initialFeatured={isFeatured}
             />
+            <ListingRegisterRobot listingId={listingId} />
           </div>
         </div>
       </div>

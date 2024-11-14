@@ -77,7 +77,7 @@ const Footer = () => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Subscribe for Updates
+              Newsletter
             </Link>
           </div>
           <div className="flex flex-col items-start gap-2">
