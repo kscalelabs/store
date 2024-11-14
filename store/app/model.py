@@ -577,6 +577,7 @@ OrderStatus = Literal[
     "being_assembled",
     "shipped",
     "delivered",
+    "preorder_placed",
     "cancelled",
     "refunded",
     "failed",
@@ -608,6 +609,10 @@ class Order(StoreBaseModel):
     shipping_state: str | None = None
     shipping_postal_code: str | None = None
     shipping_country: str | None = None
+    shipped_at: int | None = None
+    delivered_at: int | None = None
+    cancelled_at: int | None = None
+    refunded_at: int | None = None
 
     @classmethod
     def create(
