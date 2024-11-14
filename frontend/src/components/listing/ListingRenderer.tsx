@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import ListingDeleteButton from "@/components/listing/ListingDeleteButton";
 import ListingDescription from "@/components/listing/ListingDescription";
 import ListingFeatureButton from "@/components/listing/ListingFeatureButton";
 import ListingFileUpload from "@/components/listing/ListingFileUpload";
@@ -116,6 +117,7 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
 
           {/* Build this robot */}
           <div className="flex flex-col sm:flex-row sm:items-baseline gap-4">
+            {canEdit && <ListingDeleteButton listingId={listingId} />}
             <ListingFeatureButton
               listingId={listingId}
               initialFeatured={isFeatured}

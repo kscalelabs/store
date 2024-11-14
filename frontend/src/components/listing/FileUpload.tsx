@@ -305,6 +305,15 @@ export const FileInput = forwardRef<
 >(({ className, children, ...props }, ref) => {
   const { dropzoneState, isFileTooBig } = useFileUpload();
   const rootProps = dropzoneState.getRootProps();
+
+  const handleClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest("button")) {
+      e.stopPropagation();
+      return;
+    }
+    rootProps.onClick?.(e);
+  };
+
   return (
     <div ref={ref} {...props} className="relative w-full cursor-pointer">
       <div
@@ -320,6 +329,7 @@ export const FileInput = forwardRef<
           className,
         )}
         {...rootProps}
+        onClick={handleClick}
       >
         {children}
       </div>
