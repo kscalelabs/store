@@ -1033,6 +1033,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/stripe/process-preorder/{order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Process Preorder */
+        post: operations["process_preorder_stripe_process_preorder__order_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/me": {
         parameters: {
             query?: never;
@@ -1291,7 +1308,7 @@ export interface components {
             /** Slug */
             slug: string;
             /** Price Amount */
-            price_amount?: number | null;
+            price_amount?: string | null;
             /**
              * Currency
              * @default usd
@@ -1299,21 +1316,21 @@ export interface components {
             currency: string;
             /**
              * Inventory Type
-             * @default infinite
+             * @default finite
              * @enum {string}
              */
-            inventory_type: "finite" | "infinite" | "preorder";
+            inventory_type: "finite" | "preorder";
             /** Inventory Quantity */
-            inventory_quantity?: number | null;
+            inventory_quantity?: string | null;
             /** Preorder Release Date */
-            preorder_release_date?: number | null;
+            preorder_release_date?: string | null;
             /**
              * Is Reservation
              * @default false
              */
             is_reservation: boolean;
             /** Reservation Deposit Amount */
-            reservation_deposit_amount?: number | null;
+            reservation_deposit_amount?: string | null;
             /** Photos */
             photos?: string[];
         };
@@ -1386,6 +1403,8 @@ export interface components {
         CreateCheckoutSessionResponse: {
             /** Session Id */
             session_id: string;
+            /** Stripe Connect Account Id */
+            stripe_connect_account_id: string;
         };
         /** CreateConnectAccountResponse */
         CreateConnectAccountResponse: {
@@ -1732,10 +1751,6 @@ export interface components {
             user_id: string;
             /** User Email */
             user_email: string;
-            /** Stripe Checkout Session Id */
-            stripe_checkout_session_id: string;
-            /** Stripe Payment Intent Id */
-            stripe_payment_intent_id: string;
             /** Created At */
             created_at: number;
             /** Updated At */
@@ -1751,8 +1766,18 @@ export interface components {
             currency: string;
             /** Quantity */
             quantity: number;
+            /** Stripe Checkout Session Id */
+            stripe_checkout_session_id: string;
             /** Stripe Product Id */
             stripe_product_id: string;
+            /** Stripe Connect Account Id */
+            stripe_connect_account_id: string;
+            /** Stripe Customer Id */
+            stripe_customer_id?: string | null;
+            /** Stripe Payment Method Id */
+            stripe_payment_method_id?: string | null;
+            /** Stripe Payment Intent Id */
+            stripe_payment_intent_id?: string | null;
             /** Stripe Refund Id */
             stripe_refund_id?: string | null;
             /** Shipping Name */
@@ -3876,6 +3901,37 @@ export interface operations {
                 "application/json": components["schemas"]["Body_create_stripe_product_stripe_create_product_post"];
             };
         };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    process_preorder_stripe_process_preorder__order_id__post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description Successful Response */
             200: {

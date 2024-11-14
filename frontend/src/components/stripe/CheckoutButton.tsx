@@ -11,8 +11,6 @@ import { ApiError } from "@/lib/types/api";
 import ROUTES from "@/lib/types/routes";
 import { loadStripe } from "@stripe/stripe-js";
 
-const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
-
 interface Props {
   listingId: string;
   stripeProductId: string;
@@ -39,33 +37,18 @@ const CheckoutButton: React.FC<Props> = ({
     inventoryType === "finite" &&
     (inventoryQuantity === undefined || inventoryQuantity <= 0);
 
-  const buttonLabel = isOutOfStock ? "Out of Stock" : label;
+  const buttonLabel =
+    inventoryType === "preorder"
+      ? "Pre-order Now"
+      : isOutOfStock
+        ? "Out of Stock"
+        : label;
 
   const handleClick = async () => {
     setIsLoading(true);
 
     if (!auth.isAuthenticated) {
       setIsDrawerOpen(true);
-      setIsLoading(false);
-      return;
-    }
-
-    if (!stripePromise) {
-      console.error("Stripe configuration is missing");
-      addErrorAlert(
-        "Payment system is not properly configured. Please contact support.",
-      );
-      setIsLoading(false);
-      return;
-    }
-
-    const stripe = await stripePromise;
-
-    if (!stripe) {
-      console.error("Failed to initialize Stripe");
-      addErrorAlert(
-        "Unable to process payment at this time. Please try again later.",
-      );
       setIsLoading(false);
       return;
     }
@@ -88,12 +71,23 @@ const CheckoutButton: React.FC<Props> = ({
         return;
       }
 
-      if (!data || !data.session_id) {
+      if (!data || !data.session_id || !data.stripe_connect_account_id) {
         throw new Error("Invalid response from server");
       }
 
+      console.log(data.stripe_connect_account_id);
+
+      // Initialize Stripe with the connected account
+      const stripeWithAccount = await loadStripe(STRIPE_PUBLISHABLE_KEY, {
+        stripeAccount: data.stripe_connect_account_id,
+      });
+
+      if (!stripeWithAccount) {
+        throw new Error("Failed to initialize Stripe");
+      }
+
       // Redirect to Stripe Checkout
-      const result = await stripe.redirectToCheckout({
+      const result = await stripeWithAccount.redirectToCheckout({
         sessionId: data.session_id,
       });
 

@@ -277,33 +277,31 @@ async def add_listing(
     description: str | None = Form(None),
     child_ids: str = Form(""),
     slug: str = Form(...),
-    price_amount: int | None = Form(None),
+    price_amount: str | None = Form(None),
     currency: str = Form("usd"),
-    inventory_type: Literal["finite", "infinite", "preorder"] = Form("infinite"),
-    inventory_quantity: int | None = Form(None),
-    preorder_release_date: int | None = Form(None),
+    inventory_type: Literal["finite", "preorder"] = Form("finite"),
+    inventory_quantity: str | None = Form(None),
+    preorder_release_date: str | None = Form(None),
     is_reservation: bool = Form(False),
-    reservation_deposit_amount: int | None = Form(None),
+    reservation_deposit_amount: str | None = Form(None),
     photos: List[UploadFile] = File(None),
 ) -> NewListingResponse:
     try:
         logger.info("Starting to process add listing request")
 
-        # Initialize variables
+        # Convert string values to appropriate types
+        price_amount_int = int(price_amount) if price_amount else None
+        inventory_quantity_int = int(inventory_quantity) if inventory_quantity else None
+        preorder_release_date_int = int(float(preorder_release_date)) if preorder_release_date else None
+        reservation_deposit_amount_int = int(reservation_deposit_amount) if reservation_deposit_amount else None
+
+        # Initialize Stripe-related variables
         stripe_product_id = None
         stripe_price_id = None
-        deposit_price_id = None  # Initialize here
-
-        # Validation checks
-        if price_amount is not None and price_amount <= 0:
-            logger.error("Validation failed: Price amount must be greater than 0")
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Price amount must be greater than 0",
-            )
+        deposit_price_id = None
 
         # Create Stripe product if price is set
-        if price_amount is not None and user.stripe_connect_account_id:
+        if price_amount_int is not None and user.stripe_connect_account_id:
             try:
                 product = stripe.Product.create(
                     name=name,
@@ -313,30 +311,29 @@ async def add_listing(
                     },
                     stripe_account=user.stripe_connect_account_id,
                 )
+                stripe_product_id = product.id
 
                 price = stripe.Price.create(
                     product=product.id,
                     currency=currency,
-                    unit_amount=price_amount,
+                    unit_amount=price_amount_int,
                     metadata={
-                        "inventory_quantity": str(inventory_quantity) if inventory_type == "finite" else "",
-                        "preorder_release_date": str(preorder_release_date) if inventory_type == "preorder" else "",
+                        "inventory_quantity": str(inventory_quantity_int) if inventory_type == "finite" else "",
+                        "preorder_release_date": str(preorder_release_date_int) if inventory_type == "preorder" else "",
                     },
                     stripe_account=user.stripe_connect_account_id,
                 )
+                stripe_price_id = price.id
 
-                if is_reservation and reservation_deposit_amount:
+                if is_reservation and reservation_deposit_amount_int:
                     deposit_price = stripe.Price.create(
                         product=product.id,
                         currency=currency,
-                        unit_amount=reservation_deposit_amount,
+                        unit_amount=reservation_deposit_amount_int,
                         metadata={"is_deposit": "true"},
                         stripe_account=user.stripe_connect_account_id,
                     )
                     deposit_price_id = deposit_price.id
-
-                stripe_product_id = product.id
-                stripe_price_id = price.id
 
             except stripe.StripeError as e:
                 logger.error(f"Stripe error: {str(e)}")
@@ -352,13 +349,13 @@ async def add_listing(
             child_ids=child_ids.split(",") if child_ids else [],
             slug=slug,
             user_id=user.id,
-            price_amount=price_amount,
+            price_amount=price_amount_int,
             currency=currency,
             inventory_type=inventory_type,
-            inventory_quantity=inventory_quantity,
-            preorder_release_date=preorder_release_date,
+            inventory_quantity=inventory_quantity_int,
+            preorder_release_date=preorder_release_date_int,
             is_reservation=is_reservation,
-            reservation_deposit_amount=reservation_deposit_amount,
+            reservation_deposit_amount=reservation_deposit_amount_int,
             stripe_product_id=stripe_product_id,
             stripe_price_id=stripe_price_id,
             stripe_deposit_price_id=deposit_price_id,

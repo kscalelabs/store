@@ -1,6 +1,7 @@
 """Stripe integration router for handling payments and webhooks."""
 
 import logging
+from datetime import datetime
 from enum import Enum
 from typing import Annotated, Any, Dict, Literal
 
@@ -11,6 +12,7 @@ from pydantic import BaseModel
 from store.app.db import Crud
 from store.app.model import Order, User
 from store.app.security.user import (
+    get_session_user_with_admin_permission,
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
 )
@@ -132,7 +134,86 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
 
         elif event["type"] == "checkout.session.completed":
             session = event["data"]["object"]
-            await handle_checkout_session_completed(session, crud)
+
+            # Handle setup completion for preorders
+            if session["mode"] == "setup":
+                try:
+                    seller_connect_account_id = session["metadata"].get("seller_connect_account_id")
+                    if not seller_connect_account_id:
+                        raise ValueError("Missing seller connect account ID")
+
+                    # Get the customer ID from the session
+                    connected_customer_id = session["metadata"].get("connected_customer_id")
+
+                    # Retrieve SetupIntent with expanded payment method
+                    setup_intent = stripe.SetupIntent.retrieve(
+                        session["setup_intent"],
+                        expand=["payment_method"],
+                        stripe_account=seller_connect_account_id,
+                    )
+
+                    if not setup_intent.payment_method or isinstance(setup_intent.payment_method, str):
+                        raise ValueError("Invalid payment method")
+
+                    # Attach the payment method to the customer
+                    stripe.PaymentMethod.attach(
+                        setup_intent.payment_method.id,
+                        customer=connected_customer_id,
+                        stripe_account=seller_connect_account_id,
+                    )
+
+                    # Set as default payment method for the customer
+                    stripe.Customer.modify(
+                        connected_customer_id,
+                        invoice_settings={"default_payment_method": setup_intent.payment_method.id},
+                        stripe_account=seller_connect_account_id,
+                    )
+
+                    # Create order for preorder
+                    order_data = {
+                        "user_id": session["client_reference_id"],
+                        "user_email": session["customer_details"]["email"],
+                        "stripe_checkout_session_id": session["id"],
+                        "stripe_payment_intent_id": None,
+                        "amount": int(session["metadata"]["price_amount"]),
+                        "currency": "usd",
+                        "status": "processing",
+                        "quantity": 1,
+                        "stripe_product_id": session["metadata"].get("stripe_product_id"),
+                        "stripe_customer_id": connected_customer_id,
+                        "stripe_payment_method_id": setup_intent.payment_method.id,
+                        "stripe_connect_account_id": seller_connect_account_id,
+                    }
+
+                    # Add shipping details if available
+                    if shipping_details := session.get("shipping_details"):
+                        shipping_address = shipping_details.get("address", {})
+                        order_data.update(
+                            {
+                                "shipping_name": shipping_details.get("name"),
+                                "shipping_address_line1": shipping_address.get("line1"),
+                                "shipping_address_line2": shipping_address.get("line2"),
+                                "shipping_city": shipping_address.get("city"),
+                                "shipping_state": shipping_address.get("state"),
+                                "shipping_postal_code": shipping_address.get("postal_code"),
+                                "shipping_country": shipping_address.get("country"),
+                            }
+                        )
+
+                    await crud.create_order(order_data)
+                    logger.info(
+                        "Successfully processed preorder setup for customer %s with payment method %s",
+                        connected_customer_id,
+                        setup_intent.payment_method.id,
+                    )
+
+                except Exception as e:
+                    logger.error("Error processing preorder webhook: %s", str(e))
+                    raise
+
+            else:
+                # Handle regular checkout completion
+                await handle_checkout_session_completed(session, crud)
         elif event["type"] == "payment_intent.succeeded":
             payment_intent = event["data"]["object"]
             logger.info("Payment intent succeeded: %s", payment_intent["id"])
@@ -141,6 +222,9 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
     except ValueError as e:
         logger.error("Invalid payload: %s", str(e))
         raise HTTPException(status_code=400, detail="Invalid payload")
+    except Exception as e:
+        logger.error("Error processing webhook: %s", str(e))
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud) -> None:
@@ -237,6 +321,7 @@ class CreateCheckoutSessionRequest(BaseModel):
 
 class CreateCheckoutSessionResponse(BaseModel):
     session_id: str
+    stripe_connect_account_id: str
 
 
 @router.post("/create-checkout-session", response_model=CreateCheckoutSessionResponse)
@@ -253,16 +338,6 @@ async def create_checkout_session(
                 logger.error(f"Listing not found or has no price: {request.listing_id}")
                 raise HTTPException(status_code=404, detail="Listing not found or has no price")
 
-            # Validate inventory
-            if listing.inventory_type == "finite":
-                if listing.inventory_quantity is None:
-                    raise HTTPException(status_code=400, detail="Invalid inventory configuration")
-                if listing.inventory_quantity <= 0:
-                    raise HTTPException(status_code=400, detail="This item is out of stock")
-
-            if not listing.stripe_price_id:
-                raise HTTPException(status_code=400, detail="Listing has no associated Stripe price")
-
             # Get seller details
             seller = await crud.get_user(listing.user_id)
             if not seller or not seller.stripe_connect_account_id:
@@ -272,73 +347,139 @@ async def create_checkout_session(
             if seller.id == user.id:
                 raise HTTPException(status_code=400, detail="You cannot purchase your own listing")
 
+            # Get or create customer on the connected account
+            connected_customer_id = user.stripe_customer_ids.get(seller.stripe_connect_account_id)
+
+            if not connected_customer_id:
+                # Create new customer on connected account
+                connected_customer = stripe.Customer.create(
+                    email=user.email,
+                    metadata={"user_id": user.id},
+                    stripe_account=seller.stripe_connect_account_id,
+                )
+                connected_customer_id = connected_customer.id
+
+                # Update user's stripe_customer_ids map
+                stripe_customer_ids = dict(user.stripe_customer_ids)
+                stripe_customer_ids[seller.stripe_connect_account_id] = connected_customer_id
+                await crud.update_user(user.id, {"stripe_customer_ids": stripe_customer_ids})
+                user.stripe_customer_ids = stripe_customer_ids
+
             # Calculate maximum quantity
             max_quantity = 10
             if listing.inventory_type == "finite" and listing.inventory_quantity is not None:
                 max_quantity = min(listing.inventory_quantity, 10)
 
-            application_fee = int(listing.price_amount * 0.02)  # 2% fee for our platform
+            # Determine payment methods based on listing type and price
+            payment_methods: list[str] = ["card"]
+            if listing.price_amount >= 5000 and listing.inventory_type != "preorder":
+                payment_methods.append("affirm")
 
-            # Create a clone of the price on the platform account
-            platform_price = stripe.Price.create(
-                unit_amount=listing.price_amount,
-                currency="usd",
-                product_data={
-                    "name": listing.name,
-                    "metadata": {
-                        "original_price_id": listing.stripe_price_id,
-                        "seller_connect_account_id": seller.stripe_connect_account_id,
-                    },
-                },
-            )
-
-            metadata: dict[str, str] = {
-                "user_email": user.email,
-                "product_id": listing.stripe_product_id or "",
-            }
             if listing.stripe_product_id:
-                metadata["stripe_product_id"] = listing.stripe_product_id
+                metadata: dict[str, str] = {
+                    "user_email": user.email,
+                    "product_id": listing.stripe_product_id,
+                    "listing_type": listing.inventory_type,
+                    "stripe_product_id": listing.stripe_product_id,
+                    "connected_customer_id": connected_customer_id,
+                }
 
-            checkout_session = stripe.checkout.Session.create(
-                line_items=[
+            # Base checkout session parameters
+            checkout_params: dict[str, Any] = {
+                "mode": "payment",
+                "customer_email": user.email,
+                "payment_method_types": payment_methods,
+                "success_url": f"{settings.site.homepage}/order/success?session_id={{CHECKOUT_SESSION_ID}}",
+                "cancel_url": f"{settings.site.homepage}{request.cancel_url}",
+                "client_reference_id": user.id,
+                "shipping_address_collection": {"allowed_countries": ["US"]},
+                "metadata": metadata,
+            }
+
+            # For preorders, use setup mode
+            if listing.inventory_type == "preorder":
+                checkout_params.update(
                     {
-                        "price": platform_price.id,
-                        "quantity": 1,
-                        **(
-                            {
-                                "adjustable_quantity": {
-                                    "enabled": True,
-                                    "minimum": 1,
-                                    "maximum": max_quantity,
-                                }
+                        "mode": "setup",
+                        "metadata": {
+                            **metadata,
+                            "listing_id": listing.id,
+                            "price_amount": str(listing.price_amount),
+                            "seller_connect_account_id": seller.stripe_connect_account_id,
+                        },
+                        "setup_intent_data": {
+                            "metadata": {
+                                "user_id": user.id,
+                                "listing_id": listing.id,
                             }
-                            if max_quantity > 1
-                            else {}
-                        ),
+                        },
                     }
-                ],
-                mode="payment",
-                payment_method_types=(["card", "affirm"] if listing.price_amount >= 5000 else ["card"]),
-                success_url=f"{settings.site.homepage}/order/success?session_id={{CHECKOUT_SESSION_ID}}",
-                cancel_url=f"{settings.site.homepage}{request.cancel_url}",
-                client_reference_id=user.id,
-                metadata=metadata,
-                shipping_address_collection={"allowed_countries": ["US", "CA"]},
-                payment_intent_data={
-                    "application_fee_amount": application_fee,
-                    "transfer_data": {
-                        "destination": seller.stripe_connect_account_id,
-                    },
-                },
+                )
+
+                # Add custom text for preorder explanation
+                if listing.preorder_release_date:
+                    formatted_date = datetime.fromtimestamp(listing.preorder_release_date).strftime("%B %d, %Y")
+                    checkout_params["custom_text"] = {
+                        "submit": {
+                            "message": (
+                                "By placing this pre-order, you agree to save your payment method. "
+                                f"You will be charged ${listing.price_amount/100:,.2f} when the item is ready "
+                                f"to ship (estimated {formatted_date})."
+                            )
+                        }
+                    }
+            else:
+                # Regular payment mode
+                if not listing.stripe_price_id and listing.stripe_product_id:
+                    # Create a new price if one doesn't exist
+                    price = stripe.Price.create(
+                        unit_amount=listing.price_amount,
+                        currency=listing.currency or "usd",
+                        product=listing.stripe_product_id,
+                        metadata={"listing_id": listing.id},
+                        stripe_account=seller.stripe_connect_account_id,
+                    )
+                    # Update the listing with the new price ID
+                    await crud.edit_listing(listing_id=listing.id, stripe_price_id=price.id)
+                    listing.stripe_price_id = price.id
+
+                # Calculate application fee
+                application_fee = int(listing.price_amount * 0.02)  # 2% fee
+
+                checkout_params.update(
+                    {
+                        "line_items": [
+                            {
+                                "price": listing.stripe_price_id,
+                                "quantity": 1,
+                                **(
+                                    {"adjustable_quantity": {"enabled": True, "minimum": 1, "maximum": max_quantity}}
+                                    if max_quantity > 1
+                                    else {}
+                                ),
+                            }
+                        ],
+                        "payment_intent_data": {
+                            "application_fee_amount": application_fee,
+                            "transfer_data": {
+                                "destination": seller.stripe_connect_account_id,
+                            },
+                        },
+                    }
+                )
+
+            # Create the checkout session on the connected account
+            checkout_session = stripe.checkout.Session.create(
+                **checkout_params,
+                stripe_account=seller.stripe_connect_account_id,
             )
 
-            return CreateCheckoutSessionResponse(session_id=checkout_session.id)
+            return CreateCheckoutSessionResponse(
+                session_id=checkout_session.id, stripe_connect_account_id=seller.stripe_connect_account_id
+            )
 
         except stripe.StripeError as e:
             logger.error(f"Stripe error: {str(e)}", exc_info=True)
-            raise HTTPException(status_code=400, detail=str(e))
-        except Exception as e:
-            logger.error(f"Unexpected error: {str(e)}", exc_info=True)
             raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -379,7 +520,7 @@ class CreateConnectAccountResponse(BaseModel):
 
 @router.post("/connect/account", response_model=CreateConnectAccountResponse)
 async def create_connect_account(
-    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> CreateConnectAccountResponse:
     try:
@@ -543,3 +684,58 @@ async def create_stripe_product(
     except stripe.StripeError as e:
         logger.error(f"Stripe error: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/process-preorder/{order_id}")
+async def process_preorder(
+    order_id: str,
+    user: User = Depends(get_session_user_with_admin_permission),
+    crud: Crud = Depends(),
+) -> Dict[str, Any]:
+    async with crud:
+        try:
+            order = await crud.get_order(order_id)
+            if not order or not order.stripe_customer_id or not order.stripe_payment_method_id:
+                raise HTTPException(status_code=404, detail="Order not found or missing payment details")
+
+            # Get the listing and seller info
+            listing = await crud.get_listing_by_stripe_product_id(order.stripe_product_id)
+            if not listing:
+                raise HTTPException(status_code=404, detail="Listing not found")
+
+            seller = await crud.get_user(listing.user_id)
+            if not seller or not seller.stripe_connect_account_id:
+                raise HTTPException(status_code=400, detail="Seller not found or not connected to Stripe")
+
+            # Calculate platform fee
+            application_fee = int(order.amount * 0.02)  # 2% fee
+
+            # Create and confirm payment intent using the stored payment method
+            payment_intent = stripe.PaymentIntent.create(
+                amount=order.amount,
+                currency=order.currency,
+                customer=order.stripe_customer_id,
+                payment_method=order.stripe_payment_method_id,
+                off_session=True,
+                confirm=True,
+                application_fee_amount=application_fee,
+                transfer_data={
+                    "destination": seller.stripe_connect_account_id,
+                },
+                stripe_account=seller.stripe_connect_account_id,
+            )
+
+            # Update order status
+            await crud.update_order(
+                order_id,
+                {
+                    "status": "processing",
+                    "stripe_payment_intent_id": payment_intent.id,
+                },
+            )
+
+            return {"status": "success", "payment_intent_id": payment_intent.id}
+
+        except stripe.StripeError as e:
+            logger.error(f"Stripe error processing preorder: {str(e)}")
+            raise HTTPException(status_code=400, detail=str(e))

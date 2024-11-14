@@ -51,6 +51,7 @@ class User(StoreBaseModel):
     last_name: str | None = None
     name: str | None = None
     bio: str | None = None
+    stripe_customer_ids: dict[str, str] = {}
     stripe_connect_account_id: str | None = None
     stripe_connect_onboarding_completed: bool = False
 
@@ -66,6 +67,7 @@ class User(StoreBaseModel):
         last_name: str | None = None,
         name: str | None = None,
         bio: str | None = None,
+        stripe_customer_ids: dict[str, str] = {},
         stripe_connect_account_id: str | None = None,
         stripe_connect_onboarding_completed: bool = False,
     ) -> Self:
@@ -84,6 +86,7 @@ class User(StoreBaseModel):
             last_name=last_name,
             name=name,
             bio=bio,
+            stripe_customer_ids=stripe_customer_ids,
             stripe_connect_account_id=stripe_connect_account_id,
             stripe_connect_onboarding_completed=stripe_connect_onboarding_completed,
         )
@@ -585,15 +588,18 @@ class Order(StoreBaseModel):
 
     user_id: str
     user_email: str
-    stripe_checkout_session_id: str
-    stripe_payment_intent_id: str
     created_at: int
     updated_at: int
     status: OrderStatus
     amount: int
     currency: str
     quantity: int
+    stripe_checkout_session_id: str
     stripe_product_id: str
+    stripe_connect_account_id: str
+    stripe_customer_id: str | None = None
+    stripe_payment_method_id: str | None = None
+    stripe_payment_intent_id: str | None = None
     stripe_refund_id: str | None = None
     shipping_name: str | None = None
     shipping_address_line1: str | None = None
@@ -608,12 +614,15 @@ class Order(StoreBaseModel):
         cls,
         user_id: str,
         user_email: str,
-        stripe_checkout_session_id: str,
-        stripe_payment_intent_id: str,
         amount: int,
         currency: str,
         quantity: int,
+        stripe_checkout_session_id: str,
         stripe_product_id: str,
+        stripe_connect_account_id: str,
+        stripe_customer_id: str | None = None,
+        stripe_payment_method_id: str | None = None,
+        stripe_payment_intent_id: str | None = None,
         stripe_refund_id: str | None = None,
         status: OrderStatus = "processing",
         shipping_name: str | None = None,
@@ -629,15 +638,18 @@ class Order(StoreBaseModel):
             id=new_uuid(),
             user_id=user_id,
             user_email=user_email,
-            stripe_checkout_session_id=stripe_checkout_session_id,
-            stripe_payment_intent_id=stripe_payment_intent_id,
             created_at=now,
             updated_at=now,
             status=status,
             amount=amount,
             currency=currency,
             quantity=quantity,
+            stripe_checkout_session_id=stripe_checkout_session_id,
             stripe_product_id=stripe_product_id,
+            stripe_connect_account_id=stripe_connect_account_id,
+            stripe_customer_id=stripe_customer_id,
+            stripe_payment_method_id=stripe_payment_method_id,
+            stripe_payment_intent_id=stripe_payment_intent_id,
             stripe_refund_id=stripe_refund_id,
             shipping_name=shipping_name,
             shipping_address_line1=shipping_address_line1,
