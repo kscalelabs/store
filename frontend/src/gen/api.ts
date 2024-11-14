@@ -1770,10 +1770,10 @@ export interface components {
             stripe_product_id: string;
             /** Stripe Customer Id */
             stripe_customer_id?: string | null;
-            /** Stripe Payment Intent Id */
-            stripe_payment_intent_id?: string | null;
             /** Stripe Payment Method Id */
             stripe_payment_method_id?: string | null;
+            /** Stripe Payment Intent Id */
+            stripe_payment_intent_id?: string | null;
             /** Stripe Refund Id */
             stripe_refund_id?: string | null;
             /** Shipping Name */

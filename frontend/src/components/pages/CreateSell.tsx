@@ -190,7 +190,7 @@ const CreateSell = () => {
       <Container className="max-w-xl">
         <Card>
           <CardHeader>
-            <Header title="List your robot for sale" />
+            <Header title="List your robot" />
           </CardHeader>
           <CardContent>
             <form
