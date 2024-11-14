@@ -17,6 +17,39 @@ interface Props {
   listingId: string;
 }
 
+const FullScreenImage = ({
+  artifact,
+  onClose,
+}: {
+  artifact: Artifact;
+  onClose: () => void;
+}) => {
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 text-white hover:text-gray-300 p-2"
+      >
+        <FaTimes className="w-6 h-6" />
+      </button>
+      <div className="max-h-[90vh] max-w-[90vw] relative">
+        <img
+          src={artifact.urls.large}
+          alt="Full screen view"
+          className="max-h-[90vh] max-w-[90vw] object-contain"
+        />
+      </div>
+    </div>
+  );
+};
+
 const ListingImageItem = ({
   artifact,
   index,
@@ -25,8 +58,8 @@ const ListingImageItem = ({
   artifacts,
   setArtifacts,
   setCurrentImageIndex,
-  onClick,
   listingId,
+  onFullScreen,
 }: {
   artifact: Artifact;
   index: number;
@@ -35,8 +68,8 @@ const ListingImageItem = ({
   artifacts: Artifact[];
   setArtifacts: (artifacts: Artifact[]) => void;
   setCurrentImageIndex: React.Dispatch<React.SetStateAction<number>>;
-  onClick: () => void;
   listingId: string;
+  onFullScreen: (artifact: Artifact) => void;
 }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -111,7 +144,10 @@ const ListingImageItem = ({
       className={`aspect-square rounded-lg overflow-hidden cursor-pointer relative ${
         currentImageIndex === index ? "ring-2 ring-blue-500" : ""
       } ${artifact.is_main ? "ring-2 ring-green-500" : ""}`}
-      onClick={onClick}
+      onClick={() => {
+        setCurrentImageIndex(index);
+        onFullScreen(artifact);
+      }}
     >
       <ListingArtifactRenderer artifact={artifact} />
       {canEdit && (
@@ -119,7 +155,10 @@ const ListingImageItem = ({
           {!artifact.is_main && artifact.artifact_type === "image" && (
             <Button
               variant="default"
-              onClick={handleSetMain}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSetMain(e);
+              }}
               disabled={isUpdating}
               className="hover:bg-green-600 text-white"
             >
@@ -128,7 +167,10 @@ const ListingImageItem = ({
           )}
           <Button
             variant={isDeleting ? "ghost" : "destructive"}
-            onClick={handleDelete}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete(e);
+            }}
             disabled={isDeleting}
           >
             <FaTimes />
@@ -147,27 +189,43 @@ const ListingImageGallery = ({ listingId, ...props }: Props) => {
     setCurrentImageIndex,
     canEdit,
   } = props;
-  return artifacts.length > 0 ? (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-      {artifacts.map((artifact, index) => (
-        <ListingImageItem
-          key={artifact.urls.large}
-          listingId={listingId}
-          artifact={artifact}
-          index={index}
-          currentImageIndex={currentImageIndex}
-          canEdit={canEdit}
-          artifacts={artifacts}
-          setArtifacts={setArtifacts}
-          setCurrentImageIndex={setCurrentImageIndex}
-          onClick={() => setCurrentImageIndex(index)}
+
+  const [fullScreenArtifact, setFullScreenArtifact] = useState<Artifact | null>(
+    null,
+  );
+
+  return (
+    <>
+      {fullScreenArtifact && (
+        <FullScreenImage
+          artifact={fullScreenArtifact}
+          onClose={() => setFullScreenArtifact(null)}
         />
-      ))}
-    </div>
-  ) : (
-    <div className="flex justify-center items-center h-full">
-      <p className="text-gray-500">No images yet</p>
-    </div>
+      )}
+
+      {artifacts.length > 0 ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {artifacts.map((artifact, index) => (
+            <ListingImageItem
+              key={artifact.urls.large}
+              listingId={listingId}
+              artifact={artifact}
+              index={index}
+              currentImageIndex={currentImageIndex}
+              canEdit={canEdit}
+              artifacts={artifacts}
+              setArtifacts={setArtifacts}
+              setCurrentImageIndex={setCurrentImageIndex}
+              onFullScreen={setFullScreenArtifact}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="flex justify-center items-center h-full">
+          <p className="text-gray-500">No images yet</p>
+        </div>
+      )}
+    </>
   );
 };
 
