@@ -47,7 +47,7 @@ const ListingFileUpload = (props: Props) => {
       }
       setUploading(false);
     })();
-  }, [files, auth, listingId, addErrorAlert]);
+  }, [files, auth, listingId, addErrorAlert, addArtifacts]);
 
   const fileExtensions = dropzoneOptions.accept
     ? Object.values(dropzoneOptions.accept).flat()

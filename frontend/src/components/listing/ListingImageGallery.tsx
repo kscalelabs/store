@@ -126,11 +126,27 @@ const ListingImageItem = ({
         return;
       }
 
-      const updatedArtifacts = artifacts.map((a) => ({
-        ...a,
-        is_main: a.artifact_id === artifact.artifact_id,
-      }));
+      const currentMainIndex = artifacts.findIndex((a) => a.is_main);
+
+      const updatedArtifacts = [...artifacts];
+
+      if (currentMainIndex !== -1) {
+        const previousMain = {
+          ...updatedArtifacts[currentMainIndex],
+          is_main: false,
+        };
+        const newMain = { ...updatedArtifacts[index], is_main: true };
+        updatedArtifacts[currentMainIndex] = newMain;
+        updatedArtifacts[index] = previousMain;
+      } else {
+        updatedArtifacts[index] = { ...updatedArtifacts[index], is_main: true };
+      }
+
       setArtifacts(updatedArtifacts);
+
+      if (currentMainIndex !== -1) {
+        setCurrentImageIndex(currentMainIndex);
+      }
     } catch (err) {
       addErrorAlert(err);
     } finally {

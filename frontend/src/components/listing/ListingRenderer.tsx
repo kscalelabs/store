@@ -10,7 +10,7 @@ import ListingName from "@/components/listing/ListingName";
 import ListingOnshape from "@/components/listing/ListingOnshape";
 import ListingPayment from "@/components/listing/ListingPayment";
 import ListingRegisterRobot from "@/components/listing/ListingRegisterRobot";
-import { ListingResponse } from "@/components/listing/types";
+import { Artifact, ListingResponse } from "@/components/listing/types";
 
 const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
   const {
@@ -39,6 +39,17 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
   const [artifacts, setArtifacts] = useState(initialArtifacts);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const isForSale = priceAmount && stripeProductId && inventoryType;
+
+  const handleAddArtifacts = (newArtifacts: Artifact[]) => {
+    setArtifacts((prevArtifacts) => [
+      ...newArtifacts.map((artifact) => ({
+        ...artifact,
+        is_main: false,
+      })),
+      ...prevArtifacts,
+    ]);
+    setCurrentImageIndex(0);
+  };
 
   return (
     <div className="max-w-6xl mx-auto sm:p-4 sm:pt-8">
@@ -130,7 +141,7 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
           dropzoneOptions={{
             accept: { "image/*": [".png", ".jpg", ".jpeg"] },
           }}
-          addArtifacts={setArtifacts}
+          addArtifacts={handleAddArtifacts}
         />
       )}
 
@@ -140,7 +151,7 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
           listingId={listingId}
           onshapeUrl={onshapeUrl}
           canEdit={canEdit}
-          addArtifacts={setArtifacts}
+          addArtifacts={handleAddArtifacts}
         />
       )}
     </div>
