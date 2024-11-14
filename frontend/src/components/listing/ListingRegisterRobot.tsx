@@ -13,9 +13,11 @@ interface Props {
 
 const ListingRegisterRobot = ({ listingId }: Props) => {
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
-  const { isAuthenticated } = useAuthentication();
+  const { isAuthenticated, currentUser } = useAuthentication();
 
-  if (!isAuthenticated || FEATURE_FLAGS.DEMO_ROBOT_ENABLED) {
+  const isAdmin = currentUser?.permissions?.includes("is_admin");
+
+  if (!isAuthenticated || (FEATURE_FLAGS.DEMO_ROBOT_ENABLED && !isAdmin)) {
     return null;
   }
 
