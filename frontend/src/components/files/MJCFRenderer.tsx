@@ -9,6 +9,7 @@ import {
   FaUndo,
 } from "react-icons/fa";
 
+import humanoidXML from "@/components/files/mujoco/humanoid.xml";
 import {
   MujocoRefs,
   cleanupMujoco,
@@ -28,8 +29,8 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 interface Props {
-  mjcfContent: string;
-  files: UntarredFile[];
+  mjcfContent?: string;
+  files?: UntarredFile[];
   useControls?: boolean;
 }
 
@@ -217,8 +218,9 @@ const MJCFRenderer = ({ mjcfContent, files, useControls = true }: Props) => {
 
         // Initialize MuJoCo with the humanoid model
         const { mj, model, state, simulation } = await initializeMujoco({
-          modelXML: mjcfContent,
-          files,
+          modelXML:
+            mjcfContent ?? (await fetch(humanoidXML).then((res) => res.text())),
+          files: files ?? [],
         });
 
         // Only set refs if component is still mounted
@@ -313,21 +315,24 @@ const MJCFRenderer = ({ mjcfContent, files, useControls = true }: Props) => {
             <div className="p-4 overflow-y-auto h-full">
               <div className="space-y-4">
                 {/* Add notification banner */}
-                <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4">
-                  <p className="text-sm">
-                    The MuJoCo renderer is currently under development. If you
-                    would like to contribute, see the project repository{" "}
-                    <a
-                      className="text-gray-11"
-                      target="_blank"
-                      rel="noreferrer"
-                      href="https://github.com/kscalelabs/urdf2mjcf"
-                    >
-                      here
-                    </a>
-                    .
-                  </p>
-                </div>
+                {!mjcfContent && (
+                  <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4">
+                    <p className="text-sm">
+                      This is a placeholder for the MuJoco renderer, which is
+                      still a work in progress. If you would like to contribute,
+                      see the project source code{" "}
+                      <a
+                        className="text-gray-11"
+                        target="_blank"
+                        rel="noreferrer"
+                        href="https://github.com/kscalelabs/urdf2mjcf"
+                      >
+                        here
+                      </a>
+                      .
+                    </p>
+                  </div>
+                )}
 
                 <button
                   onClick={() => setShowControls(false)}
