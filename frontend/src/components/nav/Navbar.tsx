@@ -49,15 +49,15 @@ const Navbar = () => {
             </Button>
           </div>
           <div className="hidden lg:flex items-center flex-grow justify-between ml-4">
-            <div className="flex space-x-1 p-2 flex-grow">
-              <div className="flex-grow flex space-x-1">
+            <div className="flex space-x-4 p-2 flex-grow items-center">
+              <div className="flex-grow flex space-x-4 items-center">
                 {featuredListings?.map((listing) => (
                   <Button
                     key={listing.id}
                     onClick={() =>
                       handleFeaturedClick(listing.username, listing.slug)
                     }
-                    variant="ghost"
+                    variant="outline"
                     className="px-2 xl:px-3 py-2 text-sm tracking-widest text-gray-1"
                   >
                     {listing.name}
@@ -69,7 +69,7 @@ const Navbar = () => {
                   <Button
                     key={item.name}
                     asChild
-                    variant="ghost"
+                    variant="outline"
                     className="px-2 xl:px-3 py-2 text-sm tracking-wide xl:tracking-widest text-gray-1"
                   >
                     <a
@@ -87,7 +87,7 @@ const Navbar = () => {
                     key={item.name}
                     asChild
                     variant={
-                      location.pathname === item.path ? "default" : "ghost"
+                      location.pathname === item.path ? "default" : "outline"
                     }
                     className="px-2 xl:px-3 py-2 text-sm tracking-widest"
                   >
@@ -98,19 +98,19 @@ const Navbar = () => {
                 ),
               )}
             </div>
-            <div className="flex items-center space-x-2 text-gray-1 p-2 ml-4 text-sm tracking-widest">
+            <div className="flex items-center space-x-4 text-gray-1 p-2 ml-4 text-sm tracking-widest">
               {isAuthenticated ? (
                 <>
                   <Button
                     asChild
-                    variant="ghost"
+                    variant="outline"
                     className="px-3 py-2 text-gray-1"
                   >
                     <Link to={ROUTES.ACCOUNT.path}>Account</Link>
                   </Button>
                   <Button
                     asChild
-                    variant="ghost"
+                    variant="outline"
                     className="px-3 py-2 text-gray-1"
                   >
                     <Link to={ROUTES.LOGOUT.path}>Logout</Link>
@@ -120,14 +120,14 @@ const Navbar = () => {
                 <>
                   <Button
                     asChild
-                    variant="ghost"
+                    variant="outline"
                     className="px-3 py-2 text-gray-1"
                   >
                     <Link to={ROUTES.LOGIN.path}>Log In</Link>
                   </Button>
                   <Button
                     asChild
-                    variant="ghost"
+                    variant="outline"
                     className="px-3 py-2 text-gray-1"
                   >
                     <Link to={ROUTES.SIGNUP.path}>Sign Up</Link>

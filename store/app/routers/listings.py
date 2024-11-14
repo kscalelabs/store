@@ -125,11 +125,10 @@ async def list_listings(
     sort_by: SortOption = Query(SortOption.NEWEST, description="Sort option for listings"),
 ) -> ListListingsResponse:
     listings, has_next = await crud.get_listings(page, search_query=search_query, sort_by=sort_by)
-    users = await crud.get_user_batch(list(set(listing.user_id for listing in listings)))
-    user_id_to_username = {user.id: user.username for user in users}
+    listings_with_usernames = await crud.get_listings_with_usernames(listings)
     listing_infos = [
-        ListingInfo(id=listing.id, username=user_id_to_username.get(listing.user_id, "Unknown"), slug=listing.slug)
-        for listing in listings
+        ListingInfo(id=listing.id, username=username, slug=listing.slug)
+        for listing, username in listings_with_usernames
     ]
     return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
@@ -240,16 +239,12 @@ async def get_user_listings(
     crud: Annotated[Crud, Depends(Crud.get)],
     page: int = Query(1, description="Page number for pagination"),
 ) -> ListListingsResponse:
-    (listings, has_next), user = await asyncio.gather(
-        crud.get_user_listings(user_id, page),
-        crud.get_user(user_id),
-    )
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Could not find user associated with the given id",
-        )
-    listing_infos = [ListingInfo(id=listing.id, username=user.username, slug=listing.slug) for listing in listings]
+    listings, has_next = await crud.get_user_listings(user_id, page)
+    listings_with_usernames = await crud.get_listings_with_usernames(listings)
+    listing_infos = [
+        ListingInfo(id=listing.id, username=username, slug=listing.slug)
+        for listing, username in listings_with_usernames
+    ]
     return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
 
@@ -260,7 +255,11 @@ async def get_my_listings(
     page: int = Query(1, description="Page number for pagination"),
 ) -> ListListingsResponse:
     listings, has_next = await crud.get_user_listings(user.id, page)
-    listing_infos = [ListingInfo(id=listing.id, username=user.username, slug=listing.slug) for listing in listings]
+    listings_with_usernames = await crud.get_listings_with_usernames(listings)
+    listing_infos = [
+        ListingInfo(id=listing.id, username=username, slug=listing.slug)
+        for listing, username in listings_with_usernames
+    ]
     return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
 
@@ -487,7 +486,11 @@ async def get_upvoted_listings(
     page: int = Query(1, description="Page number for pagination"),
 ) -> ListListingsResponse:
     listings, has_next = await crud.get_upvoted_listings(user.id, page)
-    listing_infos = [ListingInfo(id=listing.id, username=user.username, slug=listing.slug) for listing in listings]
+    listings_with_usernames = await crud.get_listings_with_usernames(listings)
+    listing_infos = [
+        ListingInfo(id=listing.id, username=username, slug=listing.slug)
+        for listing, username in listings_with_usernames
+    ]
     return ListListingsResponse(listings=listing_infos, has_next=has_next)
 
 

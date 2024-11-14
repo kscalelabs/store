@@ -87,7 +87,7 @@ const TerminalRobotModel = ({ listingId }: Props) => {
       files={files}
       supportedThemes={["dark"]}
       showWireframe={true}
-      useControls={false}
+      useControls={true}
     />
   );
 };

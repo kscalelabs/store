@@ -72,7 +72,7 @@ const ListingFeatureButton = (props: Props) => {
     <div className="flex items-center gap-2 mt-2">
       <Button
         onClick={handleFeatureToggle}
-        variant="default"
+        variant="outline"
         disabled={isUpdating}
         title={
           currentFeaturedCount >= 3 && !isFeatured
