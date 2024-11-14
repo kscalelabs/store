@@ -361,13 +361,37 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         return await self.get_listing_by_username_and_slug(user_id, slug) is not None
 
     async def get_listing_by_username_and_slug(self, username: str, slug: str) -> Listing | None:
-        user = await self._get_unique_item_from_secondary_index("username", username, User)
-        if user is None:
+        # Get the user (listing creator) by username
+        listing_creator = await self._get_unique_item_from_secondary_index("username", username, User)
+        if listing_creator is None:
             return None
+
+        # Get listings by the creator's user_id that match the slug
         listings = await self._get_items_from_secondary_index(
-            "user_id", user.id, Listing, additional_filter_expression=Attr("slug").eq(slug)
+            "user_id", listing_creator.id, Listing, additional_filter_expression=Attr("slug").eq(slug)
         )
         return listings[0] if listings else None
+
+    async def get_listings_with_usernames(self, listings: list[Listing]) -> list[tuple[Listing, str]]:
+        """Get usernames for a list of listings by fetching their creators.
+
+        Args:
+            listings: List of listings to get usernames for
+
+        Returns:
+            List of tuples containing (listing, username)
+        """
+        # Get all unique user IDs from the listings
+        user_ids = {listing.user_id for listing in listings}
+
+        # Fetch all users in parallel
+        users = await asyncio.gather(*(self._get_item(user_id, User) for user_id in user_ids))
+
+        # Create mapping of user_id to username
+        username_map = {user.id: user.username for user in users if user is not None}
+
+        # Return listings paired with their creator's username
+        return [(listing, username_map.get(listing.user_id, "unknown")) for listing in listings]
 
     async def update_username_for_user_listings(self, user_id: str, new_username: str) -> None:
         listings = await self._get_items_from_secondary_index("user_id", user_id, Listing)

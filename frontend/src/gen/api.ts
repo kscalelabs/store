@@ -1269,6 +1269,8 @@ export interface components {
             small?: string | null;
             /** Large */
             large: string;
+            /** Expires At */
+            expires_at: number;
         };
         /** AuthResponse */
         AuthResponse: {
