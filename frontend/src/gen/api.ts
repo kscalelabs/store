@@ -1403,6 +1403,8 @@ export interface components {
         CreateCheckoutSessionResponse: {
             /** Session Id */
             session_id: string;
+            /** Stripe Connect Account Id */
+            stripe_connect_account_id: string;
         };
         /** CreateConnectAccountResponse */
         CreateConnectAccountResponse: {
@@ -1768,6 +1770,8 @@ export interface components {
             stripe_checkout_session_id: string;
             /** Stripe Product Id */
             stripe_product_id: string;
+            /** Stripe Connect Account Id */
+            stripe_connect_account_id: string;
             /** Stripe Customer Id */
             stripe_customer_id?: string | null;
             /** Stripe Payment Method Id */

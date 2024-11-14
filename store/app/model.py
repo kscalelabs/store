@@ -51,7 +51,7 @@ class User(StoreBaseModel):
     last_name: str | None = None
     name: str | None = None
     bio: str | None = None
-    stripe_customer_id: str | None = None
+    stripe_customer_ids: dict[str, str] = {}
     stripe_connect_account_id: str | None = None
     stripe_connect_onboarding_completed: bool = False
 
@@ -67,7 +67,7 @@ class User(StoreBaseModel):
         last_name: str | None = None,
         name: str | None = None,
         bio: str | None = None,
-        stripe_customer_id: str | None = None,
+        stripe_customer_ids: dict[str, str] = {},
         stripe_connect_account_id: str | None = None,
         stripe_connect_onboarding_completed: bool = False,
     ) -> Self:
@@ -86,7 +86,7 @@ class User(StoreBaseModel):
             last_name=last_name,
             name=name,
             bio=bio,
-            stripe_customer_id=stripe_customer_id,
+            stripe_customer_ids=stripe_customer_ids,
             stripe_connect_account_id=stripe_connect_account_id,
             stripe_connect_onboarding_completed=stripe_connect_onboarding_completed,
         )
