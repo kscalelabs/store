@@ -42,10 +42,10 @@ const TerminalInner = () => {
   const { addErrorAlert } = useAlertQueue();
 
   const demoRobot: SingleRobotResponse = {
-    robot_id: "d38afe50c9d6b936",
+    robot_id: "75cc87556a0468c5",
     name: "K-Scale Demo",
     description: "Click on the robot name to start the demo!",
-    listing_id: "3f26c2bc2c072f50",
+    listing_id: "f3d123a96d6428c7",
     user_id: "",
     username: "kscale",
     slug: "k-bot",
