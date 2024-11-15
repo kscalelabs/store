@@ -1,3 +1,4 @@
+import { FaExternalLinkAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ export const NavButton = ({
           className="flex items-center gap-2"
         >
           {children}
+          <FaExternalLinkAlt className="h-3 w-3" />
         </a>
       </Button>
     );

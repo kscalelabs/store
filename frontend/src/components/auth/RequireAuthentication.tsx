@@ -4,14 +4,16 @@ import { useNavigate } from "react-router-dom";
 import AuthBlock from "@/components/auth/AuthBlock";
 import Container from "@/components/ui/container";
 import { useAuthentication } from "@/hooks/useAuth";
+import { FEATURE_FLAGS } from "@/lib/utils/featureFlags";
 
 interface Props {
   children: React.ReactNode;
   onClosed?: () => void;
+  allowDemo?: boolean;
 }
 
 const RequireAuthentication = (props: Props) => {
-  const { children, onClosed: onClosedDefault } = props;
+  const { children, onClosed: onClosedDefault, allowDemo = false } = props;
   const { isAuthenticated } = useAuthentication();
 
   const navigate = useNavigate();
@@ -22,7 +24,10 @@ const RequireAuthentication = (props: Props) => {
       navigate(-1);
     });
 
-  return isAuthenticated ? (
+  const hasAccess =
+    isAuthenticated || (allowDemo && FEATURE_FLAGS.DEMO_ROBOT_ENABLED);
+
+  return hasAccess ? (
     <>{children}</>
   ) : (
     <Container className="flex justify-center items-center max-w-xl">
