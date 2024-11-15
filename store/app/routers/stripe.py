@@ -374,35 +374,28 @@ async def create_checkout_session(
                 await crud.update_user(user.id, {"stripe_customer_ids": stripe_customer_ids})
                 user.stripe_customer_ids = stripe_customer_ids
 
-            # Fetch existing default payment method if available
-            existing_payment_method_id = None
+            # Fetch existing payment methods if available
+            existing_payment_methods = []
             try:
-                customer = stripe.Customer.retrieve(
-                    connected_customer_id,
-                    expand=["invoice_settings.default_payment_method"],
+                payment_methods = stripe.PaymentMethod.list(
+                    customer=connected_customer_id,
+                    type="card",
                     stripe_account=seller.stripe_connect_account_id,
                 )
-                if (
-                    hasattr(customer, "invoice_settings")
-                    and customer.invoice_settings is not None
-                    and hasattr(customer.invoice_settings, "default_payment_method")
-                    and customer.invoice_settings.default_payment_method is not None
-                    and not isinstance(customer.invoice_settings.default_payment_method, str)
-                ):
-                    existing_payment_method_id = customer.invoice_settings.default_payment_method.id
-                    logger.info(f"Found existing payment method: {existing_payment_method_id}")
+                existing_payment_methods = [pm.id for pm in payment_methods.data]
+                logger.info(f"Found {len(existing_payment_methods)} existing payment methods")
             except Exception as e:
-                logger.warning(f"Error fetching customer payment method: {str(e)}")
+                logger.warning(f"Error fetching customer payment methods: {str(e)}")
 
             # Calculate maximum quantity
             max_quantity = 10
             if listing.inventory_type == "finite" and listing.inventory_quantity is not None:
                 max_quantity = min(listing.inventory_quantity, 10)
 
-            # Determine payment methods based on listing type and price
-            payment_methods: list[str] = ["card"]
+            # Determine allowed payment method types
+            allowed_payment_types: list[str] = ["card"]
             if listing.price_amount >= 5000 and listing.inventory_type != "preorder":
-                payment_methods.append("affirm")
+                allowed_payment_types.append("affirm")
 
             metadata: dict[str, str] = {
                 "user_email": user.email,
@@ -410,8 +403,8 @@ async def create_checkout_session(
                 "listing_type": listing.inventory_type,
             }
 
-            if existing_payment_method_id:
-                metadata["existing_payment_method_id"] = existing_payment_method_id
+            if existing_payment_methods:
+                metadata["existing_payment_method_id"] = existing_payment_methods[0]
 
             if listing.stripe_product_id:
                 metadata["stripe_product_id"] = listing.stripe_product_id
@@ -419,14 +412,21 @@ async def create_checkout_session(
             # Base checkout session parameters
             checkout_params: dict[str, Any] = {
                 "mode": "payment",
-                "customer_email": user.email,
-                "payment_method_types": payment_methods,
+                "customer": connected_customer_id,
+                "payment_method_types": allowed_payment_types,
                 "success_url": f"{settings.site.homepage}/order/success?session_id={{CHECKOUT_SESSION_ID}}",
                 "cancel_url": f"{settings.site.homepage}{request.cancel_url}",
                 "client_reference_id": user.id,
                 "shipping_address_collection": {"allowed_countries": ["US"]},
                 "metadata": metadata,
             }
+
+            # Add payment intent data to save the payment method if it's new
+            if not existing_payment_methods:
+                checkout_params["payment_intent_data"] = {
+                    **checkout_params.get("payment_intent_data", {}),
+                    "setup_future_usage": "off_session",
+                }
 
             # For preorders, use setup mode
             if listing.inventory_type == "preorder":
@@ -493,9 +493,6 @@ async def create_checkout_session(
                         ],
                         "payment_intent_data": {
                             "application_fee_amount": application_fee,
-                            "transfer_data": {
-                                "destination": seller.stripe_connect_account_id,
-                            },
                         },
                     }
                 )
@@ -721,8 +718,8 @@ async def create_stripe_product(
 @router.post("/process-preorder/{order_id}")
 async def process_preorder(
     order_id: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
     user: User = Depends(get_session_user_with_admin_permission),
-    crud: Crud = Depends(),
 ) -> Dict[str, Any]:
     async with crud:
         try:
