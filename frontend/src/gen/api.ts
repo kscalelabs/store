@@ -923,8 +923,31 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Stripe Webhook */
+        /**
+         * Stripe Webhook
+         * @description Handle direct account webhooks (non-Connect events)
+         */
         post: operations["stripe_webhook_stripe_webhook_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/stripe/connect/webhook": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Stripe Connect Webhook
+         * @description Handle Connect account webhooks
+         */
+        post: operations["stripe_connect_webhook_stripe_connect_webhook_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1759,7 +1782,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "processing" | "in_development" | "being_assembled" | "shipped" | "delivered" | "cancelled" | "refunded" | "failed";
+            status: "processing" | "in_development" | "being_assembled" | "shipped" | "delivered" | "preorder_placed" | "cancelled" | "refunded" | "failed";
             /** Amount */
             amount: number;
             /** Currency */
@@ -1794,6 +1817,14 @@ export interface components {
             shipping_postal_code?: string | null;
             /** Shipping Country */
             shipping_country?: string | null;
+            /** Shipped At */
+            shipped_at?: number | null;
+            /** Delivered At */
+            delivered_at?: number | null;
+            /** Cancelled At */
+            cancelled_at?: number | null;
+            /** Refunded At */
+            refunded_at?: number | null;
         };
         /** OrderWithProduct */
         OrderWithProduct: {
@@ -3729,6 +3760,28 @@ export interface operations {
         };
     };
     stripe_webhook_stripe_webhook_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+        };
+    };
+    stripe_connect_webhook_stripe_connect_webhook_post: {
         parameters: {
             query?: never;
             header?: never;

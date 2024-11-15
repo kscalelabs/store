@@ -103,14 +103,45 @@ async def refund_payment_intent(
 
 @router.post("/webhook")
 async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Dict[str, str]:
+    """Handle direct account webhooks (non-Connect events)."""
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
 
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, settings.stripe.webhook_secret)
-        logger.info("Webhook event type: %s", event["type"])
+        logger.info("Direct webhook event type: %s", event[str])
 
-        # Handle the event
+        # Handle direct account events
+        if event["type"] == "checkout.session.completed":
+            session = event["data"]["object"]
+            await handle_checkout_session_completed(session, crud)
+        elif event["type"] == "payment_intent.succeeded":
+            payment_intent = event["data"]["object"]
+            logger.info("Payment intent succeeded: %s", payment_intent["id"])
+
+        return {"status": "success"}
+    except Exception as e:
+        logger.error("Error processing direct webhook: %s", str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/connect/webhook")
+async def stripe_connect_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Dict[str, str]:
+    """Handle Connect account webhooks."""
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature")
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, settings.stripe.connect_webhook_secret)
+        logger.info("Connect webhook event type: %s", event["type"])
+
+        # Get the connected account ID
+        connected_account_id = event.get("account")
+        if not connected_account_id:
+            logger.warning("No connected account ID in webhook event")
+            return {"status": "skipped"}
+
+        # Handle Connect-specific events
         if event["type"] == "account.updated":
             account = event["data"]["object"]
             capabilities = account.get("capabilities", {})
@@ -186,7 +217,7 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
                         "stripe_payment_intent_id": None,
                         "amount": int(session["metadata"]["price_amount"]),
                         "currency": "usd",
-                        "status": "processing",
+                        "status": "preorder_placed",
                         "quantity": 1,
                         "stripe_product_id": session["metadata"].get("stripe_product_id"),
                         "stripe_customer_id": connected_customer_id,
@@ -223,16 +254,10 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
             else:
                 # Handle regular checkout completion
                 await handle_checkout_session_completed(session, crud)
-        elif event["type"] == "payment_intent.succeeded":
-            payment_intent = event["data"]["object"]
-            logger.info("Payment intent succeeded: %s", payment_intent["id"])
 
         return {"status": "success"}
-    except ValueError as e:
-        logger.error("Invalid payload: %s", str(e))
-        raise HTTPException(status_code=400, detail="Invalid payload")
     except Exception as e:
-        logger.error("Error processing webhook: %s", str(e))
+        logger.error("Error processing Connect webhook: %s", str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
 
