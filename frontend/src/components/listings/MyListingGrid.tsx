@@ -7,6 +7,7 @@ import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import ROUTES from "@/lib/types/routes";
+import { createListingDetailsMap } from "@/lib/utils/listingUtils";
 
 type ListingInfo = {
   id: string;
@@ -47,27 +48,26 @@ const MyListingGrid = ({ userId }: MyListingGridProps) => {
       setListingInfos(data.listings);
 
       if (data.listings.length > 0) {
-        const { data: batchData, error: batchError } = await auth.client.GET(
-          "/listings/batch",
-          {
+        const fetchListingDetails = async (ids: string[]) => {
+          const { data, error } = await auth.client.GET("/listings/batch", {
             params: {
               query: {
-                ids: data.listings.map((info: ListingInfo) => info.id),
+                ids: ids,
               },
             },
-          },
+          });
+
+          if (error) {
+            addErrorAlert(error);
+            return;
+          }
+
+          setListingDetails(createListingDetailsMap(data.listings));
+        };
+
+        await fetchListingDetails(
+          data.listings.map((info: ListingInfo) => info.id),
         );
-
-        if (batchError) {
-          addErrorAlert(batchError);
-          return;
-        }
-
-        const detailsMap: Record<string, ListingDetails> = {};
-        batchData.listings.forEach((listing: ListingDetails) => {
-          detailsMap[listing.id] = listing;
-        });
-        setListingDetails(detailsMap);
       }
     };
 

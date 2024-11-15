@@ -7,6 +7,7 @@ import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import ROUTES from "@/lib/types/routes";
+import { createListingDetailsMap } from "@/lib/utils/listingUtils";
 
 import { Button } from "../ui/button";
 
@@ -76,11 +77,7 @@ const UpvotedGrid = ({ page, setPage }: UpvotedGridProps) => {
       return;
     }
 
-    const detailsMap: Record<string, ListingDetails> = {};
-    data.listings.forEach((listing: ListingDetails) => {
-      detailsMap[listing.id] = listing;
-    });
-    setListingDetails(detailsMap);
+    setListingDetails(createListingDetailsMap(data.listings));
   };
 
   const prevButton = page > 1;

@@ -28,7 +28,7 @@ const SidebarItem = ({
   <li>
     <button
       onClick={onClick}
-      className="w-full flex items-center py-2 px-3 text-xl text-gray-1 hover:bg-gray-1 hover:text-primary-9 rounded-md"
+      className="w-full flex items-center py-2 px-3 text-xl text-gray-1 hover:bg-gray-11 hover:text-primary-9 rounded-md"
     >
       {icon && <span className="mr-2">{icon}</span>}
       <span className="flex items-center gap-2">

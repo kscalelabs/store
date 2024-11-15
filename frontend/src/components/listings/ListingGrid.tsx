@@ -7,6 +7,7 @@ import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import ROUTES from "@/lib/types/routes";
+import { createListingDetailsMap } from "@/lib/utils/listingUtils";
 
 import ListingGridSkeleton from "./ListingGridSkeleton";
 
@@ -49,11 +50,7 @@ const ListingGrid = (props: ListingGridProps) => {
           return;
         }
 
-        const detailsMap: Record<string, ListingDetails> = {};
-        data.listings.forEach((listing) => {
-          detailsMap[listing.id] = listing;
-        });
-        setListingDetails(detailsMap);
+        setListingDetails(createListingDetailsMap(data.listings));
       })();
     }
   }, [listingInfos]);
