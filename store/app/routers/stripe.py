@@ -447,7 +447,7 @@ async def create_checkout_session(
             }
 
             # Add payment intent data to save the payment method if it's new
-            if not existing_payment_methods:
+            if not existing_payment_methods and listing.inventory_type != "preorder":
                 checkout_params["payment_intent_data"] = {
                     **checkout_params.get("payment_intent_data", {}),
                     "setup_future_usage": "off_session",
@@ -485,6 +485,8 @@ async def create_checkout_session(
                             )
                         }
                     }
+                # Remove payment_intent_data if it exists
+                checkout_params.pop("payment_intent_data", None)
             else:
                 # Regular payment mode
                 if not listing.stripe_price_id and listing.stripe_product_id:
