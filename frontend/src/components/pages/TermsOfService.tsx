@@ -4,8 +4,8 @@ const TermsOfService = () => {
   return (
     <Container>
       <h1 className="text-3xl font-bold mb-2">Terms of Service</h1>
-      <p className="mb-4 text-sm text-gray-600">
-        Last updated {new Date().toLocaleDateString()}
+      <p className="mb-4 text-sm text-gray-2">
+        Last updated: November 15, 2024
       </p>
       <section className="mb-6">
         <p className="mb-4">
@@ -23,8 +23,9 @@ const TermsOfService = () => {
         <p className="mb-4">
           <strong>Account Creation:</strong> To access certain features, you may
           need to create an account. You are responsible for maintaining the
-          security of your account credentials. K-Scale Labs is not liable for
-          any loss or damage arising from unauthorized access to your account.
+          security of your account credentials. dpsh Syndicate DBA K-Scale Labs
+          is not liable for any loss or damage arising from unauthorized access
+          to your account.
         </p>
         <p className="mb-4">
           <strong>Account Responsibility:</strong> You are responsible for all
@@ -146,14 +147,14 @@ const TermsOfService = () => {
           7. Content Moderation and Removal
         </h2>
         <p className="mb-4">
-          <strong>Right to Moderate:</strong> K-Scale Labs reserves the right to
-          review, edit, or remove any content that violates these Terms or the
-          Acceptable Use Policy.
+          <strong>Right to Moderate:</strong> dpsh Syndicate DBA K-Scale Labs
+          reserves the right to review, edit, or remove any content that
+          violates these Terms or the Acceptable Use Policy.
         </p>
         <p className="mb-4">
           <strong>Takedown Procedures:</strong> If you believe content on the
           platform infringes your intellectual property or violates your rights,
-          you may submit a complaint to [insert contact info]. We will promptly
+          you may submit a complaint to support@kscale.dev. We will promptly
           investigate and take appropriate action.
         </p>
       </section>
@@ -211,13 +212,13 @@ const TermsOfService = () => {
         </h2>
         <p className="mb-4">
           <strong>Governing Law:</strong> These Terms are governed by and
-          construed in accordance with the laws of the State of California,
+          construed in accordance with the laws of the State of New York,
           without regard to its conflict of law provisions.
         </p>
         <p className="mb-4">
           <strong>Dispute Resolution:</strong> Any disputes arising out of or
           related to these Terms will be resolved through binding arbitration in
-          the State of California. Both parties agree to waive their right to a
+          the State of New York. Both parties agree to waive their right to a
           jury trial or to participate in a class action.
         </p>
       </section>
@@ -226,12 +227,12 @@ const TermsOfService = () => {
         <h2 className="text-2xl font-semibold mb-3">12. Contact Information</h2>
         <p className="mb-4">
           If you have any questions or concerns about these Terms, please
-          contact us via the form at kscalelabs.com.
+          contact us at support@kscale.dev
         </p>
       </section>
 
       <p className="mt-8 text-sm text-gray-600">
-        © 2024 K-Scale Labs. All Rights Reserved.
+        © 2024 dpsh Syndicate DBA K-Scale Labs. All Rights Reserved.
       </p>
     </Container>
   );
