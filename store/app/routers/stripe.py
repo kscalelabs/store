@@ -103,14 +103,45 @@ async def refund_payment_intent(
 
 @router.post("/webhook")
 async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Dict[str, str]:
+    """Handle direct account webhooks (non-Connect events)."""
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
 
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, settings.stripe.webhook_secret)
-        logger.info("Webhook event type: %s", event["type"])
+        logger.info("Direct webhook event type: %s", event[str])
 
-        # Handle the event
+        # Handle direct account events
+        if event["type"] == "checkout.session.completed":
+            session = event["data"]["object"]
+            await handle_checkout_session_completed(session, crud)
+        elif event["type"] == "payment_intent.succeeded":
+            payment_intent = event["data"]["object"]
+            logger.info("Payment intent succeeded: %s", payment_intent["id"])
+
+        return {"status": "success"}
+    except Exception as e:
+        logger.error("Error processing direct webhook: %s", str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/connect/webhook")
+async def stripe_connect_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Dict[str, str]:
+    """Handle Connect account webhooks."""
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature")
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, settings.stripe.connect_webhook_secret)
+        logger.info("Connect webhook event type: %s", event["type"])
+
+        # Get the connected account ID
+        connected_account_id = event.get("account")
+        if not connected_account_id:
+            logger.warning("No connected account ID in webhook event")
+            return {"status": "skipped"}
+
+        # Handle Connect-specific events
         if event["type"] == "account.updated":
             account = event["data"]["object"]
             capabilities = account.get("capabilities", {})
@@ -143,31 +174,40 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
                         raise ValueError("Missing seller connect account ID")
 
                     # Get the customer ID from the session
-                    connected_customer_id = session["metadata"].get("connected_customer_id")
+                    connected_customer_id = session["customer"]
 
-                    # Retrieve SetupIntent with expanded payment method
-                    setup_intent = stripe.SetupIntent.retrieve(
-                        session["setup_intent"],
-                        expand=["payment_method"],
-                        stripe_account=seller_connect_account_id,
-                    )
+                    # Check for existing payment method
+                    existing_payment_method_id = session["metadata"].get("existing_payment_method_id")
 
-                    if not setup_intent.payment_method or isinstance(setup_intent.payment_method, str):
-                        raise ValueError("Invalid payment method")
+                    if existing_payment_method_id:
+                        # Use existing payment method
+                        payment_method_id = existing_payment_method_id
+                    else:
+                        # Retrieve SetupIntent with expanded payment method
+                        setup_intent = stripe.SetupIntent.retrieve(
+                            session["setup_intent"],
+                            expand=["payment_method"],
+                            stripe_account=seller_connect_account_id,
+                        )
 
-                    # Attach the payment method to the customer
-                    stripe.PaymentMethod.attach(
-                        setup_intent.payment_method.id,
-                        customer=connected_customer_id,
-                        stripe_account=seller_connect_account_id,
-                    )
+                        if not setup_intent.payment_method or isinstance(setup_intent.payment_method, str):
+                            raise ValueError("Invalid payment method")
 
-                    # Set as default payment method for the customer
-                    stripe.Customer.modify(
-                        connected_customer_id,
-                        invoice_settings={"default_payment_method": setup_intent.payment_method.id},
-                        stripe_account=seller_connect_account_id,
-                    )
+                        # Attach the payment method to the customer
+                        stripe.PaymentMethod.attach(
+                            setup_intent.payment_method.id,
+                            customer=connected_customer_id,
+                            stripe_account=seller_connect_account_id,
+                        )
+
+                        # Set as default payment method for the customer
+                        stripe.Customer.modify(
+                            connected_customer_id,
+                            invoice_settings={"default_payment_method": setup_intent.payment_method.id},
+                            stripe_account=seller_connect_account_id,
+                        )
+
+                        payment_method_id = setup_intent.payment_method.id
 
                     # Create order for preorder
                     order_data = {
@@ -177,11 +217,11 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
                         "stripe_payment_intent_id": None,
                         "amount": int(session["metadata"]["price_amount"]),
                         "currency": "usd",
-                        "status": "processing",
+                        "status": "preorder_placed",
                         "quantity": 1,
                         "stripe_product_id": session["metadata"].get("stripe_product_id"),
                         "stripe_customer_id": connected_customer_id,
-                        "stripe_payment_method_id": setup_intent.payment_method.id,
+                        "stripe_payment_method_id": payment_method_id,
                         "stripe_connect_account_id": seller_connect_account_id,
                     }
 
@@ -204,7 +244,7 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
                     logger.info(
                         "Successfully processed preorder setup for customer %s with payment method %s",
                         connected_customer_id,
-                        setup_intent.payment_method.id,
+                        payment_method_id,
                     )
 
                 except Exception as e:
@@ -214,16 +254,10 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
             else:
                 # Handle regular checkout completion
                 await handle_checkout_session_completed(session, crud)
-        elif event["type"] == "payment_intent.succeeded":
-            payment_intent = event["data"]["object"]
-            logger.info("Payment intent succeeded: %s", payment_intent["id"])
 
         return {"status": "success"}
-    except ValueError as e:
-        logger.error("Invalid payload: %s", str(e))
-        raise HTTPException(status_code=400, detail="Invalid payload")
     except Exception as e:
-        logger.error("Error processing webhook: %s", str(e))
+        logger.error("Error processing Connect webhook: %s", str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -365,36 +399,59 @@ async def create_checkout_session(
                 await crud.update_user(user.id, {"stripe_customer_ids": stripe_customer_ids})
                 user.stripe_customer_ids = stripe_customer_ids
 
+            # Fetch existing payment methods if available
+            existing_payment_methods = []
+            try:
+                payment_methods = stripe.PaymentMethod.list(
+                    customer=connected_customer_id,
+                    type="card",
+                    stripe_account=seller.stripe_connect_account_id,
+                )
+                existing_payment_methods = [pm.id for pm in payment_methods.data]
+                logger.info(f"Found {len(existing_payment_methods)} existing payment methods")
+            except Exception as e:
+                logger.warning(f"Error fetching customer payment methods: {str(e)}")
+
             # Calculate maximum quantity
             max_quantity = 10
             if listing.inventory_type == "finite" and listing.inventory_quantity is not None:
                 max_quantity = min(listing.inventory_quantity, 10)
 
-            # Determine payment methods based on listing type and price
-            payment_methods: list[str] = ["card"]
+            # Determine allowed payment method types
+            allowed_payment_types: list[str] = ["card"]
             if listing.price_amount >= 5000 and listing.inventory_type != "preorder":
-                payment_methods.append("affirm")
+                allowed_payment_types.append("affirm")
+
+            metadata: dict[str, str] = {
+                "user_email": user.email,
+                "product_id": listing.stripe_product_id or "",
+                "listing_type": listing.inventory_type,
+            }
+
+            if existing_payment_methods:
+                metadata["existing_payment_method_id"] = existing_payment_methods[0]
 
             if listing.stripe_product_id:
-                metadata: dict[str, str] = {
-                    "user_email": user.email,
-                    "product_id": listing.stripe_product_id,
-                    "listing_type": listing.inventory_type,
-                    "stripe_product_id": listing.stripe_product_id,
-                    "connected_customer_id": connected_customer_id,
-                }
+                metadata["stripe_product_id"] = listing.stripe_product_id
 
             # Base checkout session parameters
             checkout_params: dict[str, Any] = {
                 "mode": "payment",
-                "customer_email": user.email,
-                "payment_method_types": payment_methods,
+                "customer": connected_customer_id,
+                "payment_method_types": allowed_payment_types,
                 "success_url": f"{settings.site.homepage}/order/success?session_id={{CHECKOUT_SESSION_ID}}",
                 "cancel_url": f"{settings.site.homepage}{request.cancel_url}",
                 "client_reference_id": user.id,
                 "shipping_address_collection": {"allowed_countries": ["US"]},
                 "metadata": metadata,
             }
+
+            # Add payment intent data to save the payment method if it's new
+            if not existing_payment_methods:
+                checkout_params["payment_intent_data"] = {
+                    **checkout_params.get("payment_intent_data", {}),
+                    "setup_future_usage": "off_session",
+                }
 
             # For preorders, use setup mode
             if listing.inventory_type == "preorder":
@@ -461,9 +518,6 @@ async def create_checkout_session(
                         ],
                         "payment_intent_data": {
                             "application_fee_amount": application_fee,
-                            "transfer_data": {
-                                "destination": seller.stripe_connect_account_id,
-                            },
                         },
                     }
                 )
@@ -689,8 +743,8 @@ async def create_stripe_product(
 @router.post("/process-preorder/{order_id}")
 async def process_preorder(
     order_id: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
     user: User = Depends(get_session_user_with_admin_permission),
-    crud: Crud = Depends(),
 ) -> Dict[str, Any]:
     async with crud:
         try:

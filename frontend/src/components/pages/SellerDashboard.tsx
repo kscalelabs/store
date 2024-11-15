@@ -46,7 +46,7 @@ export default function SellerDashboard() {
         <h1 className="text-3xl font-bold my-4">Seller Dashboard</h1>
 
         <h2 className="text-lg font-semibold mb-2">Account Status</h2>
-        <div className="flex gap-2 bg-gray-11 text-gray-1 px-3 py-2 items-center rounded-lg">
+        <div className="flex gap-2 bg-gray-11 text-gray-1 px-3 py-2 items-start sm:items-center rounded-lg">
           <Check />
           <p>
             Your K-Scale seller account is active and ready to receive payments.
@@ -54,13 +54,7 @@ export default function SellerDashboard() {
         </div>
 
         <div className="mt-8">
-          <div className="flex gap-2 items-center">
-            <Button
-              variant="outline"
-              onClick={() => navigate(ROUTES.BOTS.SELL.path)}
-            >
-              Sell a Robot on K-Scale
-            </Button>
+          <div className="flex sm:flex-row flex-col gap-2 items-start sm:items-center">
             <a
               href={`https://dashboard.stripe.com/${auth.currentUser?.stripe_connect_account_id}`}
               target="_blank"
@@ -69,6 +63,12 @@ export default function SellerDashboard() {
             >
               Open Stripe Dashboard
             </a>
+            <Button
+              variant="outline"
+              onClick={() => navigate(ROUTES.BOTS.SELL.path)}
+            >
+              Sell a Robot on K-Scale
+            </Button>
           </div>
         </div>
       </div>

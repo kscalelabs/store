@@ -293,13 +293,15 @@ export const RenderProfile = (props: RenderProfileProps) => {
               <p>You must complete seller onboarding to sell robots</p>
             )}
           </div>
-          <div className="flex gap-2 mb-8">
-            <Button
-              onClick={() => navigate(ROUTES.ORDERS.path)}
-              variant="outline"
-            >
-              Orders
-            </Button>
+          <div className="flex sm:flex-row flex-col gap-2 mb-8">
+            <Tooltip content="View your orders" position="bottom">
+              <Button
+                onClick={() => navigate(ROUTES.ORDERS.path)}
+                variant="outline"
+              >
+                Orders
+              </Button>
+            </Tooltip>
             {!user.stripe_connect_account_id ? (
               <Tooltip content="Start selling on K-Scale" position="bottom">
                 <Button

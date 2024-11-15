@@ -6,9 +6,17 @@ const Input = React.forwardRef<
   HTMLInputElement,
   React.InputHTMLAttributes<HTMLInputElement>
 >(({ className, type, ...props }, ref) => {
+  // Add wheel event handler to prevent scroll adjusting number inputs
+  const handleWheel = (e: React.WheelEvent<HTMLInputElement>) => {
+    if (type === "number") {
+      e.currentTarget.blur();
+    }
+  };
+
   return (
     <input
       type={type}
+      onWheel={handleWheel}
       className={cn(
         `flex h-10 w-full rounded-md
         border border-gray-7 px-3 py-2 text-sm

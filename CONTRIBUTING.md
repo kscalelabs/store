@@ -85,6 +85,7 @@ export ONSHAPE_SECRET_KEY=''
 export VITE_STRIPE_PUBLISHABLE_KEY=''
 export STRIPE_SECRET_KEY=''
 export STRIPE_WEBHOOK_SECRET=''
+export STRIPE_CONNECT_WEBHOOK_SECRET=''
 ```
 
 ### Google OAuth Configuration
@@ -264,7 +265,13 @@ Run this to recieve stripe webhooks locally:
 stripe listen --forward-to localhost:8080/stripe/webhook
 ```
 
-Make sure to set the `STRIPE_WEBHOOK_SECRET` environment variable to the value
+Run this to recieve stripe connect webhooks locally:
+
+```bash
+stripe listen --forward-connect-to localhost:8080/stripe/connect/webhook
+```
+
+Make sure to set the `STRIPE_WEBHOOK_SECRET` and `STRIPE_CONNECT_WEBHOOK_SECRET` environment variables to the values
 shown in the terminal and source it to the terminal you are running
 `make start-backend` in.
 
