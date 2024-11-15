@@ -42,22 +42,31 @@ export const FeaturedListingsProvider = ({
         },
       });
 
-      if (batchData?.listings) {
-        const orderedListings = featuredData.listing_ids
-          .map((id) => batchData.listings.find((listing) => listing.id === id))
-          .filter(
-            (listing): listing is NonNullable<typeof listing> =>
-              listing !== undefined,
-          )
-          .map((listing) => ({
-            id: listing.id,
-            username: listing.username ?? "",
-            slug: listing.slug,
-            name: listing.name,
-          }));
+      if (!batchData?.listings?.length) {
+        setFeaturedListings([]);
+        setFeaturedListingsStorage([]);
+        return;
+      }
 
+      const orderedListings = featuredData.listing_ids
+        .map((id) => batchData.listings.find((listing) => listing.id === id))
+        .filter(
+          (listing): listing is NonNullable<typeof listing> =>
+            listing !== undefined,
+        )
+        .map((listing) => ({
+          id: listing.id,
+          username: listing.username ?? "",
+          slug: listing.slug,
+          name: listing.name,
+        }));
+
+      if (orderedListings.length > 0) {
         setFeaturedListings(orderedListings);
         setFeaturedListingsStorage(orderedListings);
+      } else {
+        setFeaturedListings([]);
+        setFeaturedListingsStorage([]);
       }
     } catch (error) {
       console.error("Error refreshing featured listings:", error);

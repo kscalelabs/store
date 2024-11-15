@@ -1,9 +1,8 @@
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useState } from "react";
+import { FaChevronLeft, FaChevronRight, FaTimes } from "react-icons/fa";
 
 import placeholder from "@/components/listing/pics/placeholder.jpg";
 import { Artifact } from "@/components/listing/types";
-
-import ListingArtifactRenderer from "./ListingArtifactRenderer";
 
 interface Props {
   artifacts: Artifact[];
@@ -14,6 +13,7 @@ interface Props {
 
 const ListingImageFlipper = (props: Props) => {
   const { artifacts, name, currentImageIndex, setCurrentImageIndex } = props;
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   if (artifacts.length === 0) {
     return (
@@ -33,12 +33,13 @@ const ListingImageFlipper = (props: Props) => {
 
   return (
     <>
-      {/* Main image - full width on mobile, half width on desktop */}
-      <div className="w-full md:w-1/2 relative">
-        <div className="aspect-square bg-black rounded-lg overflow-hidden">
-          <ListingArtifactRenderer artifact={currentArtifact} />
-        </div>
-
+      <div className="relative">
+        <img
+          src={currentArtifact.urls.large}
+          alt={name}
+          onClick={() => setIsFullScreen(true)}
+          className="cursor-zoom-in rounded-lg w-[500px]"
+        />
         {/* Navigation arrows */}
         {artifacts.length > 1 && (
           <>
@@ -65,6 +66,25 @@ const ListingImageFlipper = (props: Props) => {
           </>
         )}
       </div>
+
+      {isFullScreen && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+          onClick={() => setIsFullScreen(false)}
+        >
+          <button
+            onClick={() => setIsFullScreen(false)}
+            className="absolute top-4 right-4 text-gray-2 hover:text-gray-11 p-2"
+          >
+            <FaTimes className="w-6 h-6" />
+          </button>
+          <img
+            src={currentArtifact.urls.large}
+            alt={name}
+            className="max-h-[90vh] max-w-[90vw]"
+          />
+        </div>
+      )}
     </>
   );
 };

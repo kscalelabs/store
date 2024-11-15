@@ -10,10 +10,16 @@ interface Props {
   listingId: string;
   initialFeatured: boolean;
   currentFeaturedCount?: number;
+  className?: string;
 }
 
 const ListingFeatureButton = (props: Props) => {
-  const { listingId, initialFeatured, currentFeaturedCount = 0 } = props;
+  const {
+    listingId,
+    initialFeatured,
+    currentFeaturedCount = 0,
+    className,
+  } = props;
   const [isFeatured, setIsFeatured] = useState(initialFeatured);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -81,7 +87,7 @@ const ListingFeatureButton = (props: Props) => {
               ? "Remove from featured"
               : "Add to featured"
         }
-        className="flex items-center"
+        className={`flex items-center ${className}`}
       >
         <FaStar className="mr-2 h-4 w-4" />
         <span className="mr-2">

@@ -267,7 +267,8 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             for item in response["Responses"][TABLE_NAME]:
                 item_impl = self._validate_item(item, item_class)
                 item_ids_to_items[item_impl.id] = item_impl
-            items += [item_ids_to_items[item_id] for item_id in chunk]
+
+            items += [item for item in (item_ids_to_items.get(item_id) for item_id in chunk) if item is not None]
 
         return items
 
