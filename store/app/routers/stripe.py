@@ -247,8 +247,14 @@ async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud)
             "currency": session["currency"],
             "status": "preorder_placed" if is_preorder else "processing",
             "quantity": quantity,
-            "preorder_deposit_amount": (session["amount_total"] if is_preorder else None),
-            "preorder_release_date": session["metadata"].get("preorder_release_date") if is_preorder else None,
+            "preorder_deposit_amount": (
+                int(session["amount_total"]) if is_preorder and session.get("amount_total") else None
+            ),
+            "preorder_release_date": (
+                int(session["metadata"]["preorder_release_date"])
+                if is_preorder and session["metadata"].get("preorder_release_date")
+                else None
+            ),
             "stripe_price_id": session["metadata"].get("stripe_price_id"),
             "shipping_name": shipping_details.get("name"),
             "shipping_address_line1": shipping_address.get("line1"),
