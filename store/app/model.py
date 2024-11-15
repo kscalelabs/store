@@ -387,9 +387,9 @@ class Listing(StoreBaseModel):
     currency: str = "usd"
     stripe_product_id: str | None = None
     stripe_price_id: str | None = None
-    preorder_deposit_amount: int | None = None
+    preorder_deposit_amount: int | None = None  # in cents
     stripe_preorder_deposit_id: str | None = None
-    inventory_type: Literal["finite", "infinite", "preorder"] = "infinite"
+    inventory_type: Literal["finite", "preorder"] = "finite"
     inventory_quantity: int | None = None
     preorder_release_date: int | None = None
 
@@ -408,7 +408,7 @@ class Listing(StoreBaseModel):
         stripe_price_id: str | None = None,
         preorder_deposit_amount: int | None = None,
         stripe_preorder_deposit_id: str | None = None,
-        inventory_type: Literal["finite", "infinite", "preorder"] = "infinite",
+        inventory_type: Literal["finite", "preorder"] = "finite",
         inventory_quantity: int | None = None,
         preorder_release_date: int | None = None,
     ) -> Self:

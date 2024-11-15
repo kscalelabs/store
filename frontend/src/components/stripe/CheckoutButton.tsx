@@ -11,11 +11,13 @@ import { ApiError } from "@/lib/types/api";
 import ROUTES from "@/lib/types/routes";
 import { loadStripe } from "@stripe/stripe-js";
 
+import { InventoryType } from "../listing/types";
+
 interface Props {
   listingId: string;
   stripeProductId: string;
   label?: string;
-  inventoryType?: "finite" | "infinite" | "preorder";
+  inventoryType?: InventoryType;
   inventoryQuantity?: number;
 }
 

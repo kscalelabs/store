@@ -1,11 +1,13 @@
 import CheckoutButton from "@/components/stripe/CheckoutButton";
 import { formatPrice } from "@/lib/utils/formatNumber";
 
+import { InventoryType } from "./types";
+
 interface Props {
   listingId: string;
   stripeProductId: string;
   priceAmount: number;
-  inventoryType: "finite" | "infinite" | "preorder";
+  inventoryType: InventoryType;
   inventoryQuantity?: number;
   preorderReleaseDate?: number;
   preorderDepositAmount?: number;

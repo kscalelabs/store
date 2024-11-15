@@ -148,7 +148,7 @@ class ListingInfoResponse(BaseModel):
     user_vote: bool | None
     price_amount: int | None
     currency: str | None
-    inventory_type: Literal["finite", "infinite", "preorder"] | None
+    inventory_type: Literal["finite", "preorder"] | None
     inventory_quantity: int | None
 
 
@@ -393,7 +393,7 @@ class UpdateListingRequest(BaseModel):
     preorder_release_date: int | None = None
     preorder_deposit_amount: int | None = None
     stripe_preorder_deposit_id: str | None = None
-    inventory_type: Literal["finite", "infinite", "preorder"] | None = None
+    inventory_type: Literal["finite", "preorder"] | None = None
     inventory_quantity: int | None = None
 
 

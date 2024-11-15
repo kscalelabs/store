@@ -1579,10 +1579,10 @@ export interface components {
             stripe_preorder_deposit_id?: string | null;
             /**
              * Inventory Type
-             * @default infinite
+             * @default finite
              * @enum {string}
              */
-            inventory_type: "finite" | "infinite" | "preorder";
+            inventory_type: "finite" | "preorder";
             /** Inventory Quantity */
             inventory_quantity?: number | null;
             /** Preorder Release Date */
@@ -1628,7 +1628,7 @@ export interface components {
             /** Currency */
             currency: string | null;
             /** Inventory Type */
-            inventory_type: ("finite" | "infinite" | "preorder") | null;
+            inventory_type: ("finite" | "preorder") | null;
             /** Inventory Quantity */
             inventory_quantity: number | null;
         };
@@ -1946,14 +1946,16 @@ export interface components {
             stripe_deposit_price_id?: string | null;
             /** Price Amount */
             price_amount?: number | null;
-            /** Inventory Type */
-            inventory_type?: ("finite" | "infinite" | "preorder") | null;
-            /** Inventory Quantity */
-            inventory_quantity?: number | null;
             /** Preorder Release Date */
             preorder_release_date?: number | null;
             /** Preorder Deposit Amount */
             preorder_deposit_amount?: number | null;
+            /** Stripe Preorder Deposit Id */
+            stripe_preorder_deposit_id?: string | null;
+            /** Inventory Type */
+            inventory_type?: ("finite" | "preorder") | null;
+            /** Inventory Quantity */
+            inventory_quantity?: number | null;
         };
         /** UpdateOrderAddressRequest */
         UpdateOrderAddressRequest: {

@@ -691,7 +691,7 @@ async def create_listing_product(
     description: str,
     price_amount: int,
     currency: str,
-    inventory_type: Literal["finite", "infinite", "preorder"],
+    inventory_type: Literal["finite", "preorder"],
     inventory_quantity: int | None,
     preorder_release_date: int | None,
     preorder_deposit_amount: int | None,

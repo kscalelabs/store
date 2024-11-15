@@ -345,11 +345,11 @@ export const RenderProfile = (props: RenderProfileProps) => {
                 <Button
                   variant="outline"
                   asChild
-                  className={`text-xs sm:text-sm px-2 sm:px-4 hover:bg-transparent ${value === "own" ? "border-0 bg-transparent hover:bg-transparent" : ""}`}
+                  className={`text-xs sm:text-sm px-2 sm:px-4 hover:bg-gray-11 ${value === "own" ? "border" : ""}`}
                 >
                   <TabsTrigger
                     value="own"
-                    className="data-[state=active]:bg-transparent"
+                    className="data-[state=active]:bg-gray-3 text-gray-12"
                   >
                     Your Robot Listings
                   </TabsTrigger>
@@ -357,11 +357,11 @@ export const RenderProfile = (props: RenderProfileProps) => {
                 <Button
                   variant="outline"
                   asChild
-                  className={`text-xs sm:text-sm px-2 sm:px-4 hover:bg-transparent ${value === "upvoted" ? "border-0 bg-transparent hover:bg-transparent" : ""}`}
+                  className={`text-xs sm:text-sm px-2 sm:px-4 hover:bg-gray-11 ${value === "upvoted" ? "border-0 bg-transparent hover:bg-transparent" : ""}`}
                 >
                   <TabsTrigger
                     value="upvoted"
-                    className="data-[state=active]:bg-transparent"
+                    className="data-[state=active]:bg-gray-3 text-gray-12"
                   >
                     Upvoted Robots
                   </TabsTrigger>

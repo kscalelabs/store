@@ -15,6 +15,9 @@ import { useAuthentication } from "@/hooks/useAuth";
 type Order =
   paths["/orders/user-orders"]["get"]["responses"][200]["content"]["application/json"][0];
 
+type RefundRequest =
+  paths["/stripe/refunds/{order_id}"]["put"]["requestBody"]["content"]["application/json"];
+
 interface CancelOrderModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
@@ -41,10 +44,10 @@ const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
 
   const MAX_REASON_LENGTH = 500;
 
-  const [cancellation, setCancellation] = useState({
-    payment_intent_id: order["stripe_payment_intent_id"] || "",
+  const [cancellation, setCancellation] = useState<RefundRequest>({
+    payment_intent_id: "",
     cancel_reason: { reason: "", details: "" },
-    amount: order["amount"],
+    amount: 0,
   });
   const [customReason, setCustomReason] = useState("");
 

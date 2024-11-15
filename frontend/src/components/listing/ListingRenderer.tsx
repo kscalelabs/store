@@ -101,9 +101,7 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
                 listingId={listingId}
                 stripeProductId={stripeProductId}
                 priceAmount={priceAmount}
-                inventoryType={
-                  inventoryType as "finite" | "infinite" | "preorder"
-                }
+                inventoryType={inventoryType as "finite" | "preorder"}
                 inventoryQuantity={inventoryQuantity || undefined}
                 preorderReleaseDate={preorderReleaseDate || undefined}
                 preorderDepositAmount={preorderDepositAmount || undefined}
