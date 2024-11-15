@@ -88,13 +88,26 @@ export const ShareListingSchema = BaseListingSchema;
 
 // Schema for selling builds (includes price and inventory)
 export const SellListingSchema = BaseListingSchema.extend({
-  price_amount: z.number().nullable(),
+  price_amount: z
+    .number()
+    .nullable()
+    .refine(
+      (val) => {
+        if (val === null) return true;
+        return val >= 1 && val <= 999999.99; // Max $999,999.99
+      },
+      { message: "Price must be between $1 and $999,999.99" },
+    ),
   currency: z.string().default("usd"),
   inventory_type: z.enum(["finite", "preorder"]).default("finite"),
   inventory_quantity: z.number().nullable(),
   preorder_release_date: z.number().nullable(),
-  is_reservation: z.boolean().default(false),
-  reservation_deposit_amount: z.number().nullable(),
+  preorder_deposit_amount: z
+    .number()
+    .nullable()
+    .refine((val) => val === null || val >= 1, {
+      message: "Deposit amount must be at least $1",
+    }),
 });
 
 // Export types

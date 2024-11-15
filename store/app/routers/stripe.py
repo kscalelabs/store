@@ -271,17 +271,28 @@ async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud)
         line_items = stripe.checkout.Session.list_line_items(session["id"])
         quantity = line_items.data[0].quantity if line_items.data else 1
 
+        # Get payment intent if it exists
+        payment_intent = None
+        if session.get("payment_intent"):
+            payment_intent = stripe.PaymentIntent.retrieve(session["payment_intent"])
+
         # Create the order
+        is_preorder = session["metadata"].get("is_preorder") == "true"
         order_data = {
             "user_id": session.get("client_reference_id"),
             "user_email": session["customer_details"]["email"],
             "stripe_checkout_session_id": session["id"],
-            "stripe_payment_intent_id": session.get("payment_intent"),
-            "amount": session["amount_total"],
-            "currency": session["currency"],
-            "status": "processing",
             "stripe_product_id": session["metadata"].get("stripe_product_id"),
+            "stripe_connect_account_id": session["metadata"].get("seller_connect_account_id"),
+            "stripe_customer_id": session["customer"],
+            "stripe_payment_method_id": payment_intent.payment_method if payment_intent else None,
+            "stripe_payment_intent_id": session.get("payment_intent"),
+            "price_amount": session["amount_total"],
+            "currency": session["currency"],
+            "status": "preorder_placed" if is_preorder else "processing",
             "quantity": quantity,
+            "preorder_deposit_amount": session["amount_total"] if is_preorder else None,
+            "stripe_price_id": session["metadata"].get("full_price_id") if is_preorder else None,
             "shipping_name": shipping_details.get("name"),
             "shipping_address_line1": shipping_address.get("line1"),
             "shipping_address_line2": shipping_address.get("line2"),
@@ -446,47 +457,52 @@ async def create_checkout_session(
                 "metadata": metadata,
             }
 
-            # Add payment intent data to save the payment method if it's new
-            if not existing_payment_methods and listing.inventory_type != "preorder":
-                checkout_params["payment_intent_data"] = {
-                    **checkout_params.get("payment_intent_data", {}),
-                    "setup_future_usage": "off_session",
-                }
+            # For preorders, use payment mode with deposit amount
+            if listing.inventory_type == "preorder" and listing.preorder_deposit_amount:
+                if not listing.stripe_preorder_deposit_id:
+                    raise HTTPException(status_code=400, detail="Preorder deposit price not configured")
 
-            # For preorders, use setup mode
-            if listing.inventory_type == "preorder":
                 checkout_params.update(
                     {
-                        "mode": "setup",
+                        "line_items": [
+                            {
+                                "price": listing.stripe_preorder_deposit_id,
+                                "quantity": 1,
+                            }
+                        ],
+                        "payment_intent_data": {
+                            "setup_future_usage": "off_session",  # Save card for future charge
+                            "metadata": {
+                                "is_preorder": "true",
+                                "full_price_id": listing.stripe_price_id,
+                                "remaining_amount": str(listing.price_amount - listing.preorder_deposit_amount),
+                                "listing_id": listing.id,
+                            },
+                        },
                         "metadata": {
                             **metadata,
-                            "listing_id": listing.id,
-                            "price_amount": str(listing.price_amount),
-                            "seller_connect_account_id": seller.stripe_connect_account_id,
-                        },
-                        "setup_intent_data": {
-                            "metadata": {
-                                "user_id": user.id,
-                                "listing_id": listing.id,
-                            }
+                            "is_preorder": "true",
+                            "full_price_id": listing.stripe_price_id,
+                            "full_price_amount": str(listing.price_amount),
                         },
                     }
                 )
 
-                # Add custom text for preorder explanation
+                #  Custom text for preorder explanation
                 if listing.preorder_release_date:
                     formatted_date = datetime.fromtimestamp(listing.preorder_release_date).strftime("%B %d, %Y")
+                    remaining_amount = (listing.price_amount - listing.preorder_deposit_amount) / 100
                     checkout_params["custom_text"] = {
                         "submit": {
                             "message": (
-                                "By placing this pre-order, you agree to save your payment method. "
-                                f"You will be charged ${listing.price_amount/100:,.2f} when the item is ready "
-                                f"to ship (estimated {formatted_date})."
+                                f"This is a pre-order with a deposit of ${listing.preorder_deposit_amount/100:,.2f}. "
+                                f"The remaining ${remaining_amount:,.2f} will be charged when the item is ready "
+                                f"to ship (estimated {formatted_date}). By continuing, you agree to save your "
+                                "payment method for the future charge."
                             )
                         }
                     }
-                # Remove payment_intent_data if it exists
-                checkout_params.pop("payment_intent_data", None)
+
             else:
                 # Regular payment mode
                 if not listing.stripe_price_id and listing.stripe_product_id:
@@ -664,82 +680,78 @@ async def delete_test_accounts(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("/create-product", response_model=dict)
-async def create_stripe_product(
-    listing_id: str = Body(...),
-    price_amount: int = Body(...),  # in cents
-    inventory_type: Literal["finite", "infinite", "preorder"] = Body(...),
-    inventory_quantity: int | None = Body(None),
-    preorder_release_date: int | None = Body(None),
-    is_reservation: bool = Body(False),
-    reservation_deposit_amount: int | None = Body(None),
-    user: User = Depends(get_session_user_with_write_permission),
-    crud: Crud = Depends(),
-) -> dict:
-    try:
-        listing = await crud.get_listing(listing_id)
-        if not listing:
-            raise HTTPException(status_code=404, detail="Listing not found")
+class CreateListingProductResponse(BaseModel):
+    stripe_product_id: str
+    stripe_price_id: str
+    stripe_preorder_deposit_id: str | None
 
-        # Create product
+
+async def create_listing_product(
+    name: str,
+    description: str,
+    price_amount: int,
+    currency: str,
+    inventory_type: Literal["finite", "infinite", "preorder"],
+    inventory_quantity: int | None,
+    preorder_release_date: int | None,
+    preorder_deposit_amount: int | None,
+    user_id: str,
+    stripe_connect_account_id: str,
+) -> CreateListingProductResponse:
+    """Create Stripe product and associated prices for a new listing."""
+    try:
+        # Create the product
         product = stripe.Product.create(
-            name=listing.name,
-            description=listing.description or "",
+            name=name,
+            description=description,
             metadata={
-                "listing_id": listing_id,
-                "seller_id": user.id,
+                "user_id": user_id,
             },
-            stripe_account=user.stripe_connect_account_id,
+            stripe_account=stripe_connect_account_id,
         )
 
-        # Create price metadata
-        metadata: dict[str, str] = {"listing_id": listing_id}
-        if inventory_type == "finite":
-            metadata["inventory_quantity"] = str(inventory_quantity)
-        elif inventory_type == "preorder" and preorder_release_date:
-            metadata["preorder_release_date"] = str(preorder_release_date)
-
-        # Create deposit price for reservations
-        deposit_price = None
-        if is_reservation and reservation_deposit_amount:
-            deposit_price = stripe.Price.create(
-                product=product.id,
-                currency="usd",
-                unit_amount=reservation_deposit_amount,
-                metadata={"is_deposit": "true", **metadata},
-                stripe_account=user.stripe_connect_account_id,
-            )
-
-        # Create main price
+        # Create the main price
         price = stripe.Price.create(
             product=product.id,
-            currency="usd",
+            currency=currency,
             unit_amount=price_amount,
-            metadata=metadata,
-            stripe_account=user.stripe_connect_account_id,
+            metadata={
+                "price_type": "primary",
+                "inventory_quantity": str(inventory_quantity) if inventory_type == "finite" else "",
+                "preorder_release_date": str(preorder_release_date) if inventory_type == "preorder" else "",
+            },
+            stripe_account=stripe_connect_account_id,
         )
 
-        await crud.edit_listing(
-            listing_id=listing.id,
+        # Create preorder deposit price if applicable
+        preorder_deposit_id = None
+        if inventory_type == "preorder" and preorder_deposit_amount:
+            preorder_deposit_price = stripe.Price.create(
+                product=product.id,
+                currency=currency,
+                unit_amount=preorder_deposit_amount,
+                metadata={
+                    "price_type": "deposit",
+                    "is_deposit": "true",
+                    "full_price_amount": str(price_amount),
+                    "preorder_release_date": str(preorder_release_date) if preorder_release_date else "",
+                },
+                stripe_account=stripe_connect_account_id,
+            )
+            preorder_deposit_id = preorder_deposit_price.id
+
+        return CreateListingProductResponse(
             stripe_product_id=product.id,
             stripe_price_id=price.id,
-            price_amount=price_amount,
-            inventory_type=inventory_type,
-            inventory_quantity=inventory_quantity,
-            preorder_release_date=preorder_release_date,
-            is_reservation=is_reservation,
-            reservation_deposit_amount=reservation_deposit_amount,
+            stripe_preorder_deposit_id=preorder_deposit_id,
         )
 
-        return {
-            "product_id": product.id,
-            "price_id": price.id,
-            "deposit_price_id": deposit_price.id if deposit_price else None,
-        }
-
     except stripe.StripeError as e:
-        logger.error(f"Stripe error: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Stripe error creating listing product: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Error creating Stripe product: {str(e)}",
+        )
 
 
 @router.post("/process-preorder/{order_id}")
@@ -764,11 +776,11 @@ async def process_preorder(
                 raise HTTPException(status_code=400, detail="Seller not found or not connected to Stripe")
 
             # Calculate platform fee
-            application_fee = int(order.amount * 0.02)  # 2% fee
+            application_fee = int(order.price_amount * 0.02)  # 2% fee
 
             # Create and confirm payment intent using the stored payment method
             payment_intent = stripe.PaymentIntent.create(
-                amount=order.amount,
+                amount=order.price_amount,
                 currency=order.currency,
                 customer=order.stripe_customer_id,
                 payment_method=order.stripe_payment_method_id,

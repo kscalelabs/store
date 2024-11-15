@@ -34,8 +34,7 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
     inventory_type: inventoryType,
     inventory_quantity: inventoryQuantity,
     preorder_release_date: preorderReleaseDate,
-    is_reservation: isReservation,
-    reservation_deposit_amount: reservationDepositAmount,
+    preorder_deposit_amount: preorderDepositAmount,
   } = listing;
   const [artifacts, setArtifacts] = useState(initialArtifacts);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -107,8 +106,7 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
                 }
                 inventoryQuantity={inventoryQuantity || undefined}
                 preorderReleaseDate={preorderReleaseDate || undefined}
-                isReservation={isReservation || false}
-                reservationDepositAmount={reservationDepositAmount || undefined}
+                preorderDepositAmount={preorderDepositAmount || undefined}
               />
             </>
           )}

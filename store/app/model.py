@@ -383,16 +383,15 @@ class Listing(StoreBaseModel):
     onshape_url: str | None = None
     views: int = 0
     score: int = 0
-    stripe_product_id: str | None = None
-    stripe_price_id: str | None = None
-    stripe_deposit_price_id: str | None = None
     price_amount: int | None = None  # in cents
     currency: str = "usd"
+    stripe_product_id: str | None = None
+    stripe_price_id: str | None = None
+    preorder_deposit_amount: int | None = None
+    stripe_preorder_deposit_id: str | None = None
     inventory_type: Literal["finite", "infinite", "preorder"] = "infinite"
     inventory_quantity: int | None = None
     preorder_release_date: int | None = None
-    is_reservation: bool = False
-    reservation_deposit_amount: int | None = None  # in cents
 
     @classmethod
     def create(
@@ -403,16 +402,15 @@ class Listing(StoreBaseModel):
         child_ids: list[str],
         description: str | None = None,
         onshape_url: str | None = None,
-        stripe_product_id: str | None = None,
-        stripe_price_id: str | None = None,
-        stripe_deposit_price_id: str | None = None,
         price_amount: int | None = None,
         currency: str = "usd",
+        stripe_product_id: str | None = None,
+        stripe_price_id: str | None = None,
+        preorder_deposit_amount: int | None = None,
+        stripe_preorder_deposit_id: str | None = None,
         inventory_type: Literal["finite", "infinite", "preorder"] = "infinite",
         inventory_quantity: int | None = None,
         preorder_release_date: int | None = None,
-        is_reservation: bool = False,
-        reservation_deposit_amount: int | None = None,
     ) -> Self:
         return cls(
             id=new_uuid(),
@@ -426,16 +424,15 @@ class Listing(StoreBaseModel):
             onshape_url=onshape_url,
             views=0,
             score=0,
-            stripe_product_id=stripe_product_id,
-            stripe_price_id=stripe_price_id,
-            stripe_deposit_price_id=stripe_deposit_price_id,
             price_amount=price_amount,
             currency=currency,
+            stripe_product_id=stripe_product_id,
+            stripe_price_id=stripe_price_id,
+            preorder_deposit_amount=preorder_deposit_amount,
+            stripe_preorder_deposit_id=stripe_preorder_deposit_id,
             inventory_type=inventory_type,
             inventory_quantity=inventory_quantity,
             preorder_release_date=preorder_release_date,
-            is_reservation=is_reservation,
-            reservation_deposit_amount=reservation_deposit_amount,
         )
 
 
@@ -592,7 +589,7 @@ class Order(StoreBaseModel):
     created_at: int
     updated_at: int
     status: OrderStatus
-    amount: int
+    price_amount: int  # in cents
     currency: str
     quantity: int
     stripe_checkout_session_id: str
@@ -601,6 +598,8 @@ class Order(StoreBaseModel):
     stripe_customer_id: str | None = None
     stripe_payment_method_id: str | None = None
     stripe_payment_intent_id: str | None = None
+    preorder_deposit_amount: int | None = None
+    stripe_preorder_deposit_id: str | None = None
     stripe_refund_id: str | None = None
     shipping_name: str | None = None
     shipping_address_line1: str | None = None
@@ -619,7 +618,7 @@ class Order(StoreBaseModel):
         cls,
         user_id: str,
         user_email: str,
-        amount: int,
+        price_amount: int,
         currency: str,
         quantity: int,
         stripe_checkout_session_id: str,
@@ -628,6 +627,8 @@ class Order(StoreBaseModel):
         stripe_customer_id: str | None = None,
         stripe_payment_method_id: str | None = None,
         stripe_payment_intent_id: str | None = None,
+        preorder_deposit_amount: int | None = None,
+        stripe_preorder_deposit_id: str | None = None,
         stripe_refund_id: str | None = None,
         status: OrderStatus = "processing",
         shipping_name: str | None = None,
@@ -646,7 +647,7 @@ class Order(StoreBaseModel):
             created_at=now,
             updated_at=now,
             status=status,
-            amount=amount,
+            price_amount=price_amount,
             currency=currency,
             quantity=quantity,
             stripe_checkout_session_id=stripe_checkout_session_id,
@@ -655,6 +656,8 @@ class Order(StoreBaseModel):
             stripe_customer_id=stripe_customer_id,
             stripe_payment_method_id=stripe_payment_method_id,
             stripe_payment_intent_id=stripe_payment_intent_id,
+            preorder_deposit_amount=preorder_deposit_amount,
+            stripe_preorder_deposit_id=stripe_preorder_deposit_id,
             stripe_refund_id=stripe_refund_id,
             shipping_name=shipping_name,
             shipping_address_line1=shipping_address_line1,

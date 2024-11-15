@@ -618,26 +618,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/listings/{listing_id}/convert": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Convert Listing Type
-         * @description Convert a listing from one type to another.
-         */
-        post: operations["convert_listing_type_listings__listing_id__convert_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/onshape/set/{listing_id}": {
         parameters: {
             query?: never;
@@ -1039,23 +1019,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/stripe/create-product": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Create Stripe Product */
-        post: operations["create_stripe_product_stripe_create_product_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/stripe/process-preorder/{order_id}": {
         parameters: {
             query?: never;
@@ -1345,15 +1308,10 @@ export interface components {
             inventory_type: "finite" | "preorder";
             /** Inventory Quantity */
             inventory_quantity?: string | null;
+            /** Preorder Deposit Amount */
+            preorder_deposit_amount?: string | null;
             /** Preorder Release Date */
             preorder_release_date?: string | null;
-            /**
-             * Is Reservation
-             * @default false
-             */
-            is_reservation: boolean;
-            /** Reservation Deposit Amount */
-            reservation_deposit_amount?: string | null;
             /** Photos */
             photos?: string[];
         };
@@ -1361,29 +1319,6 @@ export interface components {
         Body_create_connect_account_session_stripe_connect_account_session_post: {
             /** Account Id */
             account_id: string;
-        };
-        /** Body_create_stripe_product_stripe_create_product_post */
-        Body_create_stripe_product_stripe_create_product_post: {
-            /** Listing Id */
-            listing_id: string;
-            /** Price Amount */
-            price_amount: number;
-            /**
-             * Inventory Type
-             * @enum {string}
-             */
-            inventory_type: "finite" | "infinite" | "preorder";
-            /** Inventory Quantity */
-            inventory_quantity?: number | null;
-            /** Preorder Release Date */
-            preorder_release_date?: number | null;
-            /**
-             * Is Reservation
-             * @default false
-             */
-            is_reservation: boolean;
-            /** Reservation Deposit Amount */
-            reservation_deposit_amount?: number | null;
         };
         /** Body_pull_onshape_document_onshape_pull__listing_id__get */
         Body_pull_onshape_document_onshape_pull__listing_id__get: {
@@ -1518,24 +1453,24 @@ export interface components {
             onshape_url: string | null;
             /** Is Featured */
             is_featured: boolean;
+            /** Currency */
+            currency?: string | null;
+            /** Price Amount */
+            price_amount?: number | null;
             /** Stripe Product Id */
             stripe_product_id?: string | null;
             /** Stripe Price Id */
             stripe_price_id?: string | null;
-            /** Price Amount */
-            price_amount?: number | null;
-            /** Currency */
-            currency?: string | null;
+            /** Preorder Deposit Amount */
+            preorder_deposit_amount?: number | null;
+            /** Stripe Preorder Deposit Id */
+            stripe_preorder_deposit_id?: string | null;
+            /** Preorder Release Date */
+            preorder_release_date?: number | null;
             /** Inventory Type */
             inventory_type?: string | null;
             /** Inventory Quantity */
             inventory_quantity?: number | null;
-            /** Preorder Release Date */
-            preorder_release_date?: number | null;
-            /** Is Reservation */
-            is_reservation?: boolean | null;
-            /** Reservation Deposit Amount */
-            reservation_deposit_amount?: number | null;
         };
         /** GetTokenResponse */
         GetTokenResponse: {
@@ -1627,12 +1562,6 @@ export interface components {
              * @default 0
              */
             score: number;
-            /** Stripe Product Id */
-            stripe_product_id?: string | null;
-            /** Stripe Price Id */
-            stripe_price_id?: string | null;
-            /** Stripe Deposit Price Id */
-            stripe_deposit_price_id?: string | null;
             /** Price Amount */
             price_amount?: number | null;
             /**
@@ -1640,6 +1569,14 @@ export interface components {
              * @default usd
              */
             currency: string;
+            /** Stripe Product Id */
+            stripe_product_id?: string | null;
+            /** Stripe Price Id */
+            stripe_price_id?: string | null;
+            /** Preorder Deposit Amount */
+            preorder_deposit_amount?: number | null;
+            /** Stripe Preorder Deposit Id */
+            stripe_preorder_deposit_id?: string | null;
             /**
              * Inventory Type
              * @default infinite
@@ -1650,13 +1587,6 @@ export interface components {
             inventory_quantity?: number | null;
             /** Preorder Release Date */
             preorder_release_date?: number | null;
-            /**
-             * Is Reservation
-             * @default false
-             */
-            is_reservation: boolean;
-            /** Reservation Deposit Amount */
-            reservation_deposit_amount?: number | null;
         };
         /** ListingInfo */
         ListingInfo: {
@@ -1783,8 +1713,8 @@ export interface components {
              * @enum {string}
              */
             status: "processing" | "in_development" | "being_assembled" | "shipped" | "delivered" | "preorder_placed" | "cancelled" | "refunded" | "failed";
-            /** Amount */
-            amount: number;
+            /** Price Amount */
+            price_amount: number;
             /** Currency */
             currency: string;
             /** Quantity */
@@ -1801,6 +1731,10 @@ export interface components {
             stripe_payment_method_id?: string | null;
             /** Stripe Payment Intent Id */
             stripe_payment_intent_id?: string | null;
+            /** Preorder Deposit Amount */
+            preorder_deposit_amount?: number | null;
+            /** Stripe Preorder Deposit Id */
+            stripe_preorder_deposit_id?: string | null;
             /** Stripe Refund Id */
             stripe_refund_id?: string | null;
             /** Shipping Name */
@@ -2018,10 +1952,8 @@ export interface components {
             inventory_quantity?: number | null;
             /** Preorder Release Date */
             preorder_release_date?: number | null;
-            /** Is Reservation */
-            is_reservation?: boolean | null;
-            /** Reservation Deposit Amount */
-            reservation_deposit_amount?: number | null;
+            /** Preorder Deposit Amount */
+            preorder_deposit_amount?: number | null;
         };
         /** UpdateOrderAddressRequest */
         UpdateOrderAddressRequest: {
@@ -3267,39 +3199,6 @@ export interface operations {
             };
         };
     };
-    convert_listing_type_listings__listing_id__convert_post: {
-        parameters: {
-            query: {
-                new_type: "standard" | "preorder" | "reservation";
-            };
-            header?: never;
-            path: {
-                listing_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     set_onshape_document_onshape_set__listing_id__post: {
         parameters: {
             query?: never;
@@ -3938,39 +3837,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": Record<string, never>;
-                };
-            };
-        };
-    };
-    create_stripe_product_stripe_create_product_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["Body_create_stripe_product_stripe_create_product_post"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": Record<string, never>;
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

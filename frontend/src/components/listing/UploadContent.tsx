@@ -45,70 +45,62 @@ const UploadContent: FC<UploadContentProps> = ({ images, onChange }) => {
   }, [images]);
 
   return (
-    <div className="p-6 bg-gray-12 border border-gray-11 rounded-lg">
-      <ImageUploading
-        multiple
-        value={images}
-        onChange={(imageList) => {
-          onChange(imageList);
-        }}
-        maxNumber={maxNumber}
-        dataURLKey="data_url"
-      >
-        {({
-          imageList,
-          onImageUpload,
-          onImageRemove,
-          isDragging,
-          dragProps,
-        }) => (
-          <div className="upload__image-wrapper">
-            {/* Dropzone Area */}
-            <div
-              className={`
+    <ImageUploading
+      multiple
+      value={images}
+      onChange={(imageList) => {
+        onChange(imageList);
+      }}
+      maxNumber={maxNumber}
+      dataURLKey="data_url"
+    >
+      {({ imageList, onImageUpload, onImageRemove, isDragging, dragProps }) => (
+        <div className="upload__image-wrapper">
+          {/* Dropzone Area */}
+          <div
+            className={`
                 border-2 border-dashed p-5 rounded-lg flex flex-col items-center justify-center h-64 transition-colors duration-300 hover:cursor-pointer hover:bg-gray-10 hover:border-gray-1
                 ${
                   isDragging
                     ? "border-gray-1 bg-gray-10"
                     : "border-gray-5 bg-gray-11"
                 }`}
-              onClick={onImageUpload}
-              {...dragProps}
-            >
-              <p className="text-gray-1">
-                Drag & drop images here, click to select files, or paste an
-                image from your clipboard
-              </p>
-            </div>
-
-            {/* Display uploaded images below the dropzone */}
-            <div className="mt-5 grid grid-cols-3 gap-4 w-full">
-              {imageList.length > 0 ? (
-                imageList.map((image, index) => (
-                  <div key={index} className="relative text-center">
-                    <img
-                      src={image["data_url"]}
-                      alt=""
-                      className="w-full h-32 object-cover rounded-lg border border-gray-6"
-                    />
-                    <span
-                      className="absolute top-2 right-2 text-red-500 hover:text-red-600 transition-colors duration-200 cursor-pointer"
-                      onClick={() => onImageRemove(index)}
-                    >
-                      <XCircleFill size={24} />
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-gray-11 whitespace-nowrap">
-                  No images uploaded yet.
-                </p>
-              )}
-            </div>
+            onClick={onImageUpload}
+            {...dragProps}
+          >
+            <p className="text-gray-1">
+              Drag & drop images here, click to select files, or paste an image
+              from your clipboard
+            </p>
           </div>
-        )}
-      </ImageUploading>
-    </div>
+
+          {/* Display uploaded images below the dropzone */}
+          <div className="mt-5 grid grid-cols-3 gap-4 w-full">
+            {imageList.length > 0 ? (
+              imageList.map((image, index) => (
+                <div key={index} className="relative text-center">
+                  <img
+                    src={image["data_url"]}
+                    alt=""
+                    className="w-full h-32 object-cover rounded-lg border border-gray-6"
+                  />
+                  <span
+                    className="absolute top-2 right-2 text-red-500 hover:text-red-600 transition-colors duration-200 cursor-pointer"
+                    onClick={() => onImageRemove(index)}
+                  >
+                    <XCircleFill size={24} />
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-11 whitespace-nowrap">
+                No images uploaded yet.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    </ImageUploading>
   );
 };
 

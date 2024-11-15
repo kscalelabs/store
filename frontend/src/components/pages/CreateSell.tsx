@@ -33,7 +33,6 @@ const CreateSell = () => {
   const [slug, setSlug] = useState<string>("");
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [price_amount, setPriceAmount] = useState<number>(0);
-  const [isReservation, setIsReservation] = useState(false);
   const [displayDepositAmount, setDisplayDepositAmount] =
     useState<string>("0.00");
 
@@ -51,8 +50,7 @@ const CreateSell = () => {
       inventory_type: "finite",
       inventory_quantity: null,
       preorder_release_date: null,
-      is_reservation: false,
-      reservation_deposit_amount: null,
+      preorder_deposit_amount: null,
     },
   });
 
@@ -91,8 +89,14 @@ const CreateSell = () => {
 
   const handleDepositChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value.replace(/[^0-9]/g, "");
-    setDisplayDepositAmount(inputValue);
-    setValue("reservation_deposit_amount", parseFloat(inputValue));
+    if (!inputValue) {
+      setDisplayDepositAmount("");
+      setValue("preorder_deposit_amount", null);
+      return;
+    }
+    const decimalValue = convertToDecimal(inputValue);
+    setDisplayDepositAmount(decimalValue);
+    setValue("preorder_deposit_amount", parseFloat(decimalValue));
   };
 
   const handleImageChange = (imageList: ImageListType) => {
@@ -139,11 +143,10 @@ const CreateSell = () => {
       );
     }
 
-    formData.append("is_reservation", data.is_reservation.toString());
-    if (data.is_reservation && data.reservation_deposit_amount) {
+    if (data.preorder_deposit_amount) {
       formData.append(
-        "reservation_deposit_amount",
-        data.reservation_deposit_amount.toString(),
+        "preorder_deposit_amount",
+        convertToCents(data.preorder_deposit_amount).toString(),
       );
     }
 
@@ -210,14 +213,6 @@ const CreateSell = () => {
                 {errors?.name && (
                   <ErrorMessage>{errors.name.message}</ErrorMessage>
                 )}
-                {previewUrl && (
-                  <div className="mt-3 text-sm">
-                    <p className="text-gray-1 font-medium">Preview URL:</p>
-                    <p className="text-gray-3 bg-gray-10 p-2 rounded-md">
-                      {previewUrl}
-                    </p>
-                  </div>
-                )}
               </div>
 
               {/* Description */}
@@ -245,21 +240,43 @@ const CreateSell = () => {
                 </div>
               )}
 
-              {/* Price */}
+              {/* Slug */}
               <div>
-                <label className="block mb-2 text-sm font-medium text-gray-1">
-                  Price (USD)
+                <label
+                  htmlFor="slug"
+                  className="block mb-2 text-sm font-medium text-gray-300"
+                >
+                  Slug
                 </label>
                 <Input
-                  placeholder="Enter price (e.g., 10.00)"
+                  id="slug"
+                  placeholder="Unique identifier for your listing"
                   type="text"
-                  value={displayPrice}
-                  onChange={handlePriceChange}
+                  {...register("slug", {
+                    onChange: (e) => {
+                      const newSlug = slugify(e.target.value);
+                      setSlug(newSlug);
+                      setValue("slug", newSlug, { shouldValidate: true });
+                    },
+                  })}
+                  value={slug}
                 />
-                {errors?.price_amount && (
-                  <ErrorMessage>{errors.price_amount.message}</ErrorMessage>
+                {errors?.slug && (
+                  <ErrorMessage>{errors?.slug?.message}</ErrorMessage>
                 )}
               </div>
+
+              {/* URL Preview */}
+              {previewUrl && (
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-gray-1">
+                    Listing URL Preview
+                  </label>
+                  <div className="p-2 bg-gray-5 rounded-md text-gray-12">
+                    {previewUrl}
+                  </div>
+                </div>
+              )}
 
               {/* Inventory Type */}
               <div>
@@ -294,6 +311,27 @@ const CreateSell = () => {
                 </div>
               )}
 
+              {/* Price */}
+              <div>
+                <label className="block mb-2 text-sm font-medium text-gray-1">
+                  Price (USD)
+                </label>
+                <Input
+                  placeholder="Enter price (e.g., 10.00)"
+                  type="text"
+                  value={displayPrice}
+                  onChange={handlePriceChange}
+                />
+                {errors?.price_amount && (
+                  <ErrorMessage>{errors.price_amount.message}</ErrorMessage>
+                )}
+                {price_amount > 0 && (
+                  <p className="mt-2 text-sm text-gray-6">
+                    Total Price: ${displayPrice} USD
+                  </p>
+                )}
+              </div>
+
               {/* Release Date (for pre-orders) */}
               {inventoryType === "preorder" && (
                 <div>
@@ -313,47 +351,35 @@ const CreateSell = () => {
                 </div>
               )}
 
-              {/* Reservation Option */}
+              {/* Pre-order Deposit */}
               {price_amount &&
                 price_amount > 0 &&
-                inventoryType !== "preorder" && (
-                  <div className="space-y-4">
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        {...register("is_reservation")}
-                        onChange={(e) => {
-                          setIsReservation(e.target.checked);
-                          setValue("is_reservation", e.target.checked);
-                        }}
-                        className="rounded border-gray-7"
-                      />
-                      <span className="text-sm font-medium text-gray-1">
-                        Enable Reservation
-                      </span>
+                inventoryType === "preorder" && (
+                  <div>
+                    <label className="block mb-2 text-sm font-medium text-gray-1">
+                      Pre-order Deposit Amount (USD)
                     </label>
-
-                    {isReservation && (
-                      <div>
-                        <label className="block mb-2 text-sm font-medium text-gray-1">
-                          Reservation Deposit Amount
-                        </label>
-                        <Input
-                          placeholder="Enter deposit amount"
-                          type="text"
-                          value={displayDepositAmount}
-                          onChange={handleDepositChange}
-                        />
-                        {errors?.reservation_deposit_amount && (
-                          <ErrorMessage>
-                            {errors?.reservation_deposit_amount?.message}
-                          </ErrorMessage>
-                        )}
-                        {displayDepositAmount && (
-                          <p className="mt-1 text-sm text-gray-11">
-                            Deposit amount: ${displayDepositAmount}
-                          </p>
-                        )}
+                    <Input
+                      placeholder="Enter deposit amount (e.g., 10.00)"
+                      type="text"
+                      value={displayDepositAmount}
+                      onChange={handleDepositChange}
+                    />
+                    {errors?.preorder_deposit_amount && (
+                      <ErrorMessage>
+                        {errors?.preorder_deposit_amount?.message}
+                      </ErrorMessage>
+                    )}
+                    {parseFloat(displayDepositAmount) > 0 && (
+                      <div className="mt-2 space-y-1 text-sm text-gray-6">
+                        <p>Deposit Amount: ${displayDepositAmount} USD</p>
+                        <p>
+                          Remaining Balance Due: $
+                          {(
+                            price_amount - parseFloat(displayDepositAmount)
+                          ).toFixed(2)}{" "}
+                          USD
+                        </p>
                       </div>
                     )}
                   </div>

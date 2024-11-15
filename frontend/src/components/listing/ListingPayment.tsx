@@ -8,8 +8,7 @@ interface Props {
   inventoryType: "finite" | "infinite" | "preorder";
   inventoryQuantity?: number;
   preorderReleaseDate?: number;
-  isReservation: boolean;
-  reservationDepositAmount?: number;
+  preorderDepositAmount?: number;
 }
 
 const ListingPayment = ({
@@ -19,8 +18,7 @@ const ListingPayment = ({
   inventoryType,
   inventoryQuantity,
   preorderReleaseDate,
-  isReservation,
-  reservationDepositAmount,
+  preorderDepositAmount,
 }: Props) => {
   return (
     <div className="p-4">
@@ -32,10 +30,10 @@ const ListingPayment = ({
           <span className="font-semibold">{formatPrice(priceAmount)}</span>
         </div>
 
-        {isReservation && reservationDepositAmount && (
+        {preorderDepositAmount && (
           <div className="flex justify-between text-sm text-gray-2">
-            <span>Reservation Deposit:</span>
-            <span>{formatPrice(reservationDepositAmount)}</span>
+            <span>Pre-order Deposit:</span>
+            <span>{formatPrice(preorderDepositAmount)}</span>
           </div>
         )}
 
