@@ -195,22 +195,13 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
 
       {/* Main grid layout */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[calc(100vh-8rem)]">
-        {FEATURE_FLAGS.ROBOT_STREAMING ? (
-          <>
-            {/* Video and Audio feed panel */}
-            <AVStreamer />
+        {/* Video and Audio feed panel */}
+        <AVStreamer />
 
-            {/* 3D Mesh Visualization panel */}
-            <div className="border border-gray-700 bg-black rounded-lg h-full w-full overflow-hidden">
-              <TerminalRobotModel listingId={robot.listing_id} />
-            </div>
-          </>
-        ) : (
-          // When streaming is disabled, 3D viewer takes full width and combined height
-          <div className="border border-gray-700 bg-black rounded-lg w-full overflow-hidden md:col-span-2 h-[calc(100vh-24rem)]">
-            <TerminalRobotModel listingId={robot.listing_id} />
-          </div>
-        )}
+        {/* 3D Mesh Visualization panel */}
+        <div className="border border-gray-700 bg-black rounded-lg h-full w-full overflow-hidden">
+          <TerminalRobotModel listingId={robot.listing_id} />
+        </div>
 
         {/* Klang Input panel */}
         <div className="border border-gray-700 bg-black rounded-lg overflow-hidden min-h-[300px]">
