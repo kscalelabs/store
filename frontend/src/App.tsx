@@ -20,6 +20,7 @@ import DeleteConnect from "@/components/pages/DeleteConnect";
 import EmailSignup from "@/components/pages/EmailSignup";
 import FileBrowser from "@/components/pages/FileBrowser";
 import Home from "@/components/pages/Home";
+import KBotPreorderTerms from "@/components/pages/KBotPreorderTerms";
 import LinkRobot from "@/components/pages/LinkRobot";
 import Listing from "@/components/pages/Listing";
 import Login from "@/components/pages/Login";
@@ -70,6 +71,10 @@ const App = () => {
                         <Route
                           path={ROUTES.PRIVACY.path}
                           element={<PrivacyPolicy />}
+                        />
+                        <Route
+                          path={ROUTES.PREORDER_TERMS.path}
+                          element={<KBotPreorderTerms />}
                         />
 
                         {/* Account */}
