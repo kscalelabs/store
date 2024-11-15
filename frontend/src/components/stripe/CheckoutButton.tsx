@@ -168,8 +168,15 @@ const CheckoutButton: React.FC<Props> = ({
             </p>
             {inventoryType === "preorder" && (
               <p className="mb-4">
-                This is a pre-order item. By proceeding, you acknowledge that
-                the final product may be subject to changes and delays.
+                This robot is listed for pre-order. By proceeding, you agree to
+                our{" "}
+                <a
+                  href={ROUTES.PREORDER_TERMS.path}
+                  className="underline hover:text-gray-300"
+                >
+                  Pre-order Terms
+                </a>
+                .
               </p>
             )}
           </div>

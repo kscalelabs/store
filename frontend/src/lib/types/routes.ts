@@ -8,6 +8,7 @@ const ROUTES = {
   RESEARCH: route("research"),
   TOS: route("tos"),
   PRIVACY: route("privacy"),
+  PREORDER_TERMS: route("terms/preorder/k-bot"),
 
   // Account routes
   ACCOUNT: route("account"),
