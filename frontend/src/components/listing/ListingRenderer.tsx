@@ -63,7 +63,7 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
   return (
     <div className="max-w-6xl mx-auto sm:p-4 sm:pt-8">
       {/* Main content area - flex column on mobile, row on desktop */}
-      <div className="flex flex-col md:flex-row gap-8 mb-8 items-center">
+      <div className="flex flex-col md:flex-row gap-8 mb-8 items-start">
         <ListingImageFlipper
           artifacts={artifacts}
           name={name}
@@ -72,7 +72,7 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
         />
 
         {/* Right side - Header and details - full width on mobile, half width on desktop */}
-        <div className="w-full md:w-1/2 mt-8">
+        <div className="w-full md:w-1/2">
           {/* Header */}
           <ListingName
             listingId={listingId}

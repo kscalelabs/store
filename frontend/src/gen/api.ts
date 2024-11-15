@@ -1225,7 +1225,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/teleop/rtc/store": {
+    "/teleop/rtc/store/{robot_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1235,14 +1235,14 @@ export interface paths {
         get?: never;
         put?: never;
         /** Store Ice Candidate */
-        post: operations["store_ice_candidate_teleop_rtc_store_post"];
+        post: operations["store_ice_candidate_teleop_rtc_store__robot_id__post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/teleop/rtc/poll/ice-candidates": {
+    "/teleop/rtc/poll/ice-candidates/{robot_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1253,7 +1253,7 @@ export interface paths {
          * Poll Ice Candidates
          * @description Defines the polling endpoint for ICE candidates.
          */
-        get: operations["poll_ice_candidates_teleop_rtc_poll_ice_candidates_get"];
+        get: operations["poll_ice_candidates_teleop_rtc_poll_ice_candidates__robot_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4261,14 +4261,15 @@ export interface operations {
             };
         };
     };
-    store_ice_candidate_teleop_rtc_store_post: {
+    store_ice_candidate_teleop_rtc_store__robot_id__post: {
         parameters: {
             query: {
                 candidate: string;
-                robot_id: string;
             };
             header?: never;
-            path?: never;
+            path: {
+                robot_id: string;
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -4293,13 +4294,13 @@ export interface operations {
             };
         };
     };
-    poll_ice_candidates_teleop_rtc_poll_ice_candidates_get: {
+    poll_ice_candidates_teleop_rtc_poll_ice_candidates__robot_id__get: {
         parameters: {
-            query: {
+            query?: never;
+            header?: never;
+            path: {
                 robot_id: string;
             };
-            header?: never;
-            path?: never;
             cookie?: never;
         };
         requestBody?: never;
