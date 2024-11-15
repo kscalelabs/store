@@ -593,9 +593,10 @@ class Order(StoreBaseModel):
     currency: str
     quantity: int
     stripe_checkout_session_id: str
-    stripe_product_id: str
     stripe_connect_account_id: str
-    stripe_customer_id: str | None = None
+    stripe_product_id: str
+    stripe_price_id: str
+    stripe_customer_id: str
     stripe_payment_method_id: str | None = None
     stripe_payment_intent_id: str | None = None
     preorder_release_date: int | None = None
@@ -624,8 +625,9 @@ class Order(StoreBaseModel):
         quantity: int,
         stripe_checkout_session_id: str,
         stripe_product_id: str,
+        stripe_price_id: str,
         stripe_connect_account_id: str,
-        stripe_customer_id: str | None = None,
+        stripe_customer_id: str,
         stripe_payment_method_id: str | None = None,
         stripe_payment_intent_id: str | None = None,
         preorder_release_date: int | None = None,
@@ -654,6 +656,7 @@ class Order(StoreBaseModel):
             quantity=quantity,
             stripe_checkout_session_id=stripe_checkout_session_id,
             stripe_product_id=stripe_product_id,
+            stripe_price_id=stripe_price_id,
             stripe_connect_account_id=stripe_connect_account_id,
             stripe_customer_id=stripe_customer_id,
             stripe_payment_method_id=stripe_payment_method_id,

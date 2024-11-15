@@ -5,6 +5,10 @@ export function capitalizeFirstLetter(string: string) {
 // for order statuses
 // e.g. "in_development" -> "In Development"
 export const normalizeStatus = (status: string): string => {
+  if (status === "preorder_placed") {
+    return "Pre-order Placed";
+  }
+
   return status
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))

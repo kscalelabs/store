@@ -168,19 +168,26 @@ async def stripe_connect_webhook(request: Request, crud: Crud = Depends(Crud.get
 
             # Use the connected account ID when retrieving the session
             try:
-                complete_session = stripe.checkout.Session.retrieve(session["id"], stripe_account=connected_account_id)
+                # Get the seller's connect account ID from metadata
+                seller_connect_account_id = session["metadata"].get("seller_connect_account_id")
+                if not seller_connect_account_id:
+                    raise ValueError("Missing seller connect account ID")
+
+                # Retrieve the complete session with the seller's account
+                session = stripe.checkout.Session.retrieve(session["id"], stripe_account=seller_connect_account_id)
+
                 # Handle setup completion for preorders
-                if complete_session["mode"] == "setup":
+                if session["mode"] == "setup":
                     try:
-                        seller_connect_account_id = complete_session["metadata"].get("seller_connect_account_id")
+                        seller_connect_account_id = session["metadata"].get("seller_connect_account_id")
                         if not seller_connect_account_id:
                             raise ValueError("Missing seller connect account ID")
 
                         # Get the customer ID from the session
-                        connected_customer_id = complete_session["customer"]
+                        connected_customer_id = session["customer"]
 
                         # Check for existing payment method
-                        existing_payment_method_id = complete_session["metadata"].get("existing_payment_method_id")
+                        existing_payment_method_id = session["metadata"].get("existing_payment_method_id")
 
                         if existing_payment_method_id:
                             # Use existing payment method
@@ -188,7 +195,7 @@ async def stripe_connect_webhook(request: Request, crud: Crud = Depends(Crud.get
                         else:
                             # Retrieve SetupIntent with expanded payment method
                             setup_intent = stripe.SetupIntent.retrieve(
-                                complete_session["setup_intent"],
+                                session["setup_intent"],
                                 expand=["payment_method"],
                                 stripe_account=seller_connect_account_id,
                             )
@@ -214,23 +221,24 @@ async def stripe_connect_webhook(request: Request, crud: Crud = Depends(Crud.get
 
                         # Create order for preorder
                         order_data = {
-                            "user_id": complete_session["client_reference_id"],
-                            "user_email": complete_session["customer_details"]["email"],
-                            "stripe_checkout_session_id": complete_session["id"],
+                            "user_id": session["client_reference_id"],
+                            "user_email": session["customer_details"]["email"],
+                            "stripe_checkout_session_id": session["id"],
                             "stripe_payment_intent_id": None,
-                            "amount": int(complete_session["metadata"]["price_amount"]),
+                            "price_amount": int(session["metadata"]["price_amount"]),
+                            "preorder_deposit_amount": int(session["metadata"]["deposit_amount"]),
                             "currency": "usd",
                             "status": "preorder_placed",
                             "quantity": 1,
-                            "stripe_product_id": complete_session["metadata"].get("stripe_product_id"),
+                            "stripe_product_id": session["metadata"].get("stripe_product_id"),
                             "stripe_customer_id": connected_customer_id,
                             "stripe_payment_method_id": payment_method_id,
                             "stripe_connect_account_id": seller_connect_account_id,
-                            "preorder_release_date": complete_session["metadata"].get("preorder_release_date"),
+                            "preorder_release_date": session["metadata"].get("preorder_release_date"),
                         }
 
                         # Add shipping details if available
-                        if shipping_details := complete_session.get("shipping_details"):
+                        if shipping_details := session.get("shipping_details"):
                             shipping_address = shipping_details.get("address", {})
                             order_data.update(
                                 {
@@ -257,7 +265,7 @@ async def stripe_connect_webhook(request: Request, crud: Crud = Depends(Crud.get
 
                 else:
                     # Handle regular checkout completion with the complete session
-                    await handle_checkout_session_completed(complete_session, crud)
+                    await handle_checkout_session_completed(session, crud)
             except Exception as e:
                 logger.error("Error retrieving complete session: %s", str(e))
                 raise
@@ -290,8 +298,15 @@ async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud)
                 session["payment_intent"], stripe_account=seller_connect_account_id
             )
 
-        # Create the order
+        # Determine if this is a preorder and get the correct price amount
         is_preorder = session["metadata"].get("is_preorder") == "true"
+        price_amount = (
+            int(session["metadata"].get("full_price_amount"))  # Use full price for preorders
+            if is_preorder
+            else session["amount_total"]  # Use session amount for regular orders
+        )
+
+        # Create the order
         order_data = {
             "user_id": session.get("client_reference_id"),
             "user_email": session["customer_details"]["email"],
@@ -301,13 +316,13 @@ async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud)
             "stripe_customer_id": session["customer"],
             "stripe_payment_method_id": payment_intent.payment_method if payment_intent else None,
             "stripe_payment_intent_id": session.get("payment_intent"),
-            "price_amount": session["amount_total"],
+            "price_amount": price_amount,
             "currency": session["currency"],
             "status": "preorder_placed" if is_preorder else "processing",
             "quantity": quantity,
-            "preorder_deposit_amount": session["amount_total"] if is_preorder else None,
+            "preorder_deposit_amount": (session["amount_total"] if is_preorder else None),
             "preorder_release_date": session["metadata"].get("preorder_release_date") if is_preorder else None,
-            "stripe_price_id": session["metadata"].get("full_price_id") if is_preorder else None,
+            "stripe_price_id": session["metadata"].get("stripe_price_id"),
             "shipping_name": shipping_details.get("name"),
             "shipping_address_line1": shipping_address.get("line1"),
             "shipping_address_line2": shipping_address.get("line2"),
@@ -419,6 +434,7 @@ async def create_checkout_session(
                 "user_email": user.email,
                 "product_id": listing.stripe_product_id or "",
                 "listing_type": listing.inventory_type,
+                "seller_connect_account_id": seller.stripe_connect_account_id,
             }
 
             if existing_payment_methods:
@@ -456,7 +472,7 @@ async def create_checkout_session(
                             "setup_future_usage": "off_session",  # Save card for future charge
                             "metadata": {
                                 "is_preorder": "true",
-                                "full_price_id": listing.stripe_price_id,
+                                "stripe_price_id": listing.stripe_price_id,
                                 "remaining_amount": str(listing.price_amount - listing.preorder_deposit_amount),
                                 "listing_id": listing.id,
                             },
@@ -464,7 +480,7 @@ async def create_checkout_session(
                         "metadata": {
                             **metadata,
                             "is_preorder": "true",
-                            "full_price_id": listing.stripe_price_id,
+                            "stripe_price_id": listing.stripe_price_id,
                             "full_price_amount": str(listing.price_amount),
                         },
                     }

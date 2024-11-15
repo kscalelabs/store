@@ -51,7 +51,10 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
   const [isEditAddressModalOpen, setIsEditAddressModalOpen] = useState(false);
   const [isCancelOrderModalOpen, setIsCancelOrderModalOpen] = useState(false);
 
-  const currentStatusIndex = orderStatuses.indexOf(order.status);
+  const currentStatusIndex =
+    order.status === "preorder_placed"
+      ? -1
+      : orderStatuses.indexOf(order.status);
   const isRedStatus = redStatuses.includes(order.status);
   const showStatusBar = activeStatuses.includes(order.status);
 
@@ -90,9 +93,13 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
       </p>
 
       {order.status === "preorder_placed" && order.preorder_deposit_amount && (
-        <div className="mb-4 p-3 bg-blue-50 text-blue-800 rounded-md">
+        <div className="mb-4 p-3 bg-gray-4 text-gray-12 rounded-md">
           <p className="font-medium">
             Pre-order Deposit: {formatPrice(order.preorder_deposit_amount)}
+          </p>
+          <p className="font-medium mt-1">
+            Amount Due:{" "}
+            {formatPrice(order.price_amount - order.preorder_deposit_amount)}
           </p>
           {order.preorder_release_date && (
             <p className="text-sm mt-1">
@@ -195,7 +202,9 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
                       index <= currentStatusIndex
                         ? getStatusColor(status)
                         : "bg-gray-300"
-                    } ${index === 0 ? "rounded-l-full" : ""} ${index === 4 ? "rounded-r-full" : ""}`}
+                    } ${index === 0 ? "rounded-l-full" : ""} ${
+                      index === 4 ? "rounded-r-full" : ""
+                    }`}
                     style={{
                       width: "20%",
                       float: "left",
