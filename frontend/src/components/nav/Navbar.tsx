@@ -57,8 +57,24 @@ const Navbar = () => {
                     onClick={() =>
                       handleFeaturedClick(listing.username, listing.slug)
                     }
-                    variant="outline"
-                    className="px-2 xl:px-3 py-2 text-sm tracking-widest text-gray-1"
+                    variant={
+                      location.pathname ===
+                      ROUTES.BOT.buildPath({
+                        username: listing.username,
+                        slug: listing.slug || "",
+                      })
+                        ? "ghost"
+                        : "outline"
+                    }
+                    className={`px-2 xl:px-3 py-2 text-sm tracking-widest text-gray-1 ${
+                      location.pathname ===
+                      ROUTES.BOT.buildPath({
+                        username: listing.username,
+                        slug: listing.slug || "",
+                      })
+                        ? "underline underline-offset-4 decoration-2"
+                        : ""
+                    }`}
                   >
                     {listing.name}
                   </Button>
@@ -87,9 +103,15 @@ const Navbar = () => {
                     key={item.name}
                     asChild
                     variant={
-                      location.pathname === item.path ? "default" : "outline"
+                      location.pathname.startsWith(item.path)
+                        ? "ghost"
+                        : "outline"
                     }
-                    className="px-2 xl:px-3 py-2 text-sm tracking-widest"
+                    className={`px-2 xl:px-3 py-2 text-sm tracking-widest ${
+                      location.pathname.startsWith(item.path)
+                        ? "underline underline-offset-4 decoration-2"
+                        : ""
+                    }`}
                   >
                     <Link to={item.path}>
                       <div className="flex items-center gap-2">{item.name}</div>
@@ -103,15 +125,31 @@ const Navbar = () => {
                 <>
                   <Button
                     asChild
-                    variant="outline"
-                    className="px-3 py-2 text-gray-1"
+                    variant={
+                      location.pathname.startsWith(ROUTES.ACCOUNT.path)
+                        ? "ghost"
+                        : "outline"
+                    }
+                    className={`px-3 py-2 text-gray-1 ${
+                      location.pathname.startsWith(ROUTES.ACCOUNT.path)
+                        ? "underline underline-offset-4 decoration-2"
+                        : ""
+                    }`}
                   >
                     <Link to={ROUTES.ACCOUNT.path}>Account</Link>
                   </Button>
                   <Button
                     asChild
-                    variant="outline"
-                    className="px-3 py-2 text-gray-1"
+                    variant={
+                      location.pathname.startsWith(ROUTES.LOGOUT.path)
+                        ? "ghost"
+                        : "outline"
+                    }
+                    className={`px-3 py-2 text-gray-1 ${
+                      location.pathname.startsWith(ROUTES.LOGOUT.path)
+                        ? "underline underline-offset-4 decoration-2"
+                        : ""
+                    }`}
                   >
                     <Link to={ROUTES.LOGOUT.path}>Logout</Link>
                   </Button>
@@ -120,15 +158,31 @@ const Navbar = () => {
                 <>
                   <Button
                     asChild
-                    variant="outline"
-                    className="px-3 py-2 text-gray-1"
+                    variant={
+                      location.pathname.startsWith(ROUTES.LOGIN.path)
+                        ? "ghost"
+                        : "outline"
+                    }
+                    className={`px-3 py-2 text-gray-1 ${
+                      location.pathname.startsWith(ROUTES.LOGIN.path)
+                        ? "underline underline-offset-4 decoration-2"
+                        : ""
+                    }`}
                   >
                     <Link to={ROUTES.LOGIN.path}>Log In</Link>
                   </Button>
                   <Button
                     asChild
-                    variant="outline"
-                    className="px-3 py-2 text-gray-1"
+                    variant={
+                      location.pathname.startsWith(ROUTES.SIGNUP.path)
+                        ? "ghost"
+                        : "outline"
+                    }
+                    className={`px-3 py-2 text-gray-1 ${
+                      location.pathname.startsWith(ROUTES.SIGNUP.path)
+                        ? "underline underline-offset-4 decoration-2"
+                        : ""
+                    }`}
                   >
                     <Link to={ROUTES.SIGNUP.path}>Sign Up</Link>
                   </Button>

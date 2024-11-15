@@ -38,7 +38,12 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
     reservation_deposit_amount: reservationDepositAmount,
   } = listing;
   const [artifacts, setArtifacts] = useState(initialArtifacts);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentImageIndex, setCurrentImageIndex] = useState(() => {
+    const firstImageIndex = artifacts.findIndex(
+      (artifact) => artifact.artifact_type === "image",
+    );
+    return firstImageIndex >= 0 ? firstImageIndex : 0;
+  });
   const isForSale = priceAmount && stripeProductId && inventoryType;
 
   const handleAddArtifacts = (newArtifacts: Artifact[]) => {

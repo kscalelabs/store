@@ -47,27 +47,39 @@ const MyListingGrid = ({ userId }: MyListingGridProps) => {
       setListingInfos(data.listings);
 
       if (data.listings.length > 0) {
-        const { data: batchData, error: batchError } = await auth.client.GET(
-          "/listings/batch",
-          {
+        const fetchListingDetails = async (ids: string[]) => {
+          const { data, error } = await auth.client.GET("/listings/batch", {
             params: {
               query: {
-                ids: data.listings.map((info: ListingInfo) => info.id),
+                ids: ids,
               },
             },
-          },
+          });
+
+          if (error) {
+            addErrorAlert(error);
+            return;
+          }
+
+          const detailsMap: Record<string, ListingDetails> = {};
+          data.listings.forEach((listing: ListingDetails) => {
+            const firstImageArtifact = listing.artifacts?.find(
+              (artifact) => artifact.artifact_type === "image",
+            );
+            if (firstImageArtifact) {
+              listing.artifacts = [
+                firstImageArtifact,
+                ...listing.artifacts.filter((a) => a !== firstImageArtifact),
+              ];
+            }
+            detailsMap[listing.id] = listing;
+          });
+          setListingDetails(detailsMap);
+        };
+
+        await fetchListingDetails(
+          data.listings.map((info: ListingInfo) => info.id),
         );
-
-        if (batchError) {
-          addErrorAlert(batchError);
-          return;
-        }
-
-        const detailsMap: Record<string, ListingDetails> = {};
-        batchData.listings.forEach((listing: ListingDetails) => {
-          detailsMap[listing.id] = listing;
-        });
-        setListingDetails(detailsMap);
       }
     };
 

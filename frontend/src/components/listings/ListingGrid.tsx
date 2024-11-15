@@ -51,6 +51,15 @@ const ListingGrid = (props: ListingGridProps) => {
 
         const detailsMap: Record<string, ListingDetails> = {};
         data.listings.forEach((listing) => {
+          const firstImageArtifact = listing.artifacts?.find(
+            (artifact) => artifact.artifact_type === "image",
+          );
+          if (firstImageArtifact) {
+            listing.artifacts = [
+              firstImageArtifact,
+              ...listing.artifacts.filter((a) => a !== firstImageArtifact),
+            ];
+          }
           detailsMap[listing.id] = listing;
         });
         setListingDetails(detailsMap);

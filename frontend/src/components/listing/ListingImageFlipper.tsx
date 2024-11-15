@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { FaChevronLeft, FaChevronRight, FaTimes } from "react-icons/fa";
 
 import placeholder from "@/components/listing/pics/placeholder.jpg";
@@ -15,7 +15,27 @@ const ListingImageFlipper = (props: Props) => {
   const { artifacts, name, currentImageIndex, setCurrentImageIndex } = props;
   const [isFullScreen, setIsFullScreen] = useState(false);
 
-  if (artifacts.length === 0) {
+  const imageArtifacts = useMemo(
+    () =>
+      artifacts
+        .map((artifact, index) => ({ artifact, originalIndex: index }))
+        .filter(({ artifact }) => artifact.artifact_type === "image")
+        .map(({ artifact, originalIndex }, newIndex) => ({
+          artifact,
+          originalIndex,
+          newIndex,
+        })),
+    [artifacts],
+  );
+
+  const currentImageArrayIndex = useMemo(() => {
+    const found = imageArtifacts.findIndex(
+      ({ originalIndex }) => originalIndex === currentImageIndex,
+    );
+    return found >= 0 ? found : 0;
+  }, [imageArtifacts, currentImageIndex]);
+
+  if (imageArtifacts.length === 0) {
     return (
       <div className="w-full md:w-1/2 relative">
         <div className="aspect-square bg-white rounded-lg overflow-hidden">
@@ -29,7 +49,18 @@ const ListingImageFlipper = (props: Props) => {
     );
   }
 
-  const currentArtifact = artifacts[currentImageIndex];
+  const handleNavigate = (direction: "next" | "prev") => {
+    const nextIndex =
+      direction === "next"
+        ? (currentImageArrayIndex + 1) % imageArtifacts.length
+        : currentImageArrayIndex === 0
+          ? imageArtifacts.length - 1
+          : currentImageArrayIndex - 1;
+
+    setCurrentImageIndex(imageArtifacts[nextIndex].originalIndex);
+  };
+
+  const currentArtifact = imageArtifacts[currentImageArrayIndex].artifact;
 
   return (
     <>
@@ -41,24 +72,16 @@ const ListingImageFlipper = (props: Props) => {
           className="cursor-zoom-in rounded-lg w-[500px]"
         />
         {/* Navigation arrows */}
-        {artifacts.length > 1 && (
+        {imageArtifacts.length > 1 && (
           <>
             <button
-              onClick={() =>
-                setCurrentImageIndex((prev) =>
-                  prev === 0 ? artifacts.length - 1 : prev - 1,
-                )
-              }
+              onClick={() => handleNavigate("prev")}
               className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 w-8 h-8 rounded-full flex items-center justify-center shadow-md border border-gray-11"
             >
               <FaChevronLeft className="text-gray-11" />
             </button>
             <button
-              onClick={() =>
-                setCurrentImageIndex((prev) =>
-                  prev === artifacts.length - 1 ? 0 : prev + 1,
-                )
-              }
+              onClick={() => handleNavigate("next")}
               className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 w-8 h-8 rounded-full flex items-center justify-center shadow-md border border-gray-11"
             >
               <FaChevronRight className="text-gray-11" />

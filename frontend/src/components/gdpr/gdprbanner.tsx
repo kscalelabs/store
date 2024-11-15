@@ -81,7 +81,7 @@ const GDPRBanner: React.FC = () => {
       )}
 
       {showOptOutForm && (
-        <div className="bg-gray-12 p-4 fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-lg flex flex-col items-center z-50 shadow-md rounded-lg">
+        <div className="bg-gray-12 p-4 fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-lg flex flex-col items-center z-50 shadow-md rounded-lg border border-gray-2">
           <div className="text-gray-1 text-sm text-center mb-2 max-w-full">
             Please select which services you would like to opt out of.
           </div>
