@@ -73,7 +73,7 @@ const CreateSell = () => {
   }, [auth.currentUser, slug]);
 
   const hasPermission = auth.currentUser?.permissions?.some(
-    (permission) => permission === "is_admin",
+    (permission) => permission === "is_admin" || permission === "is_mod",
   );
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {

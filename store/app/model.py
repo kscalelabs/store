@@ -602,7 +602,11 @@ class Order(StoreBaseModel):
     preorder_release_date: int | None = None
     preorder_deposit_amount: int | None = None
     stripe_preorder_deposit_id: str | None = None
-    stripe_refund_id: str | None = None
+    stripe_deposit_payment_intent_id: str | None = None
+    inventory_type: Literal["finite", "preorder"]
+    final_payment_checkout_session_id: str | None = None
+    final_payment_intent_id: str | None = None
+    final_payment_date: int | None = None
     shipping_name: str | None = None
     shipping_address_line1: str | None = None
     shipping_address_line2: str | None = None
@@ -610,19 +614,20 @@ class Order(StoreBaseModel):
     shipping_state: str | None = None
     shipping_postal_code: str | None = None
     shipping_country: str | None = None
-    shipped_at: int | None = None
-    delivered_at: int | None = None
-    cancelled_at: int | None = None
-    refunded_at: int | None = None
+    shipped_date: int | None = None
+    stripe_refund_id: str | None = None
+    delivered_date: int | None = None
+    cancelled_date: int | None = None
+    refunded_date: int | None = None
 
     @classmethod
     def create(
         cls,
         user_id: str,
         user_email: str,
+        quantity: int,
         price_amount: int,
         currency: str,
-        quantity: int,
         stripe_checkout_session_id: str,
         stripe_product_id: str,
         stripe_price_id: str,
@@ -633,8 +638,9 @@ class Order(StoreBaseModel):
         preorder_release_date: int | None = None,
         preorder_deposit_amount: int | None = None,
         stripe_preorder_deposit_id: str | None = None,
-        stripe_refund_id: str | None = None,
+        stripe_deposit_payment_intent_id: str | None = None,
         status: OrderStatus = "processing",
+        inventory_type: Literal["finite", "preorder"] = "finite",
         shipping_name: str | None = None,
         shipping_address_line1: str | None = None,
         shipping_address_line2: str | None = None,
@@ -664,7 +670,8 @@ class Order(StoreBaseModel):
             preorder_release_date=preorder_release_date,
             preorder_deposit_amount=preorder_deposit_amount,
             stripe_preorder_deposit_id=stripe_preorder_deposit_id,
-            stripe_refund_id=stripe_refund_id,
+            stripe_deposit_payment_intent_id=stripe_deposit_payment_intent_id,
+            inventory_type=inventory_type,
             shipping_name=shipping_name,
             shipping_address_line1=shipping_address_line1,
             shipping_address_line2=shipping_address_line2,
