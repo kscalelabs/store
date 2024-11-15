@@ -925,7 +925,7 @@ export interface paths {
         put?: never;
         /**
          * Stripe Webhook
-         * @description Handle direct account webhooks (non-Connect events)
+         * @description Handle direct account webhooks (non-Connect events).
          */
         post: operations["stripe_webhook_stripe_webhook_post"];
         delete?: never;
@@ -945,7 +945,7 @@ export interface paths {
         put?: never;
         /**
          * Stripe Connect Webhook
-         * @description Handle Connect account webhooks
+         * @description Handle Connect account webhooks.
          */
         post: operations["stripe_connect_webhook_stripe_connect_webhook_post"];
         delete?: never;
