@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { FaExternalLinkAlt } from "react-icons/fa";
 import { FaBars } from "react-icons/fa6";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
@@ -9,6 +8,8 @@ import { getNavItems } from "@/components/nav/navigation";
 import { Button } from "@/components/ui/button";
 import { useAuthentication } from "@/hooks/useAuth";
 import ROUTES from "@/lib/types/routes";
+
+import { NavButton } from "./NavButton";
 
 const Navbar = () => {
   const { isAuthenticated } = useAuthentication();
@@ -82,110 +83,55 @@ const Navbar = () => {
               </div>
               {navItems.map((item) =>
                 item.isExternal ? (
-                  <Button
-                    key={item.name}
-                    asChild
-                    variant="outline"
-                    className="px-2 xl:px-3 py-2 text-sm tracking-wide xl:tracking-widest text-gray-1"
+                  <NavButton
+                    key={item.path}
+                    to={item.path}
+                    currentPath={location.pathname}
+                    isExternal
                   >
-                    <a
-                      href={item.path}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2"
-                    >
-                      {item.name}
-                      <FaExternalLinkAlt className="h-3 w-3 text-gray-1" />
-                    </a>
-                  </Button>
+                    {item.name}
+                  </NavButton>
                 ) : (
-                  <Button
-                    key={item.name}
-                    asChild
-                    variant={
-                      location.pathname.startsWith(item.path)
-                        ? "ghost"
-                        : "outline"
-                    }
-                    className={`px-2 xl:px-3 py-2 text-sm tracking-widest ${
-                      location.pathname.startsWith(item.path)
-                        ? "underline underline-offset-4 decoration-2"
-                        : ""
-                    }`}
+                  <NavButton
+                    key={item.path}
+                    to={item.path}
+                    currentPath={location.pathname}
                   >
-                    <Link to={item.path}>
-                      <div className="flex items-center gap-2">{item.name}</div>
-                    </Link>
-                  </Button>
+                    {item.name}
+                  </NavButton>
                 ),
               )}
             </div>
             <div className="flex items-center space-x-4 text-gray-1 p-2 ml-4 text-sm tracking-widest">
               {isAuthenticated ? (
                 <>
-                  <Button
-                    asChild
-                    variant={
-                      location.pathname.startsWith(ROUTES.ACCOUNT.path)
-                        ? "ghost"
-                        : "outline"
-                    }
-                    className={`px-3 py-2 text-gray-1 ${
-                      location.pathname.startsWith(ROUTES.ACCOUNT.path)
-                        ? "underline underline-offset-4 decoration-2"
-                        : ""
-                    }`}
+                  <NavButton
+                    to={ROUTES.ACCOUNT.path}
+                    currentPath={location.pathname}
                   >
-                    <Link to={ROUTES.ACCOUNT.path}>Account</Link>
-                  </Button>
-                  <Button
-                    asChild
-                    variant={
-                      location.pathname.startsWith(ROUTES.LOGOUT.path)
-                        ? "ghost"
-                        : "outline"
-                    }
-                    className={`px-3 py-2 text-gray-1 ${
-                      location.pathname.startsWith(ROUTES.LOGOUT.path)
-                        ? "underline underline-offset-4 decoration-2"
-                        : ""
-                    }`}
+                    Account
+                  </NavButton>
+                  <NavButton
+                    to={ROUTES.LOGOUT.path}
+                    currentPath={location.pathname}
                   >
-                    <Link to={ROUTES.LOGOUT.path}>Logout</Link>
-                  </Button>
+                    Logout
+                  </NavButton>
                 </>
               ) : (
                 <>
-                  <Button
-                    asChild
-                    variant={
-                      location.pathname.startsWith(ROUTES.LOGIN.path)
-                        ? "ghost"
-                        : "outline"
-                    }
-                    className={`px-3 py-2 text-gray-1 ${
-                      location.pathname.startsWith(ROUTES.LOGIN.path)
-                        ? "underline underline-offset-4 decoration-2"
-                        : ""
-                    }`}
+                  <NavButton
+                    to={ROUTES.LOGIN.path}
+                    currentPath={location.pathname}
                   >
-                    <Link to={ROUTES.LOGIN.path}>Log In</Link>
-                  </Button>
-                  <Button
-                    asChild
-                    variant={
-                      location.pathname.startsWith(ROUTES.SIGNUP.path)
-                        ? "ghost"
-                        : "outline"
-                    }
-                    className={`px-3 py-2 text-gray-1 ${
-                      location.pathname.startsWith(ROUTES.SIGNUP.path)
-                        ? "underline underline-offset-4 decoration-2"
-                        : ""
-                    }`}
+                    Log In
+                  </NavButton>
+                  <NavButton
+                    to={ROUTES.SIGNUP.path}
+                    currentPath={location.pathname}
                   >
-                    <Link to={ROUTES.SIGNUP.path}>Sign Up</Link>
-                  </Button>
+                    Sign Up
+                  </NavButton>
                 </>
               )}
             </div>

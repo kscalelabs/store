@@ -7,6 +7,7 @@ import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import ROUTES from "@/lib/types/routes";
+import { createListingDetailsMap } from "@/lib/utils/listingUtils";
 
 type ListingInfo = {
   id: string;
@@ -61,20 +62,7 @@ const MyListingGrid = ({ userId }: MyListingGridProps) => {
             return;
           }
 
-          const detailsMap: Record<string, ListingDetails> = {};
-          data.listings.forEach((listing: ListingDetails) => {
-            const firstImageArtifact = listing.artifacts?.find(
-              (artifact) => artifact.artifact_type === "image",
-            );
-            if (firstImageArtifact) {
-              listing.artifacts = [
-                firstImageArtifact,
-                ...listing.artifacts.filter((a) => a !== firstImageArtifact),
-              ];
-            }
-            detailsMap[listing.id] = listing;
-          });
-          setListingDetails(detailsMap);
+          setListingDetails(createListingDetailsMap(data.listings));
         };
 
         await fetchListingDetails(
