@@ -3,18 +3,40 @@ import { FaMicrophone } from "react-icons/fa";
 
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 
+// Add these interfaces at the top with the other interfaces
+interface ConsumerSession {
+  mungeStereoHack: boolean;
+  remoteController: RemoteController | null;
+  streams: MediaStream[];
+  connect: () => void;
+  close: () => void;
+  addEventListener: (event: string, callback: () => void) => void;
+}
+
+interface RemoteController {
+  sendControlRequest: (request: string) => string;
+  addEventListener: (event: string, callback: (event: unknown) => void) => void;
+}
+
+// Update the GstWebRTCAPI interface
+interface GstWebRTCAPI {
+  getAvailableProducers: () => Array<{ id: string }>;
+  createConsumerSession: (producerId: string) => ConsumerSession;
+}
+
 const AVStreamer = () => {
   const { addAlert, addErrorAlert } = useAlertQueue();
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [serverUrl, setServerUrl] = useState("");
   const videoRef = useRef<HTMLVideoElement>(null);
-  const apiRef = useRef<any>(null);
-  const sessionRef = useRef<any>(null);
+  const apiRef = useRef<GstWebRTCAPI | null>(null);
+  const sessionRef = useRef<ConsumerSession | null>(null);
   const [streamAspectRatio, setStreamAspectRatio] = useState<number | null>(
     null,
   );
-  const [remoteController, setRemoteController] = useState<any>(null);
+  const [remoteController, setRemoteController] =
+    useState<RemoteController | null>(null);
   const [requestText, setRequestText] = useState("");
 
   useEffect(() => {
@@ -37,13 +59,18 @@ const AVStreamer = () => {
       setIsLoading(true);
 
       // Get available producers
-      const producers = apiRef.current.getAvailableProducers();
-      if (producers.length === 0) {
+      const producers = apiRef.current?.getAvailableProducers();
+      if (!producers || producers.length === 0) {
         throw new Error(`No available producers on ${serverUrl}`);
       }
 
       // Create consumer session for first producer
-      const session = apiRef.current.createConsumerSession(producers[0].id);
+      const session = apiRef.current?.createConsumerSession(producers[0].id);
+      if (!session) {
+        throw new Error(
+          `Failed to create consumer session for ${producers[0].id}`,
+        );
+      }
       session.mungeStereoHack = true;
       sessionRef.current = session;
 

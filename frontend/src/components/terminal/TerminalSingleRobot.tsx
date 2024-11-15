@@ -71,18 +71,6 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
     }
   };
 
-  const handleConnectionChange = (status: ConnectionStatus) => {
-    addTerminalMessage(`Connection status: ${status}`);
-  };
-
-  const handleConnect = () => {
-    handleConnectionChange(ConnectionStatus.Connecting);
-  };
-
-  const handleDisconnect = () => {
-    handleConnectionChange(ConnectionStatus.Disconnected);
-  };
-
   return (
     <div className="min-h-screen bg-black p-4 font-mono text-white">
       {/* Navigation buttons */}
