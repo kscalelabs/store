@@ -11,7 +11,11 @@ import ListingName from "@/components/listing/ListingName";
 import ListingOnshape from "@/components/listing/ListingOnshape";
 import ListingPayment from "@/components/listing/ListingPayment";
 import ListingRegisterRobot from "@/components/listing/ListingRegisterRobot";
-import { Artifact, ListingResponse } from "@/components/listing/types";
+import {
+  Artifact,
+  InventoryType,
+  ListingResponse,
+} from "@/components/listing/types";
 
 const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
   const {
@@ -101,7 +105,7 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
                 listingId={listingId}
                 stripeProductId={stripeProductId}
                 priceAmount={priceAmount}
-                inventoryType={inventoryType as "finite" | "preorder"}
+                inventoryType={inventoryType as InventoryType}
                 inventoryQuantity={inventoryQuantity || undefined}
                 preorderReleaseDate={preorderReleaseDate || undefined}
                 preorderDepositAmount={preorderDepositAmount || undefined}

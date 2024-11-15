@@ -18,6 +18,15 @@ type OrderWithProduct =
 type Order =
   paths["/orders/user-orders"]["get"]["responses"][200]["content"]["application/json"][0];
 
+enum OrderStatus {
+  PREORDER = -1,
+  PROCESSING = 0,
+  IN_DEVELOPMENT = 1,
+  BEING_ASSEMBLED = 2,
+  SHIPPED = 3,
+  DELIVERED = 4,
+}
+
 const orderStatuses = [
   "processing",
   "in_development",
@@ -53,8 +62,8 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
 
   const currentStatusIndex =
     order.status === "preorder_placed"
-      ? -1
-      : orderStatuses.indexOf(order.status);
+      ? OrderStatus.PREORDER
+      : OrderStatus[order.status.toUpperCase() as keyof typeof OrderStatus];
   const isRedStatus = redStatuses.includes(order.status);
   const showStatusBar = activeStatuses.includes(order.status);
 
@@ -202,8 +211,10 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
                       index <= currentStatusIndex
                         ? getStatusColor(status)
                         : "bg-gray-300"
-                    } ${index === 0 ? "rounded-l-full" : ""} ${
-                      index === 4 ? "rounded-r-full" : ""
+                    } ${
+                      index === OrderStatus.PROCESSING ? "rounded-l-full" : ""
+                    } ${
+                      index === OrderStatus.DELIVERED ? "rounded-r-full" : ""
                     }`}
                     style={{
                       width: "20%",

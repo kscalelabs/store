@@ -28,13 +28,12 @@ const CreateSell = () => {
 
   const [description, setDescription] = useState<string>("");
   const [images, setImages] = useState<ImageListType>([]);
-  const [displayPrice, setDisplayPrice] = useState<string>("0.00");
+  const [displayPrice, setDisplayPrice] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [slug, setSlug] = useState<string>("");
   const [previewUrl, setPreviewUrl] = useState<string>("");
-  const [price_amount, setPriceAmount] = useState<number>(0);
-  const [displayDepositAmount, setDisplayDepositAmount] =
-    useState<string>("0.00");
+  const [price_amount, setPriceAmount] = useState<number | null>(null);
+  const [displayDepositAmount, setDisplayDepositAmount] = useState<string>("");
 
   const {
     register,
@@ -72,6 +71,10 @@ const CreateSell = () => {
       );
     }
   }, [auth.currentUser, slug]);
+
+  const hasPermission = auth.currentUser?.permissions?.some(
+    (permission) => permission === "is_admin",
+  );
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value.replace(/[^0-9]/g, "");
@@ -288,7 +291,7 @@ const CreateSell = () => {
                   {...register("inventory_type")}
                 >
                   <option value="finite">Limited Quantity</option>
-                  <option value="preorder">Pre-order</option>
+                  {hasPermission && <option value="preorder">Pre-order</option>}
                 </select>
               </div>
 
@@ -301,6 +304,7 @@ const CreateSell = () => {
                   <Input
                     type="number"
                     min="1"
+                    placeholder="Enter quantity"
                     {...register("inventory_quantity", { valueAsNumber: true })}
                   />
                   {errors?.inventory_quantity && (
@@ -325,9 +329,9 @@ const CreateSell = () => {
                 {errors?.price_amount && (
                   <ErrorMessage>{errors.price_amount.message}</ErrorMessage>
                 )}
-                {price_amount > 0 && (
+                {price_amount && price_amount > 0 && (
                   <p className="mt-2 text-sm text-gray-6">
-                    Total Price: ${displayPrice} USD
+                    Price: ${displayPrice} USD
                   </p>
                 )}
               </div>

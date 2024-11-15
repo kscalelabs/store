@@ -55,7 +55,7 @@ const UploadContent: FC<UploadContentProps> = ({ images, onChange }) => {
       dataURLKey="data_url"
     >
       {({ imageList, onImageUpload, onImageRemove, isDragging, dragProps }) => (
-        <div className="upload__image-wrapper">
+        <div>
           {/* Dropzone Area */}
           <div
             className={`

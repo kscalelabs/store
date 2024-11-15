@@ -493,10 +493,11 @@ async def create_checkout_session(
                     checkout_params["custom_text"] = {
                         "submit": {
                             "message": (
-                                f"This is a pre-order with a deposit of ${listing.preorder_deposit_amount/100:,.2f}. "
-                                f"The remaining ${remaining_amount:,.2f} will be charged when the item is ready "
-                                f"to ship (estimated {formatted_date}). By continuing, you agree to save your "
-                                "payment method for the future charge."
+                                f"By paying you understand that you are placing a pre-order with a "
+                                f"refundable deposit of ${listing.preorder_deposit_amount/100:,.2f}. "
+                                f"You will be contacted to pay the remaining ${remaining_amount:,.2f} when your "
+                                f"robot is ready to ship (estimated {formatted_date}). By continuing, you agree "
+                                "to save your payment method for the future charge."
                             )
                         }
                     }

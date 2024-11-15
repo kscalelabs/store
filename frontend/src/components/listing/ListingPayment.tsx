@@ -1,7 +1,6 @@
+import { InventoryType } from "@/components/listing/types";
 import CheckoutButton from "@/components/stripe/CheckoutButton";
 import { formatPrice } from "@/lib/utils/formatNumber";
-
-import { InventoryType } from "./types";
 
 interface Props {
   listingId: string;
