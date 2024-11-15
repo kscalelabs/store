@@ -18,6 +18,7 @@ import CreateSell from "@/components/pages/CreateSell";
 import CreateShare from "@/components/pages/CreateShare";
 import DeleteConnect from "@/components/pages/DeleteConnect";
 import EmailSignup from "@/components/pages/EmailSignup";
+import Eula from "@/components/pages/Eula";
 import FileBrowser from "@/components/pages/FileBrowser";
 import Home from "@/components/pages/Home";
 import KBotPreorderTerms from "@/components/pages/KBotPreorderTerms";
@@ -76,6 +77,7 @@ const App = () => {
                           path={ROUTES.PREORDER_TERMS.path}
                           element={<KBotPreorderTerms />}
                         />
+                        <Route path={ROUTES.EULA.path} element={<Eula />} />
 
                         {/* Account */}
                         <Route

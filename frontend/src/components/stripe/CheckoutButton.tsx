@@ -157,7 +157,10 @@ const CheckoutButton: React.FC<Props> = ({
                 End User License Agreement
               </a>
               ,{" "}
-              <a href="/terms" className="underline hover:text-gray-300">
+              <a
+                href={ROUTES.TOS.path}
+                className="underline hover:text-gray-300"
+              >
                 Terms of Service
               </a>
               , and{" "}

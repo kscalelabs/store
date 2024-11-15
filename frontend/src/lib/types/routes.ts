@@ -9,6 +9,7 @@ const ROUTES = {
   TOS: route("tos"),
   PRIVACY: route("privacy"),
   PREORDER_TERMS: route("terms/preorder/k-bot"),
+  EULA: route("eula"),
 
   // Account routes
   ACCOUNT: route("account"),
