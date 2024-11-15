@@ -2,6 +2,7 @@ import { FaRobot, FaTerminal } from "react-icons/fa";
 import { FaRegFileLines } from "react-icons/fa6";
 
 import ROUTES from "@/lib/types/routes";
+import { FEATURE_FLAGS } from "@/lib/utils/featureFlags";
 
 export interface BaseNavItem {
   name: string;
@@ -28,16 +29,24 @@ export const DEFAULT_NAV_ITEMS: BaseNavItem[] = [
   },
 ];
 
-export const AUTHENTICATED_NAV_ITEMS: BaseNavItem[] = [
-  {
-    name: "Terminal",
-    path: ROUTES.TERMINAL.path,
-    icon: <FaTerminal />,
-  },
-];
+const TERMINAL_NAV_ITEM: BaseNavItem = {
+  name: "Terminal",
+  path: ROUTES.TERMINAL.path,
+  icon: <FaTerminal />,
+};
+
+export const AUTHENTICATED_NAV_ITEMS: BaseNavItem[] = [];
 
 export const getNavItems = (isAuthenticated: boolean): BaseNavItem[] => {
-  return isAuthenticated
-    ? [...AUTHENTICATED_NAV_ITEMS, ...DEFAULT_NAV_ITEMS]
-    : DEFAULT_NAV_ITEMS;
+  let navItems = [...DEFAULT_NAV_ITEMS];
+
+  if (FEATURE_FLAGS.DEMO_ROBOT_ENABLED || isAuthenticated) {
+    navItems = [TERMINAL_NAV_ITEM, ...navItems];
+  }
+
+  if (isAuthenticated) {
+    navItems = [...AUTHENTICATED_NAV_ITEMS, ...navItems];
+  }
+
+  return navItems;
 };

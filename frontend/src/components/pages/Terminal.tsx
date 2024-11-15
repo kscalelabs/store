@@ -38,9 +38,19 @@ const TerminalInnerRouter = ({
 
 const TerminalInner = () => {
   const { api, currentUser, isAuthenticated } = useAuthentication();
-
   const [robots, setRobots] = useState<SingleRobotResponse[] | null>(null);
   const { addErrorAlert } = useAlertQueue();
+
+  const demoRobot: SingleRobotResponse = {
+    robot_id: "d38afe50c9d6b936",
+    name: "K-Scale Demo",
+    description: "Click on the robot name to start the demo!",
+    listing_id: "3f26c2bc2c072f50",
+    user_id: "",
+    username: "kscale",
+    slug: "k-bot",
+    created_at: Date.now() / 1000,
+  };
 
   useEffect(() => {
     const fetchRobots = async () => {
@@ -49,27 +59,21 @@ const TerminalInner = () => {
           const { data, error } = await api.client.GET("/robots/list");
           if (error) {
             addErrorAlert(error);
-          } else {
-            if (FEATURE_FLAGS.DEMO_ROBOT_ENABLED && data.robots.length === 0) {
-              const demoRobot: SingleRobotResponse = {
-                robot_id: "d38afe50c9d6b936",
-                name: "K-Scale Demo",
-                description: "Click on the robot name to start the demo!",
-                listing_id: "3f26c2bc2c072f50",
-                user_id: "",
-                username: "K-Scale",
-                slug: "demo",
-                created_at: Date.now() / 1000,
-              };
-              setRobots([demoRobot]);
-            } else {
-              setRobots(data.robots);
-            }
+          } else if (data.robots.length > 0) {
+            setRobots(data.robots);
+            return;
           }
         } catch (error) {
           addErrorAlert(error);
         }
       }
+
+      if (FEATURE_FLAGS.DEMO_ROBOT_ENABLED) {
+        setRobots([demoRobot]);
+        return;
+      }
+
+      setRobots(null);
     };
 
     fetchRobots();
@@ -155,7 +159,7 @@ const TerminalInner = () => {
 
 const Terminal: React.FC = () => {
   return (
-    <RequireAuthentication>
+    <RequireAuthentication allowDemo={true}>
       <TerminalInner />
     </RequireAuthentication>
   );
