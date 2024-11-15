@@ -20,13 +20,13 @@ export default function SellerOnboarding() {
   const [accountCreatePending, setAccountCreatePending] = useState(false);
   const [onboardingExited, setOnboardingExited] = useState(false);
   const [connectedAccountId, setConnectedAccountId] = useState<string>(
-    auth.currentUser?.stripe_connect_account_id || "",
+    auth.currentUser?.stripe_connect?.account_id || "",
   );
 
   // Wait for user data to be loaded before initializing Stripe Connect
   useEffect(() => {
-    if (!auth.isLoading && auth.currentUser?.stripe_connect_account_id) {
-      setConnectedAccountId(auth.currentUser.stripe_connect_account_id);
+    if (!auth.isLoading && auth.currentUser?.stripe_connect?.account_id) {
+      setConnectedAccountId(auth.currentUser.stripe_connect.account_id);
     }
   }, [auth.isLoading, auth.currentUser]);
 
@@ -34,7 +34,7 @@ export default function SellerOnboarding() {
   const stripeConnectInstance = useStripeConnect(connectedAccountId || "");
 
   useEffect(() => {
-    if (auth.currentUser?.stripe_connect_onboarding_completed) {
+    if (auth.currentUser?.stripe_connect?.onboarding_completed) {
       navigate(ROUTES.SELL.DASHBOARD.path);
     }
   }, [auth.currentUser, navigate]);
@@ -107,7 +107,7 @@ export default function SellerOnboarding() {
                 onExit={() => {
                   setOnboardingExited(true);
                   auth.fetchCurrentUser();
-                  if (auth.currentUser?.stripe_connect_onboarding_completed) {
+                  if (auth.currentUser?.stripe_connect?.onboarding_completed) {
                     navigate(ROUTES.SELL.DASHBOARD.path);
                   }
                 }}
@@ -129,7 +129,7 @@ export default function SellerOnboarding() {
                     </code>
                   </div>
                   <span className="font-semibold">
-                    This usually takes a few steps/submissions.
+                    This process may take a few steps/submissions.
                   </span>
                   <span className="font-light">
                     It may take some time for Stripe to process your info

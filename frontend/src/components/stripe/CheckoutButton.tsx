@@ -134,7 +134,7 @@ const CheckoutButton: React.FC<Props> = ({
               }}
               variant="default"
             >
-              Sign In
+              Log In
             </Button>
             <Button
               onClick={() => {

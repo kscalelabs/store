@@ -19,12 +19,10 @@ class OrderDataCreate(TypedDict):
     stripe_product_id: str
     stripe_price_id: str
     stripe_connect_account_id: str
-    stripe_customer_id: str
     stripe_payment_intent_id: NotRequired[str | None]
     preorder_release_date: NotRequired[int]
     preorder_deposit_amount: NotRequired[int]
     stripe_preorder_deposit_id: NotRequired[str]
-    stripe_deposit_payment_intent_id: NotRequired[str | None]
     status: NotRequired[OrderStatus]
     inventory_type: NotRequired[InventoryType]
     shipping_name: NotRequired[str]
@@ -44,7 +42,6 @@ class OrderDataUpdate(TypedDict):
     final_payment_checkout_session_id: NotRequired[str]
     final_payment_intent_id: NotRequired[str]
     final_payment_date: NotRequired[int]
-    stripe_deposit_payment_intent_id: NotRequired[str | None]
     stripe_refund_id: NotRequired[str]
     shipping_name: NotRequired[str]
     shipping_address_line1: NotRequired[str]

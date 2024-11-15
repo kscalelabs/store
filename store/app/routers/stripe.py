@@ -12,13 +12,15 @@ from pydantic import BaseModel
 
 from store.app.crud.orders import OrderDataCreate, OrderDataUpdate
 from store.app.db import Crud
-from store.app.model import Listing, Order, User
+from store.app.model import Listing, Order, User, UserStripeConnect
 from store.app.security.user import (
     get_session_user_with_admin_permission,
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
 )
 from store.settings import settings
+
+STRIPE_CONNECT_CHECKOUT_SUCCESS_URL = f"{settings.site.homepage}/order/success?session_id={{CHECKOUT_SESSION_ID}}"
 
 STRIPE_CONNECT_FINAL_PAYMENT_SUCCESS_URL = (
     f"{settings.site.homepage}/order/final-payment/success?session_id={{CHECKOUT_SESSION_ID}}"
@@ -240,7 +242,6 @@ async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud)
             "stripe_checkout_session_id": session["id"],
             "stripe_product_id": session["metadata"].get("stripe_product_id"),
             "stripe_connect_account_id": session["metadata"].get("seller_connect_account_id"),
-            "stripe_customer_id": session["customer"],
             "stripe_payment_intent_id": session.get("payment_intent"),
             "price_amount": price_amount,
             "currency": session["currency"],
@@ -336,11 +337,12 @@ async def create_checkout_session(
             checkout_params: stripe.checkout.Session.CreateParams = {
                 "mode": "payment",
                 "payment_method_types": ["card", "affirm"] if support_affirm_payment(listing) else ["card"],
-                "success_url": STRIPE_CONNECT_FINAL_PAYMENT_SUCCESS_URL,
+                "success_url": STRIPE_CONNECT_CHECKOUT_SUCCESS_URL,
                 "cancel_url": f"{settings.site.homepage}{request.cancel_url}",
                 "client_reference_id": user.id,
                 "shipping_address_collection": {"allowed_countries": ["US"]},
                 "metadata": metadata,
+                "stripe_account": seller.stripe_connect.account_id,
             }
 
             # For preorders, use payment mode with deposit amount
@@ -503,11 +505,17 @@ async def create_connect_account(
 
         logger.info("Created Connect account %s for user %s", account.id, user.id)
 
+        # Convert UserStripeConnect to a dictionary before updating
+        stripe_connect = UserStripeConnect(
+            account_id=account.id,
+            onboarding_completed=False,
+        )
+
+        # Update user with the dictionary representation of UserStripeConnect
         await crud.update_user(
             user.id,
             {
-                "stripe_connect_account_id": account.id,
-                "stripe_connect_onboarding_completed": False,
+                "stripe_connect": stripe_connect.model_dump(),
             },
         )
 
@@ -680,7 +688,6 @@ async def process_preorder(
             # Create a new checkout session for the final payment
             checkout_params: stripe.checkout.Session.CreateParams = {
                 "mode": "payment",
-                "customer": order.stripe_customer_id,
                 "payment_method_types": ["card", "affirm"],  # Enable both card and Affirm
                 "success_url": STRIPE_CONNECT_FINAL_PAYMENT_SUCCESS_URL,
                 "cancel_url": STRIPE_CONNECT_FINAL_PAYMENT_CANCEL_URL,
@@ -740,7 +747,6 @@ async def process_preorder(
                 "stripe_checkout_session_id": order.stripe_checkout_session_id,
                 "final_payment_checkout_session_id": checkout_session.id,
                 "status": "awaiting_final_payment",
-                "stripe_deposit_payment_intent_id": order.stripe_deposit_payment_intent_id,
                 "updated_at": int(time.time()),
             }
 

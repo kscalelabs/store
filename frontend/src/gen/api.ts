@@ -1730,8 +1730,6 @@ export interface components {
             stripe_product_id: string;
             /** Stripe Price Id */
             stripe_price_id: string;
-            /** Stripe Customer Id */
-            stripe_customer_id: string;
             /** Stripe Payment Intent Id */
             stripe_payment_intent_id?: string | null;
             /** Preorder Release Date */
@@ -1740,8 +1738,6 @@ export interface components {
             preorder_deposit_amount?: number | null;
             /** Stripe Preorder Deposit Id */
             stripe_preorder_deposit_id?: string | null;
-            /** Stripe Deposit Payment Intent Id */
-            stripe_deposit_payment_intent_id?: string | null;
             /**
              * Inventory Type
              * @enum {string}

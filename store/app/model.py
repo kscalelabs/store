@@ -585,12 +585,10 @@ class Order(StoreBaseModel):
     stripe_connect_account_id: str
     stripe_product_id: str
     stripe_price_id: str
-    stripe_customer_id: str
     stripe_payment_intent_id: str | None = None
     preorder_release_date: int | None = None
     preorder_deposit_amount: int | None = None
     stripe_preorder_deposit_id: str | None = None
-    stripe_deposit_payment_intent_id: str | None = None
     inventory_type: Literal["finite", "preorder"]
     final_payment_checkout_session_id: str | None = None
     final_payment_intent_id: str | None = None
@@ -612,21 +610,19 @@ class Order(StoreBaseModel):
     def create(
         cls,
         user_id: str,
-        listing_id: str,
         user_email: str,
-        quantity: int,
-        price_amount: int,
-        currency: str,
+        listing_id: str,
         stripe_checkout_session_id: str,
         stripe_product_id: str,
         stripe_price_id: str,
         stripe_connect_account_id: str,
-        stripe_customer_id: str,
+        quantity: int,
+        price_amount: int,
+        currency: str,
         stripe_payment_intent_id: str | None = None,
         preorder_release_date: int | None = None,
         preorder_deposit_amount: int | None = None,
         stripe_preorder_deposit_id: str | None = None,
-        stripe_deposit_payment_intent_id: str | None = None,
         status: OrderStatus = "processing",
         inventory_type: Literal["finite", "preorder"] = "finite",
         shipping_name: str | None = None,
@@ -653,12 +649,10 @@ class Order(StoreBaseModel):
             stripe_product_id=stripe_product_id,
             stripe_price_id=stripe_price_id,
             stripe_connect_account_id=stripe_connect_account_id,
-            stripe_customer_id=stripe_customer_id,
             stripe_payment_intent_id=stripe_payment_intent_id,
             preorder_release_date=preorder_release_date,
             preorder_deposit_amount=preorder_deposit_amount,
             stripe_preorder_deposit_id=stripe_preorder_deposit_id,
-            stripe_deposit_payment_intent_id=stripe_deposit_payment_intent_id,
             inventory_type=inventory_type,
             shipping_name=shipping_name,
             shipping_address_line1=shipping_address_line1,
