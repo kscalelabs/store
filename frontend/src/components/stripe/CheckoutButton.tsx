@@ -153,18 +153,30 @@ const CheckoutButton: React.FC<Props> = ({
           <div className="mb-6">
             <p className="mb-4">
               By proceeding with this order, you agree to our{" "}
-              <a href="/eula" className="underline hover:text-gray-300">
+              <a
+                href="/eula"
+                className="underline hover:text-gray-300"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 End User License Agreement
               </a>
               ,{" "}
               <a
                 href={ROUTES.TOS.path}
                 className="underline hover:text-gray-300"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 Terms of Service
               </a>
               , and{" "}
-              <a href="/privacy" className="underline hover:text-gray-300">
+              <a
+                href="/privacy"
+                className="underline hover:text-gray-300"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 Privacy Policy
               </a>
               .
@@ -176,6 +188,8 @@ const CheckoutButton: React.FC<Props> = ({
                 <a
                   href={ROUTES.PREORDER_TERMS.path}
                   className="underline hover:text-gray-300"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   Pre-order Terms
                 </a>
