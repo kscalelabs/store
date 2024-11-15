@@ -290,7 +290,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
                 You are set up to sell robots on K-Scale.
               </p>
             ) : (
-              <p>You must complete seller onboarding to sell robots</p>
+              <p>Complete seller onboarding to sell robots on K-Scale</p>
             )}
           </div>
           <div className="flex sm:flex-row flex-col gap-2 mb-8">
@@ -345,11 +345,11 @@ export const RenderProfile = (props: RenderProfileProps) => {
                 <Button
                   variant="outline"
                   asChild
-                  className={`text-xs sm:text-sm px-2 sm:px-4 hover:bg-gray-11 ${value === "own" ? "border" : ""}`}
+                  className={`text-xs sm:text-sm px-2 sm:px-4 hover:bg-gray-11 ${value === "own" ? "border text-gray-12" : ""}`}
                 >
                   <TabsTrigger
                     value="own"
-                    className="data-[state=active]:bg-gray-3 text-gray-12"
+                    className="data-[state=active]:bg-gray-3"
                   >
                     Your Robot Listings
                   </TabsTrigger>
@@ -357,11 +357,11 @@ export const RenderProfile = (props: RenderProfileProps) => {
                 <Button
                   variant="outline"
                   asChild
-                  className={`text-xs sm:text-sm px-2 sm:px-4 hover:bg-gray-11 ${value === "upvoted" ? "border-0 bg-transparent hover:bg-transparent" : ""}`}
+                  className={`text-xs sm:text-sm px-2 sm:px-4 hover:bg-gray-11 ${value === "upvoted" ? "border text-gray-12" : ""}`}
                 >
                   <TabsTrigger
                     value="upvoted"
-                    className="data-[state=active]:bg-gray-3 text-gray-12"
+                    className="data-[state=active]:bg-gray-3"
                   >
                     Upvoted Robots
                   </TabsTrigger>

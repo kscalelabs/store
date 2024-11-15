@@ -1731,6 +1731,8 @@ export interface components {
             stripe_payment_method_id?: string | null;
             /** Stripe Payment Intent Id */
             stripe_payment_intent_id?: string | null;
+            /** Preorder Release Date */
+            preorder_release_date?: number | null;
             /** Preorder Deposit Amount */
             preorder_deposit_amount?: number | null;
             /** Stripe Preorder Deposit Id */

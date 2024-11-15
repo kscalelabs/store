@@ -598,6 +598,7 @@ class Order(StoreBaseModel):
     stripe_customer_id: str | None = None
     stripe_payment_method_id: str | None = None
     stripe_payment_intent_id: str | None = None
+    preorder_release_date: int | None = None
     preorder_deposit_amount: int | None = None
     stripe_preorder_deposit_id: str | None = None
     stripe_refund_id: str | None = None
@@ -627,6 +628,7 @@ class Order(StoreBaseModel):
         stripe_customer_id: str | None = None,
         stripe_payment_method_id: str | None = None,
         stripe_payment_intent_id: str | None = None,
+        preorder_release_date: int | None = None,
         preorder_deposit_amount: int | None = None,
         stripe_preorder_deposit_id: str | None = None,
         stripe_refund_id: str | None = None,
@@ -656,6 +658,7 @@ class Order(StoreBaseModel):
             stripe_customer_id=stripe_customer_id,
             stripe_payment_method_id=stripe_payment_method_id,
             stripe_payment_intent_id=stripe_payment_intent_id,
+            preorder_release_date=preorder_release_date,
             preorder_deposit_amount=preorder_deposit_amount,
             stripe_preorder_deposit_id=stripe_preorder_deposit_id,
             stripe_refund_id=stripe_refund_id,

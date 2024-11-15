@@ -24,12 +24,14 @@ const orderStatuses = [
   "being_assembled",
   "shipped",
   "delivered",
+  "preorder_placed",
   "cancelled",
   "refunded",
   "failed",
 ];
 
 const activeStatuses = [
+  "preorder_placed",
   "processing",
   "in_development",
   "being_assembled",
@@ -67,7 +69,7 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
     return "text-gray-600";
   };
 
-  const unitPrice = order.amount / order.quantity;
+  const unitPrice = order.price_amount / order.quantity;
 
   const handleOrderUpdate = (updatedOrder: Order) => {
     setOrderWithProduct((prev) => ({ ...prev, order: updatedOrder }));
@@ -86,6 +88,22 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
           {normalizeStatus(order.status)}
         </span>
       </p>
+
+      {order.status === "preorder_placed" && order.preorder_deposit_amount && (
+        <div className="mb-4 p-3 bg-blue-50 text-blue-800 rounded-md">
+          <p className="font-medium">
+            Pre-order Deposit: {formatPrice(order.preorder_deposit_amount)}
+          </p>
+          {order.preorder_release_date && (
+            <p className="text-sm mt-1">
+              Expected Release:{" "}
+              {new Date(
+                order.preorder_release_date * 1000,
+              ).toLocaleDateString()}
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="text-sm sm:text-base text-gray-11 flex flex-col mb-4">
         <p>Order ID: {order.id}</p>
@@ -116,7 +134,7 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
         <p className="text-gray-12">Quantity: {order.quantity}</p>
         <p>
           <span className="text-gray-12 font-medium">
-            {formatPrice(order.amount)}
+            {formatPrice(order.price_amount)}
           </span>{" "}
           <span className="font-light">
             = {formatPrice(unitPrice)} x {order.quantity}
