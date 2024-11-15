@@ -31,6 +31,13 @@ class StoreBaseModel(BaseModel):
 UserPermission = Literal["is_admin", "is_mod", "is_content_manager"]
 
 
+class UserStripeConnect(BaseModel):
+    """Defines information for the user's Stripe Connect account."""
+
+    account_id: str
+    onboarding_completed: bool
+
+
 class User(StoreBaseModel):
     """Defines the user model for the API.
 
@@ -51,9 +58,7 @@ class User(StoreBaseModel):
     last_name: str | None = None
     name: str | None = None
     bio: str | None = None
-    stripe_customer_ids: dict[str, str] = {}
-    stripe_connect_account_id: str | None = None
-    stripe_connect_onboarding_completed: bool = False
+    stripe_connect: UserStripeConnect | None = None
 
     @classmethod
     def create(
@@ -67,9 +72,6 @@ class User(StoreBaseModel):
         last_name: str | None = None,
         name: str | None = None,
         bio: str | None = None,
-        stripe_customer_ids: dict[str, str] = {},
-        stripe_connect_account_id: str | None = None,
-        stripe_connect_onboarding_completed: bool = False,
     ) -> Self:
         now = int(time.time())
         hashed_pw = hash_password(password) if password else None
@@ -86,9 +88,6 @@ class User(StoreBaseModel):
             last_name=last_name,
             name=name,
             bio=bio,
-            stripe_customer_ids=stripe_customer_ids,
-            stripe_connect_account_id=stripe_connect_account_id,
-            stripe_connect_onboarding_completed=stripe_connect_onboarding_completed,
         )
 
     def update_timestamp(self) -> None:
@@ -101,26 +100,12 @@ class User(StoreBaseModel):
         self.username = new_username
         self.update_timestamp()
 
-
-class UserPublic(BaseModel):
-    """Defines public user model for frontend.
-
-    Omits private/sesnsitive user fields. Is the return type for
-    retrieving user data on frontend (for public profile pages, etc).
-    """
-
-    id: str
-    email: str
-    username: str
-    permissions: set[UserPermission] | None = None
-    created_at: int
-    updated_at: int | None = None
-    first_name: str | None = None
-    last_name: str | None = None
-    name: str | None = None
-    bio: str | None = None
-    stripe_connect_account_id: str | None = None
-    stripe_connect_onboarding_completed: bool = False
+    def set_stripe_connect(self, account_id: str, onboarding_completed: bool) -> None:
+        self.stripe_connect = UserStripeConnect(
+            account_id=account_id,
+            onboarding_completed=onboarding_completed,
+        )
+        self.update_timestamp()
 
 
 class EmailSignUpToken(StoreBaseModel):
@@ -383,16 +368,15 @@ class Listing(StoreBaseModel):
     onshape_url: str | None = None
     views: int = 0
     score: int = 0
-    stripe_product_id: str | None = None
-    stripe_price_id: str | None = None
-    stripe_deposit_price_id: str | None = None
     price_amount: int | None = None  # in cents
     currency: str = "usd"
-    inventory_type: Literal["finite", "infinite", "preorder"] = "infinite"
+    stripe_product_id: str | None = None
+    stripe_price_id: str | None = None
+    preorder_deposit_amount: int | None = None  # in cents
+    stripe_preorder_deposit_id: str | None = None
+    inventory_type: Literal["finite", "preorder"] = "finite"
     inventory_quantity: int | None = None
     preorder_release_date: int | None = None
-    is_reservation: bool = False
-    reservation_deposit_amount: int | None = None  # in cents
 
     @classmethod
     def create(
@@ -403,16 +387,15 @@ class Listing(StoreBaseModel):
         child_ids: list[str],
         description: str | None = None,
         onshape_url: str | None = None,
-        stripe_product_id: str | None = None,
-        stripe_price_id: str | None = None,
-        stripe_deposit_price_id: str | None = None,
         price_amount: int | None = None,
         currency: str = "usd",
-        inventory_type: Literal["finite", "infinite", "preorder"] = "infinite",
+        stripe_product_id: str | None = None,
+        stripe_price_id: str | None = None,
+        preorder_deposit_amount: int | None = None,
+        stripe_preorder_deposit_id: str | None = None,
+        inventory_type: Literal["finite", "preorder"] = "finite",
         inventory_quantity: int | None = None,
         preorder_release_date: int | None = None,
-        is_reservation: bool = False,
-        reservation_deposit_amount: int | None = None,
     ) -> Self:
         return cls(
             id=new_uuid(),
@@ -426,16 +409,15 @@ class Listing(StoreBaseModel):
             onshape_url=onshape_url,
             views=0,
             score=0,
-            stripe_product_id=stripe_product_id,
-            stripe_price_id=stripe_price_id,
-            stripe_deposit_price_id=stripe_deposit_price_id,
             price_amount=price_amount,
             currency=currency,
+            stripe_product_id=stripe_product_id,
+            stripe_price_id=stripe_price_id,
+            preorder_deposit_amount=preorder_deposit_amount,
+            stripe_preorder_deposit_id=stripe_preorder_deposit_id,
             inventory_type=inventory_type,
             inventory_quantity=inventory_quantity,
             preorder_release_date=preorder_release_date,
-            is_reservation=is_reservation,
-            reservation_deposit_amount=reservation_deposit_amount,
         )
 
 
@@ -578,30 +560,39 @@ OrderStatus = Literal[
     "shipped",
     "delivered",
     "preorder_placed",
+    "awaiting_final_payment",
     "cancelled",
     "refunded",
     "failed",
 ]
+
+InventoryType = Literal["finite", "preorder"]
 
 
 class Order(StoreBaseModel):
     """Tracks completed user orders through Stripe."""
 
     user_id: str
+    listing_id: str
     user_email: str
     created_at: int
     updated_at: int
     status: OrderStatus
-    amount: int
+    price_amount: int  # in cents
     currency: str
     quantity: int
     stripe_checkout_session_id: str
-    stripe_product_id: str
     stripe_connect_account_id: str
-    stripe_customer_id: str | None = None
-    stripe_payment_method_id: str | None = None
+    stripe_product_id: str
+    stripe_price_id: str
     stripe_payment_intent_id: str | None = None
-    stripe_refund_id: str | None = None
+    preorder_release_date: int | None = None
+    preorder_deposit_amount: int | None = None
+    stripe_preorder_deposit_id: str | None = None
+    inventory_type: Literal["finite", "preorder"]
+    final_payment_checkout_session_id: str | None = None
+    final_payment_intent_id: str | None = None
+    final_payment_date: int | None = None
     shipping_name: str | None = None
     shipping_address_line1: str | None = None
     shipping_address_line2: str | None = None
@@ -609,27 +600,31 @@ class Order(StoreBaseModel):
     shipping_state: str | None = None
     shipping_postal_code: str | None = None
     shipping_country: str | None = None
-    shipped_at: int | None = None
-    delivered_at: int | None = None
-    cancelled_at: int | None = None
-    refunded_at: int | None = None
+    shipped_date: int | None = None
+    stripe_refund_id: str | None = None
+    delivered_date: int | None = None
+    cancelled_date: int | None = None
+    refunded_date: int | None = None
 
     @classmethod
     def create(
         cls,
         user_id: str,
         user_email: str,
-        amount: int,
-        currency: str,
-        quantity: int,
+        listing_id: str,
         stripe_checkout_session_id: str,
         stripe_product_id: str,
+        stripe_price_id: str,
         stripe_connect_account_id: str,
-        stripe_customer_id: str | None = None,
-        stripe_payment_method_id: str | None = None,
+        quantity: int,
+        price_amount: int,
+        currency: str,
         stripe_payment_intent_id: str | None = None,
-        stripe_refund_id: str | None = None,
+        preorder_release_date: int | None = None,
+        preorder_deposit_amount: int | None = None,
+        stripe_preorder_deposit_id: str | None = None,
         status: OrderStatus = "processing",
+        inventory_type: Literal["finite", "preorder"] = "finite",
         shipping_name: str | None = None,
         shipping_address_line1: str | None = None,
         shipping_address_line2: str | None = None,
@@ -642,20 +637,23 @@ class Order(StoreBaseModel):
         return cls(
             id=new_uuid(),
             user_id=user_id,
+            listing_id=listing_id,
             user_email=user_email,
             created_at=now,
             updated_at=now,
             status=status,
-            amount=amount,
+            price_amount=price_amount,
             currency=currency,
             quantity=quantity,
             stripe_checkout_session_id=stripe_checkout_session_id,
             stripe_product_id=stripe_product_id,
+            stripe_price_id=stripe_price_id,
             stripe_connect_account_id=stripe_connect_account_id,
-            stripe_customer_id=stripe_customer_id,
-            stripe_payment_method_id=stripe_payment_method_id,
             stripe_payment_intent_id=stripe_payment_intent_id,
-            stripe_refund_id=stripe_refund_id,
+            preorder_release_date=preorder_release_date,
+            preorder_deposit_amount=preorder_deposit_amount,
+            stripe_preorder_deposit_id=stripe_preorder_deposit_id,
+            inventory_type=inventory_type,
             shipping_name=shipping_name,
             shipping_address_line1=shipping_address_line1,
             shipping_address_line2=shipping_address_line2,

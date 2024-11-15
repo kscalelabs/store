@@ -11,7 +11,11 @@ import ListingName from "@/components/listing/ListingName";
 import ListingOnshape from "@/components/listing/ListingOnshape";
 import ListingPayment from "@/components/listing/ListingPayment";
 import ListingRegisterRobot from "@/components/listing/ListingRegisterRobot";
-import { Artifact, ListingResponse } from "@/components/listing/types";
+import {
+  Artifact,
+  InventoryType,
+  ListingResponse,
+} from "@/components/listing/types";
 
 const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
   const {
@@ -34,8 +38,7 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
     inventory_type: inventoryType,
     inventory_quantity: inventoryQuantity,
     preorder_release_date: preorderReleaseDate,
-    is_reservation: isReservation,
-    reservation_deposit_amount: reservationDepositAmount,
+    preorder_deposit_amount: preorderDepositAmount,
   } = listing;
   const [artifacts, setArtifacts] = useState(initialArtifacts);
   const [currentImageIndex, setCurrentImageIndex] = useState(() => {
@@ -107,13 +110,10 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
                 listingId={listingId}
                 stripeProductId={stripeProductId}
                 priceAmount={priceAmount}
-                inventoryType={
-                  inventoryType as "finite" | "infinite" | "preorder"
-                }
+                inventoryType={inventoryType as InventoryType}
                 inventoryQuantity={inventoryQuantity || undefined}
                 preorderReleaseDate={preorderReleaseDate || undefined}
-                isReservation={isReservation || false}
-                reservationDepositAmount={reservationDepositAmount || undefined}
+                preorderDepositAmount={preorderDepositAmount || undefined}
               />
             </>
           )}

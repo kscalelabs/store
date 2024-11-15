@@ -10,6 +10,7 @@ from pydantic import BaseModel, ValidationError
 from typing_extensions import Annotated
 
 from store.app.crud.base import ItemNotFoundError
+from store.app.crud.robots import RobotData
 from store.app.db import Crud
 from store.app.model import Listing, Robot, User, get_artifact_url
 from store.app.security.user import (
@@ -109,7 +110,15 @@ async def create_robot(
 ) -> Robot:
     """Create a new robot."""
     try:
-        robot = await crud.create_robot({"user_id": user.id, **robot_data.model_dump()})
+        # Convert the model data to a properly typed RobotData dict
+        robot_dict: RobotData = {
+            "user_id": user.id,
+            "listing_id": robot_data.listing_id,
+            "name": robot_data.name,
+            "description": robot_data.description,
+            "order_id": robot_data.order_id,
+        }
+        robot = await crud.create_robot(robot_dict)
         return robot
     except ItemNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
@@ -178,7 +187,18 @@ async def update_robot(
         if robot.user_id != user.id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to update this robot")
 
-        updated_robot = await crud.update_robot(robot_id, update_data.model_dump(exclude_unset=True))
+        # Convert the update data to a properly typed RobotData dict
+        update_dict: RobotData = {
+            "user_id": robot.user_id,  # Required field in RobotData
+            "listing_id": robot.listing_id,  # Required field in RobotData
+            "name": update_data.name if update_data.name is not None else robot.name,
+        }
+        if update_data.description is not None:
+            update_dict["description"] = update_data.description
+        if update_data.order_id is not None:
+            update_dict["order_id"] = update_data.order_id
+
+        updated_robot = await crud.update_robot(robot_id, update_dict)
         return updated_robot
     except ItemNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Robot not found")

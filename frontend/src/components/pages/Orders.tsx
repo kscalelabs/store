@@ -54,7 +54,7 @@ const OrdersPage: React.FC = () => {
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Your Orders</h1>
         <p className="text-gray-8">
-          You can view the status of your past and current orders here.
+          You can view the status of your orders here.
         </p>
       </div>
       {isLoading || loadingOrders ? (

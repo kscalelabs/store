@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
 from store.app.crud.base import ItemNotFoundError
+from store.app.crud.orders import OrderDataUpdate
 from store.app.db import Crud
 from store.app.model import Order, User
 from store.app.routers import stripe
@@ -106,6 +107,16 @@ async def update_order_address(
     if order is None or order.user_id != user.id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
 
-    # Update the order with the new address
-    updated_order = await crud.update_order(order_id, address_update.dict())
+    # Create OrderDataUpdate with shipping fields
+    update_dict = OrderDataUpdate(
+        shipping_name=address_update.shipping_name,
+        shipping_address_line1=address_update.shipping_address_line1,
+        shipping_address_line2=address_update.shipping_address_line2 if address_update.shipping_address_line2 else None,
+        shipping_city=address_update.shipping_city,
+        shipping_state=address_update.shipping_state,
+        shipping_postal_code=address_update.shipping_postal_code,
+        shipping_country=address_update.shipping_country,
+    )
+
+    updated_order = await crud.update_order(order_id, update_dict)
     return updated_order

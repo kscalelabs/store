@@ -18,26 +18,44 @@ type OrderWithProduct =
 type Order =
   paths["/orders/user-orders"]["get"]["responses"][200]["content"]["application/json"][0];
 
+enum OrderStatus {
+  PREORDER = -1,
+  PROCESSING = 0,
+  IN_DEVELOPMENT = 1,
+  BEING_ASSEMBLED = 2,
+  SHIPPED = 3,
+  DELIVERED = 4,
+}
+
 const orderStatuses = [
   "processing",
   "in_development",
   "being_assembled",
   "shipped",
   "delivered",
+  "awaiting_final_payment",
+  "preorder_placed",
   "cancelled",
   "refunded",
   "failed",
 ];
 
 const activeStatuses = [
+  "preorder_placed",
   "processing",
   "in_development",
   "being_assembled",
   "shipped",
+  "awaiting_final_payment",
 ];
 
 const redStatuses = ["cancelled", "refunded", "failed"];
-const canModifyStatuses = ["processing", "in_development", "being_assembled"];
+const canModifyStatuses = [
+  "processing",
+  "in_development",
+  "being_assembled",
+  "awaiting_final_payment",
+];
 
 const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
   orderWithProduct: initialOrderWithProduct,
@@ -49,7 +67,12 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
   const [isEditAddressModalOpen, setIsEditAddressModalOpen] = useState(false);
   const [isCancelOrderModalOpen, setIsCancelOrderModalOpen] = useState(false);
 
-  const currentStatusIndex = orderStatuses.indexOf(order.status);
+  const currentStatusIndex =
+    order.status === "preorder_placed"
+      ? OrderStatus.PREORDER
+      : order.status === "awaiting_final_payment"
+        ? OrderStatus.BEING_ASSEMBLED
+        : OrderStatus[order.status.toUpperCase() as keyof typeof OrderStatus];
   const isRedStatus = redStatuses.includes(order.status);
   const showStatusBar = activeStatuses.includes(order.status);
 
@@ -67,7 +90,7 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
     return "text-gray-600";
   };
 
-  const unitPrice = order.amount / order.quantity;
+  const unitPrice = order.price_amount / order.quantity;
 
   const handleOrderUpdate = (updatedOrder: Order) => {
     setOrderWithProduct((prev) => ({ ...prev, order: updatedOrder }));
@@ -86,6 +109,41 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
           {normalizeStatus(order.status)}
         </span>
       </p>
+
+      {order.status === "preorder_placed" && order.preorder_deposit_amount && (
+        <div className="mb-4 p-3 bg-gray-4 text-gray-12 rounded-md">
+          <p className="font-medium">
+            Pre-order Deposit: {formatPrice(order.preorder_deposit_amount)}
+          </p>
+          <p className="font-medium mt-1">
+            Amount Due:{" "}
+            {formatPrice(order.price_amount - order.preorder_deposit_amount)}
+          </p>
+          {order.preorder_release_date && (
+            <p className="text-sm mt-1">
+              Expected Release:{" "}
+              {new Date(
+                order.preorder_release_date * 1000,
+              ).toLocaleDateString()}
+            </p>
+          )}
+        </div>
+      )}
+
+      {order.status === "awaiting_final_payment" && (
+        <div className="mb-4 p-3 bg-gray-4 text-gray-12 rounded-md">
+          <p className="font-medium">
+            Final Payment Required:{" "}
+            {formatPrice(
+              order.price_amount - (order.preorder_deposit_amount || 0),
+            )}
+          </p>
+          <p className="text-sm mt-1">
+            Please complete your final payment to proceed with order
+            fulfillment.
+          </p>
+        </div>
+      )}
 
       <div className="text-sm sm:text-base text-gray-11 flex flex-col mb-4">
         <p>Order ID: {order.id}</p>
@@ -116,7 +174,7 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
         <p className="text-gray-12">Quantity: {order.quantity}</p>
         <p>
           <span className="text-gray-12 font-medium">
-            {formatPrice(order.amount)}
+            {formatPrice(order.price_amount)}
           </span>{" "}
           <span className="font-light">
             = {formatPrice(unitPrice)} x {order.quantity}
@@ -177,7 +235,11 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
                       index <= currentStatusIndex
                         ? getStatusColor(status)
                         : "bg-gray-300"
-                    } ${index === 0 ? "rounded-l-full" : ""} ${index === 4 ? "rounded-r-full" : ""}`}
+                    } ${
+                      index === OrderStatus.PROCESSING ? "rounded-l-full" : ""
+                    } ${
+                      index === OrderStatus.DELIVERED ? "rounded-r-full" : ""
+                    }`}
                     style={{
                       width: "20%",
                       float: "left",

@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { Drawer } from "@/components/Drawer";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { STRIPE_PUBLISHABLE_KEY } from "@/lib/constants/env";
@@ -11,11 +12,13 @@ import { ApiError } from "@/lib/types/api";
 import ROUTES from "@/lib/types/routes";
 import { loadStripe } from "@stripe/stripe-js";
 
+import { InventoryType } from "../listing/types";
+
 interface Props {
   listingId: string;
   stripeProductId: string;
   label?: string;
-  inventoryType?: "finite" | "infinite" | "preorder";
+  inventoryType?: InventoryType;
   inventoryQuantity?: number;
 }
 
@@ -32,6 +35,7 @@ const CheckoutButton: React.FC<Props> = ({
   const auth = useAuthentication();
   const navigate = useNavigate();
   const location = useLocation();
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const isOutOfStock =
     inventoryType === "finite" &&
@@ -44,7 +48,7 @@ const CheckoutButton: React.FC<Props> = ({
         ? "Out of Stock"
         : label;
 
-  const handleClick = async () => {
+  const handleCheckoutClick = async () => {
     setIsLoading(true);
 
     if (!auth.isAuthenticated) {
@@ -75,8 +79,6 @@ const CheckoutButton: React.FC<Props> = ({
         throw new Error("Invalid response from server");
       }
 
-      console.log(data.stripe_connect_account_id);
-
       // Initialize Stripe with the connected account
       const stripeWithAccount = await loadStripe(STRIPE_PUBLISHABLE_KEY, {
         stripeAccount: data.stripe_connect_account_id,
@@ -102,50 +104,122 @@ const CheckoutButton: React.FC<Props> = ({
     }
   };
 
+  const handleClick = () => {
+    setIsDrawerOpen(true);
+  };
+
+  const DrawerContent = () => {
+    if (!auth.isAuthenticated) {
+      return (
+        <div className="flex items-center justify-center p-2">
+          <div className="p-4 text-white">
+            <h2 className="text-lg sm:text-xl font-bold mb-4">
+              You must be logged in to place an order.
+            </h2>
+            <p className="mb-4">
+              This is so you can track and receive updates on your order.
+            </p>
+            <div className="flex sm:flex-row flex-col justify-center gap-4">
+              <Button
+                onClick={() => {
+                  setIsDrawerOpen(false);
+                  navigate(ROUTES.LOGIN.path);
+                }}
+                variant="outline"
+              >
+                Log In
+              </Button>
+              <Button
+                onClick={() => {
+                  setIsDrawerOpen(false);
+                  navigate(ROUTES.SIGNUP.path);
+                }}
+                variant="outline"
+              >
+                Sign Up
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex items-center justify-center p-2">
+        <div className="text-white max-w-md">
+          <h2 className="text-lg sm:text-xl font-bold mb-4">
+            Order Confirmation
+          </h2>
+          <div className="mb-6">
+            <p className="mb-4">
+              By proceeding with this order, you agree to our{" "}
+              <a href="/eula" className="underline hover:text-gray-300">
+                End User License Agreement
+              </a>
+              ,{" "}
+              <a href="/terms" className="underline hover:text-gray-300">
+                Terms of Service
+              </a>
+              , and{" "}
+              <a href="/privacy" className="underline hover:text-gray-300">
+                Privacy Policy
+              </a>
+              .
+            </p>
+            {inventoryType === "preorder" && (
+              <p className="mb-4">
+                This is a pre-order item. By proceeding, you acknowledge that
+                the final product may be subject to changes and delays.
+              </p>
+            )}
+          </div>
+          <div className="flex items-start space-x-2 mb-6">
+            <Checkbox
+              id="terms"
+              checked={acceptedTerms}
+              onCheckedChange={(checked) =>
+                setAcceptedTerms(checked as boolean)
+              }
+            />
+            <label htmlFor="terms" className="text-sm">
+              I understand and agree to the terms and conditions
+            </label>
+          </div>
+          <Button
+            onClick={handleCheckoutClick}
+            disabled={!acceptedTerms || isLoading}
+            className="w-full"
+            variant="outline"
+          >
+            {isLoading ? (
+              <>
+                <FaSpinner className="animate-spin mr-2" />
+                Starting checkout...
+              </>
+            ) : (
+              buttonLabel
+            )}
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <Button
         onClick={handleClick}
-        disabled={isLoading || isOutOfStock}
+        disabled={isOutOfStock}
         className={`flex items-center justify-center ${
           isOutOfStock ? "bg-gray-600" : "bg-primary"
         }`}
         variant="default"
       >
-        {isLoading ? <FaSpinner className="animate-spin mr-2" /> : null}
-        {isLoading ? "Starting checkout..." : buttonLabel}
+        {buttonLabel}
       </Button>
 
       <Drawer open={isDrawerOpen} setOpen={setIsDrawerOpen}>
-        <div className="p-4 flex flex-col items-center justify-center">
-          <h2 className="text-gray-1 text-2xl font-bold mb-4">
-            You must be logged in to place an order.
-          </h2>
-          <p className="text-gray-3 mb-4">
-            This is so you can track and receive updates on your order.
-          </p>
-          <div className="flex flex-row items-center justify-center">
-            <Button
-              onClick={() => {
-                setIsDrawerOpen(false);
-                navigate(ROUTES.LOGIN.path);
-              }}
-              variant="default"
-            >
-              Sign In
-            </Button>
-            <Button
-              onClick={() => {
-                setIsDrawerOpen(false);
-                navigate(ROUTES.SIGNUP.path);
-              }}
-              variant="default"
-              className="ml-2"
-            >
-              Sign Up
-            </Button>
-          </div>
-        </div>
+        <DrawerContent />
       </Drawer>
     </>
   );

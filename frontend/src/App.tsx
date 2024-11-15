@@ -150,6 +150,7 @@ const App = () => {
                           element={<Terminal />}
                         />
 
+                        {/* Link robot */}
                         <Route
                           path={ROUTES.LINK.path}
                           element={<LinkRobot />}
