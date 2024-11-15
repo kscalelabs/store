@@ -12,13 +12,14 @@ import ROUTES from "@/lib/types/routes";
 import { NavButton } from "./NavButton";
 
 const Navbar = () => {
-  const { isAuthenticated } = useAuthentication();
+  const { isAuthenticated, currentUser } = useAuthentication();
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { featuredListings } = useFeaturedListings();
 
-  const navItems = getNavItems(isAuthenticated);
+  const isAdmin = currentUser?.permissions?.includes("is_admin") ?? false;
+  const navItems = getNavItems(isAuthenticated, isAdmin);
 
   const handleFeaturedClick = (username: string, slug: string | null) => {
     const path = ROUTES.BOT.buildPath({
