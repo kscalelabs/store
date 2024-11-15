@@ -31,6 +31,13 @@ class StoreBaseModel(BaseModel):
 UserPermission = Literal["is_admin", "is_mod", "is_content_manager"]
 
 
+class UserStripeConnect(BaseModel):
+    """Defines information for the user's Stripe Connect account."""
+
+    account_id: str
+    onboarding_completed: bool
+
+
 class User(StoreBaseModel):
     """Defines the user model for the API.
 
@@ -51,9 +58,7 @@ class User(StoreBaseModel):
     last_name: str | None = None
     name: str | None = None
     bio: str | None = None
-    stripe_customer_ids: dict[str, str] = {}
-    stripe_connect_account_id: str | None = None
-    stripe_connect_onboarding_completed: bool = False
+    stripe_connect: UserStripeConnect | None = None
 
     @classmethod
     def create(
@@ -67,9 +72,6 @@ class User(StoreBaseModel):
         last_name: str | None = None,
         name: str | None = None,
         bio: str | None = None,
-        stripe_customer_ids: dict[str, str] = {},
-        stripe_connect_account_id: str | None = None,
-        stripe_connect_onboarding_completed: bool = False,
     ) -> Self:
         now = int(time.time())
         hashed_pw = hash_password(password) if password else None
@@ -86,9 +88,6 @@ class User(StoreBaseModel):
             last_name=last_name,
             name=name,
             bio=bio,
-            stripe_customer_ids=stripe_customer_ids,
-            stripe_connect_account_id=stripe_connect_account_id,
-            stripe_connect_onboarding_completed=stripe_connect_onboarding_completed,
         )
 
     def update_timestamp(self) -> None:
@@ -101,26 +100,12 @@ class User(StoreBaseModel):
         self.username = new_username
         self.update_timestamp()
 
-
-class UserPublic(BaseModel):
-    """Defines public user model for frontend.
-
-    Omits private/sesnsitive user fields. Is the return type for
-    retrieving user data on frontend (for public profile pages, etc).
-    """
-
-    id: str
-    email: str
-    username: str
-    permissions: set[UserPermission] | None = None
-    created_at: int
-    updated_at: int | None = None
-    first_name: str | None = None
-    last_name: str | None = None
-    name: str | None = None
-    bio: str | None = None
-    stripe_connect_account_id: str | None = None
-    stripe_connect_onboarding_completed: bool = False
+    def set_stripe_connect(self, account_id: str, onboarding_completed: bool) -> None:
+        self.stripe_connect = UserStripeConnect(
+            account_id=account_id,
+            onboarding_completed=onboarding_completed,
+        )
+        self.update_timestamp()
 
 
 class EmailSignUpToken(StoreBaseModel):
@@ -575,16 +560,20 @@ OrderStatus = Literal[
     "shipped",
     "delivered",
     "preorder_placed",
+    "awaiting_final_payment",
     "cancelled",
     "refunded",
     "failed",
 ]
+
+InventoryType = Literal["finite", "preorder"]
 
 
 class Order(StoreBaseModel):
     """Tracks completed user orders through Stripe."""
 
     user_id: str
+    listing_id: str
     user_email: str
     created_at: int
     updated_at: int
@@ -597,7 +586,6 @@ class Order(StoreBaseModel):
     stripe_product_id: str
     stripe_price_id: str
     stripe_customer_id: str
-    stripe_payment_method_id: str | None = None
     stripe_payment_intent_id: str | None = None
     preorder_release_date: int | None = None
     preorder_deposit_amount: int | None = None
@@ -624,6 +612,7 @@ class Order(StoreBaseModel):
     def create(
         cls,
         user_id: str,
+        listing_id: str,
         user_email: str,
         quantity: int,
         price_amount: int,
@@ -633,7 +622,6 @@ class Order(StoreBaseModel):
         stripe_price_id: str,
         stripe_connect_account_id: str,
         stripe_customer_id: str,
-        stripe_payment_method_id: str | None = None,
         stripe_payment_intent_id: str | None = None,
         preorder_release_date: int | None = None,
         preorder_deposit_amount: int | None = None,
@@ -653,6 +641,7 @@ class Order(StoreBaseModel):
         return cls(
             id=new_uuid(),
             user_id=user_id,
+            listing_id=listing_id,
             user_email=user_email,
             created_at=now,
             updated_at=now,
@@ -665,7 +654,6 @@ class Order(StoreBaseModel):
             stripe_price_id=stripe_price_id,
             stripe_connect_account_id=stripe_connect_account_id,
             stripe_customer_id=stripe_customer_id,
-            stripe_payment_method_id=stripe_payment_method_id,
             stripe_payment_intent_id=stripe_payment_intent_id,
             preorder_release_date=preorder_release_date,
             preorder_deposit_amount=preorder_deposit_amount,

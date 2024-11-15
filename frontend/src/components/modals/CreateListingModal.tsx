@@ -18,7 +18,7 @@ interface Props {
 export const CreateListingModal = ({ isOpen, onOpenChange }: Props) => {
   const navigate = useNavigate();
   const auth = useAuthentication();
-  const canSell = auth.currentUser?.stripe_connect_onboarding_completed;
+  const canSell = auth.currentUser?.stripe_connect?.onboarding_completed;
 
   const handleOptionClick = (path: string) => {
     onOpenChange(false);

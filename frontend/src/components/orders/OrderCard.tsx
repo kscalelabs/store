@@ -33,6 +33,7 @@ const orderStatuses = [
   "being_assembled",
   "shipped",
   "delivered",
+  "awaiting_final_payment",
   "preorder_placed",
   "cancelled",
   "refunded",
@@ -45,10 +46,16 @@ const activeStatuses = [
   "in_development",
   "being_assembled",
   "shipped",
+  "awaiting_final_payment",
 ];
 
 const redStatuses = ["cancelled", "refunded", "failed"];
-const canModifyStatuses = ["processing", "in_development", "being_assembled"];
+const canModifyStatuses = [
+  "processing",
+  "in_development",
+  "being_assembled",
+  "awaiting_final_payment",
+];
 
 const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
   orderWithProduct: initialOrderWithProduct,
@@ -63,7 +70,9 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
   const currentStatusIndex =
     order.status === "preorder_placed"
       ? OrderStatus.PREORDER
-      : OrderStatus[order.status.toUpperCase() as keyof typeof OrderStatus];
+      : order.status === "awaiting_final_payment"
+        ? OrderStatus.BEING_ASSEMBLED
+        : OrderStatus[order.status.toUpperCase() as keyof typeof OrderStatus];
   const isRedStatus = redStatuses.includes(order.status);
   const showStatusBar = activeStatuses.includes(order.status);
 
@@ -118,6 +127,21 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
               ).toLocaleDateString()}
             </p>
           )}
+        </div>
+      )}
+
+      {order.status === "awaiting_final_payment" && (
+        <div className="mb-4 p-3 bg-gray-4 text-gray-12 rounded-md">
+          <p className="font-medium">
+            Final Payment Required:{" "}
+            {formatPrice(
+              order.price_amount - (order.preorder_deposit_amount || 0),
+            )}
+          </p>
+          <p className="text-sm mt-1">
+            Please complete your final payment to proceed with order
+            fulfillment.
+          </p>
         </div>
       )}
 

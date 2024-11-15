@@ -299,8 +299,8 @@ async def add_listing(
         stripe_price_id = None
         stripe_preorder_deposit_id = None
 
-        # Create Stripe product if price is set
-        if price_amount_int is not None and user.stripe_connect_account_id:
+        # Create Stripe product if price is set and user has Stripe Connect setup
+        if price_amount_int is not None and user.stripe_connect and user.stripe_connect.account_id:
             stripe_product = await create_listing_product(
                 name=name,
                 description=description or "",
@@ -311,7 +311,7 @@ async def add_listing(
                 preorder_release_date=preorder_release_date_int,
                 preorder_deposit_amount=preorder_deposit_amount_int,
                 user_id=user.id,
-                stripe_connect_account_id=user.stripe_connect_account_id,
+                stripe_connect_account_id=user.stripe_connect.account_id,
             )
             stripe_product_id = stripe_product.stripe_product_id
             stripe_price_id = stripe_product.stripe_price_id

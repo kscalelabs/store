@@ -8,9 +8,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic.main import BaseModel
 from pydantic.networks import EmailStr
 
+from store.app.crud.users import UserPublic
 from store.app.db import Crud
 from store.app.errors import ItemNotFoundError
-from store.app.model import User, UserPermission, UserPublic
+from store.app.model import User, UserPermission, UserStripeConnect
 from store.app.security.requests import get_request_api_key_id
 from store.app.security.user import (
     get_session_user_with_admin_permission,
@@ -52,6 +53,7 @@ class MyUserInfoResponse(BaseModel):
     last_name: str | None
     name: str | None
     bio: str | None
+    stripe_connect: UserStripeConnect | None
 
     @classmethod
     def from_user(cls, user: User) -> Self:
@@ -65,6 +67,7 @@ class MyUserInfoResponse(BaseModel):
             last_name=user.last_name,
             name=user.name,
             bio=user.bio,
+            stripe_connect=user.stripe_connect,
         )
 
 
@@ -83,6 +86,7 @@ async def get_user_info_endpoint(
             last_name=user.last_name,
             name=user.name,
             bio=user.bio,
+            stripe_connect=user.stripe_connect,
         )
     except ValueError:
         return None

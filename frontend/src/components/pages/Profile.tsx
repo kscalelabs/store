@@ -278,14 +278,15 @@ export const RenderProfile = (props: RenderProfileProps) => {
         </CardHeader>
         <CardContent>
           <div className="mb-4">
-            {user.stripe_connect_account_id &&
-            !user.stripe_connect_onboarding_completed ? (
+            {user.stripe_connect &&
+            !user.stripe_connect.onboarding_completed ? (
               <p className="text-gray-6 text-sm">
                 Your Stripe account setup is not complete. Please resolve
                 outstanding requirements to begin selling robots. It may take
                 some time for Stripe to process your info between submissions.
               </p>
-            ) : user.stripe_connect_onboarding_completed ? (
+            ) : user.stripe_connect &&
+              user.stripe_connect.onboarding_completed ? (
               <p className="text-gray-6 text-sm">
                 You are set up to sell robots on K-Scale.
               </p>
@@ -302,7 +303,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
                 Orders
               </Button>
             </Tooltip>
-            {!user.stripe_connect_account_id ? (
+            {!user.stripe_connect ? (
               <Tooltip content="Start selling on K-Scale" position="bottom">
                 <Button
                   onClick={() => navigate(ROUTES.SELL.ONBOARDING.path)}
@@ -311,7 +312,7 @@ export const RenderProfile = (props: RenderProfileProps) => {
                   Start Seller Onboarding
                 </Button>
               </Tooltip>
-            ) : !user.stripe_connect_onboarding_completed ? (
+            ) : !user.stripe_connect.onboarding_completed ? (
               <Tooltip content="Continue onboarding" position="bottom">
                 <Button
                   onClick={() => navigate(ROUTES.SELL.ONBOARDING.path)}

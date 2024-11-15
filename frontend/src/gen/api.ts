@@ -1669,6 +1669,7 @@ export interface components {
             name: string | null;
             /** Bio */
             bio: string | null;
+            stripe_connect: components["schemas"]["UserStripeConnect"] | null;
         };
         /** NewKeyRequest */
         NewKeyRequest: {
@@ -1702,6 +1703,8 @@ export interface components {
             id: string;
             /** User Id */
             user_id: string;
+            /** Listing Id */
+            listing_id: string;
             /** User Email */
             user_email: string;
             /** Created At */
@@ -1712,7 +1715,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "processing" | "in_development" | "being_assembled" | "shipped" | "delivered" | "preorder_placed" | "cancelled" | "refunded" | "failed";
+            status: "processing" | "in_development" | "being_assembled" | "shipped" | "delivered" | "preorder_placed" | "awaiting_final_payment" | "cancelled" | "refunded" | "failed";
             /** Price Amount */
             price_amount: number;
             /** Currency */
@@ -1721,14 +1724,14 @@ export interface components {
             quantity: number;
             /** Stripe Checkout Session Id */
             stripe_checkout_session_id: string;
-            /** Stripe Product Id */
-            stripe_product_id: string;
             /** Stripe Connect Account Id */
             stripe_connect_account_id: string;
+            /** Stripe Product Id */
+            stripe_product_id: string;
+            /** Stripe Price Id */
+            stripe_price_id: string;
             /** Stripe Customer Id */
-            stripe_customer_id?: string | null;
-            /** Stripe Payment Method Id */
-            stripe_payment_method_id?: string | null;
+            stripe_customer_id: string;
             /** Stripe Payment Intent Id */
             stripe_payment_intent_id?: string | null;
             /** Preorder Release Date */
@@ -1737,8 +1740,19 @@ export interface components {
             preorder_deposit_amount?: number | null;
             /** Stripe Preorder Deposit Id */
             stripe_preorder_deposit_id?: string | null;
-            /** Stripe Refund Id */
-            stripe_refund_id?: string | null;
+            /** Stripe Deposit Payment Intent Id */
+            stripe_deposit_payment_intent_id?: string | null;
+            /**
+             * Inventory Type
+             * @enum {string}
+             */
+            inventory_type: "finite" | "preorder";
+            /** Final Payment Checkout Session Id */
+            final_payment_checkout_session_id?: string | null;
+            /** Final Payment Intent Id */
+            final_payment_intent_id?: string | null;
+            /** Final Payment Date */
+            final_payment_date?: number | null;
             /** Shipping Name */
             shipping_name?: string | null;
             /** Shipping Address Line1 */
@@ -1753,14 +1767,16 @@ export interface components {
             shipping_postal_code?: string | null;
             /** Shipping Country */
             shipping_country?: string | null;
-            /** Shipped At */
-            shipped_at?: number | null;
-            /** Delivered At */
-            delivered_at?: number | null;
-            /** Cancelled At */
-            cancelled_at?: number | null;
-            /** Refunded At */
-            refunded_at?: number | null;
+            /** Shipped Date */
+            shipped_date?: number | null;
+            /** Stripe Refund Id */
+            stripe_refund_id?: string | null;
+            /** Delivered Date */
+            delivered_date?: number | null;
+            /** Cancelled Date */
+            cancelled_date?: number | null;
+            /** Refunded Date */
+            refunded_date?: number | null;
         };
         /** OrderWithProduct */
         OrderWithProduct: {
@@ -2049,13 +2065,7 @@ export interface components {
             name?: string | null;
             /** Bio */
             bio?: string | null;
-            /** Stripe Connect Account Id */
-            stripe_connect_account_id?: string | null;
-            /**
-             * Stripe Connect Onboarding Completed
-             * @default false
-             */
-            stripe_connect_onboarding_completed: boolean;
+            stripe_connect?: components["schemas"]["UserStripeConnect"] | null;
         };
         /** UserSignup */
         UserSignup: {
@@ -2065,6 +2075,16 @@ export interface components {
             email: string;
             /** Password */
             password: string;
+        };
+        /**
+         * UserStripeConnect
+         * @description Defines information for the user's Stripe Connect account.
+         */
+        UserStripeConnect: {
+            /** Account Id */
+            account_id: string;
+            /** Onboarding Completed */
+            onboarding_completed: boolean;
         };
         /** ValidationError */
         ValidationError: {

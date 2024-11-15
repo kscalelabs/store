@@ -9,6 +9,7 @@ from typing import Any, Literal, Optional, overload
 
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
+from pydantic import BaseModel
 
 from store.app.crud.base import TABLE_NAME, BaseCrud
 from store.app.crud.listings import ListingsCrud
@@ -18,7 +19,8 @@ from store.app.model import (
     APIKeySource,
     OAuthKey,
     User,
-    UserPublic,
+    UserPermission,
+    UserStripeConnect,
 )
 from store.settings import settings
 from store.utils import cache_async_result
@@ -39,10 +41,30 @@ class UserNotFoundError(Exception):
         super().__init__(message)
 
 
+class UserPublic(BaseModel):
+    """Defines public user model for frontend.
+
+    Omits private/sesnsitive user fields. Is the return type for
+    retrieving user data on frontend (for public profile pages, etc).
+    """
+
+    id: str
+    email: str
+    username: str
+    permissions: set[UserPermission] | None = None
+    created_at: int
+    updated_at: int | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    name: str | None = None
+    bio: str | None = None
+    stripe_connect: UserStripeConnect | None = None
+
+
 class UserCrud(BaseCrud):
     @classmethod
     def get_gsis(cls) -> set[str]:
-        return super().get_gsis().union({"user_id", "email", "user_token", "username", "stripe_connect_account_id"})
+        return super().get_gsis().union({"user_id", "email", "user_token", "username"})
 
     @overload
     async def get_user(self, id: str, throw_if_missing: Literal[True]) -> User: ...
@@ -270,13 +292,17 @@ class UserCrud(BaseCrud):
         return username
 
     async def update_stripe_connect_status(self, user_id: str, account_id: str, is_completed: bool) -> User:
-        """Update user's Stripe Connect status."""
-        updates = {"stripe_connect_account_id": account_id, "stripe_connect_onboarding_completed": is_completed}
-        return await self.update_user(user_id, updates)
+        """Updates the user's Stripe Connect status."""
+        user = await self.get_user(user_id, throw_if_missing=True)
+        user.set_stripe_connect(account_id, is_completed)
 
-    async def get_users_by_stripe_connect_id(self, connect_account_id: str) -> list[User]:
-        """Get users by their Stripe Connect account ID."""
-        return await self._get_items_from_secondary_index("stripe_connect_account_id", connect_account_id, User)
+        updates = {
+            "stripe_connect": {
+                "account_id": account_id,
+                "onboarding_completed": is_completed,
+            }
+        }
+        return await self.update_user(user_id, updates)
 
     async def set_content_manager(self, user_id: str, is_content_manager: bool) -> User:
         user = await self.get_user(user_id, throw_if_missing=True)
@@ -290,18 +316,6 @@ class UserCrud(BaseCrud):
 
         await self._update_item(user_id, User, {"permissions": list(user.permissions)})
         return user
-
-    async def update_user_stripe_connect_reset(self, connect_account_id: str) -> None:
-        """Reset Stripe Connect related fields for users with the given account ID."""
-        users = await self.get_users_by_stripe_connect_id(connect_account_id)
-        for user in users:
-            await self.update_user(
-                user.id,
-                {
-                    "stripe_connect_account_id": None,
-                    "stripe_connect_onboarding_completed": False,
-                },
-            )
 
 
 async def test_adhoc() -> None:
