@@ -17,39 +17,6 @@ interface Props {
   listingId: string;
 }
 
-const FullScreenImage = ({
-  artifact,
-  onClose,
-}: {
-  artifact: Artifact;
-  onClose: () => void;
-}) => {
-  return (
-    <div
-      className="fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
-    >
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 text-white hover:text-gray-300 p-2"
-      >
-        <FaTimes className="w-6 h-6" />
-      </button>
-      <div className="max-h-[90vh] max-w-[90vw] relative">
-        <img
-          src={artifact.urls.large}
-          alt="Full screen view"
-          className="max-h-[90vh] max-w-[90vw] object-contain"
-        />
-      </div>
-    </div>
-  );
-};
-
 const ListingImageItem = ({
   artifact,
   index,
@@ -59,7 +26,6 @@ const ListingImageItem = ({
   setArtifacts,
   setCurrentImageIndex,
   listingId,
-  onFullScreen,
 }: {
   artifact: Artifact;
   index: number;
@@ -69,7 +35,6 @@ const ListingImageItem = ({
   setArtifacts: (artifacts: Artifact[]) => void;
   setCurrentImageIndex: React.Dispatch<React.SetStateAction<number>>;
   listingId: string;
-  onFullScreen: (artifact: Artifact) => void;
 }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -160,10 +125,7 @@ const ListingImageItem = ({
       className={`aspect-square rounded-lg overflow-hidden cursor-pointer relative ${
         currentImageIndex === index ? "ring-2 ring-blue-500" : ""
       } ${artifact.is_main ? "ring-2 ring-green-500" : ""}`}
-      onClick={() => {
-        setCurrentImageIndex(index);
-        onFullScreen(artifact);
-      }}
+      onClick={() => setCurrentImageIndex(index)}
     >
       <ListingArtifactRenderer artifact={artifact} />
       {canEdit && (
@@ -206,19 +168,8 @@ const ListingImageGallery = ({ listingId, ...props }: Props) => {
     canEdit,
   } = props;
 
-  const [fullScreenArtifact, setFullScreenArtifact] = useState<Artifact | null>(
-    null,
-  );
-
   return (
     <>
-      {fullScreenArtifact && (
-        <FullScreenImage
-          artifact={fullScreenArtifact}
-          onClose={() => setFullScreenArtifact(null)}
-        />
-      )}
-
       {artifacts.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {artifacts.map((artifact, index) => (
@@ -232,7 +183,6 @@ const ListingImageGallery = ({ listingId, ...props }: Props) => {
               artifacts={artifacts}
               setArtifacts={setArtifacts}
               setCurrentImageIndex={setCurrentImageIndex}
-              onFullScreen={setFullScreenArtifact}
             />
           ))}
         </div>

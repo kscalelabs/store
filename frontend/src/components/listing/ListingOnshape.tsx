@@ -384,7 +384,7 @@ const ListingOnshape = (props: Props) => {
           Upload your URDF file:
           <CopyableCode
             code={`kscale urdf upload ${listingId} /path/to/your/urdf/directory/`}
-            className="bg-gray-12 text-green-600 p-4 rounded-lg mt-3 font-mono text-sm border border-gray-200"
+            className="bg-gray-12 text-green-600 p-2 sm:p-4 rounded-lg mt-3 font-mono text-xs sm:text-sm border border-gray-200 break-all whitespace-pre-wrap"
           />
         </li>
       </ol>
