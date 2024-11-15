@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import { Input } from "@/components/ui/Input/Input";
 import PasswordInput from "@/components/ui/Input/PasswordInput";
+import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
@@ -20,6 +22,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ signupTokenId }) => {
   const auth = useAuthentication();
   const { addAlert, addErrorAlert } = useAlertQueue();
   const navigate = useNavigate();
+  const [isValidating, setIsValidating] = useState(true);
 
   const {
     register,
@@ -33,6 +36,35 @@ const SignupForm: React.FC<SignupFormProps> = ({ signupTokenId }) => {
   const password = watch("password") || "";
   const confirmPassword = watch("confirmPassword") || "";
   const passwordStrength = password.length > 0 ? zxcvbn(password).score : 0;
+
+  useEffect(() => {
+    const validateToken = async () => {
+      try {
+        const { error } = await auth.client.GET("/auth/email/signup/get/{id}", {
+          params: {
+            path: { id: signupTokenId },
+          },
+        });
+
+        if (error) {
+          addErrorAlert(error);
+          navigate(ROUTES.HOME.path);
+        }
+      } finally {
+        setIsValidating(false);
+      }
+    };
+
+    validateToken();
+  }, [signupTokenId]);
+
+  if (isValidating) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        <Spinner />
+      </div>
+    );
+  }
 
   const onSubmit: SubmitHandler<SignupType> = async (data: SignupType) => {
     // Exit account creation early if password too weak or not matching
@@ -92,19 +124,22 @@ const SignupForm: React.FC<SignupFormProps> = ({ signupTokenId }) => {
         showStrength={false}
       />
       {/* TOS Text */}
-      <div className="text-xs text-center text-gray-11">
+      <div className="text-xs text-center text-gray-2">
         By signing up, you agree to our <br />
-        <Link to={ROUTES.TOS.path} className="text-accent underline">
+        <Link to={ROUTES.TOS.path} className="text-primary-9 underline ml-1">
           terms and conditions
         </Link>{" "}
         and{" "}
-        <Link to={ROUTES.PRIVACY.path} className="text-accent underline">
+        <Link
+          to={ROUTES.PRIVACY.path}
+          className="text-primary-9 underline ml-1"
+        >
           privacy policy
         </Link>
         .
       </div>
       {/* Signup Button */}
-      <Button variant="default">Sign up</Button>
+      <Button variant="outline">Sign up</Button>
     </form>
   );
 };
