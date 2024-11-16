@@ -69,8 +69,7 @@ const UploadContent: FC<UploadContentProps> = ({ images, onChange }) => {
             {...dragProps}
           >
             <p className="text-gray-1">
-              Drag & drop images here, click to select files, or paste an image
-              from your clipboard
+              Click to select files or drag and drop images here
             </p>
           </div>
 

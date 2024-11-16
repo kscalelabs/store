@@ -102,7 +102,9 @@ const HelpButton = ({
 }) => (
   <Button onClick={onToggle} variant="default">
     <FaInfoCircle />
-    <span className="ml-2">{showInstructions ? "Hide Help" : "Show Help"}</span>
+    <span className="ml-2 text-sm sm:text-base">
+      {showInstructions ? "Hide Instructions" : "View URDF Upload Instructions"}
+    </span>
   </Button>
 );
 

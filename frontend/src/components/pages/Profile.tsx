@@ -189,11 +189,11 @@ export const RenderProfile = (props: RenderProfileProps) => {
             <h1 className="text-3xl font-bold text-primary-9 text-center">
               {user.first_name || user.last_name
                 ? `${user.first_name || ""} ${user.last_name || ""}`
-                : "Anonymous Creator"}
+                : "Name not set"}
             </h1>
             <div className="flex gap-2 text-sm">
-              <p className="text-gray-1 bg-gray-10 px-3 py-1 rounded-md">
-                <span className="font-semibold mr-0.5 select-none">@</span>
+              <p className="text-gray-1 bg-gray-10 pl-2.5 pr-3 py-1 rounded-md">
+                <span className="font-semibold mr-1 select-none">@</span>
                 {user.username}
               </p>
               {user.permissions && (
@@ -496,7 +496,7 @@ const Profile = () => {
 
   if (auth.isLoading || isLoading) {
     return (
-      <div className="flex justify-center items-center pt-8">
+      <div className="flex justify-center pt-8 min-h-screen">
         <Spinner />
       </div>
     );

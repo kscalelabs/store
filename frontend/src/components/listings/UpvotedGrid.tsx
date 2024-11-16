@@ -84,11 +84,11 @@ const UpvotedGrid = ({ page, setPage }: UpvotedGridProps) => {
   const nextButton = hasMore;
 
   return listingInfos === null ? (
-    <div className="flex justify-center items-center h-64">
+    <div className="flex justify-center items-center min-h-[40vh]">
       <Spinner />
     </div>
   ) : listingInfos.length > 0 ? (
-    <div>
+    <div className="min-h-[40vh]">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
         {listingInfos.map((info) => (
           <Link
@@ -132,7 +132,7 @@ const UpvotedGrid = ({ page, setPage }: UpvotedGridProps) => {
       </div>
     </div>
   ) : (
-    <div className="flex flex-col justify-center items-center h-64 gap-4">
+    <div className="flex flex-col justify-center items-center min-h-[40vh] gap-4">
       <p>You have not upvoted any bots</p>
       <Button
         variant="outline"
