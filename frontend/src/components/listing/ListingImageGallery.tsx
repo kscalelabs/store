@@ -204,7 +204,7 @@ const ListingImageGallery = ({ listingId, ...props }: Props) => {
         </div>
       ) : (
         <div className="flex justify-center items-center h-full">
-          <p className="text-gray-500">No images yet</p>
+          <p className="text-gray-5">No images yet</p>
         </div>
       )}
     </>

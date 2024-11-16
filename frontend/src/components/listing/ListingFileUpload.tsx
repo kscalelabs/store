@@ -86,11 +86,11 @@ const ListingFileUpload = (props: Props) => {
         className="relative bg-background mt-4 rounded-lg"
       >
         <FileInput>
-          <div className="flex justify-center w-full h-24">
+          <div className="flex justify-center w-full h-24 bg-gray-11 hover:bg-gray-10">
             <div className="w-full flex flex-col justify-center">
               <div className="text-center">{description}</div>
               {fileExtensions && (
-                <div className="text-center text-sm text-gray-500">
+                <div className="text-center text-sm text-gray-7">
                   File extensions: {fileExtensions.join(", ")}
                 </div>
               )}

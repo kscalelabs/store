@@ -50,7 +50,7 @@ const OptionsSection: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="w-full py-4">
+    <section className="w-full py-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {[
           {

@@ -91,7 +91,7 @@ const Account = () => {
 
   if (auth.isLoading || isLoading) {
     return (
-      <div className="flex justify-center items-center pt-8">
+      <div className="flex justify-center pt-8 min-h-screen">
         <Spinner />
       </div>
     );

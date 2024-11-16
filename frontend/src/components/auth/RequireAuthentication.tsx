@@ -30,9 +30,7 @@ const RequireAuthentication = (props: Props) => {
         <h2 className="text-gray-1 text-xl font-bold mb-4">
           You must be logged in to view this page
         </h2>
-        <div className="border-0 rounded-lg">
-          <AuthBlock onClosed={onClosed} />
-        </div>
+        <AuthBlock onClosed={onClosed} />
       </div>
     </Container>
   );
