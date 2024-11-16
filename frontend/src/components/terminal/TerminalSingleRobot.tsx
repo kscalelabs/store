@@ -17,12 +17,6 @@ interface Props {
   ) => Promise<void>;
 }
 
-enum ConnectionStatus {
-  Disconnected = "Disconnected",
-  Connecting = "Connecting...",
-  Connected = "Connected",
-}
-
 const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
   const navigate = useNavigate();
   const [isEditingName, setIsEditingName] = useState(false);
