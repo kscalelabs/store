@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { FaPlus } from "react-icons/fa";
 
+import { RegisterRobotModal } from "@/components/modals/RegisterRobotModal";
 import { Button } from "@/components/ui/button";
 import { useAuthentication } from "@/hooks/useAuth";
 import { FEATURE_FLAGS } from "@/lib/utils/featureFlags";
-
-import { RegisterRobotModal } from "../modals/RegisterRobotModal";
 
 interface Props {
   listingId: string;
@@ -18,11 +17,7 @@ const ListingRegisterRobot = ({ listingId, className }: Props) => {
 
   const isAdmin = currentUser?.permissions?.includes("is_admin");
 
-  if (!isAuthenticated || (FEATURE_FLAGS.DEMO_ROBOT_ENABLED && !isAdmin)) {
-    return null;
-  }
-
-  return (
+  return isAuthenticated && (isAdmin || FEATURE_FLAGS.ROBOT_REGISTRATION) ? (
     <div className="flex flex-col items-start gap-3 mt-2">
       <Button
         variant="outline"
@@ -43,7 +38,7 @@ const ListingRegisterRobot = ({ listingId, className }: Props) => {
         listingId={listingId}
       />
     </div>
-  );
+  ) : null;
 };
 
 export default ListingRegisterRobot;

@@ -39,20 +39,20 @@ async def ice_candidates_generator(
         prev_time = next_time
 
 
-@router.post("/store")
+@router.post("/store/{robot_id}")
 async def store_ice_candidate(
-    candidate: str,
     robot_id: str,
+    candidate: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> None:
     await crud.store_ice_candidate(TeleopICECandidate.create(user.id, robot_id, candidate))
 
 
-@router.websocket("/ws/ice-candidates")
+@router.websocket("/ws/ice-candidates/{robot_id}")
 async def websocket_ice_candidates(
-    websocket: WebSocket,
     robot_id: str,
+    websocket: WebSocket,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> None:
@@ -64,7 +64,7 @@ async def websocket_ice_candidates(
         pass
 
 
-@router.get("/poll/ice-candidates")
+@router.get("/poll/ice-candidates/{robot_id}")
 async def poll_ice_candidates(
     robot_id: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],

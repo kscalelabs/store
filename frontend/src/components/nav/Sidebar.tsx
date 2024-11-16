@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 import Logo from "@/components/Logo";
 import { useFeaturedListings } from "@/components/listing/FeaturedListings";
+import { getNavItems } from "@/components/nav/navigation";
 import { useAuthentication } from "@/hooks/useAuth";
-
-import { getNavItems } from "./navigation";
 
 interface SidebarItemProps {
   title: string;
@@ -41,10 +40,11 @@ const SidebarItem = ({
 
 const Sidebar = ({ show, onClose }: SidebarProps) => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthentication();
+  const { isAuthenticated, currentUser } = useAuthentication();
   const { featuredListings } = useFeaturedListings();
 
-  const navItems = getNavItems(isAuthenticated);
+  const isAdmin = currentUser?.permissions?.includes("is_admin") ?? false;
+  const navItems = getNavItems(isAuthenticated, isAdmin);
 
   const handleItemClick = (path: string, isExternal?: boolean) => {
     if (isExternal) {
