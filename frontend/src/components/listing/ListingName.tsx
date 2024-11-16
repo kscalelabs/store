@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { FaPencilAlt, FaSave, FaTimes } from "react-icons/fa";
+import { FaPen, FaSave, FaTimes } from "react-icons/fa";
 
+import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 
@@ -55,48 +56,50 @@ const ListingName = (props: Props) => {
   };
 
   return (
-    <div className="flex justify-between items-center">
+    <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 justify-between items-center">
       <h1 className="text-2xl font-normal flex items-center gap-2">
         {isEditing ? (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-center gap-2">
             <input
               type="text"
               value={newName}
               onChange={handleChange}
-              className="border rounded px-2 py-1 bg-black text-white"
+              className="border rounded px-2 py-1 bg-black text-white sm:mr-2"
               disabled={submitting}
             />
-            <button
-              onClick={handleSave}
-              disabled={submitting}
-              className="text-green-600 hover:text-green-700 disabled:text-gray-400"
-            >
-              <FaSave />
-            </button>
-            <button
-              onClick={() => {
-                setIsEditing(false);
-                setNewName(name);
-                setHasChanged(false);
-              }}
-              disabled={submitting}
-              className="text-red-600 hover:text-red-700 disabled:text-gray-400"
-            >
-              <FaTimes />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setIsEditing(false);
+                  setNewName(name);
+                  setHasChanged(false);
+                }}
+                disabled={submitting}
+                className="text-red-600 hover:text-red-700 disabled:text-gray-400"
+              >
+                <FaTimes />
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={submitting}
+                className="text-green-500/80 hover:text-green-500/60 disabled:text-gray-400"
+              >
+                <FaSave />
+              </button>
+            </div>
           </div>
         ) : (
           <>
-            {name}
+            <span className="sm:mr-2">{name}</span>
             {edit && (
-              <button
-                className="text-gray-500 hover:text-gray-700"
+              <Button
                 onClick={() => setIsEditing(true)}
+                variant="ghost"
+                size="icon"
+                disabled={submitting}
               >
-                <span className="text-sm">
-                  <FaPencilAlt />
-                </span>
-              </button>
+                <FaPen />
+              </Button>
             )}
           </>
         )}

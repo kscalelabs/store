@@ -2,9 +2,11 @@ import { useState } from "react";
 import { FaStar, FaTimes } from "react-icons/fa";
 
 import { Artifact } from "@/components/listing/types";
+import DeleteConfirmationModal from "@/components/modals/DeleteConfirmationModal";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 
+import { Tooltip } from "../ui/ToolTip";
 import { Button } from "../ui/button";
 import ListingArtifactRenderer from "./ListingArtifactRenderer";
 
@@ -38,12 +40,12 @@ const ListingImageItem = ({
 }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
 
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDelete = async () => {
     setIsDeleting(true);
     try {
       const response = await auth.client.DELETE(
@@ -120,42 +122,56 @@ const ListingImageItem = ({
   };
 
   return (
-    <div
-      key={artifact.urls.large}
-      className={`aspect-square rounded-lg overflow-hidden cursor-pointer relative ${
-        currentImageIndex === index ? "ring-2 ring-blue-500" : ""
-      } ${artifact.is_main ? "ring-2 ring-green-500" : ""}`}
-      onClick={() => setCurrentImageIndex(index)}
-    >
-      <ListingArtifactRenderer artifact={artifact} />
-      {canEdit && (
-        <div className="absolute top-2 right-2 flex gap-2">
-          {!artifact.is_main && artifact.artifact_type === "image" && (
-            <Button
-              variant="default"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleSetMain(e);
-              }}
-              disabled={isUpdating}
-              className="hover:bg-green-600 text-white"
-            >
-              <FaStar />
-            </Button>
-          )}
-          <Button
-            variant={isDeleting ? "ghost" : "destructive"}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDelete(e);
-            }}
-            disabled={isDeleting}
-          >
-            <FaTimes />
-          </Button>
-        </div>
-      )}
-    </div>
+    <>
+      <div
+        key={artifact.urls.large}
+        className={`aspect-square rounded-lg overflow-hidden cursor-pointer relative ${
+          currentImageIndex === index ? "ring-2 ring-gray-7" : ""
+        } ${artifact.is_main ? "ring-2 ring-white" : ""}`}
+        onClick={() => setCurrentImageIndex(index)}
+      >
+        <ListingArtifactRenderer artifact={artifact} />
+        {canEdit && (
+          <div className="absolute top-2 right-2 flex gap-2">
+            {!artifact.is_main && artifact.artifact_type === "image" && (
+              <Tooltip content="Set as Main Image" position="left" size="sm">
+                <Button
+                  variant="default"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSetMain(e);
+                  }}
+                  disabled={isUpdating}
+                  className="text-gray-1 hover:bg-gray-1 hover:text-gray-12"
+                >
+                  <FaStar />
+                </Button>
+              </Tooltip>
+            )}
+            <Tooltip content="Delete Image" position="left" size="sm">
+              <Button
+                variant={isDeleting ? "ghost" : "destructive"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDeleteModal(true);
+                }}
+                disabled={isDeleting}
+              >
+                <FaTimes />
+              </Button>
+            </Tooltip>
+          </div>
+        )}
+      </div>
+      <DeleteConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onDelete={handleDelete}
+        title="Delete Image"
+        description="Are you sure you want to delete this image? This action cannot be undone."
+        buttonText="Delete Image"
+      />
+    </>
   );
 };
 

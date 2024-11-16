@@ -63,24 +63,24 @@ const ListingVote = ({ listingId, userVote: initialUserVote }: Props) => {
   };
 
   return (
-    <div className="flex items-center gap-2 text-gray-600">
+    <div className="flex items-center gap-2 text-gray-3">
       <button
-        className={`p-1 hover:bg-gray-100 rounded ${
-          userVote === true && !voting ? "text-green-500" : ""
-        }`}
-        onClick={() => handleVote(true)}
-        disabled={voting || !auth.isAuthenticated}
-      >
-        <FaArrowUp />
-      </button>
-      <button
-        className={`p-1 hover:bg-gray-100 rounded ${
+        className={`p-1 hover:bg-gray-1 hover:text-gray-12 rounded ${
           userVote === false && !voting ? "text-red-500" : ""
         }`}
         onClick={() => handleVote(false)}
         disabled={voting || !auth.isAuthenticated}
       >
         <FaArrowDown />
+      </button>
+      <button
+        className={`p-1 hover:bg-gray-1 hover:text-gray-12 rounded ${
+          userVote === true && !voting ? "text-green-500" : ""
+        }`}
+        onClick={() => handleVote(true)}
+        disabled={voting || !auth.isAuthenticated}
+      >
+        <FaArrowUp />
       </button>
     </div>
   );
