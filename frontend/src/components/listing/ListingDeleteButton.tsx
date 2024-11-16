@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-import Modal from "@/components/ui/Modal";
+import DeleteConfirmationModal from "@/components/modals/DeleteConfirmationModal";
 import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
@@ -77,31 +77,13 @@ const ListingDeleteButton = (props: Props) => {
         <FaTrash className="mr-2 h-4 w-4" />
         <span>{deleting ? "Deleting..." : "Delete Listing"}</span>
       </Button>
-      <Modal isOpen={confirmDelete} onClose={() => setConfirmDelete(false)}>
-        <div className="p-8 bg-gray-12 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-bold mb-4 text-gray-2">
-            Confirm Deletion
-          </h2>
-          <p className="mb-6 text-gray-9">
-            Are you sure you want to delete this listing? This action cannot be
-            undone.
-          </p>
-          <div className="flex justify-end space-x-4">
-            <Button onClick={() => setConfirmDelete(false)} variant="outline">
-              Cancel
-            </Button>
-            <Button
-              onClick={() => {
-                handleDelete();
-                setConfirmDelete(false);
-              }}
-              variant="destructive"
-            >
-              Yes, delete
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      <DeleteConfirmationModal
+        isOpen={confirmDelete}
+        onClose={() => setConfirmDelete(false)}
+        onDelete={handleDelete}
+        title="Delete Listing"
+        description="Are you sure you want to delete this listing? This action cannot be undone."
+      />
     </>
   );
 };

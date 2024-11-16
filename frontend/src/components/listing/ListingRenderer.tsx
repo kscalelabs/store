@@ -4,7 +4,7 @@ import ListingDeleteButton from "@/components/listing/ListingDeleteButton";
 import ListingDescription from "@/components/listing/ListingDescription";
 import ListingFeatureButton from "@/components/listing/ListingFeatureButton";
 import ListingFileUpload from "@/components/listing/ListingFileUpload";
-import ListingImageFlipper from "@/components/listing/ListingImageFlipper";
+import ListingImageCarousel from "@/components/listing/ListingImageCarousel";
 import ListingImageGallery from "@/components/listing/ListingImageGallery";
 import ListingMetadata from "@/components/listing/ListingMetadata";
 import ListingName from "@/components/listing/ListingName";
@@ -64,7 +64,7 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
     <div className="max-w-6xl mx-auto sm:p-4 sm:pt-8">
       {/* Main content area - flex column on mobile, row on desktop */}
       <div className="flex flex-col md:flex-row gap-8 mb-8 items-start">
-        <ListingImageFlipper
+        <ListingImageCarousel
           artifacts={artifacts}
           name={name}
           currentImageIndex={currentImageIndex}
@@ -123,6 +123,12 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
           {/* Build this robot */}
           <div className="flex flex-col sm:flex-row sm:items-baseline gap-4">
             <div className="grid grid-cols-1 xs:grid-cols-3 gap-4 w-full">
+              <ListingRegisterRobot listingId={listingId} className="w-full" />
+              <ListingFeatureButton
+                listingId={listingId}
+                initialFeatured={isFeatured}
+                className="w-full"
+              />
               {canEdit && (
                 <ListingDeleteButton
                   listingId={listingId}
@@ -130,12 +136,6 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
                   initialFeatured={isFeatured}
                 />
               )}
-              <ListingFeatureButton
-                listingId={listingId}
-                initialFeatured={isFeatured}
-                className="w-full"
-              />
-              <ListingRegisterRobot listingId={listingId} className="w-full" />
             </div>
           </div>
         </div>

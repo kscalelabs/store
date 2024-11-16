@@ -11,7 +11,7 @@ interface Props {
   setCurrentImageIndex: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const ListingImageFlipper = (props: Props) => {
+const ListingImageCarousel = (props: Props) => {
   const { artifacts, name, currentImageIndex, setCurrentImageIndex } = props;
   const [isFullScreen, setIsFullScreen] = useState(false);
 
@@ -86,6 +86,22 @@ const ListingImageFlipper = (props: Props) => {
             >
               <FaChevronRight className="text-gray-11" />
             </button>
+            {/* Dot indicators */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+              {imageArtifacts.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() =>
+                    setCurrentImageIndex(imageArtifacts[index].originalIndex)
+                  }
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    index === currentImageArrayIndex
+                      ? "bg-white"
+                      : "bg-white/40"
+                  }`}
+                />
+              ))}
+            </div>
           </>
         )}
       </div>
@@ -112,4 +128,4 @@ const ListingImageFlipper = (props: Props) => {
   );
 };
 
-export default ListingImageFlipper;
+export default ListingImageCarousel;
