@@ -5,7 +5,9 @@ import OrderCard from "@/components/orders/OrderCard";
 import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
 import type { paths } from "@/gen/api";
+import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import { ApiError } from "@/lib/types/api";
 import ROUTES from "@/lib/types/routes";
 
 type OrderWithProduct =
@@ -16,6 +18,7 @@ const OrdersPage: React.FC = () => {
   const { api, currentUser, isAuthenticated, isLoading } = useAuthentication();
   const [orders, setOrders] = useState<OrderWithProduct[] | null>(null);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const { addErrorAlert } = useAlertQueue();
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -26,12 +29,17 @@ const OrdersPage: React.FC = () => {
             "/orders/user-orders-with-products",
           );
           if (error) {
-            console.error("Failed to fetch orders", error);
+            const apiError = error as ApiError;
+            if (apiError.status === 500) {
+              addErrorAlert({
+                message: "Failed to fetch orders",
+                detail: apiError.message || "An unexpected error occurred",
+              });
+            }
+            setOrders([]);
           } else {
-            setOrders(data);
+            setOrders(data || []);
           }
-        } catch (error) {
-          console.error("Error fetching orders", error);
         } finally {
           setLoadingOrders(false);
         }
