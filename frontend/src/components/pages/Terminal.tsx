@@ -47,16 +47,13 @@ const TerminalInner = () => {
           const { data, error } = await api.client.GET("/robots/list");
           if (error) {
             addErrorAlert(error);
-          } else if (data.robots.length > 0) {
+          } else {
             setRobots(data.robots);
-            return;
           }
         } catch (error) {
           addErrorAlert(error);
         }
       }
-
-      setRobots(null);
     };
 
     fetchRobots();
