@@ -116,7 +116,7 @@ const Browse = () => {
 
   return (
     <Container className="min-h-screen">
-      <div className="">
+      <div className="mb-10">
         <div className="flex flex-col justify-center mb-6 text-center max-w-5xl mx-auto">
           <h1 className="text-2xl font-bold mb-2">Community Robots Hub</h1>
           <p className="text-gray-2 text-xs sm:text-lg">
