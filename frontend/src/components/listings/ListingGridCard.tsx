@@ -24,7 +24,7 @@ const ListingGridCard = ({
   };
 
   return (
-    <div className="bg-black rounded-lg shadow-md overflow-hidden transition-transform duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1 h-auto flex flex-col">
+    <div className="bg-black rounded-xl shadow-md overflow-hidden transition-transform duration-300 ease-in-out hover:shadow-lg hover:-translate-y-1 h-auto flex flex-col">
       <div className="relative pb-[100%]">
         {listing?.artifacts[0]?.artifact_type === "image" &&
         listing?.artifacts[0]?.urls.small ? (

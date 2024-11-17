@@ -121,22 +121,20 @@ const ListingRenderer = ({ listing }: { listing: ListingResponse }) => {
           <hr className="border-gray-200 my-4" />
 
           {/* Build this robot */}
-          <div className="flex flex-col sm:flex-row sm:items-baseline gap-4">
-            <div className="grid grid-cols-1 xs:grid-cols-3 gap-4 w-full">
-              <ListingRegisterRobot listingId={listingId} className="w-full" />
-              <ListingFeatureButton
+          <div className="flex flex-col gap-4">
+            <ListingRegisterRobot listingId={listingId} className="w-full" />
+            <ListingFeatureButton
+              listingId={listingId}
+              initialFeatured={isFeatured}
+              className="w-full"
+            />
+            {canEdit && (
+              <ListingDeleteButton
                 listingId={listingId}
-                initialFeatured={isFeatured}
                 className="w-full"
+                initialFeatured={isFeatured}
               />
-              {canEdit && (
-                <ListingDeleteButton
-                  listingId={listingId}
-                  className="w-full"
-                  initialFeatured={isFeatured}
-                />
-              )}
-            </div>
+            )}
           </div>
         </div>
       </div>
