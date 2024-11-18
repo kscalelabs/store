@@ -4,7 +4,7 @@ import logging
 import time
 from datetime import datetime
 from enum import Enum
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 import stripe
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, status
@@ -159,6 +159,7 @@ async def stripe_connect_webhook(request: Request, crud: Crud = Depends(Crud.get
             is_fully_onboarded = bool(
                 account.get("details_submitted")
                 and account.get("payouts_enabled")
+                and account.get("charges_enabled")
                 and capabilities.get("card_payments") == "active"
                 and capabilities.get("transfers") == "active"
             )
@@ -209,7 +210,7 @@ async def stripe_connect_webhook(request: Request, crud: Crud = Depends(Crud.get
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def handle_checkout_session_completed(session: stripe.checkout.Session, crud: Crud) -> None:
+async def handle_checkout_session_completed(session: dict[str, Any], crud: Crud) -> None:
     logger.info("Processing checkout session: %s", session["id"])
     try:
         # Retrieve full session details from the connected account
@@ -295,7 +296,7 @@ class CreateCheckoutSessionResponse(BaseModel):
     stripe_connect_account_id: str
 
 
-@router.post("/create-checkout-session", response_model=CreateCheckoutSessionResponse)
+@router.post("/checkout-session", response_model=CreateCheckoutSessionResponse)
 async def create_checkout_session(
     request: CreateCheckoutSessionRequest,
     user: User = Depends(get_session_user_with_read_permission),
@@ -436,6 +437,7 @@ async def create_checkout_session(
                             "application_fee_amount": application_fee,
                         },
                         "stripe_account": seller.stripe_connect.account_id,
+                        "metadata": {**metadata, "stripe_price_id": listing.stripe_price_id},
                     }
                 )
 
@@ -452,8 +454,17 @@ async def create_checkout_session(
             raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/get-product/{product_id}")
-async def get_product(product_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> stripe.Product:
+class ProductResponse(BaseModel):
+    id: str
+    name: str
+    description: str | None
+    images: list[str]
+    metadata: dict[str, str]
+    active: bool
+
+
+@router.get("/get-product/{product_id}", response_model=ProductResponse)
+async def get_product(product_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> ProductResponse:
     try:
         # First get the listing by stripe_product_id
         listing = await crud.get_listing_by_stripe_product_id(product_id)
@@ -468,7 +479,15 @@ async def get_product(product_id: str, crud: Annotated[Crud, Depends(Crud.get)])
         # Retrieve the product using the seller's connected account
         product = stripe.Product.retrieve(product_id, stripe_account=seller.stripe_connect.account_id)
 
-        return product
+        # Convert Stripe Product to our ProductResponse model
+        return ProductResponse(
+            id=product.id,
+            name=product.name,
+            description=product.description,
+            images=product.images,
+            metadata=product.metadata,
+            active=product.active,
+        )
     except stripe.StripeError as e:
         logger.error(f"Stripe error retrieving product: {str(e)}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -662,7 +681,7 @@ async def create_listing_product(
 
 class ProcessPreorderResponse(BaseModel):
     status: str
-    checkout_session: stripe.checkout.Session | None
+    checkout_session: dict[str, Any] | None
 
 
 @router.post("/process-preorder/{order_id}", response_model=ProcessPreorderResponse)

@@ -26,6 +26,7 @@ class ProductInfo(BaseModel):
     description: str | None
     images: list[str]
     metadata: dict[str, str]
+    active: bool
 
 
 class OrderWithProduct(BaseModel):
@@ -36,51 +37,57 @@ class OrderWithProduct(BaseModel):
 @router.get("/{order_id}", response_model=OrderWithProduct)
 async def get_order(
     order_id: str,
-    include_product: bool = False,
     user: User = Depends(get_session_user_with_read_permission),
-    crud: Crud = Depends(Crud.get),
-) -> Order | OrderWithProduct:
-    order = await crud.get_order(order_id)
-    if order is None or order.user_id != user.id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+    crud: Crud = Depends(),
+) -> OrderWithProduct:
+    async with crud:
+        order = await crud.get_order(order_id)
+        if not order or order.user_id != user.id:
+            raise HTTPException(status_code=404, detail="Order not found")
 
-    if not include_product:
-        return order
+        # Get product info from Stripe
+        product = await stripe.get_product(order.stripe_product_id, crud)
 
-    if order.stripe_product_id is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Order has no associated product")
+        # Convert ProductResponse to ProductInfo
+        product_info = ProductInfo(
+            id=product.id,
+            name=product.name,
+            description=product.description,
+            images=product.images,
+            metadata=product.metadata,
+            active=product.active,
+        )
 
-    product = await stripe.get_product(order.stripe_product_id, crud)
-    return OrderWithProduct(order=order, product=ProductInfo(**product))
+        return OrderWithProduct(order=order, product=product_info)
 
 
 @router.get("/me", response_model=list[OrderWithProduct])
 async def get_user_orders(
-    include_products: bool = False,
     user: User = Depends(get_session_user_with_read_permission),
-    crud: Crud = Depends(Crud.get),
+    crud: Crud = Depends(),
 ) -> list[OrderWithProduct]:
+    async def get_product_info(order: Order) -> OrderWithProduct:
+        if not order.stripe_product_id:
+            return OrderWithProduct(order=order, product=None)
+
+        try:
+            product = await stripe.get_product(order.stripe_product_id, crud)
+            product_info = ProductInfo(
+                id=product.id,
+                name=product.name,
+                description=product.description,
+                images=product.images,
+                metadata=product.metadata,
+                active=product.active,
+            )
+            return OrderWithProduct(order=order, product=product_info)
+        except Exception as e:
+            logger.error("Error processing order", extra={"order_id": order.id, "error": str(e), "user_id": user.id})
+            return OrderWithProduct(order=order, product=None)
+
     try:
         orders = await crud.get_orders_by_user_id(user.id)
-
-        if not include_products:
-            return [OrderWithProduct(order=order, product=None) for order in orders]
-
-        orders_with_products = []
-        for order in orders:
-            try:
-                if order.stripe_product_id is None:
-                    orders_with_products.append(OrderWithProduct(order=order, product=None))
-                    continue
-                product = await stripe.get_product(order.stripe_product_id, crud)
-                orders_with_products.append(OrderWithProduct(order=order, product=ProductInfo(**product)))
-            except Exception as e:
-                logger.error(
-                    "Error processing order", extra={"order_id": order.id, "error": str(e), "user_id": user.id}
-                )
-                orders_with_products.append(OrderWithProduct(order=order, product=None))
-                continue
-        return orders_with_products
+        return [await get_product_info(order) for order in orders]
     except ItemNotFoundError:
         return []
     except Exception as e:

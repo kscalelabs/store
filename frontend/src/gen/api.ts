@@ -900,7 +900,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/stripe/create-checkout-session": {
+    "/stripe/checkout-session": {
         parameters: {
             query?: never;
             header?: never;
@@ -910,7 +910,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Create Checkout Session */
-        post: operations["create_checkout_session_stripe_create_checkout_session_post"];
+        post: operations["create_checkout_session_stripe_checkout_session_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1354,6 +1354,15 @@ export interface components {
             /** Order Id */
             order_id?: string | null;
         };
+        /** DeleteTestAccountsResponse */
+        DeleteTestAccountsResponse: {
+            /** Success */
+            success: boolean;
+            /** Deleted Accounts */
+            deleted_accounts: string[];
+            /** Count */
+            count: number;
+        };
         /** DeleteTokenResponse */
         DeleteTokenResponse: {
             /** Message */
@@ -1745,6 +1754,13 @@ export interface components {
             order: components["schemas"]["Order"];
             product: components["schemas"]["ProductInfo"] | null;
         };
+        /** ProcessPreorderResponse */
+        ProcessPreorderResponse: {
+            /** Status */
+            status: string;
+            /** Checkout Session */
+            checkout_session: Record<string, never> | null;
+        };
         /** ProductInfo */
         ProductInfo: {
             /** Id */
@@ -1759,6 +1775,25 @@ export interface components {
             metadata: {
                 [key: string]: string;
             };
+            /** Active */
+            active: boolean;
+        };
+        /** ProductResponse */
+        ProductResponse: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string | null;
+            /** Images */
+            images: string[];
+            /** Metadata */
+            metadata: {
+                [key: string]: string;
+            };
+            /** Active */
+            active: boolean;
         };
         /** PublicUserInfoResponseItem */
         PublicUserInfoResponseItem: {
@@ -3264,9 +3299,7 @@ export interface operations {
     };
     get_order_orders__order_id__get: {
         parameters: {
-            query?: {
-                include_product?: boolean;
-            };
+            query?: never;
             header?: never;
             path: {
                 order_id: string;
@@ -3297,9 +3330,7 @@ export interface operations {
     };
     get_user_orders_orders_me_get: {
         parameters: {
-            query?: {
-                include_products?: boolean;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -3313,15 +3344,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OrderWithProduct"][];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -3650,7 +3672,7 @@ export interface operations {
             };
         };
     };
-    create_checkout_session_stripe_create_checkout_session_post: {
+    create_checkout_session_stripe_checkout_session_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -3700,7 +3722,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["ProductResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3784,7 +3806,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["DeleteTestAccountsResponse"];
                 };
             };
         };
@@ -3806,7 +3828,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["ProcessPreorderResponse"];
                 };
             };
             /** @description Validation Error */

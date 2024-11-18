@@ -22,9 +22,7 @@ const OrdersPage: React.FC = () => {
       if (isAuthenticated && currentUser) {
         setLoadingOrders(true);
         try {
-          const { data, error } = await api.client.GET("/orders/me", {
-            params: { query: { include_products: true } },
-          });
+          const { data, error } = await api.client.GET("/orders/me");
 
           if (error) {
             const apiError = error as ApiError;

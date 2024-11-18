@@ -59,7 +59,7 @@ const CheckoutButton: React.FC<Props> = ({
 
     try {
       const { data, error } = await auth.client.POST(
-        "/stripe/create-checkout-session",
+        "/stripe/checkout-session",
         {
           body: {
             listing_id: listingId,
