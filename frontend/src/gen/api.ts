@@ -652,24 +652,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/orders/user-orders": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get User Orders */
-        get: operations["get_user_orders_orders_user_orders_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/orders/order/{order_id}": {
+    "/orders/{order_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -677,7 +660,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Order */
-        get: operations["get_order_orders_order__order_id__get"];
+        get: operations["get_order_orders__order_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -686,15 +669,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/orders/order-with-product/{order_id}": {
+    "/orders/me": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get Order With Product */
-        get: operations["get_order_with_product_orders_order_with_product__order_id__get"];
+        /** Get User Orders */
+        get: operations["get_user_orders_orders_me_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -703,24 +686,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/orders/user-orders-with-products": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get User Orders With Products */
-        get: operations["get_user_orders_with_products_orders_user_orders_with_products_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/orders/update-order-address/{order_id}": {
+    "/orders/{order_id}/shipping-address": {
         parameters: {
             query?: never;
             header?: never;
@@ -728,8 +694,8 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Update Order Address */
-        put: operations["update_order_address_orders_update_order_address__order_id__put"];
+        /** Update Order Shipping Address */
+        put: operations["update_order_shipping_address_orders__order_id__shipping_address_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -903,10 +869,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Stripe Webhook
-         * @description Handle direct account webhooks (non-Connect events).
-         */
+        /** Stripe Webhook */
         post: operations["stripe_webhook_stripe_webhook_post"];
         delete?: never;
         options?: never;
@@ -923,10 +886,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /**
-         * Stripe Connect Webhook
-         * @description Handle Connect account webhooks.
-         */
+        /** Stripe Connect Webhook */
         post: operations["stripe_connect_webhook_stripe_connect_webhook_post"];
         delete?: never;
         options?: never;
@@ -934,7 +894,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/stripe/create-checkout-session": {
+    "/stripe/checkout-session": {
         parameters: {
             query?: never;
             header?: never;
@@ -944,7 +904,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Create Checkout Session */
-        post: operations["create_checkout_session_stripe_create_checkout_session_post"];
+        post: operations["create_checkout_session_stripe_checkout_session_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1388,6 +1348,15 @@ export interface components {
             /** Order Id */
             order_id?: string | null;
         };
+        /** DeleteTestAccountsResponse */
+        DeleteTestAccountsResponse: {
+            /** Success */
+            success: boolean;
+            /** Deleted Accounts */
+            deleted_accounts: string[];
+            /** Count */
+            count: number;
+        };
         /** DeleteTokenResponse */
         DeleteTokenResponse: {
             /** Message */
@@ -1777,7 +1746,14 @@ export interface components {
         /** OrderWithProduct */
         OrderWithProduct: {
             order: components["schemas"]["Order"];
-            product: components["schemas"]["ProductInfo"];
+            product: components["schemas"]["ProductInfo"] | null;
+        };
+        /** ProcessPreorderResponse */
+        ProcessPreorderResponse: {
+            /** Status */
+            status: string;
+            /** Checkout Session */
+            checkout_session: Record<string, never> | null;
         };
         /** ProductInfo */
         ProductInfo: {
@@ -1793,6 +1769,25 @@ export interface components {
             metadata: {
                 [key: string]: string;
             };
+            /** Active */
+            active: boolean;
+        };
+        /** ProductResponse */
+        ProductResponse: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string | null;
+            /** Images */
+            images: string[];
+            /** Metadata */
+            metadata: {
+                [key: string]: string;
+            };
+            /** Active */
+            active: boolean;
         };
         /** PublicUserInfoResponseItem */
         PublicUserInfoResponseItem: {
@@ -3296,58 +3291,7 @@ export interface operations {
             };
         };
     };
-    get_user_orders_orders_user_orders_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Order"][];
-                };
-            };
-        };
-    };
-    get_order_orders_order__order_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                order_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Order"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_order_with_product_orders_order_with_product__order_id__get: {
+    get_order_orders__order_id__get: {
         parameters: {
             query?: never;
             header?: never;
@@ -3378,7 +3322,7 @@ export interface operations {
             };
         };
     };
-    get_user_orders_with_products_orders_user_orders_with_products_get: {
+    get_user_orders_orders_me_get: {
         parameters: {
             query?: never;
             header?: never;
@@ -3398,7 +3342,7 @@ export interface operations {
             };
         };
     };
-    update_order_address_orders_update_order_address__order_id__put: {
+    update_order_shipping_address_orders__order_id__shipping_address_put: {
         parameters: {
             query?: never;
             header?: never;
@@ -3722,7 +3666,7 @@ export interface operations {
             };
         };
     };
-    create_checkout_session_stripe_create_checkout_session_post: {
+    create_checkout_session_stripe_checkout_session_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -3772,7 +3716,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["ProductResponse"];
                 };
             };
             /** @description Validation Error */
@@ -3856,7 +3800,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["DeleteTestAccountsResponse"];
                 };
             };
         };
@@ -3878,7 +3822,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["ProcessPreorderResponse"];
                 };
             };
             /** @description Validation Error */

@@ -4,7 +4,7 @@ import logging
 import time
 from datetime import datetime
 from enum import Enum
-from typing import Annotated, Any, Dict, Literal
+from typing import Annotated, Any, Literal
 
 import stripe
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, status
@@ -30,12 +30,10 @@ STRIPE_CONNECT_FINAL_PAYMENT_CANCEL_URL = (
     f"{settings.site.homepage}/order/final-payment/cancel?session_id={{CHECKOUT_SESSION_ID}}"
 )
 
-# Configure logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-# Add a console handler if one doesn't exist
 if not logger.handlers:
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
@@ -82,7 +80,6 @@ async def refund_payment_intent(
                 else refund_request.cancel_reason.reason
             )
 
-            # Create a Refund for payment_intent_id with the order amount
             refund = stripe.Refund.create(
                 payment_intent=payment_intent_id,
                 amount=amount,
@@ -91,13 +88,11 @@ async def refund_payment_intent(
             )
             logger.info("Refund created: %s", refund.id)
 
-            # Make sure order exists
             order = await crud.get_order(order_id)
             if order is None or order.user_id != user.id:
                 raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
             logger.info("Found order id: %s", order.id)
 
-            # Update order status
             order_data: OrderDataUpdate = {
                 "stripe_refund_id": refund.id,
                 "status": ("refunded" if (refund.status and refund.status) == "succeeded" else order.status),
@@ -113,8 +108,7 @@ async def refund_payment_intent(
 
 
 @router.post("/webhook")
-async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Dict[str, str]:
-    """Handle direct account webhooks (non-Connect events)."""
+async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> dict[str, str]:
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
 
@@ -137,8 +131,7 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
 
 
 @router.post("/connect/webhook")
-async def stripe_connect_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Dict[str, str]:
-    """Handle Connect account webhooks."""
+async def stripe_connect_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> dict[str, str]:
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
 
@@ -146,26 +139,24 @@ async def stripe_connect_webhook(request: Request, crud: Crud = Depends(Crud.get
         event = stripe.Webhook.construct_event(payload, sig_header, settings.stripe.connect_webhook_secret)
         logger.info("Connect webhook event type: %s", event["type"])
 
-        # Get the connected account ID
         connected_account_id = event.get("account")
         if not connected_account_id:
             logger.warning("No connected account ID in webhook event")
             return {"status": "skipped"}
 
-        # Handle Connect-specific events
         if event["type"] == "account.updated":
             account = event["data"]["object"]
             capabilities = account.get("capabilities", {})
             is_fully_onboarded = bool(
                 account.get("details_submitted")
                 and account.get("payouts_enabled")
+                and account.get("charges_enabled")
                 and capabilities.get("card_payments") == "active"
                 and capabilities.get("transfers") == "active"
             )
 
             if is_fully_onboarded:
                 try:
-                    # Get user_id from account metadata
                     user_id = account.get("metadata", {}).get("user_id")
                     if user_id:
                         await crud.update_stripe_connect_status(user_id, account["id"], is_completed=True)
@@ -209,7 +200,7 @@ async def stripe_connect_webhook(request: Request, crud: Crud = Depends(Crud.get
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud) -> None:
+async def handle_checkout_session_completed(session: dict[str, Any], crud: Crud) -> None:
     logger.info("Processing checkout session: %s", session["id"])
     try:
         # Retrieve full session details from the connected account
@@ -278,10 +269,6 @@ async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud)
         raise
 
 
-async def notify_payment_failed(session: Dict[str, Any]) -> None:
-    logger.warning("Payment failed for session: %s", session["id"])
-
-
 def support_affirm_payment(listing: Listing) -> bool:
     if listing.price_amount is None:
         return False
@@ -299,7 +286,7 @@ class CreateCheckoutSessionResponse(BaseModel):
     stripe_connect_account_id: str
 
 
-@router.post("/create-checkout-session", response_model=CreateCheckoutSessionResponse)
+@router.post("/checkout-session", response_model=CreateCheckoutSessionResponse)
 async def create_checkout_session(
     request: CreateCheckoutSessionRequest,
     user: User = Depends(get_session_user_with_read_permission),
@@ -307,22 +294,18 @@ async def create_checkout_session(
 ) -> CreateCheckoutSessionResponse:
     async with crud:
         try:
-            # Get the listing
             listing = await crud.get_listing(request.listing_id)
             if not listing or not listing.price_amount:
                 logger.error(f"Listing not found or has no price: {request.listing_id}")
                 raise HTTPException(status_code=404, detail="Listing not found or has no price")
 
-            # Get seller details
             seller = await crud.get_user(listing.user_id)
             if not seller or not seller.stripe_connect or not seller.stripe_connect.onboarding_completed:
                 raise HTTPException(status_code=400, detail="Seller not found or not connected to Stripe")
 
-            # Check if user is trying to buy their own listing
             if seller.id == user.id:
                 raise HTTPException(status_code=400, detail="You cannot purchase your own listing")
 
-            # Calculate maximum quantity
             max_quantity = 10
             if listing.inventory_type == "finite" and listing.inventory_quantity is not None:
                 max_quantity = min(listing.inventory_quantity, 10)
@@ -405,7 +388,6 @@ async def create_checkout_session(
             else:
                 # Regular payment mode
                 if not listing.stripe_price_id and listing.stripe_product_id:
-                    # Create a new price if one doesn't exist
                     price = stripe.Price.create(
                         unit_amount=listing.price_amount,
                         currency=listing.currency or "usd",
@@ -413,14 +395,12 @@ async def create_checkout_session(
                         metadata={"listing_id": listing.id},
                         stripe_account=seller.stripe_connect.account_id,
                     )
-                    # Update the listing with the new price ID
                     await crud.edit_listing(listing_id=listing.id, stripe_price_id=price.id)
                     listing.stripe_price_id = price.id
 
                 if listing.stripe_price_id is None:
                     raise HTTPException(status_code=400, detail="Price not configured")
 
-                # Calculate application fee
                 application_fee = int(listing.price_amount * 0.02)  # 2% fee
 
                 checkout_params.update(
@@ -440,6 +420,7 @@ async def create_checkout_session(
                             "application_fee_amount": application_fee,
                         },
                         "stripe_account": seller.stripe_connect.account_id,
+                        "metadata": {**metadata, "stripe_price_id": listing.stripe_price_id},
                     }
                 )
 
@@ -456,15 +437,22 @@ async def create_checkout_session(
             raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.get("/get-product/{product_id}")
-async def get_product(product_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> Dict[str, Any]:
+class ProductResponse(BaseModel):
+    id: str
+    name: str
+    description: str | None
+    images: list[str]
+    metadata: dict[str, str]
+    active: bool
+
+
+@router.get("/get-product/{product_id}", response_model=ProductResponse)
+async def get_product(product_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> ProductResponse:
     try:
-        # First get the listing by stripe_product_id
         listing = await crud.get_listing_by_stripe_product_id(product_id)
         if not listing:
             raise HTTPException(status_code=404, detail="Listing not found")
 
-        # Get the seller
         seller = await crud.get_user(listing.user_id)
         if not seller or not seller.stripe_connect:
             raise HTTPException(status_code=400, detail="Seller not found or not connected to Stripe")
@@ -472,13 +460,14 @@ async def get_product(product_id: str, crud: Annotated[Crud, Depends(Crud.get)])
         # Retrieve the product using the seller's connected account
         product = stripe.Product.retrieve(product_id, stripe_account=seller.stripe_connect.account_id)
 
-        return {
-            "id": product.id,
-            "name": product.name,
-            "description": product.description,
-            "images": product.images,
-            "metadata": product.metadata,
-        }
+        return ProductResponse(
+            id=product.id,
+            name=product.name,
+            description=product.description,
+            images=product.images,
+            metadata=product.metadata,
+            active=product.active,
+        )
     except stripe.StripeError as e:
         logger.error(f"Stripe error retrieving product: {str(e)}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -535,7 +524,7 @@ async def create_connect_account(
 async def create_connect_account_session(
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
     account_id: str = Body(..., embed=True),
-) -> Dict[str, str]:
+) -> dict[str, str]:
     try:
         logger.info("Creating account session for account: %s", account_id)
 
@@ -565,11 +554,17 @@ async def create_connect_account_session(
         raise
 
 
-@router.post("/connect/delete/accounts")
+class DeleteTestAccountsResponse(BaseModel):
+    success: bool
+    deleted_accounts: list[str]
+    count: int
+
+
+@router.post("/connect/delete/accounts", response_model=DeleteTestAccountsResponse)
 async def delete_test_accounts(
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> Dict[str, Any]:
+) -> DeleteTestAccountsResponse:
     if not user.permissions or "is_admin" not in user.permissions:
         raise HTTPException(status_code=403, detail="Admin permission required to delete accounts")
 
@@ -584,7 +579,7 @@ async def delete_test_accounts(
             except Exception as e:
                 logger.error("Failed to delete account %s: %s", account.id, str(e))
 
-        return {"success": True, "deleted_accounts": deleted_accounts, "count": len(deleted_accounts)}
+        return DeleteTestAccountsResponse(success=True, deleted_accounts=deleted_accounts, count=len(deleted_accounts))
     except Exception as e:
         logger.error("Error deleting test accounts: %s", str(e))
         raise HTTPException(status_code=400, detail=str(e))
@@ -664,12 +659,17 @@ async def create_listing_product(
         )
 
 
-@router.post("/process-preorder/{order_id}")
+class ProcessPreorderResponse(BaseModel):
+    status: str
+    checkout_session: dict[str, Any] | None
+
+
+@router.post("/process-preorder/{order_id}", response_model=ProcessPreorderResponse)
 async def process_preorder(
     order_id: str,
     crud: Annotated[Crud, Depends(Crud.get)],
     user: User = Depends(get_session_user_with_admin_permission),
-) -> Dict[str, Any]:
+) -> ProcessPreorderResponse:
     async with crud:
         try:
             # Get the order and verify it's a preorder
@@ -758,13 +758,10 @@ async def process_preorder(
 
             await crud.update_order(order_id, order_data)
 
-            return {
-                "status": "success",
-                "checkout_session": {
-                    "id": checkout_session.id,
-                    "url": checkout_session.url,
-                },
-            }
+            return ProcessPreorderResponse(
+                status="success",
+                checkout_session=checkout_session,
+            )
 
         except stripe.StripeError as e:
             logger.error(f"Stripe error processing preorder final payment: {str(e)}")

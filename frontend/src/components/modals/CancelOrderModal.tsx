@@ -11,9 +11,7 @@ import { Label } from "@/components/ui/label";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
-
-type Order =
-  paths["/orders/user-orders"]["get"]["responses"][200]["content"]["application/json"][0];
+import type { OrderWithProduct } from "@/lib/types/orders";
 
 type RefundRequest =
   paths["/stripe/refunds/{order_id}"]["put"]["requestBody"]["content"]["application/json"];
@@ -21,8 +19,8 @@ type RefundRequest =
 interface CancelOrderModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  order: Order;
-  onOrderUpdate: (updatedOrder: Order) => void;
+  order: OrderWithProduct;
+  onOrderUpdate: (updatedOrder: OrderWithProduct) => void;
 }
 
 const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
@@ -90,7 +88,7 @@ const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
 
     try {
       const { data, error } = await client.PUT("/stripe/refunds/{order_id}", {
-        params: { path: { order_id: order.id } },
+        params: { path: { order_id: order.order.id } },
         body: cancellation,
       });
 
@@ -99,7 +97,10 @@ const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
         console.error("Error canceling order:", error);
       } else {
         addAlert("Order successfully canceled", "success");
-        onOrderUpdate(data);
+        onOrderUpdate({
+          order: data,
+          product: order.product,
+        });
       }
 
       onOpenChange(false);

@@ -4,19 +4,16 @@ import { useNavigate } from "react-router-dom";
 import OrderCard from "@/components/orders/OrderCard";
 import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
-import type { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { ApiError } from "@/lib/types/api";
+import type { OrderWithProduct } from "@/lib/types/orders";
 import ROUTES from "@/lib/types/routes";
-
-type OrderWithProduct =
-  paths["/orders/user-orders-with-products"]["get"]["responses"][200]["content"]["application/json"][number];
 
 const OrdersPage: React.FC = () => {
   const navigate = useNavigate();
   const { api, currentUser, isAuthenticated, isLoading } = useAuthentication();
-  const [orders, setOrders] = useState<OrderWithProduct[] | null>(null);
+  const [orders, setOrders] = useState<OrderWithProduct[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const { addErrorAlert } = useAlertQueue();
 
@@ -25,9 +22,8 @@ const OrdersPage: React.FC = () => {
       if (isAuthenticated && currentUser) {
         setLoadingOrders(true);
         try {
-          const { data, error } = await api.client.GET(
-            "/orders/user-orders-with-products",
-          );
+          const { data, error } = await api.client.GET("/orders/me");
+
           if (error) {
             const apiError = error as ApiError;
             if (apiError.status === 500) {
@@ -38,7 +34,7 @@ const OrdersPage: React.FC = () => {
             }
             setOrders([]);
           } else {
-            setOrders(data || []);
+            setOrders(data as OrderWithProduct[]);
           }
         } finally {
           setLoadingOrders(false);
@@ -69,7 +65,7 @@ const OrdersPage: React.FC = () => {
         <div className="flex justify-center items-center p-4 md:p-10 rounded-lg max-w-md mx-auto">
           <Spinner className="p-1" />
         </div>
-      ) : orders && orders.length > 0 ? (
+      ) : orders.length > 0 ? (
         <div className="grid gap-2 md:gap-6 md:grid-cols-1 lg:grid-cols-2">
           {orders.map((orderWithProduct: OrderWithProduct) => (
             <OrderCard

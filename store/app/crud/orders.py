@@ -52,6 +52,12 @@ class OrderDataUpdate(TypedDict):
     shipping_country: NotRequired[str]
 
 
+class OrdersNotFoundError(ItemNotFoundError):
+    """Raised when no orders are found for a user."""
+
+    pass
+
+
 class OrdersCrud(BaseCrud):
     """CRUD operations for Orders."""
 
@@ -63,7 +69,7 @@ class OrdersCrud(BaseCrud):
     async def get_orders_by_user_id(self, user_id: str) -> list[Order]:
         orders = await self._get_items_from_secondary_index("user_id", user_id, Order)
         if not orders:
-            raise ItemNotFoundError("No orders found for this user")
+            raise OrdersNotFoundError(f"No orders found for user {user_id}")
         return orders
 
     async def get_orders_by_stripe_connect_account_id(self, stripe_connect_account_id: str) -> list[Order]:
@@ -88,26 +94,16 @@ class OrdersCrud(BaseCrud):
         if not order:
             raise ItemNotFoundError("Order not found")
 
-        # Create a dict of current order data
         current_data = order.model_dump()
-
-        # Convert TypedDict to regular dict
-        update_dict = dict(update_data)  # Convert TypedDict to regular dict
-
-        # Update with new data
+        update_dict = dict(update_data)
         current_data.update(update_dict)
 
         try:
-            # Validate the updated data
             Order(**current_data)
         except ValidationError as e:
-            # If validation fails, raise an error
             raise ValueError(f"Invalid update data: {str(e)}")
 
-        # If validation passes, update the order
         await self._update_item(order_id, Order, update_dict)
-
-        # Fetch and return the updated order
         updated_order = await self.get_order(order_id)
         if not updated_order:
             raise ItemNotFoundError("Updated order not found")

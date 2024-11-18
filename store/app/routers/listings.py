@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from typing import Annotated, List, Literal
+from typing import Annotated, Literal
 
 from fastapi import (
     APIRouter,
@@ -283,7 +283,7 @@ async def add_listing(
     inventory_quantity: str | None = Form(None),
     preorder_deposit_amount: str | None = Form(None),
     preorder_release_date: str | None = Form(None),
-    photos: List[UploadFile] = File(None),
+    photos: list[UploadFile] = File(None),
 ) -> NewListingResponse:
     try:
         logger.info("Starting to process add listing request")
