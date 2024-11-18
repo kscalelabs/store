@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 
+import { Input } from "@/components/ui/Input/Input";
 import Modal from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";

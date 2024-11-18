@@ -9,6 +9,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { OrderWithProduct } from "@/lib/types/orders";
+import {
+  activeStatuses,
+  canModifyStatuses,
+  orderStatuses,
+  redStatuses,
+} from "@/lib/types/orders";
 import { formatPrice } from "@/lib/utils/formatNumber";
 import { normalizeStatus } from "@/lib/utils/formatString";
 
@@ -20,37 +26,6 @@ enum OrderStatus {
   SHIPPED = 3,
   DELIVERED = 4,
 }
-
-const orderStatuses = [
-  "processing",
-  "in_development",
-  "being_assembled",
-  "shipped",
-  "delivered",
-  "awaiting_final_payment",
-  "preorder_placed",
-  "cancelled",
-  "refunded",
-  "failed",
-];
-
-const activeStatuses = [
-  "preorder_placed",
-  "processing",
-  "in_development",
-  "being_assembled",
-  "shipped",
-  "awaiting_final_payment",
-];
-
-const redStatuses = ["cancelled", "refunded", "failed"];
-const canModifyStatuses = [
-  "preorder_placed",
-  "processing",
-  "in_development",
-  "being_assembled",
-  "awaiting_final_payment",
-];
 
 const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
   orderWithProduct: initialOrderWithProduct,
@@ -265,9 +240,7 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
 
       {isRedStatus && (
         <p className="text-red-600 font-semibold mb-4">
-          {order.status === "failed"
-            ? "This order has failed."
-            : `This order has been ${normalizeStatus(order.status)}.`}
+          This order has been {normalizeStatus(order.status)}.
         </p>
       )}
 

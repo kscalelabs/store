@@ -563,7 +563,6 @@ OrderStatus = Literal[
     "awaiting_final_payment",
     "cancelled",
     "refunded",
-    "failed",
 ]
 
 InventoryType = Literal["finite", "preorder"]
