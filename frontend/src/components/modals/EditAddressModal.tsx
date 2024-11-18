@@ -1,12 +1,7 @@
 import React, { useState } from "react";
 
+import Modal from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
@@ -47,7 +42,7 @@ const EditAddressModal: React.FC<EditAddressModalProps> = ({
     e.preventDefault();
     try {
       const { data, error } = await client.PUT(
-        "/orders/{order_id}/shipping-address",
+        "/orders/shipping-address/{order_id}",
         {
           params: { path: { order_id: order.order.id } },
           body: address,
@@ -72,13 +67,11 @@ const EditAddressModal: React.FC<EditAddressModalProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-gray-1 text-gray-12 border border-gray-3 rounded-lg shadow-lg">
-        <DialogHeader>
-          <DialogTitle>Edit Delivery Address</DialogTitle>
-        </DialogHeader>
+    <Modal isOpen={isOpen} onClose={() => onOpenChange(false)}>
+      <div className="p-6">
+        <h2 className="text-xl font-semibold mb-4">Edit Delivery Address</h2>
         <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-3 py-4">
             <div className="grid gap-2">
               <Label htmlFor="shipping_name">Name</Label>
               <Input
@@ -129,45 +122,44 @@ const EditAddressModal: React.FC<EditAddressModalProps> = ({
                 className="bg-gray-2 border-gray-3 text-gray-12"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="shipping_postal_code">Postal Code</Label>
-              <Input
-                id="shipping_postal_code"
-                name="shipping_postal_code"
-                value={address.shipping_postal_code}
-                onChange={handleInputChange}
-                className="bg-gray-2 border-gray-3 text-gray-12"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="shipping_country">Country</Label>
-              <Input
-                id="shipping_country"
-                name="shipping_country"
-                value={address.shipping_country}
-                onChange={handleInputChange}
-                className="bg-gray-2 border-gray-3 text-gray-12"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-2">
+                <Label htmlFor="shipping_postal_code">Postal Code</Label>
+                <Input
+                  id="shipping_postal_code"
+                  name="shipping_postal_code"
+                  value={address.shipping_postal_code}
+                  onChange={handleInputChange}
+                  className="bg-gray-2 border-gray-3 text-gray-12"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="shipping_country">Country</Label>
+                <Input
+                  id="shipping_country"
+                  name="shipping_country"
+                  value={address.shipping_country}
+                  onChange={handleInputChange}
+                  className="bg-gray-2 border-gray-3 text-gray-12"
+                />
+              </div>
             </div>
           </div>
           <div className="flex justify-end gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="default"
               onClick={() => onOpenChange(false)}
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              className="bg-primary-9 text-gray-1 hover:bg-gray-12"
-            >
+            <Button type="submit" variant="outline">
               Save Changes
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </Modal>
   );
 };
 

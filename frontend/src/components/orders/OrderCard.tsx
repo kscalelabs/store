@@ -45,6 +45,7 @@ const activeStatuses = [
 
 const redStatuses = ["cancelled", "refunded", "failed"];
 const canModifyStatuses = [
+  "preorder_placed",
   "processing",
   "in_development",
   "being_assembled",
@@ -124,6 +125,14 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
         </div>
       )}
 
+      {order.status === "refunded" && order.preorder_deposit_amount && (
+        <div className="mb-4 p-3 bg-gray-4 text-gray-12 rounded-md">
+          <p className="font-medium">
+            Pre-order Deposit: {formatPrice(order.preorder_deposit_amount)}
+          </p>
+        </div>
+      )}
+
       {order.status === "awaiting_final_payment" && (
         <div className="mb-4 p-3 bg-gray-4 text-gray-12 rounded-md">
           <p className="font-medium">
@@ -143,7 +152,14 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
         <p>Order ID: {order.id}</p>
         <div className="mb-2">
           <DropdownMenu>
-            <DropdownMenuTrigger className="text-gray-12 underline cursor-pointer">
+            <DropdownMenuTrigger
+              className={`underline ${
+                !canModifyOrder()
+                  ? "text-gray-11 cursor-not-allowed"
+                  : "text-gray-12 cursor-pointer"
+              }`}
+              disabled={!canModifyOrder()}
+            >
               Manage order
             </DropdownMenuTrigger>
             <DropdownMenuContent>

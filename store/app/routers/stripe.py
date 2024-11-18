@@ -72,6 +72,17 @@ async def refund_payment_intent(
 ) -> Order:
     async with crud:
         try:
+            order = await crud.get_order(order_id)
+            if order is None or order.user_id != user.id:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+            logger.info("Found order id: %s", order.id)
+
+            if not order.stripe_connect_account_id:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Order doesn't have associated Stripe Connect account",
+                )
+
             amount = refund_request.amount
             payment_intent_id = refund_request.payment_intent_id
             customer_reason = (
@@ -85,23 +96,22 @@ async def refund_payment_intent(
                 amount=amount,
                 reason="requested_by_customer",
                 metadata={"customer_reason": customer_reason},
+                stripe_account=order.stripe_connect_account_id,
             )
             logger.info("Refund created: %s", refund.id)
 
-            order = await crud.get_order(order_id)
-            if order is None or order.user_id != user.id:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
-            logger.info("Found order id: %s", order.id)
-
             order_data: OrderDataUpdate = {
                 "stripe_refund_id": refund.id,
-                "status": ("refunded" if (refund.status and refund.status) == "succeeded" else order.status),
+                "status": ("refunded" if (refund.status and refund.status == "succeeded") else order.status),
             }
 
             updated_order = await crud.update_order(order_id, order_data)
 
             logger.info("Updated order with status: %s", refund.status)
             return updated_order
+        except stripe.StripeError as e:
+            logger.error("Error processing refund: %s", str(e))
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Stripe error: {str(e)}")
         except Exception as e:
             logger.error("Error processing refund: %s", str(e))
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
@@ -206,7 +216,9 @@ async def handle_checkout_session_completed(session: dict[str, Any], crud: Crud)
         # Retrieve full session details from the connected account
         seller_connect_account_id = session.get("metadata", {}).get("seller_connect_account_id")
         if seller_connect_account_id:
-            session = stripe.checkout.Session.retrieve(session["id"], stripe_account=seller_connect_account_id)
+            session = stripe.checkout.Session.retrieve(
+                session["id"], stripe_account=seller_connect_account_id, expand=["payment_intent"]
+            )
 
         shipping_details = session.get("shipping_details", {})
         shipping_address = shipping_details.get("address", {})
@@ -225,6 +237,11 @@ async def handle_checkout_session_completed(session: dict[str, Any], crud: Crud)
             else session["amount_total"]  # Use session amount for regular orders
         )
 
+        # Get payment intent ID safely
+        payment_intent_id = str(
+            session.payment_intent.id if hasattr(session, "payment_intent") and session.payment_intent else ""
+        )
+
         # Create the order
         order_data: OrderDataCreate = {
             "user_id": session["metadata"].get("user_id"),
@@ -233,7 +250,7 @@ async def handle_checkout_session_completed(session: dict[str, Any], crud: Crud)
             "stripe_checkout_session_id": session["id"],
             "stripe_product_id": session["metadata"].get("stripe_product_id"),
             "stripe_connect_account_id": session["metadata"].get("seller_connect_account_id"),
-            "stripe_payment_intent_id": session.get("payment_intent"),
+            "stripe_payment_intent_id": payment_intent_id,
             "price_amount": price_amount,
             "currency": session["currency"],
             "status": "preorder_placed" if is_preorder else "processing",
