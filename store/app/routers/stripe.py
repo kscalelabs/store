@@ -4,7 +4,7 @@ import logging
 import time
 from datetime import datetime
 from enum import Enum
-from typing import Annotated, Any, Dict, Literal
+from typing import Annotated, Literal
 
 import stripe
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, status
@@ -113,7 +113,7 @@ async def refund_payment_intent(
 
 
 @router.post("/webhook")
-async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Dict[str, str]:
+async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> dict[str, str]:
     """Handle direct account webhooks (non-Connect events)."""
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
@@ -137,7 +137,7 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Di
 
 
 @router.post("/connect/webhook")
-async def stripe_connect_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> Dict[str, str]:
+async def stripe_connect_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> dict[str, str]:
     """Handle Connect account webhooks."""
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
@@ -209,7 +209,7 @@ async def stripe_connect_webhook(request: Request, crud: Crud = Depends(Crud.get
         raise HTTPException(status_code=500, detail=str(e))
 
 
-async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud) -> None:
+async def handle_checkout_session_completed(session: stripe.checkout.Session, crud: Crud) -> None:
     logger.info("Processing checkout session: %s", session["id"])
     try:
         # Retrieve full session details from the connected account
@@ -276,10 +276,6 @@ async def handle_checkout_session_completed(session: Dict[str, Any], crud: Crud)
     except Exception as e:
         logger.error("Error processing checkout session: %s", str(e))
         raise
-
-
-async def notify_payment_failed(session: Dict[str, Any]) -> None:
-    logger.warning("Payment failed for session: %s", session["id"])
 
 
 def support_affirm_payment(listing: Listing) -> bool:
@@ -457,7 +453,7 @@ async def create_checkout_session(
 
 
 @router.get("/get-product/{product_id}")
-async def get_product(product_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> Dict[str, Any]:
+async def get_product(product_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> stripe.Product:
     try:
         # First get the listing by stripe_product_id
         listing = await crud.get_listing_by_stripe_product_id(product_id)
@@ -472,13 +468,7 @@ async def get_product(product_id: str, crud: Annotated[Crud, Depends(Crud.get)])
         # Retrieve the product using the seller's connected account
         product = stripe.Product.retrieve(product_id, stripe_account=seller.stripe_connect.account_id)
 
-        return {
-            "id": product.id,
-            "name": product.name,
-            "description": product.description,
-            "images": product.images,
-            "metadata": product.metadata,
-        }
+        return product
     except stripe.StripeError as e:
         logger.error(f"Stripe error retrieving product: {str(e)}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -535,7 +525,7 @@ async def create_connect_account(
 async def create_connect_account_session(
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
     account_id: str = Body(..., embed=True),
-) -> Dict[str, str]:
+) -> dict[str, str]:
     try:
         logger.info("Creating account session for account: %s", account_id)
 
@@ -565,11 +555,17 @@ async def create_connect_account_session(
         raise
 
 
-@router.post("/connect/delete/accounts")
+class DeleteTestAccountsResponse(BaseModel):
+    success: bool
+    deleted_accounts: list[str]
+    count: int
+
+
+@router.post("/connect/delete/accounts", response_model=DeleteTestAccountsResponse)
 async def delete_test_accounts(
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> Dict[str, Any]:
+) -> DeleteTestAccountsResponse:
     if not user.permissions or "is_admin" not in user.permissions:
         raise HTTPException(status_code=403, detail="Admin permission required to delete accounts")
 
@@ -584,7 +580,7 @@ async def delete_test_accounts(
             except Exception as e:
                 logger.error("Failed to delete account %s: %s", account.id, str(e))
 
-        return {"success": True, "deleted_accounts": deleted_accounts, "count": len(deleted_accounts)}
+        return DeleteTestAccountsResponse(success=True, deleted_accounts=deleted_accounts, count=len(deleted_accounts))
     except Exception as e:
         logger.error("Error deleting test accounts: %s", str(e))
         raise HTTPException(status_code=400, detail=str(e))
@@ -664,12 +660,17 @@ async def create_listing_product(
         )
 
 
-@router.post("/process-preorder/{order_id}")
+class ProcessPreorderResponse(BaseModel):
+    status: str
+    checkout_session: stripe.checkout.Session | None
+
+
+@router.post("/process-preorder/{order_id}", response_model=ProcessPreorderResponse)
 async def process_preorder(
     order_id: str,
     crud: Annotated[Crud, Depends(Crud.get)],
     user: User = Depends(get_session_user_with_admin_permission),
-) -> Dict[str, Any]:
+) -> ProcessPreorderResponse:
     async with crud:
         try:
             # Get the order and verify it's a preorder
@@ -758,13 +759,10 @@ async def process_preorder(
 
             await crud.update_order(order_id, order_data)
 
-            return {
-                "status": "success",
-                "checkout_session": {
-                    "id": checkout_session.id,
-                    "url": checkout_session.url,
-                },
-            }
+            return ProcessPreorderResponse(
+                status="success",
+                checkout_session=checkout_session,
+            )
 
         except stripe.StripeError as e:
             logger.error(f"Stripe error processing preorder final payment: {str(e)}")

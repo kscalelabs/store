@@ -652,24 +652,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/orders/user-orders": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get User Orders */
-        get: operations["get_user_orders_orders_user_orders_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/orders/order/{order_id}": {
+    "/orders/{order_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -677,7 +660,7 @@ export interface paths {
             cookie?: never;
         };
         /** Get Order */
-        get: operations["get_order_orders_order__order_id__get"];
+        get: operations["get_order_orders__order_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -686,15 +669,15 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/orders/order-with-product/{order_id}": {
+    "/orders/me": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        /** Get Order With Product */
-        get: operations["get_order_with_product_orders_order_with_product__order_id__get"];
+        /** Get User Orders */
+        get: operations["get_user_orders_orders_me_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -703,24 +686,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/orders/user-orders-with-products": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get User Orders With Products */
-        get: operations["get_user_orders_with_products_orders_user_orders_with_products_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/orders/update-order-address/{order_id}": {
+    "/orders/{order_id}/shipping-address": {
         parameters: {
             query?: never;
             header?: never;
@@ -728,8 +694,8 @@ export interface paths {
             cookie?: never;
         };
         get?: never;
-        /** Update Order Address */
-        put: operations["update_order_address_orders_update_order_address__order_id__put"];
+        /** Update Order Shipping Address */
+        put: operations["update_order_shipping_address_orders__order_id__shipping_address_put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1777,7 +1743,7 @@ export interface components {
         /** OrderWithProduct */
         OrderWithProduct: {
             order: components["schemas"]["Order"];
-            product: components["schemas"]["ProductInfo"];
+            product: components["schemas"]["ProductInfo"] | null;
         };
         /** ProductInfo */
         ProductInfo: {
@@ -3296,60 +3262,11 @@ export interface operations {
             };
         };
     };
-    get_user_orders_orders_user_orders_get: {
+    get_order_orders__order_id__get: {
         parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Order"][];
-                };
+            query?: {
+                include_product?: boolean;
             };
-        };
-    };
-    get_order_orders_order__order_id__get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                order_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Order"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_order_with_product_orders_order_with_product__order_id__get: {
-        parameters: {
-            query?: never;
             header?: never;
             path: {
                 order_id: string;
@@ -3378,9 +3295,11 @@ export interface operations {
             };
         };
     };
-    get_user_orders_with_products_orders_user_orders_with_products_get: {
+    get_user_orders_orders_me_get: {
         parameters: {
-            query?: never;
+            query?: {
+                include_products?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -3396,9 +3315,18 @@ export interface operations {
                     "application/json": components["schemas"]["OrderWithProduct"][];
                 };
             };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
         };
     };
-    update_order_address_orders_update_order_address__order_id__put: {
+    update_order_shipping_address_orders__order_id__shipping_address_put: {
         parameters: {
             query?: never;
             header?: never;

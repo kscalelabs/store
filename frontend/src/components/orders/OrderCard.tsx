@@ -8,15 +8,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { paths } from "@/gen/api";
+import type { OrderWithProduct } from "@/lib/types/orders";
 import { formatPrice } from "@/lib/utils/formatNumber";
 import { normalizeStatus } from "@/lib/utils/formatString";
-
-type OrderWithProduct =
-  paths["/orders/user-orders-with-products"]["get"]["responses"][200]["content"]["application/json"][0];
-
-type Order =
-  paths["/orders/user-orders"]["get"]["responses"][200]["content"]["application/json"][0];
 
 enum OrderStatus {
   PREORDER = -1,
@@ -60,7 +54,7 @@ const canModifyStatuses = [
 const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
   orderWithProduct: initialOrderWithProduct,
 }) => {
-  const [orderWithProduct, setOrderWithProduct] = useState(
+  const [orderWithProduct, setOrderWithProduct] = useState<OrderWithProduct>(
     initialOrderWithProduct,
   );
   const { order, product } = orderWithProduct;
@@ -92,8 +86,8 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
 
   const unitPrice = order.price_amount / order.quantity;
 
-  const handleOrderUpdate = (updatedOrder: Order) => {
-    setOrderWithProduct((prev) => ({ ...prev, order: updatedOrder }));
+  const handleOrderUpdate = (updatedOrder: OrderWithProduct) => {
+    setOrderWithProduct(updatedOrder);
   };
 
   const canModifyOrder = () => {
@@ -281,13 +275,13 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
       <EditAddressModal
         isOpen={isEditAddressModalOpen}
         onOpenChange={setIsEditAddressModalOpen}
-        order={order}
+        order={orderWithProduct}
         onOrderUpdate={handleOrderUpdate}
       />
       <CancelOrderModal
         isOpen={isCancelOrderModalOpen}
         onOpenChange={setIsCancelOrderModalOpen}
-        order={order}
+        order={orderWithProduct}
         onOrderUpdate={handleOrderUpdate}
       />
     </div>

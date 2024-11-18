@@ -9,18 +9,15 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
-
-type Order =
-  paths["/orders/user-orders"]["get"]["responses"][200]["content"]["application/json"][0];
+import type { OrderWithProduct } from "@/lib/types/orders";
 
 interface EditAddressModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  order: Order;
-  onOrderUpdate: (updatedOrder: Order) => void;
+  order: OrderWithProduct;
+  onOrderUpdate: (updatedOrder: OrderWithProduct) => void;
 }
 
 const EditAddressModal: React.FC<EditAddressModalProps> = ({
@@ -32,13 +29,13 @@ const EditAddressModal: React.FC<EditAddressModalProps> = ({
   const { client } = useAuthentication();
   const { addAlert, addErrorAlert } = useAlertQueue();
   const [address, setAddress] = useState({
-    shipping_name: order.shipping_name || "",
-    shipping_address_line1: order.shipping_address_line1 || "",
-    shipping_address_line2: order.shipping_address_line2 || "",
-    shipping_city: order.shipping_city || "",
-    shipping_state: order.shipping_state || "",
-    shipping_postal_code: order.shipping_postal_code || "",
-    shipping_country: order.shipping_country || "",
+    shipping_name: order.order.shipping_name || "",
+    shipping_address_line1: order.order.shipping_address_line1 || "",
+    shipping_address_line2: order.order.shipping_address_line2 || "",
+    shipping_city: order.order.shipping_city || "",
+    shipping_state: order.order.shipping_state || "",
+    shipping_postal_code: order.order.shipping_postal_code || "",
+    shipping_country: order.order.shipping_country || "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,9 +47,9 @@ const EditAddressModal: React.FC<EditAddressModalProps> = ({
     e.preventDefault();
     try {
       const { data, error } = await client.PUT(
-        "/orders/update-order-address/{order_id}",
+        "/orders/{order_id}/shipping-address",
         {
-          params: { path: { order_id: order.id } },
+          params: { path: { order_id: order.order.id } },
           body: address,
         },
       );
@@ -62,7 +59,10 @@ const EditAddressModal: React.FC<EditAddressModalProps> = ({
         console.error("Error updating address:", error);
       } else {
         addAlert("Delivery address updated", "success");
-        onOrderUpdate(data);
+        onOrderUpdate({
+          order: data,
+          product: order.product,
+        });
       }
 
       onOpenChange(false);

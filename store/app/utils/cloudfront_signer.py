@@ -5,7 +5,7 @@ The `CloudFrontUrlSigner` class allows you to create and sign CloudFront URLs wi
 
 import json
 from datetime import datetime, timedelta
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from botocore.signers import CloudFrontSigner
 from cryptography.hazmat.primitives import hashes, serialization
@@ -66,7 +66,7 @@ class CloudFrontUrlSigner:
         :return: The custom policy in JSON format.
         """
         expiration_time = int((datetime.utcnow() + timedelta(days=expire_days)).timestamp())
-        policy: Dict[str, Any] = {
+        policy: dict[str, Any] = {
             "Statement": [
                 {
                     "Resource": url,

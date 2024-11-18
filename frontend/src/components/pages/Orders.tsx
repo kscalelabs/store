@@ -4,14 +4,11 @@ import { useNavigate } from "react-router-dom";
 import OrderCard from "@/components/orders/OrderCard";
 import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
-import type { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { ApiError } from "@/lib/types/api";
+import type { OrderWithProduct } from "@/lib/types/orders";
 import ROUTES from "@/lib/types/routes";
-
-type OrderWithProduct =
-  paths["/orders/user-orders-with-products"]["get"]["responses"][200]["content"]["application/json"][number];
 
 const OrdersPage: React.FC = () => {
   const navigate = useNavigate();
@@ -25,9 +22,10 @@ const OrdersPage: React.FC = () => {
       if (isAuthenticated && currentUser) {
         setLoadingOrders(true);
         try {
-          const { data, error } = await api.client.GET(
-            "/orders/user-orders-with-products",
-          );
+          const { data, error } = await api.client.GET("/orders/me", {
+            params: { query: { include_products: true } },
+          });
+
           if (error) {
             const apiError = error as ApiError;
             if (apiError.status === 500) {
@@ -38,7 +36,7 @@ const OrdersPage: React.FC = () => {
             }
             setOrders([]);
           } else {
-            setOrders(data || []);
+            setOrders(data as OrderWithProduct[]);
           }
         } finally {
           setLoadingOrders(false);
