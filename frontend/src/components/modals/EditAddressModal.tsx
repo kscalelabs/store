@@ -122,25 +122,27 @@ const EditAddressModal: React.FC<EditAddressModalProps> = ({
                 className="bg-gray-2 border-gray-3 text-gray-12"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="shipping_postal_code">Postal Code</Label>
-              <Input
-                id="shipping_postal_code"
-                name="shipping_postal_code"
-                value={address.shipping_postal_code}
-                onChange={handleInputChange}
-                className="bg-gray-2 border-gray-3 text-gray-12"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="shipping_country">Country</Label>
-              <Input
-                id="shipping_country"
-                name="shipping_country"
-                value={address.shipping_country}
-                onChange={handleInputChange}
-                className="bg-gray-2 border-gray-3 text-gray-12"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-2">
+                <Label htmlFor="shipping_postal_code">Postal Code</Label>
+                <Input
+                  id="shipping_postal_code"
+                  name="shipping_postal_code"
+                  value={address.shipping_postal_code}
+                  onChange={handleInputChange}
+                  className="bg-gray-2 border-gray-3 text-gray-12"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="shipping_country">Country</Label>
+                <Input
+                  id="shipping_country"
+                  name="shipping_country"
+                  value={address.shipping_country}
+                  onChange={handleInputChange}
+                  className="bg-gray-2 border-gray-3 text-gray-12"
+                />
+              </div>
             </div>
           </div>
           <div className="flex justify-end gap-2">

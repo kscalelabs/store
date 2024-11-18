@@ -40,7 +40,11 @@ const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
   const [cancellation, setCancellation] = useState<RefundRequest>({
     payment_intent_id: order.order.stripe_payment_intent_id,
     cancel_reason: { reason: "", details: "" },
-    amount: order.order.price_amount,
+    amount:
+      order.order.status === "preorder_placed" &&
+      order.order.preorder_deposit_amount
+        ? order.order.preorder_deposit_amount
+        : order.order.price_amount,
   });
   const [customReason, setCustomReason] = useState("");
 
