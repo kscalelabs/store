@@ -4,6 +4,7 @@ import asyncio
 import logging
 import random
 import string
+import time
 import warnings
 from typing import Any, Literal, Optional, overload
 
@@ -292,15 +293,13 @@ class UserCrud(BaseCrud):
         return username
 
     async def update_stripe_connect_status(self, user_id: str, account_id: str, is_completed: bool) -> User:
-        """Updates the user's Stripe Connect status."""
-        user = await self.get_user(user_id, throw_if_missing=True)
-        user.set_stripe_connect(account_id, is_completed)
-
+        stripe_connect = UserStripeConnect(
+            account_id=account_id,
+            onboarding_completed=is_completed,
+        )
         updates = {
-            "stripe_connect": {
-                "account_id": account_id,
-                "onboarding_completed": is_completed,
-            }
+            "stripe_connect": stripe_connect.model_dump(),
+            "updated_at": int(time.time()),
         }
         return await self.update_user(user_id, updates)
 
@@ -308,7 +307,6 @@ class UserCrud(BaseCrud):
         user = await self.get_user(user_id, throw_if_missing=True)
         if user.permissions is None:
             user.permissions = set()
-
         if is_content_manager:
             user.permissions.add("is_content_manager")
         else:

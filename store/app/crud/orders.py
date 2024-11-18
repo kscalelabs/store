@@ -88,26 +88,16 @@ class OrdersCrud(BaseCrud):
         if not order:
             raise ItemNotFoundError("Order not found")
 
-        # Create a dict of current order data
         current_data = order.model_dump()
-
-        # Convert TypedDict to regular dict
-        update_dict = dict(update_data)  # Convert TypedDict to regular dict
-
-        # Update with new data
+        update_dict = dict(update_data)
         current_data.update(update_dict)
 
         try:
-            # Validate the updated data
             Order(**current_data)
         except ValidationError as e:
-            # If validation fails, raise an error
             raise ValueError(f"Invalid update data: {str(e)}")
 
-        # If validation passes, update the order
         await self._update_item(order_id, Order, update_dict)
-
-        # Fetch and return the updated order
         updated_order = await self.get_order(order_id)
         if not updated_order:
             raise ItemNotFoundError("Updated order not found")

@@ -64,7 +64,6 @@ export default function SellerOnboarding() {
 
       if (data?.account_id) {
         setConnectedAccountId(data.account_id);
-        // Refresh user data to get updated stripe connect account id
         await auth.fetchCurrentUser();
       }
     } catch (error) {
