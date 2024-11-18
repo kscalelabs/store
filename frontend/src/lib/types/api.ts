@@ -6,6 +6,8 @@ export interface ApiValidationError {
 }
 
 export interface ApiError {
+  status: number;
+  message: string;
   detail: string | ApiValidationError[];
 }
 

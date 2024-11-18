@@ -1,5 +1,6 @@
 """Defines the router endpoints for handling Orders."""
 
+from logging import getLogger
 from typing import Annotated, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -13,6 +14,8 @@ from store.app.routers import stripe
 from store.app.routers.users import get_session_user_with_read_permission
 
 router = APIRouter()
+
+logger = getLogger(__name__)
 
 
 class ProductInfo(BaseModel):
@@ -77,13 +80,24 @@ async def get_user_orders_with_products(
         orders = await crud.get_orders_by_user_id(user.id)
         orders_with_products = []
         for order in orders:
-            if order.stripe_product_id is None:
-                continue  # Skip orders without a stripe_product_id
-            product = await stripe.get_product(order.stripe_product_id, crud)
-            orders_with_products.append(OrderWithProduct(order=order, product=ProductInfo(**product)))
+            try:
+                if order.stripe_product_id is None:
+                    continue
+                product = await stripe.get_product(order.stripe_product_id, crud)
+                orders_with_products.append(OrderWithProduct(order=order, product=ProductInfo(**product)))
+            except Exception as e:
+                logger.error(
+                    "Error processing order", extra={"order_id": order.id, "error": str(e), "user_id": user.id}
+                )
+                continue
         return orders_with_products
     except ItemNotFoundError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No orders found for this user")
+        return []
+    except Exception as e:
+        logger.error("Error fetching user orders", extra={"user_id": user.id, "error": str(e)})
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error fetching orders: {str(e)}"
+        )
 
 
 class UpdateOrderAddressRequest(BaseModel):
