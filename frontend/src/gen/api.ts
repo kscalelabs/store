@@ -1684,7 +1684,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "processing" | "in_development" | "being_assembled" | "shipped" | "delivered" | "preorder_placed" | "awaiting_final_payment" | "cancelled" | "refunded" | "failed";
+            status: "processing" | "in_development" | "being_assembled" | "shipped" | "delivered" | "preorder_placed" | "awaiting_final_payment" | "cancelled" | "refunded";
             /** Price Amount */
             price_amount: number;
             /** Currency */

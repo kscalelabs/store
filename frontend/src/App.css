@@ -91,18 +91,6 @@ form button:hover {
   border-color: white;
 }
 
-.about-section {
-  max-width: 800px;
-  margin: 2em auto;
-  text-align: left;
-  padding: 0 1em;
-}
-
-.about-section p {
-  margin-bottom: 1em;
-  line-height: 1.6;
-}
-
 @media (max-width: 600px) {
   .about-section {
     font-size: 0.9em;
