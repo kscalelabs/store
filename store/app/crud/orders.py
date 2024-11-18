@@ -22,7 +22,7 @@ class OrderDataCreate(TypedDict):
     stripe_product_id: str
     stripe_price_id: str
     stripe_connect_account_id: str
-    stripe_payment_intent_id: NotRequired[str | None]
+    stripe_payment_intent_id: str
     preorder_release_date: NotRequired[int | None]
     preorder_deposit_amount: NotRequired[int | None]
     stripe_preorder_deposit_id: NotRequired[str | None]

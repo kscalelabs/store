@@ -1,12 +1,7 @@
 import React, { useState } from "react";
 
+import Modal from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { paths } from "@/gen/api";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
@@ -43,9 +38,9 @@ const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
   const MAX_REASON_LENGTH = 500;
 
   const [cancellation, setCancellation] = useState<RefundRequest>({
-    payment_intent_id: "",
+    payment_intent_id: order.order.stripe_payment_intent_id,
     cancel_reason: { reason: "", details: "" },
-    amount: 0,
+    amount: order.order.price_amount,
   });
   const [customReason, setCustomReason] = useState("");
 
@@ -81,11 +76,6 @@ const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!cancellation.payment_intent_id) {
-      addErrorAlert("Invalid payment information");
-      return;
-    }
-
     try {
       const { data, error } = await client.PUT("/stripe/refunds/{order_id}", {
         params: { path: { order_id: order.order.id } },
@@ -110,15 +100,13 @@ const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-gray-1 text-gray-12 border border-gray-3 rounded-lg shadow-lg">
-        <DialogHeader>
-          <DialogTitle>Cancel Order</DialogTitle>
-        </DialogHeader>
+    <Modal isOpen={isOpen} onClose={() => onOpenChange(false)}>
+      <div className="p-6">
+        <h2 className="text-xl font-semibold mb-4">Cancel Order</h2>
         <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 py-4 mb-4">
             <div className="grid gap-2">
-              <Label htmlFor="cancel_reason">Cancel Reason</Label>
+              <Label htmlFor="cancel_reason">Reason for cancelling</Label>
               <select
                 id="cancel_reason"
                 name="cancel_reason"
@@ -127,7 +115,7 @@ const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
                 className="bg-gray-2 border-gray-3 text-gray-12 rounded-md p-2"
               >
                 <option value="" disabled>
-                  Select a reason for cancellation
+                  Select a reason for cancelling
                 </option>
                 {cancellationReasons.map((reason) => (
                   <option key={reason} value={reason}>
@@ -156,21 +144,18 @@ const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
           <div className="flex justify-end gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="default"
               onClick={() => onOpenChange(false)}
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              className="bg-primary-9 text-gray-1 hover:bg-gray-12"
-            >
+            <Button type="submit" variant="outline">
               Save Changes
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </Modal>
   );
 };
 

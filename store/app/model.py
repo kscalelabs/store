@@ -585,7 +585,7 @@ class Order(StoreBaseModel):
     stripe_connect_account_id: str
     stripe_product_id: str
     stripe_price_id: str
-    stripe_payment_intent_id: str | None = None
+    stripe_payment_intent_id: str
     preorder_release_date: int | None = None
     preorder_deposit_amount: int | None = None
     stripe_preorder_deposit_id: str | None = None
@@ -619,7 +619,7 @@ class Order(StoreBaseModel):
         quantity: int,
         price_amount: int,
         currency: str,
-        stripe_payment_intent_id: str | None = None,
+        stripe_payment_intent_id: str,
         preorder_release_date: int | None = None,
         preorder_deposit_amount: int | None = None,
         stripe_preorder_deposit_id: str | None = None,

@@ -67,7 +67,7 @@ async def get_user_orders(
             results = await asyncio.gather(*[get_product_info(order) for order in orders])
             return results
 
-    except OrdersNotFoundError as e:
+    except OrdersNotFoundError:
         logger.info(f"No orders found for user: {user.id}")
         return []
     except Exception as e:
@@ -89,7 +89,6 @@ async def get_order(
         if not order or order.user_id != user.id:
             raise HTTPException(status_code=404, detail="Order not found")
 
-        # Get product info from Stripe
         product = await stripe.get_product(order.stripe_product_id, crud)
 
         # Convert ProductResponse to ProductInfo
@@ -115,7 +114,7 @@ class UpdateOrderAddressRequest(BaseModel):
     shipping_country: str
 
 
-@router.put("/{order_id}/shipping-address", response_model=Order)
+@router.put("/shipping-address/{order_id}", response_model=Order)
 async def update_order_shipping_address(
     order_id: str,
     address_update: UpdateOrderAddressRequest,

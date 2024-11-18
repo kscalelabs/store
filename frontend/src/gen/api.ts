@@ -652,23 +652,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/orders/{order_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Get Order */
-        get: operations["get_order_orders__order_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/orders/me": {
         parameters: {
             query?: never;
@@ -686,7 +669,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/orders/{order_id}/shipping-address": {
+    "/orders/{order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Order */
+        get: operations["get_order_orders__order_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/shipping-address/{order_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -695,7 +695,7 @@ export interface paths {
         };
         get?: never;
         /** Update Order Shipping Address */
-        put: operations["update_order_shipping_address_orders__order_id__shipping_address_put"];
+        put: operations["update_order_shipping_address_orders_shipping_address__order_id__put"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1700,7 +1700,7 @@ export interface components {
             /** Stripe Price Id */
             stripe_price_id: string;
             /** Stripe Payment Intent Id */
-            stripe_payment_intent_id?: string | null;
+            stripe_payment_intent_id: string;
             /** Preorder Release Date */
             preorder_release_date?: number | null;
             /** Preorder Deposit Amount */
@@ -3291,6 +3291,26 @@ export interface operations {
             };
         };
     };
+    get_user_orders_orders_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderWithProduct"][];
+                };
+            };
+        };
+    };
     get_order_orders__order_id__get: {
         parameters: {
             query?: never;
@@ -3322,27 +3342,7 @@ export interface operations {
             };
         };
     };
-    get_user_orders_orders_me_get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["OrderWithProduct"][];
-                };
-            };
-        };
-    };
-    update_order_shipping_address_orders__order_id__shipping_address_put: {
+    update_order_shipping_address_orders_shipping_address__order_id__put: {
         parameters: {
             query?: never;
             header?: never;
