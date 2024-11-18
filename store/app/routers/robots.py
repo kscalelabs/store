@@ -23,14 +23,14 @@ router = APIRouter()
 
 class CreateRobotRequest(BaseModel):
     listing_id: str
-    name: Annotated[str, MaxLen(32)]
-    description: Annotated[str, MaxLen(2048)] | None = None
+    name: str
+    description: str | None = None
     order_id: str | None = None
 
 
 class UpdateRobotRequest(BaseModel):
-    name: Annotated[str, MaxLen(32)] | None = None
-    description: Annotated[str, MaxLen(2048)] | None = None
+    name: str | None = None
+    description: str | None = None
     order_id: str | None = None
 
 
