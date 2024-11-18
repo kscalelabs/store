@@ -1,12 +1,12 @@
 """Defines the router endpoints for handling Orders."""
 
+import asyncio
 from logging import getLogger
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
-from store.app.crud.base import ItemNotFoundError
-from store.app.crud.orders import OrderDataUpdate
+from store.app.crud.orders import OrderDataUpdate, OrdersNotFoundError
 from store.app.db import Crud
 from store.app.model import Order, User
 from store.app.routers import stripe
@@ -82,18 +82,30 @@ async def get_user_orders(
             )
             return OrderWithProduct(order=order, product=product_info)
         except Exception as e:
-            logger.error("Error processing order", extra={"order_id": order.id, "error": str(e), "user_id": user.id})
+            logger.error(
+                "Error getting product info for order",
+                extra={"order_id": order.id, "error": str(e), "user_id": user.id},
+            )
             return OrderWithProduct(order=order, product=None)
 
     try:
         orders = await crud.get_orders_by_user_id(user.id)
-        return [await get_product_info(order) for order in orders]
-    except ItemNotFoundError:
+        return await asyncio.gather(*[get_product_info(order) for order in orders])
+    except OrdersNotFoundError:
         return []
-    except Exception as e:
-        logger.error("Error fetching user orders", extra={"user_id": user.id, "error": str(e)})
+    except asyncio.TimeoutError:
+        logger.error("Timeout while fetching orders", extra={"user_id": user.id})
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error fetching orders: {str(e)}"
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT, detail="Request timed out while fetching orders"
+        )
+    except Exception as e:
+        logger.error(
+            "Unexpected error fetching user orders",
+            extra={"user_id": user.id, "error": str(e), "error_type": type(e).__name__},
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred while fetching orders",
         )
 
 

@@ -52,6 +52,12 @@ class OrderDataUpdate(TypedDict):
     shipping_country: NotRequired[str]
 
 
+class OrdersNotFoundError(ItemNotFoundError):
+    """Raised when no orders are found for a user."""
+
+    pass
+
+
 class OrdersCrud(BaseCrud):
     """CRUD operations for Orders."""
 
@@ -63,7 +69,7 @@ class OrdersCrud(BaseCrud):
     async def get_orders_by_user_id(self, user_id: str) -> list[Order]:
         orders = await self._get_items_from_secondary_index("user_id", user_id, Order)
         if not orders:
-            raise ItemNotFoundError("No orders found for this user")
+            raise OrdersNotFoundError(f"No orders found for user {user_id}")
         return orders
 
     async def get_orders_by_stripe_connect_account_id(self, stripe_connect_account_id: str) -> list[Order]:

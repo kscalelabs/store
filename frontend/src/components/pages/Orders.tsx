@@ -13,7 +13,7 @@ import ROUTES from "@/lib/types/routes";
 const OrdersPage: React.FC = () => {
   const navigate = useNavigate();
   const { api, currentUser, isAuthenticated, isLoading } = useAuthentication();
-  const [orders, setOrders] = useState<OrderWithProduct[] | null>(null);
+  const [orders, setOrders] = useState<OrderWithProduct[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const { addErrorAlert } = useAlertQueue();
 
@@ -65,7 +65,7 @@ const OrdersPage: React.FC = () => {
         <div className="flex justify-center items-center p-4 md:p-10 rounded-lg max-w-md mx-auto">
           <Spinner className="p-1" />
         </div>
-      ) : orders && orders.length > 0 ? (
+      ) : orders.length > 0 ? (
         <div className="grid gap-2 md:gap-6 md:grid-cols-1 lg:grid-cols-2">
           {orders.map((orderWithProduct: OrderWithProduct) => (
             <OrderCard

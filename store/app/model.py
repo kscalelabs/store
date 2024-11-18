@@ -572,7 +572,6 @@ InventoryType = Literal["finite", "preorder"]
 class Order(StoreBaseModel):
     """Tracks completed user orders through Stripe."""
 
-    id: str
     user_id: str
     listing_id: str
     user_email: str
