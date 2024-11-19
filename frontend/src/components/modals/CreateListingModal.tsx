@@ -1,11 +1,6 @@
 import { useNavigate } from "react-router-dom";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import Modal from "@/components/ui/Modal";
 import { useAuthentication } from "@/hooks/useAuth";
 import ROUTES from "@/lib/types/routes";
 import { DollarSign, Share2, ShoppingBag } from "lucide-react";
@@ -26,12 +21,17 @@ export const CreateListingModal = ({ isOpen, onOpenChange }: Props) => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] bg-gray-12 text-gray-1 border border-gray-1 rounded-lg shadow-lg">
-        <DialogHeader>
-          <DialogTitle>What would you like to do?</DialogTitle>
-        </DialogHeader>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4">
+    <Modal
+      isOpen={isOpen}
+      onClose={() => onOpenChange(false)}
+      size="xl"
+      className="sm:max-w-[600px]"
+    >
+      <div className="p-6">
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold">What would you like to do?</h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div
             onClick={() =>
               handleOptionClick(
@@ -75,8 +75,8 @@ export const CreateListingModal = ({ isOpen, onOpenChange }: Props) => {
             </div>
           )}
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </Modal>
   );
 };
 

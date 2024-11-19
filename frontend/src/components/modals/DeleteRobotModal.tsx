@@ -2,14 +2,8 @@ import { useCallback, useState } from "react";
 import { FaTrash } from "react-icons/fa";
 
 import { SingleRobotResponse } from "@/components/terminal/types";
+import Modal from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { ApiError } from "@/lib/types/api";
 
 interface DeleteRobotModalProps {
@@ -52,26 +46,24 @@ export function DeleteRobotModal({
   }, [robot.robot_id, onDelete, onClose]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-gray-12 border border-gray-3 rounded-lg shadow-lg">
-        <DialogHeader>
-          <DialogTitle>Delete Robot</DialogTitle>
-          <DialogDescription>
-            <div className="flex flex-col gap-2">
-              <span>
-                Are you sure you want to delete robot{" "}
-                <span className="text-gray-9 font-medium">
-                  &quot;{robot.name}&quot;
-                </span>
-                ? This action cannot be undone.
+    <Modal isOpen={isOpen} onClose={onClose} size="sm">
+      <div className="p-6">
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-2">Delete Robot</h2>
+          <div className="flex flex-col gap-2">
+            <span>
+              Are you sure you want to delete robot{" "}
+              <span className="text-gray-9 font-medium">
+                &quot;{robot.name}&quot;
               </span>
-              <span className="font-light text-xs">
-                Data associated with this robot will be deleted and no longer
-                accessible.
-              </span>
-            </div>
-          </DialogDescription>
-        </DialogHeader>
+              ? This action cannot be undone.
+            </span>
+            <span className="font-light text-xs">
+              Data associated with this robot will be deleted and no longer
+              accessible.
+            </span>
+          </div>
+        </div>
         {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
         <div className="flex justify-between gap-2">
           <Button onClick={onClose} variant="outline" disabled={isLoading}>
@@ -86,7 +78,7 @@ export function DeleteRobotModal({
             <span>{isLoading ? "Deleting..." : "Delete Robot"}</span>
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </Modal>
   );
 }
