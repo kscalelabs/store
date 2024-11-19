@@ -5,7 +5,7 @@ export type Order =
 
 export type OrderWithProduct =
   paths["/orders/{order_id}"]["get"]["responses"][200]["content"]["application/json"] & {
-    product: ProductInfo;
+    product?: ProductInfo;
   };
 
 export type ProductInfo = {
@@ -16,7 +16,10 @@ export type ProductInfo = {
   metadata: Record<string, string>;
 };
 
-export const orderStatuses = [
+export type OrderStatus =
+  paths["/orders/{order_id}"]["get"]["responses"][200]["content"]["application/json"]["order"]["status"];
+
+export const orderStatuses: OrderStatus[] = [
   "processing",
   "in_development",
   "being_assembled",

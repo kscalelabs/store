@@ -3,11 +3,9 @@
 import asyncio
 from typing import Self
 
-from annotated_types import MaxLen
 from boto3.dynamodb.conditions import Key
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ValidationError
-from typing_extensions import Annotated
 
 from store.app.crud.base import ItemNotFoundError
 from store.app.crud.robots import RobotData

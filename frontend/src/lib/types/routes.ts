@@ -82,6 +82,9 @@ const ROUTES = {
   // Link robot
   LINK: route("link"),
 
+  // Admin Dashboard
+  ADMIN: route("admin"),
+
   // Not found
   NOT_FOUND: route("404"),
 };

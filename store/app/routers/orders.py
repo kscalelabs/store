@@ -2,16 +2,17 @@
 
 import asyncio
 import logging
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
 from store.app.crud.orders import OrderDataUpdate, OrdersNotFoundError
 from store.app.db import Crud
-from store.app.model import Order, User
+from store.app.model import Order, OrderStatus, User
 from store.app.routers import stripe
 from store.app.security.user import (
-    get_session_user_with_read_permission,
+    get_session_user_with_admin_permission,
     get_session_user_with_write_permission,
 )
 
@@ -36,8 +37,8 @@ class OrderWithProduct(BaseModel):
 
 @router.get("/me", response_model=list[OrderWithProduct])
 async def get_user_orders(
-    user: User = Depends(get_session_user_with_read_permission),
-    crud: Crud = Depends(),
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> list[OrderWithProduct]:
     async def get_product_info(order: Order) -> OrderWithProduct:
         if not order.stripe_product_id:
@@ -81,8 +82,8 @@ async def get_user_orders(
 @router.get("/{order_id}", response_model=OrderWithProduct)
 async def get_order(
     order_id: str,
-    user: User = Depends(get_session_user_with_read_permission),
-    crud: Crud = Depends(),
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> OrderWithProduct:
     async with crud:
         order = await crud.get_order(order_id)
@@ -118,8 +119,8 @@ class UpdateOrderAddressRequest(BaseModel):
 async def update_order_shipping_address(
     order_id: str,
     address_update: UpdateOrderAddressRequest,
-    user: User = Depends(get_session_user_with_write_permission),
-    crud: Crud = Depends(Crud.get),
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> Order:
     order = await crud.get_order(order_id)
     if order is None or order.user_id != user.id:
@@ -136,5 +137,59 @@ async def update_order_shipping_address(
         shipping_country=address_update.shipping_country,
     )
 
+    updated_order = await crud.update_order(order_id, update_dict)
+    return updated_order
+
+
+class AdminOrdersResponse(BaseModel):
+    orders: list[OrderWithProduct]
+
+
+@router.get("/admin/all", response_model=AdminOrdersResponse)
+async def get_all_orders(
+    user: Annotated[User, Depends(get_session_user_with_admin_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> AdminOrdersResponse:
+    """Get all orders (admin only)."""
+    orders = await crud.dump_orders()
+
+    orders_with_products = []
+    for order in orders:
+        try:
+            product = None
+            if order.stripe_product_id:
+                product = await stripe.get_product(order.stripe_product_id, crud)
+                product_info = ProductInfo(
+                    id=product.id,
+                    name=product.name,
+                    description=product.description,
+                    images=product.images,
+                    metadata=product.metadata,
+                    active=product.active,
+                )
+            orders_with_products.append(OrderWithProduct(order=order, product=product_info))
+        except Exception as e:
+            logger.error(f"Error getting product info for order {order.id}: {str(e)}")
+            orders_with_products.append(OrderWithProduct(order=order, product=None))
+
+    return AdminOrdersResponse(orders=orders_with_products)
+
+
+class UpdateOrderStatusRequest(BaseModel):
+    status: OrderStatus
+
+
+@router.put("/admin/status/{order_id}", response_model=Order)
+async def update_order_status(
+    order_id: str,
+    status_update: UpdateOrderStatusRequest,
+    user: Annotated[User, Depends(get_session_user_with_admin_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> Order:
+    order = await crud.get_order(order_id)
+    if order is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+
+    update_dict = OrderDataUpdate(status=status_update.status)
     updated_order = await crud.update_order(order_id, update_dict)
     return updated_order

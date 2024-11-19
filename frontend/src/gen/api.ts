@@ -703,6 +703,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/orders/admin/all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get All Orders
+         * @description Get all orders (admin only).
+         */
+        get: operations["get_all_orders_orders_admin_all_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/orders/admin/status/{order_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Order Status */
+        put: operations["update_order_status_orders_admin_status__order_id__put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/robots/create": {
         parameters: {
             query?: never;
@@ -979,7 +1016,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/stripe/process-preorder/{order_id}": {
+    "/stripe/process/preorder/{order_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1226,6 +1263,11 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AdminOrdersResponse */
+        AdminOrdersResponse: {
+            /** Orders */
+            orders: components["schemas"]["OrderWithProduct"][];
+        };
         /** ArtifactUrls */
         ArtifactUrls: {
             /** Small */
@@ -1753,7 +1795,7 @@ export interface components {
             /** Status */
             status: string;
             /** Checkout Session */
-            checkout_session: Record<string, never> | null;
+            checkout_session: Record<string, never>;
         };
         /** ProductInfo */
         ProductInfo: {
@@ -1982,6 +2024,14 @@ export interface components {
             shipping_postal_code: string;
             /** Shipping Country */
             shipping_country: string;
+        };
+        /** UpdateOrderStatusRequest */
+        UpdateOrderStatusRequest: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "processing" | "in_development" | "being_assembled" | "shipped" | "delivered" | "preorder_placed" | "awaiting_final_payment" | "cancelled" | "refunded";
         };
         /** UpdateRobotRequest */
         UpdateRobotRequest: {
@@ -3354,6 +3404,61 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["UpdateOrderAddressRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Order"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_all_orders_orders_admin_all_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrdersResponse"];
+                };
+            };
+        };
+    };
+    update_order_status_orders_admin_status__order_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateOrderStatusRequest"];
             };
         };
         responses: {
