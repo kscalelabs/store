@@ -1925,7 +1925,7 @@ export interface components {
             /** Name */
             name: string;
             /** Artifact Type */
-            artifact_type: "image" | ("urdf" | "mjcf") | ("stl" | "obj" | "dae" | "ply") | ("tgz" | "zip");
+            artifact_type: "image" | "kernel" | ("urdf" | "mjcf") | ("stl" | "obj" | "dae" | "ply") | ("tgz" | "zip");
             /** Description */
             description: string | null;
             /** Timestamp */
@@ -2459,7 +2459,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                artifact_type: "image" | ("urdf" | "mjcf") | ("stl" | "obj" | "dae" | "ply") | ("tgz" | "zip");
+                artifact_type: "image" | "kernel" | ("urdf" | "mjcf") | ("stl" | "obj" | "dae" | "ply") | ("tgz" | "zip");
                 listing_id: string;
                 name: string;
             };
