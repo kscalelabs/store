@@ -298,6 +298,7 @@ const ListingOnshape = (props: Props) => {
   const [permUrl, setPermUrl] = useState<string | null>(onshapeUrl);
   const [updateOnshape, setUpdateOnshape] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
+  const [showKernelInstructions, setShowKernelInstructions] = useState(false);
 
   const handleCopy = async () => {
     try {
@@ -369,6 +370,10 @@ const ListingOnshape = (props: Props) => {
     setShowInstructions(!showInstructions);
   };
 
+  const toggleKernelInstructions = () => {
+    setShowKernelInstructions(!showKernelInstructions);
+  };
+
   const renderUrdfInstructions = (listingId: string) => (
     <div className="mt-6 p-8 bg-gray-12 rounded-xl shadow-lg w-full border border-gray-200">
       <h4 className="text-2xl font-semibold mb-6 text-gray-1">
@@ -393,19 +398,56 @@ const ListingOnshape = (props: Props) => {
     </div>
   );
 
+  const renderKernelInstructions = (listingId: string) => (
+    <div className="mt-6 p-8 bg-gray-12 rounded-xl shadow-lg w-full border border-gray-200">
+      <h4 className="text-2xl font-semibold mb-6 text-gray-1">
+        Kernel Image Upload Instructions
+      </h4>
+      <ol className="list-decimal list-outside ml-6 space-y-6 text-base text-gray-1">
+        <li className="leading-relaxed">
+          Install the K-Scale CLI:
+          <CopyableCode
+            code="pip install kscale"
+            className="bg-gray-12 text-green-600 p-4 rounded-lg mt-3 font-mono text-sm border border-gray-200"
+          />
+        </li>
+        <li className="leading-relaxed">
+          Upload your kernel image:
+          <CopyableCode
+            code={`kscale kernel-images upload ${listingId} /path/to/your/kernel/kernel_image.img`}
+            className="bg-gray-12 text-green-600 p-2 sm:p-4 rounded-lg mt-3 font-mono text-xs sm:text-sm border border-gray-200 break-all whitespace-pre-wrap"
+          />
+        </li>
+      </ol>
+    </div>
+  );
+
   const renderContent = () => {
     if (isEditing) {
       return (
         <div className="flex flex-col items-start w-full">
           <UrlInput url={url} setUrl={setUrl} handleSave={handleSave} />
           {edit && (
-            <UpdateButtons
-              isEditing={true}
-              onEdit={() => {}}
-              onSave={handleSave}
-              onToggleInstructions={toggleInstructions}
-              showInstructions={showInstructions}
-            />
+            <div className="flex flex-wrap gap-2 pt-2">
+              <IconButton
+                icon={FaCheck}
+                label="Save"
+                onClick={handleSave}
+                disabled={false}
+              />
+              <HelpButton
+                showInstructions={showInstructions}
+                onToggle={toggleInstructions}
+              />
+              <Button onClick={toggleKernelInstructions} variant="default">
+                <FaInfoCircle />
+                <span className="ml-2 text-sm sm:text-base">
+                  {showKernelInstructions
+                    ? "Hide Kernel Instructions"
+                    : "View Kernel Image Upload Instructions"}
+                </span>
+              </Button>
+            </div>
           )}
         </div>
       );
@@ -418,10 +460,20 @@ const ListingOnshape = (props: Props) => {
             Add Onshape URL
           </Button>
           {edit && (
-            <HelpButton
-              showInstructions={showInstructions}
-              onToggle={toggleInstructions}
-            />
+            <>
+              <HelpButton
+                showInstructions={showInstructions}
+                onToggle={toggleInstructions}
+              />
+              <Button onClick={toggleKernelInstructions} variant="default">
+                <FaInfoCircle />
+                <span className="ml-2 text-sm sm:text-base">
+                  {showKernelInstructions
+                    ? "Hide Kernel Instructions"
+                    : "View Kernel Image Upload Instructions"}
+                </span>
+              </Button>
+            </>
           )}
         </div>
       );
@@ -473,6 +525,7 @@ const ListingOnshape = (props: Props) => {
             <div className="flex flex-col w-full">
               {renderContent()}
               {showInstructions && renderUrdfInstructions(listingId)}
+              {showKernelInstructions && renderKernelInstructions(listingId)}
             </div>
           )}
         </CardTitle>
