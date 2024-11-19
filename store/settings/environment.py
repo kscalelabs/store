@@ -42,7 +42,7 @@ class ArtifactSettings:
     large_image_size: tuple[int, int] = field(default=(1536, 1536))
     small_image_size: tuple[int, int] = field(default=(256, 256))
     min_bytes: int = field(default=16)
-    max_bytes: int = field(default=2**30)
+    max_bytes: int = field(default=1536 * 1536 * 25)
     quality: int = field(default=80)
     max_concurrent_file_uploads: int = field(default=3)
 

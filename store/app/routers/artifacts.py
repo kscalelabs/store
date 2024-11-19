@@ -16,11 +16,13 @@ from store.app.model import (
     Artifact,
     ArtifactSize,
     ArtifactType,
+    KernelArtifactType,
     Listing,
     User,
     can_write_artifact,
     can_write_listing,
     check_content_type,
+    get_artifact_name,
     get_artifact_type,
     get_artifact_urls,
 )
@@ -411,3 +413,64 @@ async def set_main_image(
 
     await crud.set_main_image(listing_id, artifact_id)
     return True
+
+
+class PresignedUrlResponse(BaseModel):
+    upload_url: str
+    artifact_id: str
+
+
+@router.post("/presigned/{listing_id}", response_model=PresignedUrlResponse)
+async def get_presigned_url(
+    listing_id: str,
+    filename: str,
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> PresignedUrlResponse:
+    if not filename:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Filename was not provided",
+        )
+
+    name, extension = os.path.splitext(filename)
+    if extension.lower() != ".img":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Only .img files are supported for kernel uploads"
+        )
+
+    artifact_type: KernelArtifactType = "kernel"
+
+    listing = await crud.get_listing(listing_id)
+    if listing is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find listing")
+    if not await can_write_listing(user, listing):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No permission to upload")
+
+    artifact = Artifact.create(
+        user_id=listing.user_id,
+        listing_id=listing.id,
+        name=name,
+        artifact_type=artifact_type,
+    )
+    await crud._add_item(artifact)
+
+    try:
+        s3_filename = get_artifact_name(artifact=artifact)
+
+        presigned_url = await crud.s3.meta.client.generate_presigned_url(
+            ClientMethod="put_object",
+            Params={
+                "Bucket": settings.s3.bucket,
+                "Key": f"{settings.s3.prefix}{s3_filename}",
+                "ContentType": "application/octet-stream",
+                "ContentDisposition": f'attachment; filename="{name}"',
+            },
+            ExpiresIn=3600,
+        )
+
+        return PresignedUrlResponse(upload_url=presigned_url, artifact_id=artifact.id)
+
+    except Exception as e:
+        await crud._delete_item(artifact)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
