@@ -726,3 +726,37 @@ class TeleopICECandidate(StoreBaseModel):
             created_at=now,
             ttl=ttl_timestamp,
         )
+
+
+KClipUploadStatus = Literal["pending", "completed"]
+
+
+class KClip(StoreBaseModel):
+    """KClip recorded from robot runtime."""
+
+    user_id: str
+    robot_id: str
+    created_at: int
+    name: str
+    description: str | None = None
+    upload_status: KClipUploadStatus = "pending"
+
+    @classmethod
+    def create(
+        cls,
+        user_id: str,
+        robot_id: str,
+        name: str,
+        description: str | None = None,
+        upload_status: KClipUploadStatus = "pending",
+    ) -> Self:
+        now = int(time.time())
+        return cls(
+            id=new_uuid(),
+            user_id=user_id,
+            robot_id=robot_id,
+            created_at=now,
+            name=name,
+            description=description,
+            upload_status=upload_status,
+        )
