@@ -1,13 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { Input } from "@/components/ui/Input/Input";
+import Modal from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ApiError } from "@/lib/types/api";
@@ -89,14 +84,18 @@ export function EditRobotModal({
   }, [name, description, orderId, robot.id, onEdit, onClose]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-gray-1 text-gray-12 border border-gray-3 rounded-lg shadow-lg">
-        <DialogHeader>
-          <DialogTitle>Edit Robot</DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="sm"
+      className="sm:max-w-[425px]"
+    >
+      <div className="p-6">
+        <h2 className="text-xl font-semibold mb-4">Edit Robot</h2>
+
+        <div className="grid gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="name" className="text-sm font-medium text-gray-12">
+            <Label htmlFor="name" className="text-sm font-medium text-gray-1">
               Name
             </Label>
             <Input
@@ -110,10 +109,11 @@ export function EditRobotModal({
               {name.length}/32 characters
             </div>
           </div>
+
           <div className="grid gap-2">
             <Label
               htmlFor="description"
-              className="text-sm font-medium text-gray-12"
+              className="text-sm font-medium text-gray-1"
             >
               Description
             </Label>
@@ -129,10 +129,11 @@ export function EditRobotModal({
               {description.length}/2048 characters
             </div>
           </div>
+
           <div className="grid gap-2">
             <Label
               htmlFor="orderId"
-              className="text-sm font-medium text-gray-12"
+              className="text-sm font-medium text-gray-1"
             >
               Order ID (Optional)
             </Label>
@@ -144,20 +145,20 @@ export function EditRobotModal({
             />
           </div>
         </div>
-        {error && <div className="text-red-500 text-sm mt-2">{error}</div>}
-        <div className="flex justify-end">
+
+        {error && <div className="text-red-500 text-sm mt-4">{error}</div>}
+
+        <div className="flex justify-end mt-6">
           <Button
             onClick={handleEdit}
             disabled={!name || isLoading}
             variant="default"
           >
             <Save className="mr-2 h-4 w-4" />
-            <span className="mr-2">
-              {isLoading ? "Saving..." : "Save Changes"}
-            </span>
+            <span>{isLoading ? "Saving..." : "Save Changes"}</span>
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </Modal>
   );
 }
