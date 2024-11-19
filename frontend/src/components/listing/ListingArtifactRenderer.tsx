@@ -20,6 +20,7 @@ const ListingArtifactRenderer = ({ artifact }: Props) => {
         />
       );
     case "tgz":
+    case "kernel":
       return (
         <div className="w-full h-full flex flex-col items-center justify-center gap-2">
           <Link

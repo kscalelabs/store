@@ -260,6 +260,35 @@ class ArtifactsCrud(BaseCrud):
         )
         return artifact
 
+    async def _upload_kernel(
+        self,
+        name: str,
+        file: UploadFile,
+        listing: Listing,
+        description: str | None = None,
+    ) -> Artifact:
+        artifact = Artifact.create(
+            user_id=listing.user_id,
+            listing_id=listing.id,
+            name=name,
+            artifact_type="kernel",
+            description=description,
+        )
+
+        file_data = io.BytesIO(await file.read())
+        s3_filename = get_artifact_name(artifact=artifact)
+
+        await asyncio.gather(
+            self._upload_to_s3(
+                data=file_data,
+                name=name,
+                filename=s3_filename,
+                content_type="application/octet-stream",
+            ),
+            self._add_item(artifact),
+        )
+        return artifact
+
     async def upload_artifact(
         self,
         name: str,
@@ -271,6 +300,8 @@ class ArtifactsCrud(BaseCrud):
         match artifact_type:
             case "image":
                 return await self._upload_image(name, file, listing, description)
+            case "kernel":
+                return await self._upload_kernel(name, file, listing, description)
             case "stl" | "obj" | "ply" | "dae":
                 return await self._upload_mesh(name, file, listing, artifact_type, description)
             case "urdf" | "mjcf":

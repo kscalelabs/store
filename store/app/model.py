@@ -7,6 +7,7 @@ expects (for example, converting a UUID into a string).
 
 import time
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Literal, Self, cast, get_args
 
 from pydantic import BaseModel
@@ -173,7 +174,8 @@ ImageArtifactType = Literal["image"]
 XMLArtifactType = Literal["urdf", "mjcf"]
 MeshArtifactType = Literal["stl", "obj", "dae", "ply"]
 CompressedArtifactType = Literal["tgz", "zip"]
-ArtifactType = ImageArtifactType | XMLArtifactType | MeshArtifactType | CompressedArtifactType
+KernelArtifactType = Literal["kernel"]
+ArtifactType = ImageArtifactType | KernelArtifactType | XMLArtifactType | MeshArtifactType | CompressedArtifactType
 
 UPLOAD_CONTENT_TYPE_OPTIONS: dict[ArtifactType, set[str]] = {
     # Image
@@ -194,6 +196,13 @@ UPLOAD_CONTENT_TYPE_OPTIONS: dict[ArtifactType, set[str]] = {
         "application/x-compressed-tar",
     },
     "zip": {"application/zip"},
+    "kernel": {
+        "application/octet-stream",
+        "application/x-raw-disk-image",
+        "application/gzip",
+        "application/x-gzip",
+        "binary/octet-stream",
+    },
 }
 
 DOWNLOAD_CONTENT_TYPE: dict[ArtifactType, str] = {
@@ -210,6 +219,7 @@ DOWNLOAD_CONTENT_TYPE: dict[ArtifactType, str] = {
     # Compressed
     "tgz": "application/gzip",
     "zip": "application/zip",
+    "kernel": "application/octet-stream",
 }
 
 SizeMapping: dict[ArtifactSize, tuple[int, int]] = {
@@ -218,67 +228,43 @@ SizeMapping: dict[ArtifactSize, tuple[int, int]] = {
 }
 
 
-def get_artifact_type(content_type: str | None, filename: str | None) -> ArtifactType:
-    """Determines the artifact type from the content type or filename.
+def get_artifact_type(content_type: str | None, filename: str) -> ArtifactType:
+    """Gets the artifact type from the content type and filename."""
+    extension = Path(filename).suffix.lower()
 
-    Args:
-        content_type: The content type of the file.
-        filename: The name of the file.
+    if extension == ".img":
+        return "kernel"
 
-    Returns:
-        The artifact type.
+    if content_type and content_type.startswith("image/"):
+        return "image"
 
-    Raises:
-        ValueError: If the artifact type cannot be determined.
-    """
-    # Attempts to determine from file extension.
-    if filename is not None:
-        extension = filename.split(".")[-1].lower()
-        if extension in ("png", "jpeg", "jpg", "gif", "webp"):
+    match extension:
+        case ".png" | ".jpg" | ".jpeg" | ".gif" | ".webp":
             return "image"
-        if extension in ("urdf",):
+        case ".urdf":
             return "urdf"
-        if extension in ("mjcf", "xml"):
+        case ".mjcf":
             return "mjcf"
-        if extension in ("stl",):
+        case ".stl":
             return "stl"
-        if extension in ("obj",):
+        case ".obj":
             return "obj"
-        if extension in ("dae",):
+        case ".dae":
             return "dae"
-        if extension in ("ply",):
+        case ".ply":
             return "ply"
-        if extension in ("tgz", "tar.gz"):
+        case ".tgz" | ".tar.gz":
             return "tgz"
-        if extension in ("zip",):
+        case ".zip":
             return "zip"
-
-    # Attempts to determine from content type.
-    if content_type is not None:
-        if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["image"]:
-            return "image"
-        if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["urdf"]:
-            return "urdf"
-        if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["mjcf"]:
-            return "mjcf"
-        if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["stl"]:
-            return "stl"
-        if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["obj"]:
-            return "obj"
-        if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["dae"]:
-            return "dae"
-        if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["ply"]:
-            return "ply"
-        if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["tgz"]:
-            return "tgz"
-        if content_type in UPLOAD_CONTENT_TYPE_OPTIONS["zip"]:
-            return "zip"
-
-    # Throws a value error if the type cannot be determined.
-    raise ValueError(f"Unknown content type for file: {filename}")
+        case _:
+            raise ValueError(f"Unsupported file extension: {extension}")
 
 
 def get_compression_type(content_type: str | None, filename: str | None) -> CompressedArtifactType:
+    if filename is None:
+        raise ValueError("Filename must be provided")
+
     artifact_type = get_artifact_type(content_type, filename)
     if artifact_type not in (allowed_types := get_args(CompressedArtifactType)):
         raise ValueError(f"Artifact type {artifact_type} is not compressed; expected one of {allowed_types}")
@@ -462,7 +448,7 @@ def get_artifact_name(
         case "image":
             height, width = SizeMapping[size]
             return f"{listing_id}/{artifact_id}/{size}_{height}x{width}_{name}"
-        case "urdf" | "mjcf" | "stl" | "obj" | "ply" | "dae" | "zip" | "tgz":
+        case "kernel" | "urdf" | "mjcf" | "stl" | "obj" | "ply" | "dae" | "zip" | "tgz":
             return f"{listing_id}/{artifact_id}/{name}"
         case _:
             raise ValueError(f"Unknown artifact type: {artifact_type}")
