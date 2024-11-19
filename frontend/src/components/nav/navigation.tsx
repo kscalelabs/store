@@ -1,5 +1,5 @@
 import { FaRobot, FaTerminal } from "react-icons/fa";
-import { FaRegFileLines } from "react-icons/fa6";
+import { FaChartBar, FaRegFileLines } from "react-icons/fa6";
 
 import ROUTES from "@/lib/types/routes";
 
@@ -34,6 +34,12 @@ const TERMINAL_NAV_ITEM: BaseNavItem = {
   icon: <FaTerminal />,
 };
 
+const ADMIN_DASHBOARD_NAV_ITEM: BaseNavItem = {
+  name: "Admin Dashboard",
+  path: ROUTES.ADMIN.path,
+  icon: <FaChartBar />,
+};
+
 export const AUTHENTICATED_NAV_ITEMS: BaseNavItem[] = [];
 
 export const getNavItems = (
@@ -43,7 +49,7 @@ export const getNavItems = (
   let navItems = [...DEFAULT_NAV_ITEMS];
 
   if (isAdmin) {
-    navItems = [TERMINAL_NAV_ITEM, ...navItems];
+    navItems = [ADMIN_DASHBOARD_NAV_ITEM, TERMINAL_NAV_ITEM, ...navItems];
   }
 
   if (isAuthenticated) {

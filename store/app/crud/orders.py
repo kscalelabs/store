@@ -55,6 +55,14 @@ class OrderDataUpdate(TypedDict):
     shipping_country: NotRequired[str]
 
 
+class ProcessPreorderData(TypedDict):
+    stripe_connect_account_id: str
+    stripe_checkout_session_id: str
+    final_payment_checkout_session_id: str
+    status: OrderStatus
+    updated_at: int
+
+
 class OrdersNotFoundError(ItemNotFoundError):
     """Raised when no orders are found for a user."""
 
@@ -97,3 +105,26 @@ class OrdersCrud(BaseCrud):
         if not updated_order:
             raise ItemNotFoundError("Updated order not found")
         return updated_order
+
+    async def process_preorder(self, order_id: str, update_data: ProcessPreorderData) -> Order:
+        order = await self.get_order(order_id)
+        if not order:
+            raise ItemNotFoundError("Order not found")
+
+        current_data = order.model_dump()
+        update_dict = dict(update_data)
+        current_data.update(update_dict)
+
+        try:
+            Order(**current_data)
+        except ValidationError as e:
+            raise ValueError(f"Invalid update data: {str(e)}")
+
+        await self._update_item(order_id, Order, update_dict)
+        updated_order = await self.get_order(order_id)
+        if not updated_order:
+            raise ItemNotFoundError("Updated order not found")
+        return updated_order
+
+    async def dump_orders(self) -> list[Order]:
+        return await self._list_items(Order)

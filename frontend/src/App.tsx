@@ -13,6 +13,7 @@ import Navbar from "@/components/nav/Navbar";
 import APIKeys from "@/components/pages/APIKeys";
 import About from "@/components/pages/About";
 import Account from "@/components/pages/Account";
+import AdminDashboard from "@/components/pages/AdminDashboard";
 import Browse from "@/components/pages/Browse";
 import CreateSell from "@/components/pages/CreateSell";
 import CreateShare from "@/components/pages/CreateShare";
@@ -161,6 +162,11 @@ const App = () => {
                         <Route
                           path={ROUTES.LINK.path}
                           element={<LinkRobot />}
+                        />
+
+                        <Route
+                          path={ROUTES.ADMIN.path}
+                          element={<AdminDashboard />}
                         />
 
                         {/* Not found */}

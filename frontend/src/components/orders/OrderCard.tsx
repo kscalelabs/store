@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 
+import AdminManageOrder from "@/components/admin/AdminManageOrder";
 import CancelOrderModal from "@/components/modals/CancelOrderModal";
 import EditAddressModal from "@/components/modals/EditAddressModal";
 import {
@@ -9,14 +10,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { OrderWithProduct } from "@/lib/types/orders";
-import {
-  activeStatuses,
-  canModifyStatuses,
-  orderStatuses,
-  redStatuses,
-} from "@/lib/types/orders";
+import { activeStatuses, orderStatuses, redStatuses } from "@/lib/types/orders";
 import { formatPrice } from "@/lib/utils/formatNumber";
 import { normalizeStatus } from "@/lib/utils/formatString";
+import { canModifyOrder } from "@/lib/utils/orders";
 
 enum OrderStatus {
   PREORDER = -1,
@@ -27,9 +24,10 @@ enum OrderStatus {
   DELIVERED = 4,
 }
 
-const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
-  orderWithProduct: initialOrderWithProduct,
-}) => {
+const OrderCard: React.FC<{
+  orderWithProduct: OrderWithProduct;
+  isAdminView?: boolean;
+}> = ({ orderWithProduct: initialOrderWithProduct, isAdminView }) => {
   const [orderWithProduct, setOrderWithProduct] = useState<OrderWithProduct>(
     initialOrderWithProduct,
   );
@@ -66,13 +64,16 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
     setOrderWithProduct(updatedOrder);
   };
 
-  const canModifyOrder = () => {
-    return canModifyStatuses.includes(order.status);
-  };
-
   return (
-    <div className="bg-gray-1 shadow-md rounded-lg p-4 md:p-6 w-full">
-      <h2 className="text-gray-12 font-bold text-2xl mb-1">{product.name}</h2>
+    <div className="bg-gray-1 shadow-md rounded-lg p-4 md:p-6 w-full text-gray-12">
+      {isAdminView ? (
+        <AdminManageOrder
+          order={orderWithProduct}
+          onOrderUpdate={handleOrderUpdate}
+        />
+      ) : null}
+
+      <h2 className="font-bold text-2xl mb-1">{product.name}</h2>
       <p className="text-gray-11 mb-1 sm:text-lg">
         Status:{" "}
         <span className={`font-semibold ${getTextColor(order.status)}`}>
@@ -129,17 +130,17 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
           <DropdownMenu>
             <DropdownMenuTrigger
               className={`underline ${
-                !canModifyOrder()
+                !canModifyOrder(orderWithProduct)
                   ? "text-gray-11 cursor-not-allowed"
                   : "text-gray-12 cursor-pointer"
               }`}
-              disabled={!canModifyOrder()}
+              disabled={!canModifyOrder(orderWithProduct)}
             >
               Manage order
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem
-                disabled={!canModifyOrder()}
+                disabled={!canModifyOrder(orderWithProduct)}
                 onSelect={() => setIsEditAddressModalOpen(true)}
                 className="cursor-pointer"
               >
@@ -147,7 +148,7 @@ const OrderCard: React.FC<{ orderWithProduct: OrderWithProduct }> = ({
               </DropdownMenuItem>
               <div className="border-t border-gray-11 mx-1"></div>
               <DropdownMenuItem
-                disabled={!canModifyOrder()}
+                disabled={!canModifyOrder(orderWithProduct)}
                 onSelect={() => setIsCancelOrderModalOpen(true)}
                 className="cursor-pointer"
               >

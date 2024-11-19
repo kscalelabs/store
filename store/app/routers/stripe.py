@@ -10,7 +10,7 @@ import stripe
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 
-from store.app.crud.orders import OrderDataCreate, OrderDataUpdate
+from store.app.crud.orders import OrderDataCreate, OrderDataUpdate, ProcessPreorderData
 from store.app.db import Crud
 from store.app.model import Listing, Order, User, UserStripeConnect
 from store.app.security.user import (
@@ -678,10 +678,10 @@ async def create_listing_product(
 
 class ProcessPreorderResponse(BaseModel):
     status: str
-    checkout_session: dict[str, Any] | None
+    checkout_session: dict[str, Any]
 
 
-@router.post("/process-preorder/{order_id}", response_model=ProcessPreorderResponse)
+@router.post("/process/preorder/{order_id}", response_model=ProcessPreorderResponse)
 async def process_preorder(
     order_id: str,
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -689,7 +689,6 @@ async def process_preorder(
 ) -> ProcessPreorderResponse:
     async with crud:
         try:
-            # Get the order and verify it's a preorder
             order = await crud.get_order(order_id)
             if not order:
                 raise HTTPException(status_code=404, detail="Order not found")
@@ -711,7 +710,7 @@ async def process_preorder(
             # Create a new checkout session for the final payment
             checkout_params: stripe.checkout.Session.CreateParams = {
                 "mode": "payment",
-                "payment_method_types": ["card", "affirm"],  # Enable both card and Affirm
+                "payment_method_types": ["card", "affirm"],
                 "success_url": STRIPE_CONNECT_FINAL_PAYMENT_SUCCESS_URL,
                 "cancel_url": STRIPE_CONNECT_FINAL_PAYMENT_CANCEL_URL,
                 "metadata": {
@@ -764,16 +763,17 @@ async def process_preorder(
             # Create checkout session on seller's connect account
             checkout_session = stripe.checkout.Session.create(**checkout_params)
 
-            # Update order with final payment checkout session
-            order_data: OrderDataUpdate = {
-                "stripe_connect_account_id": seller.stripe_connect.account_id,
-                "stripe_checkout_session_id": order.stripe_checkout_session_id,
-                "final_payment_checkout_session_id": checkout_session.id,
-                "status": "awaiting_final_payment",
-                "updated_at": int(time.time()),
-            }
+            if checkout_session.id:
+                # Update order with final payment checkout session
+                order_data: ProcessPreorderData = {
+                    "stripe_connect_account_id": seller.stripe_connect.account_id,
+                    "stripe_checkout_session_id": order.stripe_checkout_session_id,
+                    "final_payment_checkout_session_id": checkout_session.id,
+                    "status": "awaiting_final_payment",
+                    "updated_at": int(time.time()),
+                }
 
-            await crud.update_order(order_id, order_data)
+            await crud.process_preorder(order_id, order_data)
 
             return ProcessPreorderResponse(
                 status="success",
