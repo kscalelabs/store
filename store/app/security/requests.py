@@ -18,7 +18,7 @@ async def get_api_key_from_header(headers: Mapping[str, str], require_header: Li
 
 async def get_api_key_from_header(headers: Mapping[str, str], require_header: bool) -> str | None:
     authorization = headers.get("Authorization") or headers.get("authorization")
-    logger.debug(f"Received authorization header: {authorization}")
+    logger.debug("Received authorization header: %s", authorization)
     if not authorization:
         if require_header:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")

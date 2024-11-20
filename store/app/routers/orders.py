@@ -69,11 +69,10 @@ async def get_user_orders(
             return results
 
     except OrdersNotFoundError:
-        logger.info(f"No orders found for user: {user.id}")
+        logger.info("No orders found for user: %s", user.id)
         return []
     except Exception as e:
-        logger.error(f"Error fetching orders: {str(e)}", exc_info=True)
-        print(f"Error fetching orders: {str(e)}")
+        logger.exception("Error fetching orders: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error fetching orders: {str(e)}"
         )
@@ -169,7 +168,7 @@ async def get_all_orders(
                 )
             orders_with_products.append(OrderWithProduct(order=order, product=product_info))
         except Exception as e:
-            logger.error(f"Error getting product info for order {order.id}: {str(e)}")
+            logger.exception("Error getting product info for order %s: %s", order.id, e)
             orders_with_products.append(OrderWithProduct(order=order, product=None))
 
     return AdminOrdersResponse(orders=orders_with_products)

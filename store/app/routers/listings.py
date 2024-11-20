@@ -162,7 +162,7 @@ async def get_batch_listing_info(
     user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
     ids: list[str] = Query(description="List of part ids"),
 ) -> GetBatchListingsResponse:
-    logger.info(f"Fetching batch listing info for ids: {ids}")
+    logger.info("Fetching batch listing info for ids: %s", ids)
 
     listings, artifacts = await asyncio.gather(
         crud._get_item_batch(ids, Listing),
@@ -217,7 +217,7 @@ async def get_batch_listing_info(
                 )
                 listing_responses.append(listing_response)
             except Exception as e:
-                logger.error(f"Error creating ListingInfoResponse for listing {listing.id}: {str(e)}")
+                logger.exception("Error creating ListingInfoResponse for listing %s: %s", listing.id, e)
 
     return GetBatchListingsResponse(listings=listing_responses)
 
@@ -354,10 +354,10 @@ async def add_listing(
         return NewListingResponse(listing_id=listing.id, username=user.username, slug=slug)
 
     except HTTPException as e:
-        logger.error(f"HTTPException: {e.detail}")
+        logger.exception("HTTPException: %s", e.detail)
         raise
     except Exception as e:
-        logger.error(f"Unexpected error: {str(e)}")
+        logger.exception("Unexpected error: %s", e)
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
@@ -573,7 +573,7 @@ async def get_listing(
     if settings.environment != "local":
         for artifact in response.artifacts:
             if not any("Key-Pair-Id=" in url for url in [artifact.urls.small, artifact.urls.large] if url is not None):
-                logger.error(f"Unsigned URLs found for artifact {artifact.artifact_id} in listing {listing_id}")
+                logger.exception("Unsigned URLs found for artifact %s in listing %s", artifact.artifact_id, listing_id)
 
     return response
 

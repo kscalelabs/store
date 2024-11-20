@@ -418,8 +418,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             )
             logger.info("S3 upload successful")
         except ClientError as e:
-            logger.error(f"S3 upload failed: {str(e)}")
-            logger.error(f"Error details: {e.response['Error']}")
+            logger.exception("S3 upload failed: %s", e)
             raise
 
     async def _download_from_s3(self, filename: str) -> StreamingBody:

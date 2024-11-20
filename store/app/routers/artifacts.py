@@ -91,7 +91,7 @@ def get_artifact_url_response(artifact: Artifact) -> ArtifactUrls:
 
     # If in production, sign both URLs
     if settings.environment != "local":
-        logger.debug(f"Original URLs for artifact {artifact.id}: {artifact_urls}")
+        logger.debug("Original URLs for artifact %s: %s", artifact.id, artifact_urls)
 
         signer = CloudFrontUrlSigner(
             key_id=settings.cloudfront.key_id,
