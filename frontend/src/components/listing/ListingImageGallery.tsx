@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FaStar, FaTimes } from "react-icons/fa";
+import { FaFileDownload, FaStar, FaTimes } from "react-icons/fa";
 
 import { Artifact } from "@/components/listing/types";
 import DeleteConfirmationModal from "@/components/modals/DeleteConfirmationModal";
@@ -121,6 +121,29 @@ const ListingImageItem = ({
     }
   };
 
+  const isKernelImage =
+    artifact.name.toLowerCase().endsWith(".img") ||
+    artifact.artifact_type === "kernel";
+
+  const handleDownload = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!artifact.urls.large) {
+      addErrorAlert("Artifact URL not available.");
+      return;
+    }
+
+    const link = document.createElement("a");
+    link.href = artifact.urls.large;
+    const downloadName =
+      isKernelImage && !artifact.name.toLowerCase().endsWith(".img")
+        ? `${artifact.name}.img`
+        : artifact.name;
+    link.download = downloadName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <>
       <div
@@ -145,6 +168,21 @@ const ListingImageItem = ({
                   className="text-gray-1 hover:bg-gray-1 hover:text-gray-12"
                 >
                   <FaStar />
+                </Button>
+              </Tooltip>
+            )}
+            {isKernelImage && (
+              <Tooltip
+                content="Download Kernel Image"
+                position="left"
+                size="sm"
+              >
+                <Button
+                  variant="default"
+                  onClick={handleDownload}
+                  className="text-gray-12 bg-gray-2 hover:bg-gray-12 hover:text-gray-2"
+                >
+                  <FaFileDownload />
                 </Button>
               </Tooltip>
             )}

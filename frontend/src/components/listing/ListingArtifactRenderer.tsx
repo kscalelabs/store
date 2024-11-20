@@ -1,4 +1,4 @@
-import { FaFileArchive } from "react-icons/fa";
+import { FaFile, FaFileArchive } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 import placeholder from "@/components/listing/pics/placeholder.jpg";
@@ -20,7 +20,6 @@ const ListingArtifactRenderer = ({ artifact }: Props) => {
         />
       );
     case "tgz":
-    case "kernel":
       return (
         <div className="w-full h-full flex flex-col items-center justify-center gap-2">
           <Link
@@ -31,6 +30,21 @@ const ListingArtifactRenderer = ({ artifact }: Props) => {
           </Link>
           <div className="text-center">
             <div className="font-medium">{artifact.name}</div>
+            <div className="text-sm">
+              {new Date(artifact.timestamp * 1000).toLocaleString()}
+            </div>
+          </div>
+        </div>
+      );
+    case "kernel":
+      return (
+        <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+          <div className="p-4">
+            <FaFile className="w-16 h-16" />
+          </div>
+          <div className="text-center">
+            <div className="font-medium">{artifact.name}</div>
+            <div className="text-xs text-gray-500 mt-1">Kernel Image File</div>
             <div className="text-sm">
               {new Date(artifact.timestamp * 1000).toLocaleString()}
             </div>
