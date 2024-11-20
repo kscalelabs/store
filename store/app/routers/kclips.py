@@ -5,7 +5,8 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from store.app.crud.kclips import KClipPartCompleted, KClipUploadDetails
+from store.app.crud.base import MultipartUploadDetails
+from store.app.crud.kclips import KClipPartCompleted
 from store.app.db import Crud
 from store.app.model import User
 from store.app.security.user import get_session_user_with_write_permission
@@ -15,7 +16,7 @@ router = APIRouter()
 
 class NewKClipResponse(BaseModel):
     kclip_id: str
-    upload_details: KClipUploadDetails
+    upload_details: MultipartUploadDetails
 
 
 @router.post("/create")
@@ -33,6 +34,10 @@ async def create_kclip(
     return NewKClipResponse(kclip_id=kclip.id, upload_details=upload_details)
 
 
+class CompletedKClipUploadResponse(BaseModel):
+    status: str
+
+
 @router.post("/{kclip_id}/complete")
 async def complete_upload(
     kclip_id: str,
@@ -40,6 +45,6 @@ async def complete_upload(
     parts: list[KClipPartCompleted],
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> dict:
+) -> CompletedKClipUploadResponse:
     await crud.complete_upload(kclip_id, upload_id, parts)
-    return {"status": "completed"}
+    return CompletedKClipUploadResponse(status="completed")
