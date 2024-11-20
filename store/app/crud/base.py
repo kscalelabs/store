@@ -639,7 +639,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         Args:
             key: S3 object key
             file_size: Optional total file size in bytes
-            part_size: Optional desired part size in bytes
+            part_size: Optional desired part size in bytes (defaults to DEFAULT_PART_SIZE)
             content_type: Optional content type
             metadata: Optional metadata dict
             expires_in: URL expiration time in seconds
@@ -647,21 +647,24 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         Returns:
             Upload details including upload ID and presigned URLs
         """
-        # Calculate optimal number of parts if file size is known
-        if file_size and part_size:
-            if part_size < MIN_PART_SIZE:
-                part_size = MIN_PART_SIZE
-            elif part_size > MAX_PART_SIZE:
-                part_size = MAX_PART_SIZE
+        actual_part_size = part_size if part_size is not None else DEFAULT_PART_SIZE
 
-            num_parts = (file_size + part_size - 1) // part_size
+        # Calculate optimal number of parts if file size is known
+        if file_size:
+            if actual_part_size < MIN_PART_SIZE:
+                actual_part_size = MIN_PART_SIZE
+            elif actual_part_size > MAX_PART_SIZE:
+                actual_part_size = MAX_PART_SIZE
+
+            num_parts = (file_size + actual_part_size - 1) // actual_part_size
             if num_parts > MAX_PARTS:
                 # Recalculate part size to fit within MAX_PARTS
-                part_size = (file_size + MAX_PARTS - 1) // MAX_PARTS
+                actual_part_size = (file_size + MAX_PARTS - 1) // MAX_PARTS
                 num_parts = MAX_PARTS
         else:
             # Default to maximum possible parts if size unknown
             num_parts = MAX_PARTS
+            actual_part_size = DEFAULT_PART_SIZE
 
         bucket, upload_id = await self._create_multipart_upload(key, content_type, metadata)
         presigned_urls = await self._generate_presigned_urls(key, upload_id, num_parts, expires_in)
@@ -671,6 +674,6 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             presigned_urls=presigned_urls,
             bucket=bucket,
             key=key,
-            part_size=part_size,
+            part_size=actual_part_size,
             num_parts=num_parts,
         )
