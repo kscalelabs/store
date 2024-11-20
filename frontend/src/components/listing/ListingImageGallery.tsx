@@ -134,11 +134,7 @@ const ListingImageItem = ({
 
     const link = document.createElement("a");
     link.href = artifact.urls.large;
-    const downloadName =
-      isKernelImage && !artifact.name.toLowerCase().endsWith(".img")
-        ? `${artifact.name}.img`
-        : artifact.name;
-    link.download = downloadName;
+    link.download = artifact.name;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

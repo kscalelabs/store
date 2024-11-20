@@ -450,7 +450,7 @@ async def get_presigned_url(
     artifact = Artifact.create(
         user_id=listing.user_id,
         listing_id=listing.id,
-        name=name,
+        name=filename,
         artifact_type=artifact_type,
     )
     await crud._add_item(artifact)
@@ -463,8 +463,8 @@ async def get_presigned_url(
             Params={
                 "Bucket": settings.s3.bucket,
                 "Key": f"{settings.s3.prefix}{s3_filename}",
-                "ContentType": "application/octet-stream",
-                "ContentDisposition": f'attachment; filename="{name}"',
+                "ContentType": "application/x-raw-disk-image",
+                "ContentDisposition": f'attachment; filename="{filename}"',
             },
             ExpiresIn=3600,
         )
