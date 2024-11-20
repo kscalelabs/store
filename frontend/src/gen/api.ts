@@ -1752,6 +1752,10 @@ export interface components {
             bucket: string;
             /** Key */
             key: string;
+            /** Part Size */
+            part_size: number;
+            /** Num Parts */
+            num_parts: number;
         };
         /** MyUserInfoResponse */
         MyUserInfoResponse: {

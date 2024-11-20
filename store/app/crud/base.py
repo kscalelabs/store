@@ -66,6 +66,8 @@ class MultipartUploadDetails(TypedDict):
     presigned_urls: list[dict[str, str | int]]
     bucket: str
     key: str
+    part_size: int
+    num_parts: int
 
 
 class BaseCrud(AsyncContextManager["BaseCrud"]):
@@ -664,4 +666,11 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         bucket, upload_id = await self._create_multipart_upload(key, content_type, metadata)
         presigned_urls = await self._generate_presigned_urls(key, upload_id, num_parts, expires_in)
 
-        return MultipartUploadDetails(upload_id=upload_id, presigned_urls=presigned_urls, bucket=bucket, key=key)
+        return MultipartUploadDetails(
+            upload_id=upload_id,
+            presigned_urls=presigned_urls,
+            bucket=bucket,
+            key=key,
+            part_size=part_size,
+            num_parts=num_parts,
+        )
