@@ -14,7 +14,7 @@ from store.app.security.user import get_session_user_with_write_permission
 router = APIRouter()
 
 
-class CreateKClipRequest(BaseModel):
+class UploadKClipRequest(BaseModel):
     name: str
     robot_id: str
     description: str | None = None
@@ -22,17 +22,17 @@ class CreateKClipRequest(BaseModel):
     part_size: int | None = None
 
 
-class CreateKClipResponse(BaseModel):
+class UploadKClipResponse(BaseModel):
     kclip_id: str
     upload_details: MultipartUploadDetails
 
 
-@router.post("/create")
+@router.post("/upload")
 async def create_kclip(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
-    kclip_data: CreateKClipRequest,
+    kclip_data: UploadKClipRequest,
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> CreateKClipResponse:
+) -> UploadKClipResponse:
     kclip, upload_details = await crud.create_kclip(
         user_id=user.id,
         robot_id=kclip_data.robot_id,
@@ -42,7 +42,7 @@ async def create_kclip(
         part_size=kclip_data.part_size,
     )
 
-    return CreateKClipResponse(kclip_id=kclip.id, upload_details=upload_details)
+    return UploadKClipResponse(kclip_id=kclip.id, upload_details=upload_details)
 
 
 class CompletedKClipUploadRequest(BaseModel):

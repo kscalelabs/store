@@ -1259,7 +1259,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/kclips/create": {
+    "/kclips/upload": {
         parameters: {
             query?: never;
             header?: never;
@@ -1269,7 +1269,7 @@ export interface paths {
         get?: never;
         put?: never;
         /** Create Kclip */
-        post: operations["create_kclip_kclips_create_post"];
+        post: operations["create_kclip_kclips_upload_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1418,25 +1418,6 @@ export interface components {
         CreateConnectAccountResponse: {
             /** Account Id */
             account_id: string;
-        };
-        /** CreateKClipRequest */
-        CreateKClipRequest: {
-            /** Name */
-            name: string;
-            /** Robot Id */
-            robot_id: string;
-            /** Description */
-            description?: string | null;
-            /** File Size */
-            file_size?: number | null;
-            /** Part Size */
-            part_size?: number | null;
-        };
-        /** CreateKClipResponse */
-        CreateKClipResponse: {
-            /** Kclip Id */
-            kclip_id: string;
-            upload_details: components["schemas"]["MultipartUploadDetails"];
         };
         /** CreateRefundsRequest */
         CreateRefundsRequest: {
@@ -2167,6 +2148,25 @@ export interface components {
         UploadArtifactResponse: {
             /** Artifacts */
             artifacts: components["schemas"]["SingleArtifactResponse"][];
+        };
+        /** UploadKClipRequest */
+        UploadKClipRequest: {
+            /** Name */
+            name: string;
+            /** Robot Id */
+            robot_id: string;
+            /** Description */
+            description?: string | null;
+            /** File Size */
+            file_size?: number | null;
+            /** Part Size */
+            part_size?: number | null;
+        };
+        /** UploadKClipResponse */
+        UploadKClipResponse: {
+            /** Kclip Id */
+            kclip_id: string;
+            upload_details: components["schemas"]["MultipartUploadDetails"];
         };
         /** UserInfoResponseItem */
         UserInfoResponseItem: {
@@ -4471,7 +4471,7 @@ export interface operations {
             };
         };
     };
-    create_kclip_kclips_create_post: {
+    create_kclip_kclips_upload_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -4480,7 +4480,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateKClipRequest"];
+                "application/json": components["schemas"]["UploadKClipRequest"];
             };
         };
         responses: {
@@ -4490,7 +4490,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CreateKClipResponse"];
+                    "application/json": components["schemas"]["UploadKClipResponse"];
                 };
             };
             /** @description Validation Error */
