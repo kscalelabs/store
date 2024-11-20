@@ -11,7 +11,6 @@ from typing import (
     Literal,
     Self,
     Sequence,
-    TypedDict,
     TypeVar,
     overload,
 )
@@ -26,6 +25,7 @@ from types_aiobotocore_s3.type_defs import (
     CompletedPartTypeDef,
     CreateMultipartUploadOutputTypeDef,
 )
+from typing_extensions import TypedDict
 
 from store.app.errors import InternalError, ItemNotFoundError
 from store.app.model import StoreBaseModel

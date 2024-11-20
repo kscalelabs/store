@@ -1,6 +1,6 @@
 """Defines the CRUD interface for handling user-uploaded KClips."""
 
-from typing import TypedDict
+from typing_extensions import TypedDict
 
 from store.app.crud.base import BaseCrud, MultipartUploadDetails, MultipartUploadPart
 from store.app.model import KClip

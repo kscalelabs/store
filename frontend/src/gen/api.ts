@@ -1259,6 +1259,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/kclips/create": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Kclip */
+        post: operations["create_kclip_kclips_create_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/kclips/{kclip_id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete Upload */
+        post: operations["complete_upload_kclips__kclip_id__complete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1350,6 +1384,20 @@ export interface components {
             /** Client Id */
             client_id: string;
         };
+        /** CompletedKClipUploadRequest */
+        CompletedKClipUploadRequest: {
+            /** Kclip Id */
+            kclip_id: string;
+            /** Upload Id */
+            upload_id: string;
+            /** Parts */
+            parts: components["schemas"]["KClipPartCompleted"][];
+        };
+        /** CompletedKClipUploadResponse */
+        CompletedKClipUploadResponse: {
+            /** Status */
+            status: string;
+        };
         /** CreateCheckoutSessionRequest */
         CreateCheckoutSessionRequest: {
             /** Listing Id */
@@ -1370,6 +1418,19 @@ export interface components {
         CreateConnectAccountResponse: {
             /** Account Id */
             account_id: string;
+        };
+        /** CreateKClipRequest */
+        CreateKClipRequest: {
+            /** Name */
+            name: string;
+            /** Robot Id */
+            robot_id: string;
+            /** Description */
+            description?: string | null;
+            /** File Size */
+            file_size?: number | null;
+            /** Part Size */
+            part_size?: number | null;
         };
         /** CreateRefundsRequest */
         CreateRefundsRequest: {
@@ -1509,6 +1570,16 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /**
+         * KClipPartCompleted
+         * @description Represents a completed part in a multipart upload.
+         */
+        KClipPartCompleted: {
+            /** Part Number */
+            part_number: number;
+            /** Etag */
+            etag: string;
         };
         /** KeysResponseItem */
         KeysResponseItem: {
@@ -1660,6 +1731,22 @@ export interface components {
             /** Token */
             token: string;
         };
+        /**
+         * MultipartUploadDetails
+         * @description Details needed for multipart upload.
+         */
+        MultipartUploadDetails: {
+            /** Upload Id */
+            upload_id: string;
+            /** Presigned Urls */
+            presigned_urls: {
+                [key: string]: string | number;
+            }[];
+            /** Bucket */
+            bucket: string;
+            /** Key */
+            key: string;
+        };
         /** MyUserInfoResponse */
         MyUserInfoResponse: {
             /** User Id */
@@ -1681,6 +1768,12 @@ export interface components {
             /** Bio */
             bio: string | null;
             stripe_connect: components["schemas"]["UserStripeConnect"] | null;
+        };
+        /** NewKClipResponse */
+        NewKClipResponse: {
+            /** Kclip Id */
+            kclip_id: string;
+            upload_details: components["schemas"]["MultipartUploadDetails"];
         };
         /** NewKeyRequest */
         NewKeyRequest: {
@@ -4361,6 +4454,72 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_kclip_kclips_create_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateKClipRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NewKClipResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    complete_upload_kclips__kclip_id__complete_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompletedKClipUploadRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompletedKClipUploadResponse"];
                 };
             };
             /** @description Validation Error */
