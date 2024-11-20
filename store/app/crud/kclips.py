@@ -56,3 +56,6 @@ class KClipsCrud(BaseCrud):
 
         # Update KClip status
         await self._update_item(kclip_id, KClip, {"upload_status": "completed"})
+
+    async def get_kclip(self, kclip_id: str) -> KClip | None:
+        return await self._get_item(kclip_id, KClip)

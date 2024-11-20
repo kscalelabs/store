@@ -8,8 +8,12 @@ from pydantic import BaseModel
 from store.app.crud.base import MultipartUploadDetails
 from store.app.crud.kclips import KClipPartCompleted
 from store.app.db import Crud
+from store.app.errors import ItemNotFoundError
 from store.app.model import User
-from store.app.security.user import get_session_user_with_write_permission
+from store.app.security.user import (
+    get_session_user_with_write_permission,
+    verify_admin_permission,
+)
 
 router = APIRouter()
 
@@ -33,6 +37,12 @@ async def create_kclip(
     kclip_data: UploadKClipRequest,
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> UploadKClipResponse:
+    robot = await crud.get_robot(kclip_data.robot_id)
+    if robot is None:
+        raise ItemNotFoundError(f"Robot with ID {kclip_data.robot_id} not found")
+    if robot.user_id != user.id:
+        verify_admin_permission(user, "upload KClips for a robot by another user")
+
     kclip, upload_details = await crud.create_kclip(
         user_id=user.id,
         robot_id=kclip_data.robot_id,
@@ -61,5 +71,11 @@ async def complete_upload(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> CompletedKClipUploadResponse:
+    kclip = await crud.get_kclip(kclip_data.kclip_id)
+    if kclip is None:
+        raise ItemNotFoundError(f"KClip with ID {kclip_data.kclip_id} not found")
+    if kclip.user_id != user.id:
+        verify_admin_permission(user, "complete upload of KClip by another user")
+
     await crud.complete_upload(kclip_data.kclip_id, kclip_data.upload_id, kclip_data.parts)
     return CompletedKClipUploadResponse(status="completed")
