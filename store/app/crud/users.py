@@ -98,7 +98,7 @@ class UserCrud(BaseCrud):
             await self._add_item(user, unique_fields=["email", "username"])
             return user
         except Exception as e:
-            logger.error(f"Error in _create_user_from_email: {str(e)}", exc_info=True)
+            logger.exception("Error in _create_user_from_email: %s", e)
             raise
 
     async def _create_user_from_oauth(
@@ -133,7 +133,7 @@ class UserCrud(BaseCrud):
             await self._add_item(oauth_key, unique_fields=["user_token"])
             return user
         except Exception as e:
-            logger.error(f"Error in _create_user_from_oauth: {str(e)}", exc_info=True)
+            logger.exception("Error in _create_user_from_oauth: %s", e)
             raise
 
     @overload
@@ -162,7 +162,7 @@ class UserCrud(BaseCrud):
                 return user
             return await self._create_user_from_oauth(email, "github", auth_key)
         except Exception as e:
-            logger.error(f"Error in get_user_from_github_token: {str(e)}", exc_info=True)
+            logger.exception("Error in get_user_from_github_token: %s", e)
             raise
 
     async def delete_github_token(self, github_id: str) -> None:
@@ -178,7 +178,7 @@ class UserCrud(BaseCrud):
                 return user
             return await self._create_user_from_oauth(email, "google", auth_key, first_name, last_name)
         except Exception as e:
-            logger.error(f"Error in get_user_from_google_token: {str(e)}", exc_info=True)
+            logger.exception("Error in get_user_from_google_token: %s", e)
             raise
 
     async def delete_google_token(self, google_id: str) -> None:
@@ -280,9 +280,9 @@ class UserCrud(BaseCrud):
         return user
 
     async def is_username_taken(self, username: str) -> bool:
-        logger.info(f"Checking if username {username} is taken")
+        logger.info("Checking if username %s is taken", username)
         existing_users = await self._get_items_from_secondary_index("username", username, User)
-        logger.info(f"existing_users: {existing_users}")
+        logger.info("existing_users: %s", existing_users)
         return len(existing_users) > 0
 
     async def generate_unique_username(self, base: str) -> str:

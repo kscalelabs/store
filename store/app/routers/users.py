@@ -228,7 +228,7 @@ async def update_profile(
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        logger.error(f"Error updating profile: {str(e)}")
+        logger.exception("Error updating profile: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while updating the profile.",
@@ -288,7 +288,7 @@ async def check_username_availability(
     username: str,
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> dict[str, bool]:
-    logger.info(f"Checking if username {username} is taken")
+    logger.info("Checking if username %s is taken", username)
     is_taken = await crud.is_username_taken(username)
     return {"available": not is_taken}
 
@@ -313,7 +313,7 @@ async def set_content_manager(
         updated_user = await crud.set_content_manager(request.user_id, request.is_content_manager)
         return UserPublic(**updated_user.model_dump())
     except Exception as e:
-        logger.error(f"Error setting content manager status: {str(e)}")
+        logger.error("Error setting content manager status: %s", e)
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Unable to update content manager status. Please verify the user exists and try again.",

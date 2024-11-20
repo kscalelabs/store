@@ -170,11 +170,11 @@ async def stripe_connect_webhook(request: Request, crud: Crud = Depends(Crud.get
                     user_id = account.get("metadata", {}).get("user_id")
                     if user_id:
                         await crud.update_stripe_connect_status(user_id, account["id"], is_completed=True)
-                        logger.info(f"Updated Connect status for user {user_id}")
+                        logger.info("Updated Connect status for user %s", user_id)
                     else:
-                        logger.warning(f"No user_id in metadata for Connect account: {account['id']}")
+                        logger.warning("No user_id in metadata for Connect account: %s", account["id"])
                 except Exception as e:
-                    logger.error(f"Error updating user Connect status: {str(e)}")
+                    logger.error("Error updating user Connect status: %s", e)
 
         elif event["type"] == "checkout.session.completed":
             session = event["data"]["object"]
@@ -196,9 +196,9 @@ async def stripe_connect_webhook(request: Request, crud: Crud = Depends(Crud.get
                                     "updated_at": int(time.time()),
                                 },
                             )
-                            logger.info(f"Final payment processed for order {order_id}")
+                            logger.info("Final payment processed for order %s", order_id)
                     except Exception as e:
-                        logger.error(f"Error processing final payment webhook: {str(e)}")
+                        logger.error("Error processing final payment webhook: %s", e)
                         raise
             else:
                 # Handle regular checkout completion
@@ -313,7 +313,7 @@ async def create_checkout_session(
         try:
             listing = await crud.get_listing(request.listing_id)
             if not listing or not listing.price_amount:
-                logger.error(f"Listing not found or has no price: {request.listing_id}")
+                logger.error("Listing not found or has no price: %s", request.listing_id)
                 raise HTTPException(status_code=404, detail="Listing not found or has no price")
 
             seller = await crud.get_user(listing.user_id)
@@ -450,7 +450,7 @@ async def create_checkout_session(
             )
 
         except stripe.StripeError as e:
-            logger.error(f"Stripe error: {str(e)}", exc_info=True)
+            logger.exception("Stripe error: %s", e)
             raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -486,10 +486,10 @@ async def get_product(product_id: str, crud: Annotated[Crud, Depends(Crud.get)])
             active=product.active,
         )
     except stripe.StripeError as e:
-        logger.error(f"Stripe error retrieving product: {str(e)}")
+        logger.exception("Stripe error retrieving product: %s", e)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
-        logger.error(f"Error retrieving product: {str(e)}")
+        logger.exception("Error retrieving product: %s", e)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
@@ -567,7 +567,7 @@ async def create_connect_account_session(
         logger.info("Successfully created account session for account: %s", account_id)
         return {"client_secret": account_session.client_secret}
     except Exception as e:
-        logger.error("Error creating account session: %s", str(e), exc_info=True)
+        logger.exception("Error creating account session: %s", e)
         raise
 
 
@@ -669,7 +669,7 @@ async def create_listing_product(
         )
 
     except stripe.StripeError as e:
-        logger.error(f"Stripe error creating listing product: {str(e)}")
+        logger.exception("Stripe error creating listing product: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Error creating Stripe product: {str(e)}",
@@ -781,8 +781,8 @@ async def process_preorder(
             )
 
         except stripe.StripeError as e:
-            logger.error(f"Stripe error processing preorder final payment: {str(e)}")
+            logger.exception("Stripe error processing preorder final payment: %s", e)
             raise HTTPException(status_code=400, detail=str(e))
         except Exception as e:
-            logger.error(f"Error processing preorder final payment: {str(e)}")
+            logger.exception("Error processing preorder final payment: %s", e)
             raise HTTPException(status_code=500, detail=str(e))

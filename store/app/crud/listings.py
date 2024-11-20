@@ -48,10 +48,10 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         sort_key = self._get_sort_key(sort_by)
         try:
             listings, has_next = await self._list(Listing, page, sort_key, search_query)
-            logger.info(f"Retrieved {len(listings)} listings")
+            logger.info("Retrieved %s listings", len(listings))
             return listings, has_next
         except Exception as e:
-            logger.error(f"Error in get_listings: {str(e)}")
+            logger.exception("Error in get_listings: %s", e)
             raise
 
     def _get_sort_key(self, sort_by: SortOption) -> Callable[[Listing], Any]:
@@ -90,7 +90,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         try:
             typed_items = [item_class(**item) for item in valid_items]
         except Exception as e:
-            logger.error(f"Error creating {item_class.__name__} objects: {str(e)}")
+            logger.exception("Error creating %s objects: %s", item_class.__name__, e)
             raise
 
         if sort_key:
@@ -114,10 +114,10 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         sort_key = self._get_sort_key(sort_by)
         try:
             listings, has_next = await self._list_me(Listing, user_id, page, sort_key)
-            logger.info(f"Retrieved {len(listings)} listings for user {user_id}")
+            logger.info("Retrieved %s listings for user %s", len(listings), user_id)
             return listings, has_next
         except Exception as e:
-            logger.error(f"Error in get_user_listings: {str(e)}")
+            logger.exception("Error in get_user_listings: %s", e)
             raise
 
     async def get_listings_by_ids(self, listing_ids: list[str]) -> list[Listing]:

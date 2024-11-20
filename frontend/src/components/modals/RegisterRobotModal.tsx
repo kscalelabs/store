@@ -3,13 +3,8 @@ import { FaPlus } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 import { Input } from "@/components/ui/Input/Input";
+import Modal from "@/components/ui/Modal";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
@@ -63,19 +58,20 @@ export function RegisterRobotModal({
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={() => {
-        onClose();
-      }}
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="sm"
+      className="sm:max-w-[425px]"
     >
-      <DialogContent className="sm:max-w-[425px] bg-gray-12 text-gray-2 border border-gray-3 rounded-lg shadow-lg">
-        <DialogHeader>
-          <DialogTitle>Create New Robot Instance</DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
+      <div className="p-6">
+        <h2 className="text-xl font-semibold mb-4">
+          Create New Robot Instance
+        </h2>
+
+        <div className="grid gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="name" className="text-sm font-medium text-gray-2">
+            <Label htmlFor="name" className="text-sm font-medium text-gray-1">
               Name
             </Label>
             <Input
@@ -89,10 +85,11 @@ export function RegisterRobotModal({
               {name.length}/32 characters
             </div>
           </div>
+
           <div className="grid gap-2">
             <Label
               htmlFor="description"
-              className="text-sm font-medium text-gray-2"
+              className="text-sm font-medium text-gray-1"
             >
               Description
             </Label>
@@ -109,24 +106,23 @@ export function RegisterRobotModal({
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-1 gap-4">
+
+        <div className="mt-6">
           <Button
             onClick={handleAdd}
             disabled={!name || isLoading}
             variant="outline"
-            className="flex items-center"
+            className="w-full flex items-center justify-center"
           >
             {isLoading ? (
               <Spinner className="mr-2" />
             ) : (
               <FaPlus className="mr-2 h-4 w-4" />
             )}
-            <span className="mr-2">
-              {isLoading ? "Registering..." : "Register Robot"}
-            </span>
+            <span>{isLoading ? "Registering..." : "Register Robot"}</span>
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </Modal>
   );
 }
