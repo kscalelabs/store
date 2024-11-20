@@ -581,7 +581,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
                 ExpiresIn=expires_in,
             )
         except ClientError as e:
-            logger.error(f"Failed to generate presigned URL: {e}")
+            logger.error("Failed to generate presigned URL: %s", e)
             raise
 
     async def get_file_size(self, filename: str) -> int | None:
@@ -599,8 +599,8 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             )
             return s3_object.get("ContentLength")
         except ClientError as e:
-            logger.error(f"Failed to get S3 object size: {e}")
+            logger.error("Failed to get S3 object size: %s", e)
             return None
         except Exception as e:
-            logger.error(f"Unexpected error getting file size: {e}")
+            logger.error("Unexpected error getting file size: %s", e)
             return None
