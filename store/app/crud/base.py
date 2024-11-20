@@ -19,13 +19,13 @@ import aioboto3
 from aiobotocore.response import StreamingBody
 from boto3.dynamodb.conditions import Attr, ComparisonCondition, Key
 from botocore.exceptions import ClientError
+from pydantic import BaseModel
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 from types_aiobotocore_s3.service_resource import S3ServiceResource
 from types_aiobotocore_s3.type_defs import (
     CompletedPartTypeDef,
     CreateMultipartUploadOutputTypeDef,
 )
-from typing_extensions import TypedDict
 
 from store.app.errors import InternalError, ItemNotFoundError
 from store.app.model import StoreBaseModel
@@ -52,14 +52,14 @@ MAX_PARTS = 10000  # AWS maximum number of parts
 DEFAULT_PART_SIZE = 100 * 1024 * 1024  # 100MB default part size
 
 
-class MultipartUploadPart(TypedDict):
+class MultipartUploadPart(BaseModel):
     """Represents a part in a multipart upload."""
 
     PartNumber: int
     ETag: str
 
 
-class MultipartUploadDetails(TypedDict):
+class MultipartUploadDetails(BaseModel):
     """Details needed for multipart upload."""
 
     upload_id: str
@@ -617,9 +617,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
 
     async def _complete_multipart_upload(self, key: str, upload_id: str, parts: list[MultipartUploadPart]) -> None:
         """Completes a multipart upload."""
-        completed_parts: Sequence[CompletedPartTypeDef] = [
-            {"PartNumber": p["PartNumber"], "ETag": p["ETag"]} for p in parts
-        ]
+        completed_parts: Sequence[CompletedPartTypeDef] = [{"PartNumber": p.PartNumber, "ETag": p.ETag} for p in parts]
 
         await self.s3.meta.client.complete_multipart_upload(
             Bucket=settings.s3.bucket, Key=key, UploadId=upload_id, MultipartUpload={"Parts": completed_parts}

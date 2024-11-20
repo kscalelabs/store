@@ -1,12 +1,12 @@
 """Defines the CRUD interface for handling user-uploaded KClips."""
 
-from typing_extensions import TypedDict
+from pydantic import BaseModel
 
 from store.app.crud.base import BaseCrud, MultipartUploadDetails, MultipartUploadPart
 from store.app.model import KClip
 
 
-class KClipPartCompleted(TypedDict):
+class KClipPartCompleted(BaseModel):
     """Represents a completed part in a multipart upload."""
 
     part_number: int
@@ -27,7 +27,6 @@ class KClipsCrud(BaseCrud):
         file_size: int | None = None,
         part_size: int | None = None,
     ) -> tuple[KClip, MultipartUploadDetails]:
-        """Creates a KClip and initializes multipart upload."""
         kclip = KClip.create(user_id=user_id, robot_id=robot_id, name=name, description=description)
 
         await self._add_item(kclip)
@@ -40,14 +39,13 @@ class KClipsCrud(BaseCrud):
         return kclip, upload_details
 
     async def complete_upload(self, kclip_id: str, upload_id: str, parts: list[KClipPartCompleted]) -> None:
-        """Completes a multipart upload for a KClip."""
         kclip = await self._get_item(kclip_id, KClip)
         if not kclip:
             raise ValueError("KClip not found")
 
         # Convert to S3 expected format
         s3_parts: list[MultipartUploadPart] = [
-            {"PartNumber": part["part_number"], "ETag": part["etag"]} for part in parts
+            MultipartUploadPart(PartNumber=part.part_number, ETag=part.etag) for part in parts
         ]
 
         # Complete the multipart upload

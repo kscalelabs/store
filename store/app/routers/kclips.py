@@ -39,7 +39,7 @@ async def create_kclip(
 ) -> UploadKClipResponse:
     robot = await crud.get_robot(kclip_data.robot_id)
     if robot is None:
-        raise ItemNotFoundError(f"Robot with ID {kclip_data.robot_id} not found")
+        raise ItemNotFoundError("Robot with ID %s not found", kclip_data.robot_id)
     if robot.user_id != user.id:
         verify_admin_permission(user, "upload KClips for a robot by another user")
 
@@ -73,7 +73,7 @@ async def complete_upload(
 ) -> CompletedKClipUploadResponse:
     kclip = await crud.get_kclip(kclip_data.kclip_id)
     if kclip is None:
-        raise ItemNotFoundError(f"KClip with ID {kclip_data.kclip_id} not found")
+        raise ItemNotFoundError("KClip with ID %s not found", kclip_data.kclip_id)
     if kclip.user_id != user.id:
         verify_admin_permission(user, "complete upload of KClip by another user")
 
