@@ -15,6 +15,7 @@ argon2-cffi
 pyjwt[asyncio]
 bcrypt
 cryptography
+
 # FastAPI dependencies.
 aiosmtplib
 fastapi[standard]
