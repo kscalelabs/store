@@ -22,7 +22,7 @@ class CreateKClipRequest(BaseModel):
     part_size: int | None = None
 
 
-class NewKClipResponse(BaseModel):
+class CreateKClipResponse(BaseModel):
     kclip_id: str
     upload_details: MultipartUploadDetails
 
@@ -32,7 +32,7 @@ async def create_kclip(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     kclip_data: CreateKClipRequest,
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> NewKClipResponse:
+) -> CreateKClipResponse:
     kclip, upload_details = await crud.create_kclip(
         user_id=user.id,
         robot_id=kclip_data.robot_id,
@@ -42,7 +42,7 @@ async def create_kclip(
         part_size=kclip_data.part_size,
     )
 
-    return NewKClipResponse(kclip_id=kclip.id, upload_details=upload_details)
+    return CreateKClipResponse(kclip_id=kclip.id, upload_details=upload_details)
 
 
 class CompletedKClipUploadRequest(BaseModel):

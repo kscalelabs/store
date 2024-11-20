@@ -1432,6 +1432,12 @@ export interface components {
             /** Part Size */
             part_size?: number | null;
         };
+        /** CreateKClipResponse */
+        CreateKClipResponse: {
+            /** Kclip Id */
+            kclip_id: string;
+            upload_details: components["schemas"]["MultipartUploadDetails"];
+        };
         /** CreateRefundsRequest */
         CreateRefundsRequest: {
             /** Payment Intent Id */
@@ -1768,12 +1774,6 @@ export interface components {
             /** Bio */
             bio: string | null;
             stripe_connect: components["schemas"]["UserStripeConnect"] | null;
-        };
-        /** NewKClipResponse */
-        NewKClipResponse: {
-            /** Kclip Id */
-            kclip_id: string;
-            upload_details: components["schemas"]["MultipartUploadDetails"];
         };
         /** NewKeyRequest */
         NewKeyRequest: {
@@ -4486,7 +4486,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["NewKClipResponse"];
+                    "application/json": components["schemas"]["CreateKClipResponse"];
                 };
             };
             /** @description Validation Error */
