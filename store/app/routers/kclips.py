@@ -14,6 +14,14 @@ from store.app.security.user import get_session_user_with_write_permission
 router = APIRouter()
 
 
+class CreateKClipRequest(BaseModel):
+    name: str
+    robot_id: str
+    description: str | None = None
+    file_size: int | None = None
+    part_size: int | None = None
+
+
 class NewKClipResponse(BaseModel):
     kclip_id: str
     upload_details: MultipartUploadDetails
@@ -22,16 +30,25 @@ class NewKClipResponse(BaseModel):
 @router.post("/create")
 async def create_kclip(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
-    robot_id: str,
-    name: str,
-    description: str,
+    kclip_data: CreateKClipRequest,
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> NewKClipResponse:
     kclip, upload_details = await crud.create_kclip(
-        user_id=user.id, robot_id=robot_id, name=name, description=description
+        user_id=user.id,
+        robot_id=kclip_data.robot_id,
+        name=kclip_data.name,
+        description=kclip_data.description,
+        file_size=kclip_data.file_size,
+        part_size=kclip_data.part_size,
     )
 
     return NewKClipResponse(kclip_id=kclip.id, upload_details=upload_details)
+
+
+class CompletedKClipUploadRequest(BaseModel):
+    kclip_id: str
+    upload_id: str
+    parts: list[KClipPartCompleted]
 
 
 class CompletedKClipUploadResponse(BaseModel):
@@ -40,11 +57,9 @@ class CompletedKClipUploadResponse(BaseModel):
 
 @router.post("/{kclip_id}/complete")
 async def complete_upload(
-    kclip_id: str,
-    upload_id: str,
-    parts: list[KClipPartCompleted],
+    kclip_data: CompletedKClipUploadRequest,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> CompletedKClipUploadResponse:
-    await crud.complete_upload(kclip_id, upload_id, parts)
+    await crud.complete_upload(kclip_data.kclip_id, kclip_data.upload_id, kclip_data.parts)
     return CompletedKClipUploadResponse(status="completed")

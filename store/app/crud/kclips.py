@@ -23,7 +23,7 @@ class KClipsCrud(BaseCrud):
         user_id: str,
         robot_id: str,
         name: str,
-        description: str,
+        description: str | None = None,
         file_size: int | None = None,
         part_size: int | None = None,
     ) -> tuple[KClip, MultipartUploadDetails]:
