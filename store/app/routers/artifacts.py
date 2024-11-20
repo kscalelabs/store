@@ -4,10 +4,10 @@ import asyncio
 import logging
 import os
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Annotated, Literal, Self
 
 from boto3.dynamodb.conditions import Key
-from botocore.exceptions import ClientError
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.responses import RedirectResponse
 from pydantic.main import BaseModel
@@ -190,17 +190,7 @@ class SingleArtifactResponse(BaseModel):
         )
 
         s3_filename = get_artifact_name(artifact=artifact)
-        size = None
-        if crud is not None:
-            try:
-                s3_object = await crud.s3.meta.client.head_object(
-                    Bucket=settings.s3.bucket, Key=f"{settings.s3.prefix}{s3_filename}"
-                )
-                size = s3_object.get("ContentLength")
-            except ClientError as e:
-                logger.error(f"Failed to get S3 object size: {e}")
-            except Exception as e:
-                logger.error(f"Unexpected error getting file size: {e}")
+        size = await crud.get_file_size(s3_filename) if crud is not None else None
 
         return cls(
             artifact_id=artifact.id,
@@ -449,8 +439,7 @@ async def get_presigned_url(
             detail="Filename was not provided",
         )
 
-    name, extension = os.path.splitext(filename)
-    if extension.lower() != ".img":
+    if not Path(filename).suffix.lower() == ".img":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Only .img files are supported for kernel uploads"
         )
@@ -473,18 +462,9 @@ async def get_presigned_url(
 
     try:
         s3_filename = get_artifact_name(artifact=artifact)
-
-        presigned_url = await crud.s3.meta.client.generate_presigned_url(
-            ClientMethod="put_object",
-            Params={
-                "Bucket": settings.s3.bucket,
-                "Key": f"{settings.s3.prefix}{s3_filename}",
-                "ContentType": "application/x-raw-disk-image",
-                "ContentDisposition": f'attachment; filename="{filename}"',
-            },
-            ExpiresIn=3600,
+        presigned_url = await crud.generate_presigned_upload_url(
+            filename=filename, s3_key=s3_filename, content_type="application/x-raw-disk-image"
         )
-
         return PresignedUrlResponse(upload_url=presigned_url, artifact_id=artifact.id)
 
     except Exception as e:

@@ -195,13 +195,6 @@ UPLOAD_CONTENT_TYPE_OPTIONS: dict[ArtifactType, set[str]] = {
         "application/x-compressed-tar",
     },
     "zip": {"application/zip"},
-    "kernel": {
-        "application/octet-stream",
-        "application/x-raw-disk-image",
-        "application/gzip",
-        "application/x-gzip",
-        "binary/octet-stream",
-    },
 }
 
 DOWNLOAD_CONTENT_TYPE: dict[ArtifactType, str] = {
