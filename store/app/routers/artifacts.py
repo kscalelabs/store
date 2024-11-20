@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from typing import Annotated, Literal, Self
 
 from boto3.dynamodb.conditions import Key
+from botocore.exceptions import ClientError
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.responses import RedirectResponse
 from pydantic.main import BaseModel
@@ -135,6 +136,7 @@ class SingleArtifactResponse(BaseModel):
     urls: ArtifactUrls
     is_main: bool = False
     can_edit: bool = False
+    size: int | None = None
 
     @classmethod
     async def from_artifact(
@@ -187,6 +189,19 @@ class SingleArtifactResponse(BaseModel):
             get_listing(listing),
         )
 
+        s3_filename = get_artifact_name(artifact=artifact)
+        size = None
+        if crud is not None:
+            try:
+                s3_object = await crud.s3.meta.client.head_object(
+                    Bucket=settings.s3.bucket, Key=f"{settings.s3.prefix}{s3_filename}"
+                )
+                size = s3_object.get("ContentLength")
+            except ClientError as e:
+                logger.error(f"Failed to get S3 object size: {e}")
+            except Exception as e:
+                logger.error(f"Unexpected error getting file size: {e}")
+
         return cls(
             artifact_id=artifact.id,
             listing_id=artifact.listing_id,
@@ -199,6 +214,7 @@ class SingleArtifactResponse(BaseModel):
             urls=get_artifact_url_response(artifact=artifact),
             is_main=artifact.is_main,
             can_edit=can_edit,
+            size=size,
         )
 
 

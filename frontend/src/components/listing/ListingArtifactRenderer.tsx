@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import placeholder from "@/components/listing/pics/placeholder.jpg";
 import { Artifact } from "@/components/listing/types";
 import ROUTES from "@/lib/types/routes";
+import { formatFileSize } from "@/lib/utils/formatters";
 
 interface Props {
   artifact: Artifact;
@@ -45,6 +46,11 @@ const ListingArtifactRenderer = ({ artifact }: Props) => {
           <div className="text-center">
             <div className="font-medium">{artifact.name}</div>
             <div className="text-xs text-gray-500 mt-1">Kernel Image File</div>
+            {artifact.size && (
+              <div className="text-xs text-gray-500">
+                {formatFileSize(artifact.size)}
+              </div>
+            )}
             <div className="text-sm">
               {new Date(artifact.timestamp * 1000).toLocaleString()}
             </div>

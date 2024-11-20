@@ -1807,6 +1807,13 @@ export interface components {
             order: components["schemas"]["Order"];
             product: components["schemas"]["ProductInfo"] | null;
         };
+        /** PresignedUrlResponse */
+        PresignedUrlResponse: {
+            /** Upload Url */
+            upload_url: string;
+            /** Artifact Id */
+            artifact_id: string;
+        };
         /** ProcessPreorderResponse */
         ProcessPreorderResponse: {
             /** Status */
@@ -1958,6 +1965,8 @@ export interface components {
              * @default false
              */
             can_edit: boolean;
+            /** Size */
+            size?: number | null;
         };
         /** SingleRobotResponse */
         SingleRobotResponse: {
@@ -2719,7 +2728,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["PresignedUrlResponse"];
                 };
             };
             /** @description Validation Error */
