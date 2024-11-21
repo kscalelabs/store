@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
+import DeleteConfirmationModal from "@/components/modals/DeleteConfirmationModal";
 import TerminalRobotModel from "@/components/terminal/TerminalRobotModel";
 import AVStreamer from "@/components/terminal/stream/AVStreamer";
 import { SingleRobotResponse } from "@/components/terminal/types";
 import { Button } from "@/components/ui/button";
+import { useAuthentication } from "@/hooks/useAuth";
 import ROUTES from "@/lib/types/routes";
 import { FEATURE_FLAGS } from "@/lib/utils/featureFlags";
 
@@ -19,6 +21,7 @@ interface Props {
 
 const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
   const navigate = useNavigate();
+  const auth = useAuthentication();
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [name, setName] = useState(robot.name);
@@ -30,6 +33,10 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
     `Robot ID: ${robot.robot_id}`,
     `Listing ID: ${robot.listing_id}`,
   ]);
+  const [krecs, setKrecs] = useState<
+    Array<{ id: string; name: string; timestamp: number }>
+  >([]);
+  const [deleteKrecId, setDeleteKrecId] = useState<string | null>(null);
 
   const addTerminalMessage = (message: string) => {
     setTerminalMessages((prev) => [...prev, message]);
@@ -64,6 +71,50 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
       setIsEditingDescription(false);
     }
   };
+
+  const handleDeleteKrec = async (krecId: string) => {
+    try {
+      await auth.client.DELETE("/krecs/{krec_id}", {
+        params: {
+          path: { krec_id: krecId },
+        },
+      });
+
+      setKrecs((prev) => prev.filter((clip) => clip.id !== krecId));
+      addTerminalMessage(`Successfully deleted clip ${krecId}`);
+    } catch (error) {
+      addTerminalMessage(`Error deleting clip: ${error}`);
+    }
+  };
+
+  useEffect(() => {
+    const fetchKrecs = async () => {
+      try {
+        const { data, error } = await auth.client.GET("/krecs/{robot_id}", {
+          params: {
+            path: { robot_id: robot.robot_id },
+          },
+        });
+
+        if (error) {
+          addTerminalMessage(`Error fetching clips: ${error}`);
+        } else {
+          const clipsData = Array.isArray(data) ? data : data.items || [];
+          setKrecs(
+            clipsData.map((clip) => ({
+              id: clip.id,
+              name: clip.name,
+              timestamp: clip.created_at * 1000,
+            })),
+          );
+        }
+      } catch (error) {
+        addTerminalMessage(`Error: ${error}`);
+      }
+    };
+
+    fetchKrecs();
+  }, [robot.robot_id]);
 
   return (
     <div className="min-h-screen bg-black p-4 font-mono text-white">
@@ -232,7 +283,64 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
             ))}
           </div>
         </div>
+
+        <div className="border border-gray-700 bg-black rounded-lg overflow-hidden min-h-[300px]">
+          <div className="p-4 h-full flex flex-col gap-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-sm font-semibold">Uploaded Files</h3>
+              <Button variant="outline" size="sm">
+                Upload New
+              </Button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <div className="space-y-2">
+                {krecs.length === 0 ? (
+                  <div className="text-gray-500 text-sm text-center py-4">
+                    No files uploaded yet
+                  </div>
+                ) : (
+                  krecs.map((file) => (
+                    <div
+                      key={file.id}
+                      className="flex items-center justify-between p-2 hover:bg-gray-900 rounded"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{file.name}</span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(file.timestamp).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-500"
+                          onClick={() => setDeleteKrecId(file.id)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <DeleteConfirmationModal
+        isOpen={deleteKrecId !== null}
+        onClose={() => setDeleteKrecId(null)}
+        onDelete={() => {
+          if (deleteKrecId) {
+            handleDeleteKrec(deleteKrecId);
+          }
+        }}
+        title="Delete File"
+        description="Are you sure you want to delete this file? This action cannot be undone."
+        buttonText="Delete File"
+      />
     </div>
   );
 };

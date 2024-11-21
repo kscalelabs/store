@@ -723,18 +723,18 @@ class TeleopICECandidate(StoreBaseModel):
         )
 
 
-KClipUploadStatus = Literal["pending", "completed"]
+KRecUploadStatus = Literal["pending", "completed"]
 
 
-class KClip(StoreBaseModel):
-    """KClip recorded from robot runtime."""
+class KRec(StoreBaseModel):
+    """Krec recorded from robot runtime."""
 
     user_id: str
     robot_id: str
     created_at: int
     name: str
     description: str | None = None
-    upload_status: KClipUploadStatus = "pending"
+    upload_status: KRecUploadStatus = "pending"
 
     @classmethod
     def create(
@@ -743,7 +743,7 @@ class KClip(StoreBaseModel):
         robot_id: str,
         name: str,
         description: str | None = None,
-        upload_status: KClipUploadStatus = "pending",
+        upload_status: KRecUploadStatus = "pending",
     ) -> Self:
         now = int(time.time())
         return cls(

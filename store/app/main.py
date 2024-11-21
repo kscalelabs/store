@@ -23,8 +23,8 @@ from store.app.errors import (
 )
 from store.app.routers.artifacts import router as artifacts_router
 from store.app.routers.auth import router as auth_router
-from store.app.routers.kclips import router as kclips_router
 from store.app.routers.keys import router as keys_router
+from store.app.routers.krecs import router as krecs_router
 from store.app.routers.listings import router as listings_router
 from store.app.routers.onshape import router as onshape_router
 from store.app.routers.orders import router as orders_router
@@ -190,7 +190,7 @@ app.include_router(robots_router, prefix="/robots", tags=["robots"])
 app.include_router(stripe_router, prefix="/stripe", tags=["stripe"])
 app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(teleop_router, prefix="/teleop", tags=["teleop"])
-app.include_router(kclips_router, prefix="/kclips", tags=["kclips"])
+app.include_router(krecs_router, prefix="/krecs", tags=["krecs"])
 
 # For running with debugger
 if __name__ == "__main__":
