@@ -1276,7 +1276,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/kclips/upload": {
+    "/krecs/upload": {
         parameters: {
             query?: never;
             header?: never;
@@ -1285,15 +1285,15 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create Kclip */
-        post: operations["create_kclip_kclips_upload_post"];
+        /** Create Krec */
+        post: operations["create_krec_krecs_upload_post"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/kclips/{kclip_id}/complete": {
+    "/krecs/{krec_id}/complete": {
         parameters: {
             query?: never;
             header?: never;
@@ -1303,8 +1303,48 @@ export interface paths {
         get?: never;
         put?: never;
         /** Complete Upload */
-        post: operations["complete_upload_kclips__kclip_id__complete_post"];
+        post: operations["complete_upload_krecs__krec_id__complete_post"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/krecs/{robot_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Krecs
+         * @description List all krecs for a robot.
+         */
+        get: operations["list_krecs_krecs__robot_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/krecs/{krec_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Krec
+         * @description Delete a krec.
+         */
+        delete: operations["delete_krec_krecs__krec_id__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1401,17 +1441,17 @@ export interface components {
             /** Client Id */
             client_id: string;
         };
-        /** CompletedKClipUploadRequest */
-        CompletedKClipUploadRequest: {
-            /** Kclip Id */
-            kclip_id: string;
+        /** CompletedKRecUploadRequest */
+        CompletedKRecUploadRequest: {
+            /** Krec Id */
+            krec_id: string;
             /** Upload Id */
             upload_id: string;
             /** Parts */
-            parts: components["schemas"]["KClipPartCompleted"][];
+            parts: components["schemas"]["KRecPartCompleted"][];
         };
-        /** CompletedKClipUploadResponse */
-        CompletedKClipUploadResponse: {
+        /** CompletedKRecUploadResponse */
+        CompletedKRecUploadResponse: {
             /** Status */
             status: string;
         };
@@ -1576,10 +1616,34 @@ export interface components {
             detail?: components["schemas"]["ValidationError"][];
         };
         /**
-         * KClipPartCompleted
+         * KRec
+         * @description Krec recorded from robot runtime.
+         */
+        KRec: {
+            /** Id */
+            id: string;
+            /** User Id */
+            user_id: string;
+            /** Robot Id */
+            robot_id: string;
+            /** Created At */
+            created_at: number;
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /**
+             * Upload Status
+             * @default pending
+             * @enum {string}
+             */
+            upload_status: "pending" | "completed";
+        };
+        /**
+         * KRecPartCompleted
          * @description Represents a completed part in a multipart upload.
          */
-        KClipPartCompleted: {
+        KRecPartCompleted: {
             /** Part Number */
             part_number: number;
             /** Etag */
@@ -2175,8 +2239,8 @@ export interface components {
             /** Artifacts */
             artifacts: components["schemas"]["SingleArtifactResponse"][];
         };
-        /** UploadKClipRequest */
-        UploadKClipRequest: {
+        /** UploadKRecRequest */
+        UploadKRecRequest: {
             /** Name */
             name: string;
             /** Robot Id */
@@ -2188,10 +2252,10 @@ export interface components {
             /** Part Size */
             part_size?: number | null;
         };
-        /** UploadKClipResponse */
-        UploadKClipResponse: {
-            /** Kclip Id */
-            kclip_id: string;
+        /** UploadKRecResponse */
+        UploadKRecResponse: {
+            /** Krec Id */
+            krec_id: string;
             upload_details: components["schemas"]["MultipartUploadDetails"];
         };
         /** UserInfoResponseItem */
@@ -4530,7 +4594,7 @@ export interface operations {
             };
         };
     };
-    create_kclip_kclips_upload_post: {
+    create_krec_krecs_upload_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -4539,7 +4603,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UploadKClipRequest"];
+                "application/json": components["schemas"]["UploadKRecRequest"];
             };
         };
         responses: {
@@ -4549,7 +4613,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UploadKClipResponse"];
+                    "application/json": components["schemas"]["UploadKRecResponse"];
                 };
             };
             /** @description Validation Error */
@@ -4563,7 +4627,7 @@ export interface operations {
             };
         };
     };
-    complete_upload_kclips__kclip_id__complete_post: {
+    complete_upload_krecs__krec_id__complete_post: {
         parameters: {
             query?: never;
             header?: never;
@@ -4572,7 +4636,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CompletedKClipUploadRequest"];
+                "application/json": components["schemas"]["CompletedKRecUploadRequest"];
             };
         };
         responses: {
@@ -4582,7 +4646,71 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CompletedKClipUploadResponse"];
+                    "application/json": components["schemas"]["CompletedKRecUploadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_krecs_krecs__robot_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                robot_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KRec"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_krec_krecs__krec_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                krec_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
                 };
             };
             /** @description Validation Error */
