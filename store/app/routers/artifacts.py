@@ -4,6 +4,7 @@ import asyncio
 import logging
 import os
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Annotated, Literal, Self
 
 from boto3.dynamodb.conditions import Key
@@ -16,11 +17,13 @@ from store.app.model import (
     Artifact,
     ArtifactSize,
     ArtifactType,
+    KernelArtifactType,
     Listing,
     User,
     can_write_artifact,
     can_write_listing,
     check_content_type,
+    get_artifact_name,
     get_artifact_type,
     get_artifact_urls,
 )
@@ -133,6 +136,7 @@ class SingleArtifactResponse(BaseModel):
     urls: ArtifactUrls
     is_main: bool = False
     can_edit: bool = False
+    size: int | None = None
 
     @classmethod
     async def from_artifact(
@@ -185,6 +189,9 @@ class SingleArtifactResponse(BaseModel):
             get_listing(listing),
         )
 
+        s3_filename = get_artifact_name(artifact=artifact)
+        size = await crud.get_file_size(s3_filename) if crud is not None else None
+
         return cls(
             artifact_id=artifact.id,
             listing_id=artifact.listing_id,
@@ -197,6 +204,7 @@ class SingleArtifactResponse(BaseModel):
             urls=get_artifact_url_response(artifact=artifact),
             is_main=artifact.is_main,
             can_edit=can_edit,
+            size=size,
         )
 
 
@@ -411,3 +419,59 @@ async def set_main_image(
 
     await crud.set_main_image(listing_id, artifact_id)
     return True
+
+
+class PresignedUrlResponse(BaseModel):
+    upload_url: str
+    artifact_id: str
+
+
+@router.post("/presigned/{listing_id}", response_model=PresignedUrlResponse)
+async def get_presigned_url(
+    listing_id: str,
+    filename: str,
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> PresignedUrlResponse:
+    if not filename:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Filename was not provided",
+        )
+
+    if not Path(filename).suffix.lower() == ".img":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Only .img files are supported for kernel uploads"
+        )
+
+    artifact_type: KernelArtifactType = "kernel"
+
+    listing = await crud.get_listing(listing_id)
+    if listing is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Could not find listing")
+    if not await can_write_listing(user, listing):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="No permission to upload")
+
+    artifact = Artifact.create(
+        user_id=listing.user_id,
+        listing_id=listing.id,
+        name=filename,
+        artifact_type=artifact_type,
+    )
+    await crud._add_item(artifact)
+
+    try:
+        s3_filename = get_artifact_name(artifact=artifact)
+
+        presigned_url = await crud.generate_presigned_upload_url(
+            filename=filename,
+            s3_key=s3_filename,
+            content_type="application/x-raw-disk-image",
+            checksum_algorithm="SHA256",
+        )
+
+        return PresignedUrlResponse(upload_url=presigned_url, artifact_id=artifact.id)
+
+    except Exception as e:
+        await crud._delete_item(artifact)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

@@ -674,3 +674,55 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             part_size=actual_part_size,
             num_parts=num_parts,
         )
+
+    async def generate_presigned_upload_url(
+        self, filename: str, s3_key: str, content_type: str, checksum_algorithm: str = "SHA256", expires_in: int = 3600
+    ) -> str:
+        """Generates a presigned URL for uploading a file to S3.
+
+        Args:
+            filename: Original filename for Content-Disposition
+            s3_key: The S3 key where the file will be stored
+            content_type: The content type of the file
+            checksum_algorithm: Algorithm used for upload integrity verification (SHA256, SHA1, CRC32)
+            expires_in: Number of seconds until URL expires
+
+        Returns:
+            Presigned URL for uploading
+        """
+        try:
+            return await self.s3.meta.client.generate_presigned_url(
+                ClientMethod="put_object",
+                Params={
+                    "Bucket": settings.s3.bucket,
+                    "Key": f"{settings.s3.prefix}{s3_key}",
+                    "ContentType": content_type,
+                    "ContentDisposition": f'attachment; filename="{filename}"',
+                    "ChecksumAlgorithm": checksum_algorithm,
+                },
+                ExpiresIn=expires_in,
+            )
+        except ClientError as e:
+            logger.error("Failed to generate presigned URL: %s", e)
+            raise
+
+    async def get_file_size(self, filename: str) -> int | None:
+        """Gets the size of a file in S3.
+
+        Args:
+            filename: The name of the file
+
+        Returns:
+            The size in bytes, or None if the file doesn't exist
+        """
+        try:
+            s3_object = await self.s3.meta.client.head_object(
+                Bucket=settings.s3.bucket, Key=f"{settings.s3.prefix}{filename}"
+            )
+            return s3_object.get("ContentLength")
+        except ClientError as e:
+            logger.error("Failed to get S3 object size: %s", e)
+            return None
+        except Exception as e:
+            logger.error("Unexpected error getting file size: %s", e)
+            return None

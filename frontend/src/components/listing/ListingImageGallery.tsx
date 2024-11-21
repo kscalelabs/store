@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { FaStar, FaTimes } from "react-icons/fa";
+import { FaFileDownload, FaStar, FaTimes } from "react-icons/fa";
 
 import { Artifact } from "@/components/listing/types";
 import DeleteConfirmationModal from "@/components/modals/DeleteConfirmationModal";
+import DownloadConfirmationModal from "@/components/modals/DownloadConfirmationModal";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import { formatFileSize } from "@/lib/utils/formatters";
 
 import { Tooltip } from "../ui/ToolTip";
 import { Button } from "../ui/button";
@@ -41,6 +43,7 @@ const ListingImageItem = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
 
   const auth = useAuthentication();
   const { addErrorAlert } = useAlertQueue();
@@ -121,6 +124,29 @@ const ListingImageItem = ({
     }
   };
 
+  const isKernelImage =
+    artifact.name.toLowerCase().endsWith(".img") ||
+    artifact.artifact_type === "kernel";
+
+  const initiateDownload = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowDownloadModal(true);
+  };
+
+  const handleDownload = () => {
+    if (!artifact.urls.large) {
+      addErrorAlert("Artifact URL not available.");
+      return;
+    }
+
+    const link = document.createElement("a");
+    link.href = artifact.urls.large;
+    link.download = artifact.name;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <>
       <div
@@ -148,6 +174,17 @@ const ListingImageItem = ({
                 </Button>
               </Tooltip>
             )}
+            {isKernelImage && (
+              <Tooltip content="Download Kernel" position="left" size="sm">
+                <Button
+                  variant="default"
+                  onClick={initiateDownload}
+                  className="text-gray-12 bg-gray-2 hover:bg-gray-12 hover:text-gray-2"
+                >
+                  <FaFileDownload />
+                </Button>
+              </Tooltip>
+            )}
             <Tooltip content="Delete Image" position="left" size="sm">
               <Button
                 variant={isDeleting ? "ghost" : "destructive"}
@@ -170,6 +207,13 @@ const ListingImageItem = ({
         title="Delete Image"
         description="Are you sure you want to delete this image? This action cannot be undone."
         buttonText="Delete Image"
+      />
+      <DownloadConfirmationModal
+        isOpen={showDownloadModal}
+        onClose={() => setShowDownloadModal(false)}
+        onDownload={handleDownload}
+        fileName={artifact.name}
+        fileSize={artifact.size ? formatFileSize(artifact.size) : "Unknown"}
       />
     </>
   );
