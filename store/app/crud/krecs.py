@@ -1,5 +1,8 @@
 """Defines the CRUD interface for handling user-uploaded KRecs."""
 
+import logging
+
+from botocore.exceptions import ClientError
 from pydantic import BaseModel
 
 from store.app.crud.base import (
@@ -9,6 +12,9 @@ from store.app.crud.base import (
     MultipartUploadPart,
 )
 from store.app.model import KRec
+from store.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 class KRecPartCompleted(BaseModel):
@@ -16,6 +22,7 @@ class KRecPartCompleted(BaseModel):
 
     part_number: int
     etag: str
+    checksum: str | None = None
 
 
 class KRecsCrud(BaseCrud):
@@ -42,6 +49,7 @@ class KRecsCrud(BaseCrud):
             file_size=file_size,
             part_size=part_size,
             content_type="video/x-matroska",
+            checksum_algorithm="SHA256",
         )
 
         return krec, upload_details
@@ -51,14 +59,61 @@ class KRecsCrud(BaseCrud):
         if not krec:
             raise ValueError("KRec not found")
 
-        # Convert to S3 expected format
-        s3_parts: list[MultipartUploadPart] = [
-            MultipartUploadPart(PartNumber=part.part_number, ETag=part.etag) for part in parts
-        ]
+        logger.info("Completing upload for krec %s (upload_id: %s) with %d parts", krec_id, upload_id, len(parts))
 
-        # Complete the multipart upload
         key = f"krecs/{krec_id}/{krec.name}"
-        await self._complete_multipart_upload(key, upload_id, s3_parts)
+
+        try:
+            parts_response = await self.s3.meta.client.list_parts(
+                Bucket=settings.s3.bucket, Key=f"{settings.s3.prefix}{key}", UploadId=upload_id
+            )
+            existing_parts = parts_response.get("Parts", [])
+            logger.info("Found existing upload with %d parts", len(existing_parts))
+
+            existing_parts_dict = {
+                p["PartNumber"]: {
+                    "ETag": p["ETag"].strip('"'),
+                }
+                for p in existing_parts
+            }
+
+            submitted_parts_dict = {
+                p.part_number: {
+                    "ETag": p.etag.strip('"'),
+                }
+                for p in parts
+            }
+
+            for part_number, submitted_part in submitted_parts_dict.items():
+                if part_number not in existing_parts_dict:
+                    raise ValueError(f"Part {part_number} not found in S3")
+
+                existing_part = existing_parts_dict[part_number]
+                if submitted_part["ETag"] != existing_part["ETag"]:
+                    raise ValueError(
+                        f"ETag mismatch for part {part_number}: "
+                        f"submitted={submitted_part['ETag']}, "
+                        f"actual={existing_part['ETag']}"
+                    )
+
+            s3_parts: list[MultipartUploadPart] = [
+                MultipartUploadPart(
+                    PartNumber=part.part_number,
+                    ETag=part.etag,
+                    **({"ChecksumSHA256": part.checksum} if part.checksum is not None else {}),
+                )
+                for part in parts
+            ]
+
+            await self._complete_multipart_upload(key=key, upload_id=upload_id, parts=s3_parts)
+            logger.info("Successfully completed multipart upload for krec %s", krec_id)
+
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "NoSuchUpload":
+                logger.error("Upload ID %s no longer exists for krec %s", upload_id, krec_id)
+                raise ValueError(f"Upload ID {upload_id} no longer exists") from e
+            logger.error("Failed to verify upload status for krec %s (upload_id: %s): %s", krec_id, upload_id, str(e))
+            raise
 
         # Update KRec status
         await self._update_item(krec_id, KRec, {"upload_status": "completed"})

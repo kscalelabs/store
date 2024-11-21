@@ -19,6 +19,22 @@ interface Props {
   ) => Promise<void>;
 }
 
+interface KRecWithUrls {
+  id: string;
+  name: string;
+  created_at: number;
+  user_id: string;
+  robot_id: string;
+  upload_status: "pending" | "completed" | "failed";
+  description?: string | null;
+  urls?: {
+    url: string;
+    filename: string;
+    expires_at: number;
+  };
+  size?: number;
+}
+
 const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
   const navigate = useNavigate();
   const auth = useAuthentication();
@@ -33,9 +49,7 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
     `Robot ID: ${robot.robot_id}`,
     `Listing ID: ${robot.listing_id}`,
   ]);
-  const [krecs, setKrecs] = useState<
-    Array<{ id: string; name: string; created_at: number }>
-  >([]);
+  const [krecs, setKrecs] = useState<KRecWithUrls[]>([]);
   const [deleteKrecId, setDeleteKrecId] = useState<string | null>(null);
 
   const addTerminalMessage = (message: string) => {
@@ -84,6 +98,20 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
       addTerminalMessage(`Successfully deleted clip ${krecId}`);
     } catch (error) {
       addTerminalMessage(`Error deleting clip: ${error}`);
+    }
+  };
+
+  const fetchKrecInfo = async (krecId: string) => {
+    try {
+      const { data } = await auth.client.GET("/krecs/info/{krec_id}", {
+        params: {
+          path: { krec_id: krecId },
+        },
+      });
+      return data;
+    } catch (error) {
+      addTerminalMessage(`Error fetching KRec info: ${error}`);
+      return null;
     }
   };
 
@@ -286,9 +314,6 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
           <div className="p-4 h-full flex flex-col gap-4">
             <div className="flex justify-between items-center">
               <h3 className="text-sm font-semibold">Uploaded Files</h3>
-              <Button variant="outline" size="sm">
-                Upload New
-              </Button>
             </div>
             <div className="flex-1 overflow-y-auto">
               <div className="space-y-2">
@@ -307,8 +332,35 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
                         <span className="text-xs text-gray-500">
                           {new Date(file.created_at * 1000).toLocaleString()}
                         </span>
+                        {file.size && (
+                          <span className="text-xs text-gray-500">
+                            {(file.size / (1024 * 1024)).toFixed(2)} MB
+                          </span>
+                        )}
                       </div>
                       <div className="flex gap-2">
+                        {file.upload_status === "completed" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={async () => {
+                              const krecInfo = await fetchKrecInfo(file.id);
+                              if (krecInfo?.urls?.url) {
+                                const link = document.createElement("a");
+                                link.href = krecInfo.urls.url;
+                                link.download = krecInfo.urls.filename;
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                addTerminalMessage(
+                                  `Downloading ${krecInfo.urls.filename}...`,
+                                );
+                              }
+                            }}
+                          >
+                            Download
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="sm"

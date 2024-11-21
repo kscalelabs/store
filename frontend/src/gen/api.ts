@@ -1310,6 +1310,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/krecs/info/{krec_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Krec Info
+         * @description Get information about a specific KRec, including download URL.
+         */
+        get: operations["get_krec_info_krecs_info__krec_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/krecs/download/{krec_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Krec Download Url
+         * @description Get a presigned download URL for a krec.
+         */
+        get: operations["get_krec_download_url_krecs_download__krec_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/krecs/{robot_id}": {
         parameters: {
             query?: never;
@@ -1648,6 +1688,19 @@ export interface components {
             part_number: number;
             /** Etag */
             etag: string;
+            /** Checksum */
+            checksum?: string | null;
+        };
+        /** KRecUrls */
+        KRecUrls: {
+            /** Url */
+            url: string;
+            /** Filename */
+            filename: string;
+            /** Expires At */
+            expires_at: number;
+            /** Checksum */
+            checksum?: string | null;
         };
         /** KeysResponseItem */
         KeysResponseItem: {
@@ -2107,6 +2160,32 @@ export interface components {
              * @default false
              */
             can_edit: boolean;
+            /** Size */
+            size?: number | null;
+        };
+        /**
+         * SingleKRecResponse
+         * @description Response model for a single KRec with download URL.
+         */
+        SingleKRecResponse: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Created At */
+            created_at: number;
+            /** User Id */
+            user_id: string;
+            /** Robot Id */
+            robot_id: string;
+            /**
+             * Type
+             * @default KRec
+             */
+            type: string;
+            /** Upload Status */
+            upload_status: string;
+            urls?: components["schemas"]["KRecUrls"] | null;
             /** Size */
             size?: number | null;
         };
@@ -4647,6 +4726,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CompletedKRecUploadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_krec_info_krecs_info__krec_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                krec_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SingleKRecResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_krec_download_url_krecs_download__krec_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                krec_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": Record<string, never>;
                 };
             };
             /** @description Validation Error */

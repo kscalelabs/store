@@ -8,9 +8,11 @@ from typing import (
     Any,
     AsyncContextManager,
     Callable,
+    Dict,
     Literal,
     Self,
     Sequence,
+    TypedDict,
     TypeVar,
     overload,
 )
@@ -57,6 +59,7 @@ class MultipartUploadPart(BaseModel):
 
     PartNumber: int
     ETag: str
+    ChecksumSHA256: str
 
 
 class MultipartUploadDetails(BaseModel):
@@ -68,6 +71,41 @@ class MultipartUploadDetails(BaseModel):
     key: str
     part_size: int
     num_parts: int
+
+
+class MultipartUploadParams(TypedDict, total=False):
+    Bucket: str
+    Key: str
+    ContentType: str
+    Metadata: Dict[str, str]
+    ACL: Literal[
+        "private",
+        "public-read",
+        "public-read-write",
+        "authenticated-read",
+        "aws-exec-read",
+        "bucket-owner-read",
+        "bucket-owner-full-control",
+    ]
+    ServerSideEncryption: Literal["AES256", "aws:kms", "aws:kms:dsse"]
+    StorageClass: Literal[
+        "STANDARD",
+        "REDUCED_REDUNDANCY",
+        "STANDARD_IA",
+        "ONEZONE_IA",
+        "INTELLIGENT_TIERING",
+        "GLACIER",
+        "DEEP_ARCHIVE",
+        "OUTPOSTS",
+        "GLACIER_IR",
+        "SNOW",
+        "EXPRESS_ONEZONE",
+    ]
+    RequestPayer: Literal["requester"]
+    ObjectLockMode: Literal["GOVERNANCE", "COMPLIANCE"]
+    ObjectLockRetainUntilDate: str
+    ObjectLockLegalHoldStatus: Literal["ON", "OFF"]
+    ChecksumAlgorithm: Literal["CRC32", "CRC32C", "SHA1", "SHA256"]
 
 
 class BaseCrud(AsyncContextManager["BaseCrud"]):
@@ -588,9 +626,11 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         self, key: str, content_type: str | None = None, metadata: dict[str, str] | None = None
     ) -> tuple[str, str]:
         """Initializes a multipart upload."""
-        params: dict[str, Any] = {
+        params: MultipartUploadParams = {
             "Bucket": settings.s3.bucket,
             "Key": key,
+            "ACL": "private",
+            "ServerSideEncryption": "AES256",
         }
         if content_type:
             params["ContentType"] = content_type
@@ -608,7 +648,13 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         for part_number in range(1, num_parts + 1):
             url = await self.s3.meta.client.generate_presigned_url(
                 "upload_part",
-                Params={"Bucket": settings.s3.bucket, "Key": key, "UploadId": upload_id, "PartNumber": part_number},
+                Params={
+                    "Bucket": settings.s3.bucket,
+                    "Key": f"{settings.s3.prefix}{key}",
+                    "UploadId": upload_id,
+                    "PartNumber": part_number,
+                    "ChecksumAlgorithm": "SHA256",
+                },
                 ExpiresIn=expires_in,
             )
             urls.append({"part_number": part_number, "url": url})
@@ -616,11 +662,36 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
 
     async def _complete_multipart_upload(self, key: str, upload_id: str, parts: list[MultipartUploadPart]) -> None:
         """Completes a multipart upload."""
-        completed_parts: Sequence[CompletedPartTypeDef] = [{"PartNumber": p.PartNumber, "ETag": p.ETag} for p in parts]
+        try:
+            # Include both ETag and ChecksumSHA256 in the completed parts
+            completed_parts: Sequence[CompletedPartTypeDef] = [
+                {"PartNumber": p.PartNumber, "ETag": p.ETag, "ChecksumSHA256": p.ChecksumSHA256}  # Include the checksum
+                for p in parts
+            ]
 
-        await self.s3.meta.client.complete_multipart_upload(
-            Bucket=settings.s3.bucket, Key=key, UploadId=upload_id, MultipartUpload={"Parts": completed_parts}
-        )
+            # Add the S3 prefix to the key
+            full_key = f"{settings.s3.prefix}{key}"
+
+            logger.info(
+                "Completing multipart upload - Bucket: %s, Key: %s, UploadId: %s, Parts: %d",
+                settings.s3.bucket,
+                full_key,
+                upload_id,
+                len(parts),
+            )
+
+            await self.s3.meta.client.complete_multipart_upload(
+                Bucket=settings.s3.bucket, Key=full_key, UploadId=upload_id, MultipartUpload={"Parts": completed_parts}
+            )
+        except ClientError as e:
+            logger.error(
+                "Failed to complete multipart upload - Bucket: %s, Key: %s, UploadId: %s: %s",
+                settings.s3.bucket,
+                full_key,
+                upload_id,
+                str(e),
+            )
+            raise
 
     async def _initiate_multipart_upload(
         self,
@@ -628,52 +699,51 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         file_size: int | None = None,
         part_size: int | None = None,
         content_type: str | None = None,
-        metadata: dict[str, str] | None = None,
-        expires_in: int = 3600,
+        checksum_algorithm: str | None = "SHA256",
     ) -> MultipartUploadDetails:
-        """Initiates a multipart upload and returns all necessary details.
+        try:
+            params: MultipartUploadParams = {
+                "Bucket": settings.s3.bucket,
+                "Key": f"{settings.s3.prefix}{key}",
+                "ACL": "private",
+            }
+            if content_type:
+                params["ContentType"] = content_type
+            if checksum_algorithm:
+                params["ChecksumAlgorithm"] = "SHA256"
 
-        Args:
-            key: S3 object key
-            file_size: Optional total file size in bytes
-            part_size: Optional desired part size in bytes (defaults to DEFAULT_PART_SIZE)
-            content_type: Optional content type
-            metadata: Optional metadata dict
-            expires_in: URL expiration time in seconds
+            response = await self.s3.meta.client.create_multipart_upload(**params)
 
-        Returns:
-            Upload details including upload ID and presigned URLs
-        """
-        actual_part_size = part_size if part_size is not None else DEFAULT_PART_SIZE
+            upload_id = response["UploadId"]
+            presigned_urls: list[dict[str, str | int]] = []
 
-        # Calculate optimal number of parts if file size is known
-        if file_size:
-            if actual_part_size < MIN_PART_SIZE:
-                actual_part_size = MIN_PART_SIZE
-            elif actual_part_size > MAX_PART_SIZE:
-                actual_part_size = MAX_PART_SIZE
+            if file_size and part_size:
+                num_parts = (file_size + part_size - 1) // part_size
+                for part_number in range(1, num_parts + 1):
+                    url = await self.s3.meta.client.generate_presigned_url(
+                        "upload_part",
+                        Params={
+                            "Bucket": settings.s3.bucket,
+                            "Key": f"{settings.s3.prefix}{key}",
+                            "UploadId": upload_id,
+                            "PartNumber": part_number,
+                            "ChecksumAlgorithm": checksum_algorithm if checksum_algorithm else "SHA256",
+                        },
+                    )
+                    presigned_urls.append({"part_number": int(part_number), "url": str(url)})
 
-            num_parts = (file_size + actual_part_size - 1) // actual_part_size
-            if num_parts > MAX_PARTS:
-                # Recalculate part size to fit within MAX_PARTS
-                actual_part_size = (file_size + MAX_PARTS - 1) // MAX_PARTS
-                num_parts = MAX_PARTS
-        else:
-            # Default to maximum possible parts if size unknown
-            num_parts = MAX_PARTS
-            actual_part_size = DEFAULT_PART_SIZE
+            return MultipartUploadDetails(
+                upload_id=upload_id,
+                presigned_urls=presigned_urls,
+                bucket=settings.s3.bucket,
+                key=f"{settings.s3.prefix}{key}",
+                part_size=part_size if part_size is not None else DEFAULT_PART_SIZE,
+                num_parts=num_parts if file_size and part_size else 1,
+            )
 
-        bucket, upload_id = await self._create_multipart_upload(key, content_type, metadata)
-        presigned_urls = await self._generate_presigned_urls(key, upload_id, num_parts, expires_in)
-
-        return MultipartUploadDetails(
-            upload_id=upload_id,
-            presigned_urls=presigned_urls,
-            bucket=bucket,
-            key=key,
-            part_size=actual_part_size,
-            num_parts=num_parts,
-        )
+        except ClientError as e:
+            logger.error("Failed to initiate multipart upload: %s", e)
+            raise
 
     async def generate_presigned_upload_url(
         self, filename: str, s3_key: str, content_type: str, checksum_algorithm: str = "SHA256", expires_in: int = 3600
@@ -726,3 +796,42 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         except Exception as e:
             logger.error("Unexpected error getting file size: %s", e)
             return None
+
+    async def generate_presigned_download_url(
+        self,
+        filename: str,
+        s3_key: str,
+        content_type: str,
+        checksum_algorithm: str = "SHA256",
+        expiration: int = 3600,
+    ) -> tuple[str, str | None]:
+        """Generate a presigned URL for downloading a file from S3 with checksum."""
+        try:
+            full_key = f"{settings.s3.prefix}{s3_key}"
+            head_response = await self.s3.meta.client.head_object(
+                Bucket=settings.s3.bucket, Key=full_key, ChecksumMode="ENABLED"
+            )
+            # Cast the response to str | None
+            checksum_value = head_response.get(f"Checksum{checksum_algorithm}")
+            checksum: str | None = str(checksum_value) if checksum_value is not None else None
+
+            url = await self.s3.meta.client.generate_presigned_url(
+                "get_object",
+                Params={
+                    "Bucket": settings.s3.bucket,
+                    "Key": full_key,
+                    "ResponseContentDisposition": f'attachment; filename="{filename}"',
+                    "ResponseContentType": content_type,
+                    "ChecksumMode": "ENABLED",
+                },
+                ExpiresIn=expiration,
+            )
+            return str(url), checksum
+        except Exception as e:
+            logger.error(
+                "Error generating presigned download URL - Bucket: %s, Key: %s: %s",
+                settings.s3.bucket,
+                full_key,
+                str(e),
+            )
+            raise
