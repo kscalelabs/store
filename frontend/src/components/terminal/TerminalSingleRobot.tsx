@@ -34,7 +34,7 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
     `Listing ID: ${robot.listing_id}`,
   ]);
   const [krecs, setKrecs] = useState<
-    Array<{ id: string; name: string; timestamp: number }>
+    Array<{ id: string; name: string; created_at: number }>
   >([]);
   const [deleteKrecId, setDeleteKrecId] = useState<string | null>(null);
 
@@ -90,26 +90,24 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
   useEffect(() => {
     const fetchKrecs = async () => {
       try {
-        const { data, error } = await auth.client.GET("/krecs/{robot_id}", {
+        const { data, error } = await auth.client.GET<
+          "/krecs/{robot_id}",
+          { params: { path: { robot_id: string } } }
+        >("/krecs/{robot_id}", {
           params: {
             path: { robot_id: robot.robot_id },
           },
         });
+        console.log("Krecs response:", data);
 
         if (error) {
           addTerminalMessage(`Error fetching clips: ${error}`);
         } else {
-          const clipsData = Array.isArray(data) ? data : data.items || [];
-          setKrecs(
-            clipsData.map((clip) => ({
-              id: clip.id,
-              name: clip.name,
-              timestamp: clip.created_at * 1000,
-            })),
-          );
+          setKrecs(Array.isArray(data) ? data : []);
         }
       } catch (error) {
         addTerminalMessage(`Error: ${error}`);
+        console.error("Error fetching krecs:", error);
       }
     };
 
@@ -307,7 +305,7 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
                       <div className="flex items-center gap-2">
                         <span className="text-sm">{file.name}</span>
                         <span className="text-xs text-gray-500">
-                          {new Date(file.timestamp).toLocaleString()}
+                          {new Date(file.created_at * 1000).toLocaleString()}
                         </span>
                       </div>
                       <div className="flex gap-2">
