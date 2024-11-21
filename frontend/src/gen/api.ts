@@ -324,6 +324,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/artifacts/presigned/{listing_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Get Presigned Url */
+        post: operations["get_presigned_url_artifacts_presigned__listing_id__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/keys/new": {
         parameters: {
             query?: never;
@@ -1790,6 +1807,13 @@ export interface components {
             order: components["schemas"]["Order"];
             product: components["schemas"]["ProductInfo"] | null;
         };
+        /** PresignedUrlResponse */
+        PresignedUrlResponse: {
+            /** Upload Url */
+            upload_url: string;
+            /** Artifact Id */
+            artifact_id: string;
+        };
         /** ProcessPreorderResponse */
         ProcessPreorderResponse: {
             /** Status */
@@ -1925,7 +1949,7 @@ export interface components {
             /** Name */
             name: string;
             /** Artifact Type */
-            artifact_type: "image" | ("urdf" | "mjcf") | ("stl" | "obj" | "dae" | "ply") | ("tgz" | "zip");
+            artifact_type: "image" | "kernel" | ("urdf" | "mjcf") | ("stl" | "obj" | "dae" | "ply") | ("tgz" | "zip");
             /** Description */
             description: string | null;
             /** Timestamp */
@@ -1941,6 +1965,8 @@ export interface components {
              * @default false
              */
             can_edit: boolean;
+            /** Size */
+            size?: number | null;
         };
         /** SingleRobotResponse */
         SingleRobotResponse: {
@@ -2459,7 +2485,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                artifact_type: "image" | ("urdf" | "mjcf") | ("stl" | "obj" | "dae" | "ply") | ("tgz" | "zip");
+                artifact_type: "image" | "kernel" | ("urdf" | "mjcf") | ("stl" | "obj" | "dae" | "ply") | ("tgz" | "zip");
                 listing_id: string;
                 name: string;
             };
@@ -2670,6 +2696,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": boolean;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_presigned_url_artifacts_presigned__listing_id__post: {
+        parameters: {
+            query: {
+                filename: string;
+            };
+            header?: never;
+            path: {
+                listing_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PresignedUrlResponse"];
                 };
             };
             /** @description Validation Error */
