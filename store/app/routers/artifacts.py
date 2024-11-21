@@ -462,9 +462,14 @@ async def get_presigned_url(
 
     try:
         s3_filename = get_artifact_name(artifact=artifact)
+
         presigned_url = await crud.generate_presigned_upload_url(
-            filename=filename, s3_key=s3_filename, content_type="application/x-raw-disk-image"
+            filename=filename,
+            s3_key=s3_filename,
+            content_type="application/x-raw-disk-image",
+            checksum_algorithm="SHA256",
         )
+
         return PresignedUrlResponse(upload_url=presigned_url, artifact_id=artifact.id)
 
     except Exception as e:

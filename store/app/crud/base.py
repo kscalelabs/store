@@ -359,7 +359,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         item_class: type[T],
         throw_if_missing: bool = False,
     ) -> T | None:
-        if secondary_index_name not in item_class.model_fields:
+        if secondary_index_name not in item_class.model_json_schema()["properties"]:
             raise InternalError(f"Field '{secondary_index_name}' not in model {item_class.__name__}")
         items = await self._get_items_from_secondary_index(
             secondary_index_name,
@@ -556,7 +556,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         return response.get("Item")
 
     async def generate_presigned_upload_url(
-        self, filename: str, s3_key: str, content_type: str, expires_in: int = 3600
+        self, filename: str, s3_key: str, content_type: str, checksum_algorithm: str = "SHA256", expires_in: int = 3600
     ) -> str:
         """Generates a presigned URL for uploading a file to S3.
 
@@ -564,6 +564,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
             filename: Original filename for Content-Disposition
             s3_key: The S3 key where the file will be stored
             content_type: The content type of the file
+            checksum_algorithm: Algorithm used for upload integrity verification (SHA256, SHA1, CRC32)
             expires_in: Number of seconds until URL expires
 
         Returns:
@@ -577,6 +578,7 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
                     "Key": f"{settings.s3.prefix}{s3_key}",
                     "ContentType": content_type,
                     "ContentDisposition": f'attachment; filename="{filename}"',
+                    "ChecksumAlgorithm": checksum_algorithm,
                 },
                 ExpiresIn=expires_in,
             )
