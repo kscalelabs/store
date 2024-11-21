@@ -325,50 +325,52 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
                   krecs.map((file) => (
                     <div
                       key={file.id}
-                      className="flex items-center justify-between p-2 hover:bg-gray-900 rounded"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between p-2 hover:bg-gray-900 rounded"
                     >
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">{file.name}</span>
-                        <span className="text-xs text-gray-500">
-                          {new Date(file.created_at * 1000).toLocaleString()}
-                        </span>
-                        {file.size && (
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                          <span className="text-sm">{file.name}</span>
                           <span className="text-xs text-gray-500">
-                            {(file.size / (1024 * 1024)).toFixed(2)} MB
+                            {new Date(file.created_at * 1000).toLocaleString()}
                           </span>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        {file.upload_status === "completed" && (
+                          {file.size && (
+                            <span className="text-xs text-gray-500">
+                              {(file.size / (1024 * 1024)).toFixed(2)} MB
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex gap-2 mt-2 sm:mt-0">
+                          {file.upload_status === "completed" && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={async () => {
+                                const krecInfo = await fetchKrecInfo(file.id);
+                                if (krecInfo?.urls?.url) {
+                                  const link = document.createElement("a");
+                                  link.href = krecInfo.urls.url;
+                                  link.download = krecInfo.urls.filename;
+                                  document.body.appendChild(link);
+                                  link.click();
+                                  document.body.removeChild(link);
+                                  addTerminalMessage(
+                                    `Downloading ${krecInfo.urls.filename}...`,
+                                  );
+                                }
+                              }}
+                            >
+                              Download
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={async () => {
-                              const krecInfo = await fetchKrecInfo(file.id);
-                              if (krecInfo?.urls?.url) {
-                                const link = document.createElement("a");
-                                link.href = krecInfo.urls.url;
-                                link.download = krecInfo.urls.filename;
-                                document.body.appendChild(link);
-                                link.click();
-                                document.body.removeChild(link);
-                                addTerminalMessage(
-                                  `Downloading ${krecInfo.urls.filename}...`,
-                                );
-                              }
-                            }}
+                            className="text-red-500"
+                            onClick={() => setDeleteKrecId(file.id)}
                           >
-                            Download
+                            Delete
                           </Button>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-500"
-                          onClick={() => setDeleteKrecId(file.id)}
-                        >
-                          Delete
-                        </Button>
+                        </div>
                       </div>
                     </div>
                   ))
