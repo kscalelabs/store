@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from store.app.crud.base import MultipartUploadDetails
+from store.app.crud.file_upload import MultipartUploadDetails
 from store.app.crud.krecs import KRecPartCompleted
 from store.app.db import Crud
 from store.app.errors import ItemNotFoundError

@@ -1,13 +1,15 @@
 """Defines the CRUD interface for handling user-uploaded KRecs."""
 
 import logging
+from types import TracebackType
+from typing import Self
 
 from botocore.exceptions import ClientError
 from pydantic import BaseModel
 
-from store.app.crud.base import (
-    TABLE_NAME,
-    BaseCrud,
+from store.app.crud.base import TABLE_NAME, BaseCrud
+from store.app.crud.file_upload import (
+    FileUploadCrud,
     MultipartUploadDetails,
     MultipartUploadPart,
 )
@@ -25,10 +27,25 @@ class KRecPartCompleted(BaseModel):
     checksum: str | None = None
 
 
-class KRecsCrud(BaseCrud):
-    @classmethod
-    def get_gsis(cls) -> set[str]:
-        return super().get_gsis().union({"user_id", "robot_id"})
+class KRecsCrud(BaseCrud, FileUploadCrud):
+    """CRUD operations for KRecs."""
+
+    def __init__(self) -> None:
+        BaseCrud.__init__(self)
+        FileUploadCrud.__init__(self)
+
+    async def __aenter__(self) -> Self:
+        await super().__aenter__()
+        self._s3 = self.s3
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
+        await super().__aexit__(exc_type, exc_val, exc_tb)
 
     async def create_krec(
         self,
@@ -44,7 +61,7 @@ class KRecsCrud(BaseCrud):
         await self._add_item(krec)
 
         key = f"krecs/{krec.id}/{name}"
-        upload_details = await self._initiate_multipart_upload(
+        upload_details = await self.initiate_multipart_upload(
             key=key,
             file_size=file_size,
             part_size=part_size,
@@ -105,7 +122,7 @@ class KRecsCrud(BaseCrud):
                 for part in parts
             ]
 
-            await self._complete_multipart_upload(key=key, upload_id=upload_id, parts=s3_parts)
+            await self.complete_multipart_upload(key=key, upload_id=upload_id, parts=s3_parts)
             logger.info("Successfully completed multipart upload for krec %s", krec_id)
 
         except ClientError as e:

@@ -7,6 +7,7 @@ import TerminalRobotModel from "@/components/terminal/TerminalRobotModel";
 import AVStreamer from "@/components/terminal/stream/AVStreamer";
 import { SingleRobotResponse } from "@/components/terminal/types";
 import { Button } from "@/components/ui/button";
+import type { components } from "@/gen/api";
 import { useAuthentication } from "@/hooks/useAuth";
 import ROUTES from "@/lib/types/routes";
 import { FEATURE_FLAGS } from "@/lib/utils/featureFlags";
@@ -19,21 +20,7 @@ interface Props {
   ) => Promise<void>;
 }
 
-interface KRecWithUrls {
-  id: string;
-  name: string;
-  created_at: number;
-  user_id: string;
-  robot_id: string;
-  upload_status: "pending" | "completed" | "failed";
-  description?: string | null;
-  urls?: {
-    url: string;
-    filename: string;
-    expires_at: number;
-  };
-  size?: number;
-}
+type KRec = components["schemas"]["KRec"];
 
 const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
   const navigate = useNavigate();
@@ -49,8 +36,9 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
     `Robot ID: ${robot.robot_id}`,
     `Listing ID: ${robot.listing_id}`,
   ]);
-  const [krecs, setKrecs] = useState<KRecWithUrls[]>([]);
+  const [krecs, setKrecs] = useState<KRec[]>([]);
   const [deleteKrecId, setDeleteKrecId] = useState<string | null>(null);
+  const [selectedKrec, setSelectedKrec] = useState<KRec | null>(null);
 
   const addTerminalMessage = (message: string) => {
     setTerminalMessages((prev) => [...prev, message]);
@@ -126,7 +114,6 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
             path: { robot_id: robot.robot_id },
           },
         });
-        console.log("Krecs response:", data);
 
         if (error) {
           addTerminalMessage(`Error fetching clips: ${error}`);
@@ -310,75 +297,101 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
           </div>
         </div>
 
-        <div className="border border-gray-700 bg-black rounded-lg overflow-hidden min-h-[300px]">
-          <div className="p-4 h-full flex flex-col gap-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-sm font-semibold">Uploaded Files</h3>
-            </div>
-            <div className="flex-1 overflow-y-auto">
-              <div className="space-y-2">
-                {krecs.length === 0 ? (
-                  <div className="text-gray-500 text-sm text-center py-4">
-                    No files uploaded yet
-                  </div>
-                ) : (
-                  krecs.map((file) => (
-                    <div
-                      key={file.id}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between p-2 hover:bg-gray-900 rounded"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                          <span className="text-sm">{file.name}</span>
-                          <span className="text-xs text-gray-500">
-                            {new Date(file.created_at * 1000).toLocaleString()}
-                          </span>
-                          {file.size && (
+        {krecs.length > 0 && (
+          <div className="border border-gray-700 bg-black rounded-lg overflow-hidden">
+            <div className="p-4 flex flex-col gap-4 max-h-[600px]">
+              <div className="flex justify-between items-center">
+                <h3 className="text-sm font-semibold">Uploaded Files</h3>
+              </div>
+              <div
+                className="flex-1 overflow-y-auto"
+                style={{
+                  scrollbarWidth: "thin",
+                  scrollbarColor: "#1f2937 transparent",
+                }}
+              >
+                <div className="space-y-2">
+                  {[...krecs]
+                    .sort((a, b) => b.created_at - a.created_at)
+                    .map((file) => (
+                      <div
+                        key={file.id}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between p-2 hover:bg-gray-900 rounded cursor-pointer"
+                        onClick={() => setSelectedKrec(file)}
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                            <span className="text-sm">{file.name}</span>
                             <span className="text-xs text-gray-500">
-                              {(file.size / (1024 * 1024)).toFixed(2)} MB
+                              {new Date(
+                                file.created_at * 1000,
+                              ).toLocaleString()}
                             </span>
-                          )}
-                        </div>
-                        <div className="flex gap-2 mt-2 sm:mt-0">
-                          {file.upload_status === "completed" && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={async () => {
-                                const krecInfo = await fetchKrecInfo(file.id);
-                                if (krecInfo?.urls?.url) {
-                                  const link = document.createElement("a");
-                                  link.href = krecInfo.urls.url;
-                                  link.download = krecInfo.urls.filename;
-                                  document.body.appendChild(link);
-                                  link.click();
-                                  document.body.removeChild(link);
-                                  addTerminalMessage(
-                                    `Downloading ${krecInfo.urls.filename}...`,
-                                  );
-                                }
-                              }}
-                            >
-                              Download
-                            </Button>
-                          )}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-500"
-                            onClick={() => setDeleteKrecId(file.id)}
-                          >
-                            Delete
-                          </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
+                    ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {selectedKrec && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-black border border-gray-700 rounded-lg w-full max-w-4xl">
+              <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+                <h3 className="text-lg font-semibold">{selectedKrec.name}</h3>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-500"
+                    onClick={() => {
+                      setDeleteKrecId(selectedKrec.id);
+                      setSelectedKrec(null);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedKrec(null)}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+              <div className="p-4 flex flex-col items-center justify-center h-[400px]">
+                <span className="text-gray-500 mb-4">
+                  Video Playback Coming Soon
+                </span>
+                {selectedKrec.upload_status === "completed" && (
+                  <Button
+                    variant="default"
+                    onClick={async () => {
+                      const krecInfo = await fetchKrecInfo(selectedKrec.id);
+                      if (krecInfo?.urls?.url) {
+                        const link = document.createElement("a");
+                        link.href = krecInfo.urls.url;
+                        link.download = krecInfo.urls.filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        addTerminalMessage(
+                          `Downloading ${krecInfo.urls.filename}...`,
+                        );
+                      }
+                    }}
+                  >
+                    Download Recording
+                  </Button>
                 )}
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       <DeleteConfirmationModal
