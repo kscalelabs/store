@@ -66,6 +66,48 @@ export const SignUpSchema = z
 
 export type SignupType = z.infer<typeof SignUpSchema>;
 
+export const ForgotPasswordSchema = z.object({
+  email: z
+    .string({
+      required_error: "Email required.",
+    })
+    .min(3, { message: "Email required." })
+    .email("Invalid email."),
+});
+
+export type ForgotPasswordType = z.infer<typeof EmailSignupSchema>;
+
+export const ResetPasswordSchema = z
+  .object({
+    new_password: z
+      .string({
+        required_error: "Password required.",
+      })
+      .min(8, { message: "Password must be at least 8 characters long." })
+      .refine(
+        (new_password) => {
+          const result = zxcvbn(new_password);
+          return result.score >= 2;
+        },
+        {
+          message: "Password is too weak.",
+        },
+      ),
+    confirmPassword: z
+      .string({
+        required_error: "Must confirm password.",
+      })
+      .min(8, {
+        message: "Must confirm password with length at least 8 characters.",
+      }),
+  })
+  .refine((data) => data.confirmPassword === data.new_password, {
+    message: "Passwords do not match.",
+    path: ["confirmPassword"],
+  });
+
+export type ResetPasswordType = z.infer<typeof ResetPasswordSchema>;
+
 // Base listing schema with common fields
 const BaseListingSchema = z.object({
   name: z

@@ -121,6 +121,18 @@ class EmailSignUpToken(StoreBaseModel):
         return cls(id=new_uuid(), email=email)
 
 
+class PasswordResetToken(StoreBaseModel):
+    """Object created when user requests a password reset.
+    Used to validate and authorize password reset requests.
+    """
+
+    email: str
+
+    @classmethod
+    def create(cls, email: str) -> Self:
+        return cls(id=new_uuid(), email=email)
+
+
 class OAuthKey(StoreBaseModel):
     """Keys for OAuth providers which identify users."""
 

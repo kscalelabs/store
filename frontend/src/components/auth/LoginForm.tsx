@@ -1,4 +1,5 @@
 import { SubmitHandler, useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 import ErrorMessage from "@/components/ui/ErrorMessage";
 import { Input } from "@/components/ui/Input/Input";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
 import { LoginSchema, LoginType } from "@/lib/types";
+import ROUTES from "@/lib/types/routes";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const LoginForm = () => {
@@ -20,6 +22,7 @@ const LoginForm = () => {
 
   const { addAlert, addErrorAlert } = useAlertQueue();
   const auth = useAuthentication();
+  const navigate = useNavigate();
 
   const onSubmit: SubmitHandler<LoginType> = async (data: LoginType) => {
     try {
@@ -59,6 +62,14 @@ const LoginForm = () => {
         name="password"
         showStrength={false} // Hide password strength bar
       />
+      <Button
+        onClick={() => navigate(ROUTES.PASSWORD_RESET.path)}
+        variant="link"
+        className="justify-start px-1 mt-2"
+        type="button"
+      >
+        Forgot Password?
+      </Button>
       {/* Submit Button */}
       <Button
         variant="outline"

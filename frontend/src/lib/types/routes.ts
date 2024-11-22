@@ -23,7 +23,13 @@ const ROUTES = {
     },
   ),
   KEYS: route("keys"),
-
+  PASSWORD_RESET: route(
+    "reset-password",
+    {},
+    {
+      FORM: route(":id", { params: { id: string().defined() } }),
+    },
+  ),
   // Listings
   BOTS: route(
     "bots",
