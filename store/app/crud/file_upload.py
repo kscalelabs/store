@@ -125,7 +125,6 @@ class FileUploadCrud:
                     "Key": f"{settings.s3.prefix}{key}",
                     "UploadId": upload_id,
                     "PartNumber": part_number,
-                    "ChecksumAlgorithm": "SHA256",
                 },
                 ExpiresIn=expires_in,
             )
@@ -170,10 +169,15 @@ class FileUploadCrud:
         file_size: int | None = None,
         part_size: int | None = None,
         content_type: str | None = None,
-        checksum_algorithm: str | None = "SHA256",
+        checksum_algorithm: Literal["CRC32", "CRC32C", "SHA1", "SHA256"] | None = "SHA256",
     ) -> MultipartUploadDetails:
         """Initiates a multipart upload and generates presigned URLs."""
         try:
+            logger.info(
+                "Initiating multipart upload - Key: %s, FileSize: %s, ContentType: %s", key, file_size, content_type
+            )
+
+            # Create the multipart upload
             params: MultipartUploadParams = {
                 "Bucket": settings.s3.bucket,
                 "Key": f"{settings.s3.prefix}{key}",
@@ -181,14 +185,14 @@ class FileUploadCrud:
             }
             if content_type:
                 params["ContentType"] = content_type
-            if checksum_algorithm:
-                params["ChecksumAlgorithm"] = "SHA256"
+            if checksum_algorithm is not None:
+                params["ChecksumAlgorithm"] = checksum_algorithm
 
             response = await self.s3.meta.client.create_multipart_upload(**params)
-
             upload_id = response["UploadId"]
-            presigned_urls: list[dict[str, str | int]] = []
 
+            # Generate presigned URLs for each part
+            presigned_urls: list[dict[str, str | int]] = []
             if file_size and part_size:
                 num_parts = (file_size + part_size - 1) // part_size
                 for part_number in range(1, num_parts + 1):
@@ -199,10 +203,13 @@ class FileUploadCrud:
                             "Key": f"{settings.s3.prefix}{key}",
                             "UploadId": upload_id,
                             "PartNumber": part_number,
-                            "ChecksumAlgorithm": checksum_algorithm if checksum_algorithm else "SHA256",
+                            "ChecksumAlgorithm": "SHA256",
                         },
+                        ExpiresIn=3600,  # 1 hour
                     )
                     presigned_urls.append({"part_number": int(part_number), "url": str(url)})
+
+            logger.info("Generated %d presigned URLs for multipart upload", len(presigned_urls))
 
             return MultipartUploadDetails(
                 upload_id=upload_id,
