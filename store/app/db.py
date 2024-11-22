@@ -8,6 +8,7 @@ from typing import AsyncGenerator, Literal, Self
 from store.app.crud.artifacts import ArtifactsCrud
 from store.app.crud.base import TABLE_NAME, BaseCrud
 from store.app.crud.email import EmailCrud
+from store.app.crud.krecs import KRecsCrud
 from store.app.crud.listings import ListingsCrud
 from store.app.crud.onshape import OnshapeCrud
 from store.app.crud.orders import OrdersCrud
@@ -23,6 +24,7 @@ class Crud(
     ListingsCrud,
     ArtifactsCrud,
     OrdersCrud,
+    KRecsCrud,
     RobotsCrud,
     TeleopCrud,
     BaseCrud,

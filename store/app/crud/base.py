@@ -605,3 +605,42 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         except Exception as e:
             logger.error("Unexpected error getting file size: %s", e)
             return None
+
+    async def generate_presigned_download_url(
+        self,
+        filename: str,
+        s3_key: str,
+        content_type: str,
+        checksum_algorithm: str = "SHA256",
+        expiration: int = 3600,
+    ) -> tuple[str, str | None]:
+        """Generate a presigned URL for downloading a file from S3 with checksum."""
+        try:
+            full_key = f"{settings.s3.prefix}{s3_key}"
+            head_response = await self.s3.meta.client.head_object(
+                Bucket=settings.s3.bucket, Key=full_key, ChecksumMode="ENABLED"
+            )
+            # Cast the response to str | None
+            checksum_value = head_response.get(f"Checksum{checksum_algorithm}")
+            checksum: str | None = str(checksum_value) if checksum_value is not None else None
+
+            url = await self.s3.meta.client.generate_presigned_url(
+                "get_object",
+                Params={
+                    "Bucket": settings.s3.bucket,
+                    "Key": full_key,
+                    "ResponseContentDisposition": f'attachment; filename="{filename}"',
+                    "ResponseContentType": content_type,
+                    "ChecksumMode": "ENABLED",
+                },
+                ExpiresIn=expiration,
+            )
+            return str(url), checksum
+        except Exception as e:
+            logger.error(
+                "Error generating presigned download URL - Bucket: %s, Key: %s: %s",
+                settings.s3.bucket,
+                full_key,
+                str(e),
+            )
+            raise
