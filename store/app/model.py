@@ -723,9 +723,6 @@ class TeleopICECandidate(StoreBaseModel):
         )
 
 
-KRecUploadStatus = Literal["pending", "completed"]
-
-
 class KRec(StoreBaseModel):
     """Krec recorded from robot runtime."""
 
@@ -734,7 +731,6 @@ class KRec(StoreBaseModel):
     created_at: int
     name: str
     description: str | None = None
-    upload_status: KRecUploadStatus = "pending"
 
     @classmethod
     def create(
@@ -743,7 +739,6 @@ class KRec(StoreBaseModel):
         robot_id: str,
         name: str,
         description: str | None = None,
-        upload_status: KRecUploadStatus = "pending",
     ) -> Self:
         now = int(time.time())
         return cls(
@@ -753,5 +748,4 @@ class KRec(StoreBaseModel):
             created_at=now,
             name=name,
             description=description,
-            upload_status=upload_status,
         )

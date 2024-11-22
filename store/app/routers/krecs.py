@@ -8,8 +8,6 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from store.app.crud.file_upload import MultipartUploadDetails
-from store.app.crud.krecs import KRecPartCompleted
 from store.app.db import Crud
 from store.app.errors import ItemNotFoundError
 from store.app.model import KRec, User
@@ -27,13 +25,6 @@ class UploadKRecRequest(BaseModel):
     name: str
     robot_id: str
     description: str | None = None
-    file_size: int | None = None
-    part_size: int | None = None
-
-
-class UploadKRecResponse(BaseModel):
-    krec_id: str
-    upload_details: MultipartUploadDetails
 
 
 @router.post("/upload")
@@ -41,49 +32,37 @@ async def create_krec(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     krec_data: UploadKRecRequest,
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> UploadKRecResponse:
+) -> dict[str, Any]:
+    """Initialize a KRec upload and return a presigned URL."""
     robot = await crud.get_robot(krec_data.robot_id)
     if robot is None:
         raise ItemNotFoundError("Robot with ID %s not found", krec_data.robot_id)
     if robot.user_id != user.id:
         verify_admin_permission(user, "upload KRecs for a robot by another user")
 
-    krec, upload_details = await crud.create_krec(
+    # Create KRec record first
+    krec = KRec.create(
         user_id=user.id,
         robot_id=krec_data.robot_id,
         name=krec_data.name,
         description=krec_data.description,
-        file_size=krec_data.file_size,
-        part_size=krec_data.part_size,
+    )
+    await crud._add_item(krec)
+
+    # Generate presigned URL
+    s3_key = f"krecs/{krec.id}/{krec.name}"
+    upload_url = await crud.generate_presigned_upload_url(
+        filename=krec.name,
+        s3_key=s3_key,
+        content_type="video/x-matroska",
+        expires_in=3600,
     )
 
-    return UploadKRecResponse(krec_id=krec.id, upload_details=upload_details)
-
-
-class CompletedKRecUploadRequest(BaseModel):
-    krec_id: str
-    upload_id: str
-    parts: list[KRecPartCompleted]
-
-
-class CompletedKRecUploadResponse(BaseModel):
-    status: str
-
-
-@router.post("/{krec_id}/complete")
-async def complete_upload(
-    krec_data: CompletedKRecUploadRequest,
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> CompletedKRecUploadResponse:
-    krec = await crud.get_krec(krec_data.krec_id)
-    if krec is None:
-        raise ItemNotFoundError("KRec with ID %s not found", krec_data.krec_id)
-    if krec.user_id != user.id:
-        verify_admin_permission(user, "complete upload of KRec by another user")
-
-    await crud.complete_upload(krec_data.krec_id, krec_data.upload_id, krec_data.parts)
-    return CompletedKRecUploadResponse(status="completed")
+    return {
+        "krec_id": krec.id,
+        "upload_url": upload_url,
+        "expires_at": int((datetime.utcnow() + timedelta(hours=1)).timestamp()),
+    }
 
 
 class KRecUrls(BaseModel):
@@ -124,7 +103,6 @@ class SingleKRecResponse(BaseModel):
     user_id: str
     robot_id: str
     type: str = "KRec"
-    upload_status: str
     urls: KRecUrls | None = None
     size: int | None = None
 
@@ -133,9 +111,7 @@ class SingleKRecResponse(BaseModel):
         s3_key = f"krecs/{krec.id}/{krec.name}"
         size = await crud.get_file_size(s3_key) if crud is not None else None
 
-        urls = None
-        if krec.upload_status == "completed":
-            urls = await get_krec_url_response(krec, crud)
+        urls = await get_krec_url_response(krec, crud)
 
         return cls(
             id=krec.id,
@@ -143,7 +119,6 @@ class SingleKRecResponse(BaseModel):
             created_at=krec.created_at,
             user_id=krec.user_id,
             robot_id=krec.robot_id,
-            upload_status=krec.upload_status,
             urls=urls,
             size=size,
         )
@@ -205,9 +180,6 @@ async def get_krec_download_url(
         raise ItemNotFoundError("Robot not found")
     if robot.user_id != user.id:
         verify_admin_permission(user, "access KRec by another user")
-
-    if krec.upload_status != "completed":
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="KRec upload not completed")
 
     urls = await get_krec_url_response(krec, crud)
     return {"id": krec.id, "name": krec.name, "url": urls.url, "filename": urls.filename}
