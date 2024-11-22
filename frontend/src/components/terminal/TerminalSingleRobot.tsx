@@ -367,27 +367,25 @@ const TerminalSingleRobot = ({ robot, onUpdateRobot }: Props) => {
                 <span className="text-gray-500 mb-4">
                   Video Playback Coming Soon
                 </span>
-                {selectedKrec.upload_status === "completed" && (
-                  <Button
-                    variant="default"
-                    onClick={async () => {
-                      const krecInfo = await fetchKrecInfo(selectedKrec.id);
-                      if (krecInfo?.urls?.url) {
-                        const link = document.createElement("a");
-                        link.href = krecInfo.urls.url;
-                        link.download = krecInfo.urls.filename;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        addTerminalMessage(
-                          `Downloading ${krecInfo.urls.filename}...`,
-                        );
-                      }
-                    }}
-                  >
-                    Download Recording
-                  </Button>
-                )}
+                <Button
+                  variant="default"
+                  onClick={async () => {
+                    const krecInfo = await fetchKrecInfo(selectedKrec.id);
+                    if (krecInfo?.urls?.url) {
+                      const link = document.createElement("a");
+                      link.href = krecInfo.urls.url;
+                      link.download = krecInfo.urls.filename;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      addTerminalMessage(
+                        `Downloading ${krecInfo.urls.filename}...`,
+                      );
+                    }
+                  }}
+                >
+                  Download Recording
+                </Button>
               </div>
             </div>
           </div>

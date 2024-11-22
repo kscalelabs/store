@@ -1285,25 +1285,11 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create Krec */
+        /**
+         * Create Krec
+         * @description Initialize a KRec upload and return a presigned URL.
+         */
         post: operations["create_krec_krecs_upload_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/krecs/{krec_id}/complete": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Complete Upload */
-        post: operations["complete_upload_krecs__krec_id__complete_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1480,20 +1466,6 @@ export interface components {
         ClientIdResponse: {
             /** Client Id */
             client_id: string;
-        };
-        /** CompletedKRecUploadRequest */
-        CompletedKRecUploadRequest: {
-            /** Krec Id */
-            krec_id: string;
-            /** Upload Id */
-            upload_id: string;
-            /** Parts */
-            parts: components["schemas"]["KRecPartCompleted"][];
-        };
-        /** CompletedKRecUploadResponse */
-        CompletedKRecUploadResponse: {
-            /** Status */
-            status: string;
         };
         /** CreateCheckoutSessionRequest */
         CreateCheckoutSessionRequest: {
@@ -1672,24 +1644,6 @@ export interface components {
             name: string;
             /** Description */
             description?: string | null;
-            /**
-             * Upload Status
-             * @default pending
-             * @enum {string}
-             */
-            upload_status: "pending" | "completed";
-        };
-        /**
-         * KRecPartCompleted
-         * @description Represents a completed part in a multipart upload.
-         */
-        KRecPartCompleted: {
-            /** Part Number */
-            part_number: number;
-            /** Etag */
-            etag: string;
-            /** Checksum */
-            checksum?: string | null;
         };
         /** KRecUrls */
         KRecUrls: {
@@ -1851,26 +1805,6 @@ export interface components {
             user_id: string;
             /** Token */
             token: string;
-        };
-        /**
-         * MultipartUploadDetails
-         * @description Details needed for multipart upload.
-         */
-        MultipartUploadDetails: {
-            /** Upload Id */
-            upload_id: string;
-            /** Presigned Urls */
-            presigned_urls: {
-                [key: string]: string | number;
-            }[];
-            /** Bucket */
-            bucket: string;
-            /** Key */
-            key: string;
-            /** Part Size */
-            part_size: number;
-            /** Num Parts */
-            num_parts: number;
         };
         /** MyUserInfoResponse */
         MyUserInfoResponse: {
@@ -2183,8 +2117,6 @@ export interface components {
              * @default KRec
              */
             type: string;
-            /** Upload Status */
-            upload_status: string;
             urls?: components["schemas"]["KRecUrls"] | null;
             /** Size */
             size?: number | null;
@@ -2326,16 +2258,6 @@ export interface components {
             robot_id: string;
             /** Description */
             description?: string | null;
-            /** File Size */
-            file_size?: number | null;
-            /** Part Size */
-            part_size?: number | null;
-        };
-        /** UploadKRecResponse */
-        UploadKRecResponse: {
-            /** Krec Id */
-            krec_id: string;
-            upload_details: components["schemas"]["MultipartUploadDetails"];
         };
         /** UserInfoResponseItem */
         UserInfoResponseItem: {
@@ -4692,40 +4614,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UploadKRecResponse"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    complete_upload_krecs__krec_id__complete_post: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CompletedKRecUploadRequest"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CompletedKRecUploadResponse"];
+                    "application/json": Record<string, never>;
                 };
             };
             /** @description Validation Error */
