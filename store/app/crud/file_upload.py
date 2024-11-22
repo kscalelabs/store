@@ -29,7 +29,6 @@ class MultipartUploadPart(BaseModel):
 
     PartNumber: int
     ETag: str
-    ChecksumSHA256: str
 
 
 class MultipartUploadDetails(BaseModel):
@@ -75,7 +74,6 @@ class MultipartUploadParams(TypedDict, total=False):
     ObjectLockMode: Literal["GOVERNANCE", "COMPLIANCE"]
     ObjectLockRetainUntilDate: str
     ObjectLockLegalHoldStatus: Literal["ON", "OFF"]
-    ChecksumAlgorithm: Literal["CRC32", "CRC32C", "SHA1", "SHA256"]
 
 
 class FileUploadCrud:
@@ -134,12 +132,10 @@ class FileUploadCrud:
     async def complete_multipart_upload(self, key: str, upload_id: str, parts: list[MultipartUploadPart]) -> None:
         """Completes a multipart upload."""
         try:
-            # Include both ETag and ChecksumSHA256 in the completed parts
             completed_parts: Sequence[CompletedPartTypeDef] = [
-                {"PartNumber": p.PartNumber, "ETag": p.ETag, "ChecksumSHA256": p.ChecksumSHA256} for p in parts
+                {"PartNumber": p.PartNumber, "ETag": p.ETag} for p in parts
             ]
 
-            # Add the S3 prefix to the key
             full_key = f"{settings.s3.prefix}{key}"
 
             logger.info(
@@ -169,7 +165,6 @@ class FileUploadCrud:
         file_size: int | None = None,
         part_size: int | None = None,
         content_type: str | None = None,
-        checksum_algorithm: Literal["CRC32", "CRC32C", "SHA1", "SHA256"] | None = "SHA256",
     ) -> MultipartUploadDetails:
         """Initiates a multipart upload and generates presigned URLs."""
         try:
@@ -181,12 +176,9 @@ class FileUploadCrud:
             params: MultipartUploadParams = {
                 "Bucket": settings.s3.bucket,
                 "Key": f"{settings.s3.prefix}{key}",
-                "ACL": "private",
             }
             if content_type:
                 params["ContentType"] = content_type
-            if checksum_algorithm is not None:
-                params["ChecksumAlgorithm"] = checksum_algorithm
 
             response = await self.s3.meta.client.create_multipart_upload(**params)
             upload_id = response["UploadId"]
@@ -203,7 +195,6 @@ class FileUploadCrud:
                             "Key": f"{settings.s3.prefix}{key}",
                             "UploadId": upload_id,
                             "PartNumber": part_number,
-                            "ChecksumAlgorithm": "SHA256",
                         },
                         ExpiresIn=3600,  # 1 hour
                     )

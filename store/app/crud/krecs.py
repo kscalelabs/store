@@ -24,7 +24,6 @@ class KRecPartCompleted(BaseModel):
 
     part_number: int
     etag: str
-    checksum: str | None = None
 
 
 class KRecsCrud(BaseCrud, FileUploadCrud):
@@ -66,7 +65,6 @@ class KRecsCrud(BaseCrud, FileUploadCrud):
             file_size=file_size,
             part_size=part_size,
             content_type="video/x-matroska",
-            checksum_algorithm="SHA256",
         )
 
         return krec, upload_details
@@ -117,7 +115,6 @@ class KRecsCrud(BaseCrud, FileUploadCrud):
                 MultipartUploadPart(
                     PartNumber=part.part_number,
                     ETag=part.etag,
-                    **({"ChecksumSHA256": part.checksum} if part.checksum is not None else {}),
                 )
                 for part in parts
             ]
