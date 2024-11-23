@@ -46,6 +46,11 @@ start-docker-backend:
 	@docker build -t store-backend .
 	@docker run --name store-backend -d -p 8080:8080 store-backend
 
+start-docker-localstack:
+	@docker kill store-localstack || true
+	@docker rm store-localstack || true
+	@docker run -d --name store-localstack -p 4566:4566 -p 4571:4571 localstack/localstack
+
 # ------------------------ #
 #      Code Formatting     #
 # ------------------------ #

@@ -1,7 +1,7 @@
 """This module provides CRUD operations for robots."""
 
 import time
-from typing import NotRequired, TypedDict
+from typing import NotRequired, TypedDict, Unpack
 
 from store.app.crud.base import BaseCrud, ItemNotFoundError
 from store.app.model import Listing, Order, Robot
@@ -23,7 +23,7 @@ class RobotsCrud(BaseCrud):
     def get_gsis(cls) -> set[str]:
         return super().get_gsis().union({"listing_id", "order_id"})
 
-    async def create_robot(self, robot_data: RobotData) -> Robot:
+    async def create_robot(self, **robot_data: Unpack[RobotData]) -> Robot:
         # Verify listing exists
         listing = await self._get_item(robot_data["listing_id"], Listing)
         if not listing:

@@ -287,6 +287,61 @@ interface Props {
   addArtifacts: (artifacts: Artifact[]) => void;
 }
 
+const InstructionCard = ({
+  title,
+  instructions,
+}: {
+  title: string;
+  instructions: { step: string; code: string }[];
+}) => (
+  <div className="mt-6 p-8 bg-white rounded-xl shadow-lg w-full border border-gray-200">
+    <h4 className="text-2xl font-semibold mb-6 text-gray-800">{title}</h4>
+    <ol className="list-decimal list-outside ml-6 space-y-6 text-base text-gray-700">
+      {instructions.map(({ step, code }, index) => (
+        <li key={index} className="leading-relaxed">
+          {step}
+          <CopyableCode
+            code={code}
+            className="bg-gray-100 text-green-600 p-4 rounded-lg mt-3 font-mono text-sm border border-gray-200"
+          />
+        </li>
+      ))}
+    </ol>
+  </div>
+);
+
+const renderUrdfInstructions = (listingId: string) => (
+  <InstructionCard
+    title="URDF Upload Instructions"
+    instructions={[
+      {
+        step: "Install the K-Scale CLI:",
+        code: "pip install kscale",
+      },
+      {
+        step: "Upload your URDF file:",
+        code: `kscale urdf upload ${listingId} /path/to/your/urdf/directory/`,
+      },
+    ]}
+  />
+);
+
+const renderKernelInstructions = (listingId: string) => (
+  <InstructionCard
+    title="Kernel Image Upload Instructions"
+    instructions={[
+      {
+        step: "Install the K-Scale CLI:",
+        code: "pip install kscale",
+      },
+      {
+        step: "Upload your kernel image:",
+        code: `kscale kernel upload ${listingId} /path/to/your/kernel/kernel_image.img`,
+      },
+    ]}
+  />
+);
+
 const ListingOnshape = (props: Props) => {
   const { listingId, canEdit: edit, onshapeUrl, addArtifacts } = props;
   const auth = useAuthentication();
@@ -373,54 +428,6 @@ const ListingOnshape = (props: Props) => {
   const toggleKernelInstructions = () => {
     setShowKernelInstructions(!showKernelInstructions);
   };
-
-  const renderUrdfInstructions = (listingId: string) => (
-    <div className="mt-6 p-8 bg-gray-12 rounded-xl shadow-lg w-full border border-gray-200">
-      <h4 className="text-2xl font-semibold mb-6 text-gray-1">
-        URDF Upload Instructions
-      </h4>
-      <ol className="list-decimal list-outside ml-6 space-y-6 text-base text-gray-1">
-        <li className="leading-relaxed">
-          Install the K-Scale CLI:
-          <CopyableCode
-            code="pip install kscale"
-            className="bg-gray-12 text-green-600 p-4 rounded-lg mt-3 font-mono text-sm border border-gray-200"
-          />
-        </li>
-        <li className="leading-relaxed">
-          Upload your URDF file:
-          <CopyableCode
-            code={`kscale urdf upload ${listingId} /path/to/your/urdf/directory/`}
-            className="bg-gray-12 text-green-600 p-2 sm:p-4 rounded-lg mt-3 font-mono text-xs sm:text-sm border border-gray-200 break-all whitespace-pre-wrap"
-          />
-        </li>
-      </ol>
-    </div>
-  );
-
-  const renderKernelInstructions = (listingId: string) => (
-    <div className="mt-6 p-8 bg-gray-12 rounded-xl shadow-lg w-full border border-gray-200">
-      <h4 className="text-2xl font-semibold mb-6 text-gray-1">
-        Kernel Image Upload Instructions
-      </h4>
-      <ol className="list-decimal list-outside ml-6 space-y-6 text-base text-gray-1">
-        <li className="leading-relaxed">
-          Install the K-Scale CLI:
-          <CopyableCode
-            code="pip install kscale"
-            className="bg-gray-12 text-green-600 p-4 rounded-lg mt-3 font-mono text-sm border border-gray-200"
-          />
-        </li>
-        <li className="leading-relaxed">
-          Upload your kernel image:
-          <CopyableCode
-            code={`kscale kernel-images upload ${listingId} /path/to/your/kernel/kernel_image.img`}
-            className="bg-gray-12 text-green-600 p-2 sm:p-4 rounded-lg mt-3 font-mono text-xs sm:text-sm border border-gray-200 break-all whitespace-pre-wrap"
-          />
-        </li>
-      </ol>
-    </div>
-  );
 
   const renderContent = () => {
     if (isEditing) {
