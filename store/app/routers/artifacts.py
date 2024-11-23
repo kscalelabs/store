@@ -467,7 +467,6 @@ async def get_presigned_url(
             filename=filename,
             s3_key=s3_filename,
             content_type="application/x-raw-disk-image",
-            checksum_algorithm="SHA256",
         )
 
         return PresignedUrlResponse(upload_url=presigned_url, artifact_id=artifact.id)

@@ -12,7 +12,8 @@ import ROUTES from "@/lib/types/routes";
 
 const OrdersPage: React.FC = () => {
   const navigate = useNavigate();
-  const { api, currentUser, isAuthenticated, isLoading } = useAuthentication();
+  const { client, currentUser, isAuthenticated, isLoading } =
+    useAuthentication();
   const [orders, setOrders] = useState<OrderWithProduct[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const { addErrorAlert } = useAlertQueue();
@@ -22,7 +23,7 @@ const OrdersPage: React.FC = () => {
       if (isAuthenticated && currentUser) {
         setLoadingOrders(true);
         try {
-          const { data, error } = await api.client.GET("/orders/me");
+          const { data, error } = await client.GET("/orders/me");
 
           if (error) {
             const apiError = error as ApiError;
@@ -43,7 +44,7 @@ const OrdersPage: React.FC = () => {
     };
 
     fetchOrders();
-  }, [api, currentUser, isAuthenticated]);
+  }, [client, currentUser, isAuthenticated]);
 
   if (!isAuthenticated) {
     return (

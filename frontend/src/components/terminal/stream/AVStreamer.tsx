@@ -1,122 +1,20 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { FaMicrophone } from "react-icons/fa";
 
-import { useAlertQueue } from "@/hooks/useAlertQueue";
-
 const AVStreamer = () => {
-  const { addAlert, addErrorAlert } = useAlertQueue();
-  const [isConnected, setIsConnected] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [serverUrl, setServerUrl] = useState("");
   const videoRef = useRef<HTMLVideoElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const apiRef = useRef<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const sessionRef = useRef<any>(null);
-  const [streamAspectRatio, setStreamAspectRatio] = useState<number | null>(
-    null,
-  );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [remoteController, setRemoteController] = useState<any>(null);
-  const [requestText, setRequestText] = useState("");
 
-  useEffect(() => {
-    // Initialize WebRTC API
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const api = new (window as any).GstWebRTCAPI({
-      meta: { name: `WebClient-${Date.now()}` },
-      signalingServerUrl: serverUrl,
-    });
-    apiRef.current = api;
+  // Just using placeholder values for now.
+  const isConnected = false;
+  const isLoading = false;
+  const streamAspectRatio = null;
+  const remoteController = null;
+  const requestText = "";
 
-    return () => {
-      if (sessionRef.current) {
-        sessionRef.current.close();
-      }
-    };
-  }, []);
-
-  const handleConnect = async () => {
-    try {
-      setIsLoading(true);
-
-      // Get available producers
-      const producers = apiRef.current.getAvailableProducers();
-      if (producers.length === 0) {
-        throw new Error(`No available producers on ${serverUrl}`);
-      }
-
-      // Create consumer session for first producer
-      const session = apiRef.current.createConsumerSession(producers[0].id);
-      session.mungeStereoHack = true;
-      sessionRef.current = session;
-
-      // Add remote controller event listener
-      session.addEventListener("remoteControllerChanged", () => {
-        const controller = session.remoteController;
-        if (controller) {
-          setRemoteController(controller);
-          controller.addEventListener("info", () => {
-            addAlert("Received response from producer", "info");
-          });
-        } else {
-          setRemoteController(null);
-        }
-      });
-
-      session.addEventListener("streamsChanged", () => {
-        const streams = session.streams;
-        if (streams.length > 0 && videoRef.current) {
-          videoRef.current.srcObject = streams[0];
-          videoRef.current.play().catch(() => {});
-
-          // Get video track settings when stream starts
-          const videoTrack = streams[0].getVideoTracks()[0];
-          if (videoTrack) {
-            const settings = videoTrack.getSettings();
-            if (settings.width && settings.height) {
-              setStreamAspectRatio(settings.width / settings.height);
-            }
-          }
-        }
-      });
-
-      session.addEventListener("closed", () => {
-        if (videoRef.current) {
-          videoRef.current.pause();
-          videoRef.current.srcObject = null;
-        }
-        setIsConnected(false);
-      });
-
-      session.connect();
-      setIsConnected(true);
-    } catch (error) {
-      addErrorAlert(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDisconnect = () => {
-    if (sessionRef.current) {
-      sessionRef.current.close();
-      sessionRef.current = null;
-    }
-    setIsConnected(false);
-    setStreamAspectRatio(null);
-  };
-
-  const handleSendRequest = () => {
-    try {
-      if (remoteController && requestText) {
-        const id = remoteController.sendControlRequest(requestText);
-        console.log("Sent control request with ID:", id);
-      }
-    } catch (error) {
-      addErrorAlert(error);
-    }
-  };
+  const handleConnect = () => {};
+  const handleDisconnect = () => {};
+  const handleSendRequest = () => {};
 
   return (
     <div className="border border-gray-700 bg-black rounded-lg overflow-hidden flex flex-col">
@@ -180,7 +78,6 @@ const AVStreamer = () => {
           <div className="flex flex-col gap-2">
             <textarea
               value={requestText}
-              onChange={(e) => setRequestText(e.target.value)}
               placeholder="Enter JSON request to send over data channel"
               className="w-full px-3 py-2 bg-gray-800 text-white rounded-md"
               rows={4}

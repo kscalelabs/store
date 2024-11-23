@@ -7,7 +7,10 @@ from fastapi import Depends, HTTPException, status
 from store.app.db import Crud
 from store.app.errors import ItemNotFoundError, NotAuthenticatedError
 from store.app.model import User
-from store.app.security.requests import get_request_api_key_id, maybe_get_request_api_key_id
+from store.app.security.requests import (
+    get_request_api_key_id,
+    maybe_get_request_api_key_id,
+)
 
 
 def verify_admin_permission(user: User, action_description: str = "perform this action") -> None:

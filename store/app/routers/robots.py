@@ -1,7 +1,7 @@
 """Defines the router endpoints for handling Robots."""
 
 import asyncio
-from typing import Self
+from typing import Annotated, Type
 
 from boto3.dynamodb.conditions import Key
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -26,10 +26,48 @@ class CreateRobotRequest(BaseModel):
     order_id: str | None = None
 
 
-class UpdateRobotRequest(BaseModel):
-    name: str | None = None
-    description: str | None = None
-    order_id: str | None = None
+class CreateRobotResponse(BaseModel):
+    robot_id: str
+
+
+@router.post("/create", response_model=CreateRobotResponse)
+async def create_robot(
+    request: CreateRobotRequest,
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> CreateRobotResponse:
+    """Create a new robot."""
+    try:
+        robot = await crud.create_robot(
+            user_id=user.id,
+            listing_id=request.listing_id,
+            name=request.name,
+            description=request.description,
+            order_id=request.order_id,
+        )
+        return CreateRobotResponse(robot_id=robot.id)
+    except ItemNotFoundError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except ValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.get("/get/{robot_id}", response_model=Robot)
+async def get_robot(
+    robot_id: str,
+    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> Robot:
+    """Get a specific robot."""
+    try:
+        robot = await crud.get_robot(robot_id)
+        if robot.user_id != user.id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to access this robot")
+        return robot
+    except ItemNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Robot not found")
 
 
 class SingleRobotResponse(BaseModel):
@@ -45,12 +83,12 @@ class SingleRobotResponse(BaseModel):
 
     @classmethod
     async def from_robot(
-        cls,
+        cls: Type["SingleRobotResponse"],
         robot: Robot,
         crud: Crud | None = None,
         listing: Listing | None = None,
         creator: User | None = None,
-    ) -> Self:
+    ) -> "SingleRobotResponse":
         async def get_listing(listing: Listing | None) -> Listing:
             if listing is None:
                 if crud is None:
@@ -100,48 +138,6 @@ class RobotListResponse(BaseModel):
     robots: list[SingleRobotResponse]
 
 
-@router.post("/create", response_model=Robot)
-async def create_robot(
-    robot_data: CreateRobotRequest,
-    user: User = Depends(get_session_user_with_write_permission),
-    crud: Crud = Depends(Crud.get),
-) -> Robot:
-    """Create a new robot."""
-    try:
-        # Convert the model data to a properly typed RobotData dict
-        robot_dict: RobotData = {
-            "user_id": user.id,
-            "listing_id": robot_data.listing_id,
-            "name": robot_data.name,
-            "description": robot_data.description,
-            "order_id": robot_data.order_id,
-        }
-        robot = await crud.create_robot(robot_dict)
-        return robot
-    except ItemNotFoundError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
-    except ValidationError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-
-
-@router.get("/get/{robot_id}", response_model=Robot)
-async def get_robot(
-    robot_id: str,
-    user: User = Depends(get_session_user_with_read_permission),
-    crud: Crud = Depends(Crud.get),
-) -> Robot:
-    """Get a specific robot."""
-    try:
-        robot = await crud.get_robot(robot_id)
-        if robot.user_id != user.id:
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to access this robot")
-        return robot
-    except ItemNotFoundError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Robot not found")
-
-
 @router.get("/list", response_model=RobotListResponse)
 async def list_user_robots(
     user: User = Depends(get_session_user_with_read_permission),
@@ -170,6 +166,12 @@ async def list_user_robots(
 
     robot_responses = await asyncio.gather(*(get_robot_response(robot) for robot in robots))
     return RobotListResponse(robots=list(robot_responses))
+
+
+class UpdateRobotRequest(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    order_id: str | None = None
 
 
 @router.put("/update/{robot_id}", response_model=Robot)
