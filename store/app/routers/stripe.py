@@ -306,8 +306,8 @@ class CreateCheckoutSessionResponse(BaseModel):
 @router.post("/checkout-session", response_model=CreateCheckoutSessionResponse)
 async def create_checkout_session(
     request: CreateCheckoutSessionRequest,
-    user: User = Depends(get_session_user_with_read_permission),
-    crud: Crud = Depends(),
+    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> CreateCheckoutSessionResponse:
     async with crud:
         try:

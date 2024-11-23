@@ -1488,6 +1488,24 @@ export interface components {
             /** Account Id */
             account_id: string;
         };
+        /** CreateKRecRequest */
+        CreateKRecRequest: {
+            /** Name */
+            name: string;
+            /** Robot Id */
+            robot_id: string;
+            /** Description */
+            description?: string | null;
+        };
+        /** CreateKRecResponse */
+        CreateKRecResponse: {
+            /** Krec Id */
+            krec_id: string;
+            /** Upload Url */
+            upload_url: string;
+            /** Expires At */
+            expires_at: number;
+        };
         /** CreateRefundsRequest */
         CreateRefundsRequest: {
             /** Payment Intent Id */
@@ -1506,6 +1524,11 @@ export interface components {
             description?: string | null;
             /** Order Id */
             order_id?: string | null;
+        };
+        /** CreateRobotResponse */
+        CreateRobotResponse: {
+            /** Robot Id */
+            robot_id: string;
         };
         /** DeleteTestAccountsResponse */
         DeleteTestAccountsResponse: {
@@ -2249,15 +2272,6 @@ export interface components {
         UploadArtifactResponse: {
             /** Artifacts */
             artifacts: components["schemas"]["SingleArtifactResponse"][];
-        };
-        /** UploadKRecRequest */
-        UploadKRecRequest: {
-            /** Name */
-            name: string;
-            /** Robot Id */
-            robot_id: string;
-            /** Description */
-            description?: string | null;
         };
         /** UserInfoResponseItem */
         UserInfoResponseItem: {
@@ -3722,7 +3736,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Robot"];
+                    "application/json": components["schemas"]["CreateRobotResponse"];
                 };
             };
             /** @description Validation Error */
@@ -4604,7 +4618,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UploadKRecRequest"];
+                "application/json": components["schemas"]["CreateKRecRequest"];
             };
         };
         responses: {
@@ -4614,7 +4628,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["CreateKRecResponse"];
                 };
             };
             /** @description Validation Error */

@@ -21,46 +21,54 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-class UploadKRecRequest(BaseModel):
+class CreateKRecRequest(BaseModel):
     name: str
     robot_id: str
     description: str | None = None
 
 
+class CreateKRecResponse(BaseModel):
+    krec_id: str
+    upload_url: str
+    expires_at: int
+
+
 @router.post("/upload")
 async def create_krec(
+    request: CreateKRecRequest,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
-    krec_data: UploadKRecRequest,
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> dict[str, Any]:
+) -> CreateKRecResponse:
     """Initialize a KRec upload and return a presigned URL."""
-    robot = await crud.get_robot(krec_data.robot_id)
+    robot = await crud.get_robot(request.robot_id)
     if robot is None:
-        raise ItemNotFoundError("Robot with ID %s not found", krec_data.robot_id)
+        raise ItemNotFoundError("Robot with ID %s not found", request.robot_id)
     if robot.user_id != user.id:
         verify_admin_permission(user, "upload KRecs for a robot by another user")
+    if not request.name.endswith(".krec"):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="KRec name must end with .krec")
 
     # Create KRec record first
-    krec = KRec.create(
+    my_krec = KRec.create(
         user_id=user.id,
-        robot_id=krec_data.robot_id,
-        name=krec_data.name,
-        description=krec_data.description,
+        robot_id=request.robot_id,
+        name=request.name,
+        description=request.description,
     )
-    await crud._add_item(krec)
+    await crud._add_item(my_krec)
 
-    s3_key = f"krecs/{krec.id}/{krec.name}"
-    upload_url = await crud.generate_presigned_video_upload_url(
-        filename=krec.name,
+    s3_key = f"krecs/{my_krec.id}/{my_krec.name}"
+    upload_url = await crud.generate_presigned_upload_url(
+        filename=my_krec.name,
         s3_key=s3_key,
-        expires_in=12 * 3600,
+        content_type="video/x-matroska",
     )
 
-    return {
-        "krec_id": krec.id,
-        "upload_url": upload_url,
-        "expires_at": int((datetime.utcnow() + timedelta(hours=12)).timestamp()),
-    }
+    return CreateKRecResponse(
+        krec_id=my_krec.id,
+        upload_url=upload_url,
+        expires_at=int((datetime.utcnow() + timedelta(hours=12)).timestamp()),
+    )
 
 
 class KRecUrls(BaseModel):
@@ -70,12 +78,12 @@ class KRecUrls(BaseModel):
     checksum: str | None = None
 
 
-async def get_krec_url_response(krec: KRec, crud: Crud) -> KRecUrls:
+async def get_krec_url_response(my_krec: KRec, crud: Crud) -> KRecUrls:
     try:
-        s3_key = f"krecs/{krec.id}/{krec.name}"
-        download_filename = f"{krec.name}.mkv" if not krec.name.endswith(".mkv") else krec.name
+        s3_key = f"krecs/{my_krec.id}/{my_krec.name}"
+        download_filename = f"{my_krec.name}.mkv" if not my_krec.name.endswith(".mkv") else my_krec.name
 
-        logger.info("Generating download URL for krec %s with key %s", krec.id, s3_key)
+        logger.info("Generating download URL for krec %s with key %s", my_krec.id, s3_key)
 
         url, checksum = await crud.generate_presigned_download_url(
             filename=download_filename,
@@ -88,7 +96,7 @@ async def get_krec_url_response(krec: KRec, crud: Crud) -> KRecUrls:
 
         return KRecUrls(url=url, filename=download_filename, expires_at=expiration_time, checksum=checksum)
     except Exception as e:
-        logger.error("Error generating download URL for krec %s: %s", krec.id, str(e))
+        logger.error("Error generating download URL for krec %s: %s", my_krec.id, str(e))
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Could not generate download URL: {str(e)}")
 
 
@@ -105,18 +113,18 @@ class SingleKRecResponse(BaseModel):
     size: int | None = None
 
     @classmethod
-    async def from_krec(cls, krec: KRec, crud: Crud) -> "SingleKRecResponse":
-        s3_key = f"krecs/{krec.id}/{krec.name}"
+    async def from_krec(cls, my_krec: KRec, crud: Crud) -> "SingleKRecResponse":
+        s3_key = f"krecs/{my_krec.id}/{my_krec.name}"
         size = await crud.get_file_size(s3_key) if crud is not None else None
 
-        urls = await get_krec_url_response(krec, crud)
+        urls = await get_krec_url_response(my_krec, crud)
 
         return cls(
-            id=krec.id,
-            name=krec.name,
-            created_at=krec.created_at,
-            user_id=krec.user_id,
-            robot_id=krec.robot_id,
+            id=my_krec.id,
+            name=my_krec.name,
+            created_at=my_krec.created_at,
+            user_id=my_krec.user_id,
+            robot_id=my_krec.robot_id,
             urls=urls,
             size=size,
         )
@@ -149,17 +157,17 @@ async def get_krec_info(
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> SingleKRecResponse:
     """Get information about a specific KRec, including download URL."""
-    krec = await crud.get_krec(krec_id)
-    if krec is None:
+    my_krec = await crud.get_krec(krec_id)
+    if my_krec is None:
         raise ItemNotFoundError("KRec with ID %s not found", krec_id)
 
-    robot = await crud.get_robot(krec.robot_id)
+    robot = await crud.get_robot(my_krec.robot_id)
     if robot is None:
         raise ItemNotFoundError("Robot not found")
     if robot.user_id != user.id:
         verify_admin_permission(user, "access KRec by another user")
 
-    return await SingleKRecResponse.from_krec(krec, crud)
+    return await SingleKRecResponse.from_krec(my_krec, crud)
 
 
 @router.get("/download/{krec_id}", response_class=SecureKRecResponse)
@@ -169,18 +177,18 @@ async def get_krec_download_url(
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> dict[str, Any]:
     """Get a presigned download URL for a krec."""
-    krec = await crud.get_krec(krec_id)
-    if krec is None:
+    my_krec = await crud.get_krec(krec_id)
+    if my_krec is None:
         raise ItemNotFoundError("KRec with ID %s not found", krec_id)
 
-    robot = await crud.get_robot(krec.robot_id)
+    robot = await crud.get_robot(my_krec.robot_id)
     if robot is None:
         raise ItemNotFoundError("Robot not found")
     if robot.user_id != user.id:
         verify_admin_permission(user, "access KRec by another user")
 
-    urls = await get_krec_url_response(krec, crud)
-    return {"id": krec.id, "name": krec.name, "url": urls.url, "filename": urls.filename}
+    urls = await get_krec_url_response(my_krec, crud)
+    return {"id": my_krec.id, "name": my_krec.name, "url": urls.url, "filename": urls.filename}
 
 
 @router.get("/{robot_id}")
@@ -201,10 +209,10 @@ async def delete_krec(
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> dict[str, str]:
     """Delete a krec."""
-    krec = await crud.get_krec(krec_id)
-    if krec is None:
+    my_krec = await crud.get_krec(krec_id)
+    if my_krec is None:
         raise ItemNotFoundError("KRec with ID %s not found", krec_id)
-    if krec.user_id != user.id:
+    if my_krec.user_id != user.id:
         verify_admin_permission(user, "delete KRec by another user")
 
     await crud.delete_krec(krec_id)

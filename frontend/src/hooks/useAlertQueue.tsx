@@ -17,10 +17,10 @@ export const humanReadableError = (error: any | undefined) => {
     return error;
   }
   if (error?.message) {
-    return error.message;
+    return `${error.message}`;
   }
   if (error?.detail) {
-    return error.detail;
+    return `${error.detail}`;
   }
   return "An unknown error occurred";
 };

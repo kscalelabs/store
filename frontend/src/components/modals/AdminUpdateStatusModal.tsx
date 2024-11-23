@@ -22,7 +22,7 @@ const AdminUpdateStatusModal: React.FC<AdminUpdateStatusModalProps> = ({
   order,
   onOrderUpdate,
 }) => {
-  const { api } = useAuthentication();
+  const auth = useAuthentication();
   const { addAlert, addErrorAlert } = useAlertQueue();
   const [selectedStatus, setSelectedStatus] = useState(order.order.status);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -30,7 +30,7 @@ const AdminUpdateStatusModal: React.FC<AdminUpdateStatusModalProps> = ({
   const handleUpdateStatus = async () => {
     setIsUpdating(true);
     try {
-      const { data, error } = await api.client.PUT(
+      const { data, error } = await auth.client.PUT(
         "/orders/admin/status/{order_id}",
         {
           params: {

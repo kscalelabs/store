@@ -20,14 +20,14 @@ const AdminProcessPreorderModal: React.FC<AdminProcessPreorderModalProps> = ({
   order,
   onOrderUpdate,
 }) => {
-  const { api } = useAuthentication();
+  const auth = useAuthentication();
   const { addAlert, addErrorAlert } = useAlertQueue();
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleProcessPreorder = async () => {
     setIsProcessing(true);
     try {
-      const { data, error } = await api.client.POST(
+      const { data, error } = await auth.client.POST(
         "/stripe/process/preorder/{order_id}",
         {
           params: {
