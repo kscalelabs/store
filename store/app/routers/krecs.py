@@ -136,7 +136,7 @@ class KRecUrlContent(TypedDict):
     urls: NotRequired[KRecUrls]
 
 
-@router.get("/info/{krec_id}", response_class=SingleKRecResponse)
+@router.get("/info/{krec_id}", response_model=SingleKRecResponse)
 async def get_krec_info(
     krec_id: str,
     user: Annotated[User, Depends(get_session_user)],
@@ -163,7 +163,7 @@ class KRecDownloadResponse(BaseModel):
     filename: str
 
 
-@router.get("/download/{krec_id}", response_class=KRecDownloadResponse)
+@router.get("/download/{krec_id}", response_model=KRecDownloadResponse)
 async def get_krec_download_url(
     krec_id: str,
     user: Annotated[User, Depends(get_session_user)],
