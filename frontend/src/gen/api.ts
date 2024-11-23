@@ -1668,6 +1668,17 @@ export interface components {
             /** Description */
             description?: string | null;
         };
+        /** KRecDownloadResponse */
+        KRecDownloadResponse: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Url */
+            url: string;
+            /** Filename */
+            filename: string;
+        };
         /** KRecUrls */
         KRecUrls: {
             /** Url */
@@ -4690,7 +4701,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["KRecDownloadResponse"];
                 };
             };
             /** @description Validation Error */
@@ -4752,9 +4763,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        [key: string]: string;
-                    };
+                    "application/json": boolean;
                 };
             };
             /** @description Validation Error */
