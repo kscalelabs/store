@@ -49,19 +49,19 @@ async def create_krec(
     )
     await crud._add_item(krec)
 
-    # Generate presigned URL
     s3_key = f"krecs/{krec.id}/{krec.name}"
     upload_url = await crud.generate_presigned_upload_url(
         filename=krec.name,
         s3_key=s3_key,
         content_type="video/x-matroska",
-        expires_in=3600,
+        checksum_algorithm="SHA256",
+        expires_in=12 * 3600,
     )
 
     return {
         "krec_id": krec.id,
         "upload_url": upload_url,
-        "expires_at": int((datetime.utcnow() + timedelta(hours=1)).timestamp()),
+        "expires_at": int((datetime.utcnow() + timedelta(hours=12)).timestamp()),  # Match the expiration time
     }
 
 
