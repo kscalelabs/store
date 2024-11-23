@@ -1,10 +1,10 @@
 """Defines the router endpoints for handling Robots."""
 
 import asyncio
-from typing import Self
+from typing import Self, Type
 
 from boto3.dynamodb.conditions import Key
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Form, HTTPException, status
 from pydantic import BaseModel, ValidationError
 
 from store.app.crud.base import ItemNotFoundError
@@ -26,22 +26,29 @@ class CreateRobotRequest(BaseModel):
     order_id: str | None = None
 
 
-@router.post("/create", response_model=Robot)
+class CreateRobotResponse(BaseModel):
+    robot_id: str
+
+
+@router.post("/create", response_model=CreateRobotResponse)
 async def create_robot(
-    robot_data: CreateRobotRequest,
+    listing_id: str = Form(...),
+    name: str = Form(...),
+    description: str | None = Form(None),
+    order_id: str | None = Form(None),
     user: User = Depends(get_session_user_with_write_permission),
     crud: Crud = Depends(Crud.get),
-) -> Robot:
+) -> CreateRobotResponse:
     """Create a new robot."""
     try:
         robot = await crud.create_robot(
             user_id=user.id,
-            listing_id=robot_data.listing_id,
-            name=robot_data.name,
-            description=robot_data.description,
-            order_id=robot_data.order_id,
+            listing_id=listing_id,
+            name=name,
+            description=description,
+            order_id=order_id,
         )
-        return robot
+        return CreateRobotResponse(robot_id=robot.id)
     except ItemNotFoundError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except ValidationError as e:
@@ -79,7 +86,7 @@ class SingleRobotResponse(BaseModel):
 
     @classmethod
     async def from_robot(
-        cls,
+        cls: Type["SingleRobotResponse"],
         robot: Robot,
         crud: Crud | None = None,
         listing: Listing | None = None,

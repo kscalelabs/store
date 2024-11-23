@@ -1439,6 +1439,26 @@ export interface components {
             /** Account Id */
             account_id: string;
         };
+        /** Body_create_krec_krecs_upload_post */
+        Body_create_krec_krecs_upload_post: {
+            /** Name */
+            name: string;
+            /** Robot Id */
+            robot_id: string;
+            /** Description */
+            description?: string | null;
+        };
+        /** Body_create_robot_robots_create_post */
+        Body_create_robot_robots_create_post: {
+            /** Listing Id */
+            listing_id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /** Order Id */
+            order_id?: string | null;
+        };
         /** Body_pull_onshape_document_onshape_pull__listing_id__get */
         Body_pull_onshape_document_onshape_pull__listing_id__get: {
             /** Suffix To Joint Effort */
@@ -1496,16 +1516,10 @@ export interface components {
             /** Amount */
             amount: number;
         };
-        /** CreateRobotRequest */
-        CreateRobotRequest: {
-            /** Listing Id */
-            listing_id: string;
-            /** Name */
-            name: string;
-            /** Description */
-            description?: string | null;
-            /** Order Id */
-            order_id?: string | null;
+        /** CreateRobotResponse */
+        CreateRobotResponse: {
+            /** Robot Id */
+            robot_id: string;
         };
         /** DeleteTestAccountsResponse */
         DeleteTestAccountsResponse: {
@@ -2249,15 +2263,6 @@ export interface components {
         UploadArtifactResponse: {
             /** Artifacts */
             artifacts: components["schemas"]["SingleArtifactResponse"][];
-        };
-        /** UploadKRecRequest */
-        UploadKRecRequest: {
-            /** Name */
-            name: string;
-            /** Robot Id */
-            robot_id: string;
-            /** Description */
-            description?: string | null;
         };
         /** UserInfoResponseItem */
         UserInfoResponseItem: {
@@ -3712,7 +3717,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateRobotRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["Body_create_robot_robots_create_post"];
             };
         };
         responses: {
@@ -3722,7 +3727,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Robot"];
+                    "application/json": components["schemas"]["CreateRobotResponse"];
                 };
             };
             /** @description Validation Error */
@@ -4604,7 +4609,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UploadKRecRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["Body_create_krec_krecs_upload_post"];
             };
         };
         responses: {

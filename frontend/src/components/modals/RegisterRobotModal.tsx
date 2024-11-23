@@ -29,18 +29,18 @@ export function RegisterRobotModal({
   const [isLoading, setIsLoading] = useState(false);
 
   const { addErrorAlert, addAlert } = useAlertQueue();
-  const { api } = useAuthentication();
+  const auth = useAuthentication();
   const navigate = useNavigate();
 
   const handleAdd = async () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await api.client.POST("/robots/create", {
+      const { data, error } = await auth.client.POST("/robots/create", {
         body: {
+          listing_id: listingId,
           name,
           description,
-          listing_id: listingId,
         },
       });
 
@@ -48,7 +48,7 @@ export function RegisterRobotModal({
         addErrorAlert(error);
       } else {
         addAlert("Robot registered successfully", "success");
-        navigate(ROUTES.TERMINAL.WITH_ID.buildPath({ id: data.id }));
+        navigate(ROUTES.TERMINAL.WITH_ID.buildPath({ id: data.robot_id }));
       }
     } catch (error) {
       addErrorAlert(error);

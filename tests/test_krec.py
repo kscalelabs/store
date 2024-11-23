@@ -2,12 +2,13 @@
 
 from pathlib import Path
 
+import httpx
 import krec
 from fastapi import status
 from fastapi.testclient import TestClient
 
 
-def test_krec_upload(test_client: TestClient, tmpdir: Path) -> None:
+async def test_krec_upload(test_client: TestClient, tmpdir: Path) -> None:
     # Get an auth token using the mocked Github endpoint.
     response = test_client.post("/auth/github/code", json={"code": "test_code"})
     assert response.status_code == status.HTTP_200_OK, response.json()
@@ -49,7 +50,7 @@ def test_krec_upload(test_client: TestClient, tmpdir: Path) -> None:
         headers=auth_headers,
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
-    robot_id = response.json()["id"]
+    robot_id = response.json()["robot_id"]
 
     # Upload a KRec.
     my_header = krec.KRecHeader(
@@ -68,15 +69,23 @@ def test_krec_upload(test_client: TestClient, tmpdir: Path) -> None:
     response = test_client.post(
         "/krecs/upload",
         data={
-            "name": "test_krec",
+            "name": "test.krec",
             "description": "test_description",
             "robot_id": robot_id,
         },
-        files={"files": ("test.krec", open(my_krec_path, "rb"), "application/octet-stream")},
         headers=auth_headers,
     )
     assert response.status_code == status.HTTP_200_OK, response.json()
     data = response.json()
-    assert data["krec_id"] is not None
-    assert data["upload_url"] is not None
-    assert data["expires_at"] is not None
+    upload_url = data["upload_url"]
+
+    # Upload the KRec to the presigned URL.
+    async with httpx.AsyncClient() as client:
+        with open(my_krec_path, "rb") as f:
+            krec_bytes = f.read()
+        response = await client.put(
+            upload_url,
+            content=krec_bytes,
+            headers={"Content-Type": "application/octet-stream"},
+        )
+    assert response.status_code == status.HTTP_200_OK, response.text

@@ -36,7 +36,7 @@ const TerminalInnerRouter = ({
 };
 
 const TerminalInner = () => {
-  const { api, currentUser, isAuthenticated } = useAuthentication();
+  const { client, currentUser, isAuthenticated } = useAuthentication();
   const [robots, setRobots] = useState<SingleRobotResponse[] | null>(null);
   const { addErrorAlert } = useAlertQueue();
 
@@ -44,7 +44,7 @@ const TerminalInner = () => {
     const fetchRobots = async () => {
       if (isAuthenticated && currentUser) {
         try {
-          const { data, error } = await api.client.GET("/robots/list");
+          const { data, error } = await client.GET("/robots/list");
           if (error) {
             addErrorAlert(error);
           } else {
@@ -57,11 +57,11 @@ const TerminalInner = () => {
     };
 
     fetchRobots();
-  }, [api, currentUser, isAuthenticated]);
+  }, [client, currentUser, isAuthenticated]);
 
   const handleDeleteRobot = async (robotId: string) => {
     try {
-      const { error } = await api.client.DELETE("/robots/delete/{robot_id}", {
+      const { error } = await client.DELETE("/robots/delete/{robot_id}", {
         params: {
           path: { robot_id: robotId },
         },
@@ -92,7 +92,7 @@ const TerminalInner = () => {
     updates: { name?: string; description?: string },
   ) => {
     try {
-      const { error } = await api.client.PUT("/robots/update/{robot_id}", {
+      const { error } = await client.PUT("/robots/update/{robot_id}", {
         params: {
           path: { robot_id: robotId },
         },

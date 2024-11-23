@@ -11,7 +11,8 @@ import ROUTES from "@/lib/types/routes";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const { api, currentUser, isAuthenticated, isLoading } = useAuthentication();
+  const { client, currentUser, isAuthenticated, isLoading } =
+    useAuthentication();
   const [orders, setOrders] = useState<OrderWithProduct[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const { addErrorAlert } = useAlertQueue();
@@ -21,7 +22,7 @@ const AdminDashboard = () => {
       if (isAuthenticated && currentUser?.permissions?.includes("is_admin")) {
         setLoadingOrders(true);
         try {
-          const { data, error } = await api.client.GET("/orders/admin/all");
+          const { data, error } = await client.GET("/orders/admin/all");
 
           if (error) {
             const apiError = error as ApiError;
@@ -40,7 +41,7 @@ const AdminDashboard = () => {
     };
 
     fetchOrders();
-  }, [api, currentUser, isAuthenticated]);
+  }, [client, currentUser, isAuthenticated]);
 
   // Redirect non-admin users
   useEffect(() => {
