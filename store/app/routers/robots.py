@@ -1,10 +1,10 @@
 """Defines the router endpoints for handling Robots."""
 
 import asyncio
-from typing import Annotated, Self, Type
+from typing import Annotated, Type
 
 from boto3.dynamodb.conditions import Key
-from fastapi import APIRouter, Depends, Form, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, ValidationError
 
 from store.app.crud.base import ItemNotFoundError
@@ -88,7 +88,7 @@ class SingleRobotResponse(BaseModel):
         crud: Crud | None = None,
         listing: Listing | None = None,
         creator: User | None = None,
-    ) -> Self:
+    ) -> "SingleRobotResponse":
         async def get_listing(listing: Listing | None) -> Listing:
             if listing is None:
                 if crud is None:

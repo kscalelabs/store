@@ -15,3 +15,6 @@ pytest-timeout
 pytest-trio
 s3fs
 flask-cors
+
+# K-Scale dependencies
+krec
