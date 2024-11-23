@@ -4,7 +4,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import Annotated, Any, List, NotRequired, TypedDict, Union
 
-from fastapi import APIRouter, Depends, Form, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
@@ -21,29 +21,39 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+class CreateKRecRequest(BaseModel):
+    name: str
+    robot_id: str
+    description: str | None = None
+
+
+class CreateKRecResponse(BaseModel):
+    krec_id: str
+    upload_url: str
+    expires_at: int
+
+
 @router.post("/upload")
 async def create_krec(
-    name: str = Form(...),
-    robot_id: str = Form(...),
-    description: str | None = Form(None),
-    user: User = Depends(get_session_user_with_write_permission),
-    crud: Crud = Depends(Crud.get),
-) -> dict[str, Any]:
+    request: CreateKRecRequest,
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> CreateKRecResponse:
     """Initialize a KRec upload and return a presigned URL."""
-    robot = await crud.get_robot(robot_id)
+    robot = await crud.get_robot(request.robot_id)
     if robot is None:
-        raise ItemNotFoundError("Robot with ID %s not found", robot_id)
+        raise ItemNotFoundError("Robot with ID %s not found", request.robot_id)
     if robot.user_id != user.id:
         verify_admin_permission(user, "upload KRecs for a robot by another user")
-    if not name.endswith(".krec"):
+    if not request.name.endswith(".krec"):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="KRec name must end with .krec")
 
     # Create KRec record first
     my_krec = KRec.create(
         user_id=user.id,
-        robot_id=robot_id,
-        name=name,
-        description=description,
+        robot_id=request.robot_id,
+        name=request.name,
+        description=request.description,
     )
     await crud._add_item(my_krec)
 
@@ -55,11 +65,11 @@ async def create_krec(
         expires_in=12 * 3600,
     )
 
-    return {
-        "krec_id": my_krec.id,
-        "upload_url": upload_url,
-        "expires_at": int((datetime.utcnow() + timedelta(hours=12)).timestamp()),
-    }
+    return CreateKRecResponse(
+        krec_id=my_krec.id,
+        upload_url=upload_url,
+        expires_at=int((datetime.utcnow() + timedelta(hours=12)).timestamp()),
+    )
 
 
 class KRecUrls(BaseModel):

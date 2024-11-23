@@ -1,7 +1,7 @@
 """Defines the router endpoints for handling Robots."""
 
 import asyncio
-from typing import Self, Type
+from typing import Annotated, Self, Type
 
 from boto3.dynamodb.conditions import Key
 from fastapi import APIRouter, Depends, Form, HTTPException, status
@@ -32,21 +32,18 @@ class CreateRobotResponse(BaseModel):
 
 @router.post("/create", response_model=CreateRobotResponse)
 async def create_robot(
-    listing_id: str = Form(...),
-    name: str = Form(...),
-    description: str | None = Form(None),
-    order_id: str | None = Form(None),
-    user: User = Depends(get_session_user_with_write_permission),
-    crud: Crud = Depends(Crud.get),
+    request: CreateRobotRequest,
+    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> CreateRobotResponse:
     """Create a new robot."""
     try:
         robot = await crud.create_robot(
             user_id=user.id,
-            listing_id=listing_id,
-            name=name,
-            description=description,
-            order_id=order_id,
+            listing_id=request.listing_id,
+            name=request.name,
+            description=request.description,
+            order_id=request.order_id,
         )
         return CreateRobotResponse(robot_id=robot.id)
     except ItemNotFoundError as e:
@@ -60,8 +57,8 @@ async def create_robot(
 @router.get("/get/{robot_id}", response_model=Robot)
 async def get_robot(
     robot_id: str,
-    user: User = Depends(get_session_user_with_read_permission),
-    crud: Crud = Depends(Crud.get),
+    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> Robot:
     """Get a specific robot."""
     try:

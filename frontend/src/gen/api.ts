@@ -1439,26 +1439,6 @@ export interface components {
             /** Account Id */
             account_id: string;
         };
-        /** Body_create_krec_krecs_upload_post */
-        Body_create_krec_krecs_upload_post: {
-            /** Name */
-            name: string;
-            /** Robot Id */
-            robot_id: string;
-            /** Description */
-            description?: string | null;
-        };
-        /** Body_create_robot_robots_create_post */
-        Body_create_robot_robots_create_post: {
-            /** Listing Id */
-            listing_id: string;
-            /** Name */
-            name: string;
-            /** Description */
-            description?: string | null;
-            /** Order Id */
-            order_id?: string | null;
-        };
         /** Body_pull_onshape_document_onshape_pull__listing_id__get */
         Body_pull_onshape_document_onshape_pull__listing_id__get: {
             /** Suffix To Joint Effort */
@@ -1508,6 +1488,24 @@ export interface components {
             /** Account Id */
             account_id: string;
         };
+        /** CreateKRecRequest */
+        CreateKRecRequest: {
+            /** Name */
+            name: string;
+            /** Robot Id */
+            robot_id: string;
+            /** Description */
+            description?: string | null;
+        };
+        /** CreateKRecResponse */
+        CreateKRecResponse: {
+            /** Krec Id */
+            krec_id: string;
+            /** Upload Url */
+            upload_url: string;
+            /** Expires At */
+            expires_at: number;
+        };
         /** CreateRefundsRequest */
         CreateRefundsRequest: {
             /** Payment Intent Id */
@@ -1515,6 +1513,17 @@ export interface components {
             cancel_reason: components["schemas"]["CancelReason"];
             /** Amount */
             amount: number;
+        };
+        /** CreateRobotRequest */
+        CreateRobotRequest: {
+            /** Listing Id */
+            listing_id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description?: string | null;
+            /** Order Id */
+            order_id?: string | null;
         };
         /** CreateRobotResponse */
         CreateRobotResponse: {
@@ -3717,7 +3726,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/x-www-form-urlencoded": components["schemas"]["Body_create_robot_robots_create_post"];
+                "application/json": components["schemas"]["CreateRobotRequest"];
             };
         };
         responses: {
@@ -4609,7 +4618,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/x-www-form-urlencoded": components["schemas"]["Body_create_krec_krecs_upload_post"];
+                "application/json": components["schemas"]["CreateKRecRequest"];
             };
         };
         responses: {
@@ -4619,7 +4628,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": Record<string, never>;
+                    "application/json": components["schemas"]["CreateKRecResponse"];
                 };
             };
             /** @description Validation Error */
