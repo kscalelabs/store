@@ -185,7 +185,7 @@ async def get_reset_password_token(
 ) -> GetResetTokenResponse:
     reset_token = await crud.get_password_reset_token(id)
     if not reset_token:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Token not found.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid or expired reset token.")
     return GetResetTokenResponse(id=reset_token.id, email=reset_token.email)
 
 
@@ -205,7 +205,7 @@ async def validate_password_reset_token(
 ) -> ResetPasswordResponse:
     reset_token = await crud.get_password_reset_token(data.token)
     if not reset_token:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid or expired reset token")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid or expired reset token.")
 
     user = await crud.get_user_from_email(reset_token.email)
 

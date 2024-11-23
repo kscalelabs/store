@@ -71,18 +71,18 @@ const ForgotPassword = () => {
 
   return (
     <div className="flex justify-center items-center ">
-      <Card className="w-[400px] bg-gray-12  rounded-lg">
+      <Card className="w-[400px] bg-gray-12 text-gray-12 rounded-lg">
         <CardHeader>
           <Header title="Reset your Password" />
         </CardHeader>
         <CardContent className="text-center">
+          <p className="text-sm text-gray-300">
+            Enter your registered email to receive a secure link for resetting
+            your password.
+          </p>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <p>
-              Enter your registered email to receive a secure link for resetting
-              your password.
-            </p>
             {/* Email Input */}
-            <div>
+            <div className="my-6">
               <Input placeholder="Email" type="text" {...register("email")} />
               {errors?.email && (
                 <ErrorMessage>{errors?.email?.message}</ErrorMessage>

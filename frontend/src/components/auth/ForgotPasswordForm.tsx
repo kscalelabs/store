@@ -112,8 +112,13 @@ const ForgotPasswordForm = () => {
               <Spinner />
             </div>
           ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="text-center">
-              <p>Enter a new password below to reset your password. </p>
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="grid grid-cols-1 space-y-6 text-center"
+            >
+              <p className="text-sm text-gray-300">
+                Enter a new password below to reset your password.{" "}
+              </p>
               {/* Password Input */}
               <PasswordInput<ResetPasswordType>
                 placeholder="Password"
