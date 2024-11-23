@@ -2,10 +2,9 @@
 
 import logging
 from datetime import datetime, timedelta
-from typing import Annotated, Any, List, NotRequired, TypedDict, Union
+from typing import Annotated, NotRequired, TypedDict
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from store.app.db import Crud
@@ -116,7 +115,6 @@ class SingleKRecResponse(BaseModel):
     async def from_krec(cls, my_krec: KRec, crud: Crud) -> "SingleKRecResponse":
         s3_key = f"krecs/{my_krec.id}/{my_krec.name}"
         size = await crud.get_file_size(s3_key) if crud is not None else None
-
         urls = await get_krec_url_response(my_krec, crud)
 
         return cls(
@@ -138,19 +136,7 @@ class KRecUrlContent(TypedDict):
     urls: NotRequired[KRecUrls]
 
 
-class SecureKRecResponse(JSONResponse):
-    def render(self, content: Union[KRecUrlContent, dict[str, Any]]) -> bytes:
-        if isinstance(content, dict):
-            if "url" in content:
-                content["url"] = content["url"].split("?")[0] + "?[REDACTED]"
-
-            if "urls" in content and isinstance(content["urls"], dict) and "url" in content["urls"]:
-                content["urls"]["url"] = content["urls"]["url"].split("?")[0] + "?[REDACTED]"
-
-        return super().render(content)
-
-
-@router.get("/info/{krec_id}", response_class=SecureKRecResponse)
+@router.get("/info/{krec_id}", response_class=SingleKRecResponse)
 async def get_krec_info(
     krec_id: str,
     user: Annotated[User, Depends(get_session_user)],
@@ -170,12 +156,19 @@ async def get_krec_info(
     return await SingleKRecResponse.from_krec(my_krec, crud)
 
 
-@router.get("/download/{krec_id}", response_class=SecureKRecResponse)
+class KRecDownloadResponse(BaseModel):
+    id: str
+    name: str
+    url: str
+    filename: str
+
+
+@router.get("/download/{krec_id}", response_class=KRecDownloadResponse)
 async def get_krec_download_url(
     krec_id: str,
     user: Annotated[User, Depends(get_session_user)],
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> dict[str, Any]:
+) -> KRecDownloadResponse:
     """Get a presigned download URL for a krec."""
     my_krec = await crud.get_krec(krec_id)
     if my_krec is None:
@@ -188,26 +181,31 @@ async def get_krec_download_url(
         verify_admin_permission(user, "access KRec by another user")
 
     urls = await get_krec_url_response(my_krec, crud)
-    return {"id": my_krec.id, "name": my_krec.name, "url": urls.url, "filename": urls.filename}
+    return KRecDownloadResponse(
+        id=my_krec.id,
+        name=my_krec.name,
+        url=urls.url,
+        filename=urls.filename,
+    )
 
 
-@router.get("/{robot_id}")
+@router.get("/{robot_id}", response_model=list[KRec])
 async def list_krecs(
     robot_id: str,
     user: Annotated[User, Depends(get_session_user)],
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> List[KRec]:
+) -> list[KRec]:
     """List all krecs for a robot."""
     krecs = await crud.list_krecs(robot_id)
     return krecs
 
 
-@router.delete("/{krec_id}")
+@router.delete("/{krec_id}", response_model=bool)
 async def delete_krec(
     krec_id: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
-) -> dict[str, str]:
+) -> bool:
     """Delete a krec."""
     my_krec = await crud.get_krec(krec_id)
     if my_krec is None:
@@ -216,4 +214,4 @@ async def delete_krec(
         verify_admin_permission(user, "delete KRec by another user")
 
     await crud.delete_krec(krec_id)
-    return {"status": "deleted"}
+    return True
