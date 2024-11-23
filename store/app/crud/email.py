@@ -2,6 +2,7 @@
 
 import asyncio
 from typing import List
+
 from store.app.crud.base import BaseCrud
 from store.app.model import EmailSignUpToken, PasswordResetToken
 

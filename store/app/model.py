@@ -123,6 +123,7 @@ class EmailSignUpToken(StoreBaseModel):
 
 class PasswordResetToken(StoreBaseModel):
     """Object created when user requests a password reset.
+
     Used to validate and authorize password reset requests.
     """
 

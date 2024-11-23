@@ -9,9 +9,8 @@ from pydantic.networks import EmailStr
 from store.app.crud.users import UserCrud
 from store.app.db import Crud
 from store.app.model import APIKeySource, User
-from store.app.utils.email import send_signup_email, send_reset_password_email
-from store.app.utils.password import verify_password
-from store.app.utils.password import hash_password
+from store.app.utils.email import send_reset_password_email, send_signup_email
+from store.app.utils.password import hash_password, verify_password
 
 router = APIRouter()
 
