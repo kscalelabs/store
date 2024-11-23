@@ -644,3 +644,48 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
                 str(e),
             )
             raise
+
+    async def generate_presigned_video_upload_url(self, filename: str, s3_key: str, expires_in: int = 3600) -> str:
+        """Generates a presigned URL specifically for uploading video files to S3.
+
+        Optimized for video content like .mkv files with appropriate content type
+        handling and upload parameters.
+
+        Args:
+            filename: Original filename for Content-Disposition
+            s3_key: The S3 key where the file will be stored
+            expires_in: Number of seconds until URL expires
+
+        Returns:
+            Presigned URL for uploading
+        """
+        try:
+            content_type = "video/x-matroska" if filename.lower().endswith(".mkv") else "video/mp4"
+
+            params = {
+                "Bucket": settings.s3.bucket,
+                "Key": f"{settings.s3.prefix}{s3_key}",
+                "ContentType": content_type,
+                "ContentDisposition": f'attachment; filename="{filename}"',
+                "ACL": "private",
+            }
+
+            url = await self.s3.meta.client.generate_presigned_url(
+                ClientMethod="put_object",
+                Params=params,
+                ExpiresIn=expires_in,
+            )
+            logger.debug("Generated video upload presigned URL for %s with content type %s", filename, content_type)
+            return url
+
+        except ClientError as e:
+            error_code = e.response.get("Error", {}).get("Code", "Unknown")
+            error_message = e.response.get("Error", {}).get("Message", str(e))
+            logger.error(
+                "Failed to generate video upload presigned URL - Bucket: %s, Key: %s, Error: %s - %s",
+                settings.s3.bucket,
+                s3_key,
+                error_code,
+                error_message,
+            )
+            raise
