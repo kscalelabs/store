@@ -62,7 +62,6 @@ async def create_krec(
         filename=my_krec.name,
         s3_key=s3_key,
         content_type="video/x-matroska",
-        expires_in=12 * 3600,
     )
 
     return CreateKRecResponse(

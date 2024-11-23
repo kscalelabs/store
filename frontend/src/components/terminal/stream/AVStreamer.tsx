@@ -15,7 +15,6 @@ const AVStreamer = () => {
   const handleConnect = () => {};
   const handleDisconnect = () => {};
   const handleSendRequest = () => {};
-  const setRequestText = (_text: string) => {};
 
   return (
     <div className="border border-gray-700 bg-black rounded-lg overflow-hidden flex flex-col">
@@ -79,7 +78,6 @@ const AVStreamer = () => {
           <div className="flex flex-col gap-2">
             <textarea
               value={requestText}
-              onChange={(e) => setRequestText(e.target.value)}
               placeholder="Enter JSON request to send over data channel"
               className="w-full px-3 py-2 bg-gray-800 text-white rounded-md"
               rows={4}
