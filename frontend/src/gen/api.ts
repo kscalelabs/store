@@ -1276,6 +1276,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/teleop/rtc/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Check Auth
+         * @description Validates the user's API key and returns their user ID.
+         */
+        get: operations["check_auth_teleop_rtc_check_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/krecs/upload": {
         parameters: {
             query?: never;
@@ -1461,6 +1481,11 @@ export interface components {
             reason: string;
             /** Details */
             details: string;
+        };
+        /** CheckAuthResponse */
+        CheckAuthResponse: {
+            /** User Id */
+            user_id: string;
         };
         /** ClientIdResponse */
         ClientIdResponse: {
@@ -1851,7 +1876,7 @@ export interface components {
             /** Google Id */
             google_id: string | null;
             /** Permissions */
-            permissions: ("is_admin" | "is_mod" | "is_content_manager")[] | null;
+            permissions: ("is_admin" | "is_mod" | "is_content_manager" | "is_verified_member")[] | null;
             /** First Name */
             first_name: string | null;
             /** Last Name */
@@ -2027,7 +2052,7 @@ export interface components {
             /** Username */
             username: string;
             /** Permissions */
-            permissions?: ("is_admin" | "is_mod" | "is_content_manager")[] | null;
+            permissions?: ("is_admin" | "is_mod" | "is_content_manager" | "is_verified_member")[] | null;
             /** Created At */
             created_at?: number | null;
             /** Updated At */
@@ -2306,7 +2331,7 @@ export interface components {
             /** Username */
             username: string;
             /** Permissions */
-            permissions?: ("is_admin" | "is_mod" | "is_content_manager")[] | null;
+            permissions?: ("is_admin" | "is_mod" | "is_content_manager" | "is_verified_member")[] | null;
             /** Created At */
             created_at: number;
             /** Updated At */
@@ -4616,6 +4641,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    check_auth_teleop_rtc_check_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckAuthResponse"];
                 };
             };
         };

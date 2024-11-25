@@ -176,6 +176,8 @@ export const RenderProfile = (props: RenderProfileProps) => {
         return "Moderator";
       case permissions.includes("is_content_manager"):
         return "Content Manager";
+      case permissions.includes("is_verified_member"):
+        return "Verified Member";
       default:
         return "Member";
     }

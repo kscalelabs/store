@@ -28,7 +28,7 @@ class StoreBaseModel(BaseModel):
     id: str
 
 
-UserPermission = Literal["is_admin", "is_mod", "is_content_manager"]
+UserPermission = Literal["is_admin", "is_mod", "is_content_manager", "is_verified_member"]
 
 
 class UserStripeConnect(BaseModel):
