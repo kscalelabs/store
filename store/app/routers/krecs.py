@@ -42,16 +42,8 @@ async def create_krec(
     robot = await crud.get_robot(request.robot_id)
     if robot is None:
         raise ItemNotFoundError("Robot with ID %s not found", request.robot_id)
-
-    user_permissions = user.permissions or set()
-    if not ("is_admin" in user_permissions or "is_verified_member" in user_permissions):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Only verified members and admins can upload KRecs"
-        )
-
     if robot.user_id != user.id:
         verify_admin_permission(user, "upload KRecs for a robot by another user")
-
     if not request.name.endswith(".krec"):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="KRec name must end with .krec")
 
