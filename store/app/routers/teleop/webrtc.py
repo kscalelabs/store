@@ -11,7 +11,10 @@ from pydantic import BaseModel
 
 from store.app.db import Crud
 from store.app.model import TeleopICECandidate, User
-from store.app.security.user import get_session_user_with_write_permission
+from store.app.security.user import (
+    get_session_user_with_read_permission,
+    get_session_user_with_write_permission,
+)
 
 router = APIRouter()
 
@@ -84,7 +87,7 @@ class CheckAuthResponse(BaseModel):
 
 @router.get("/check", response_model=CheckAuthResponse)
 async def check_auth(
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    user: Annotated[User, Depends(get_session_user_with_read_permission)],
 ) -> CheckAuthResponse:
     """Validates the user's API key and returns their user ID."""
     return CheckAuthResponse(user_id=user.id)

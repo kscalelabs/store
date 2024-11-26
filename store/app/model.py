@@ -9,7 +9,7 @@ import time
 from datetime import datetime, timedelta
 from typing import Literal, Self, cast, get_args
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from store.app.errors import InternalError
 from store.app.utils.password import hash_password
@@ -151,6 +151,15 @@ class APIKey(StoreBaseModel):
     permissions: set[APIKeyPermission] | None = None
     ttl: int | None = None
     created_at: int
+
+    @field_validator("permissions", mode="before")
+    @classmethod
+    def convert_permissions_to_set(
+        cls, v: list[APIKeyPermission] | set[APIKeyPermission] | None
+    ) -> set[APIKeyPermission] | None:
+        if isinstance(v, list):
+            return set(v)
+        return v
 
     @classmethod
     def create(cls, user_id: str, source: APIKeySource, permissions: APIKeyPermissionSet) -> Self:
