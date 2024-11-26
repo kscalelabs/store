@@ -439,6 +439,12 @@ async def get_presigned_url(
             detail="Filename was not provided",
         )
 
+    user_permissions = user.permissions or set()
+    if not ("is_admin" in user_permissions or "is_verified_member" in user_permissions):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Only verified members and admins can upload kernel images"
+        )
+
     if not Path(filename).suffix.lower() == ".img":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Only .img files are supported for kernel uploads"
