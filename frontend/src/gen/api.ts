@@ -2195,11 +2195,16 @@ export interface components {
             /** Slug */
             slug: string;
             /** Description */
-            description?: string | null;
+            description: string | null;
             /** Order Id */
-            order_id?: string | null;
+            order_id: string | null;
             /** Created At */
             created_at: number;
+            /**
+             * Is Deleted
+             * @default false
+             */
+            is_deleted: boolean;
         };
         /**
          * SortOption
