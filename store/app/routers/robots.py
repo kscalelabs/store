@@ -77,9 +77,10 @@ class SingleRobotResponse(BaseModel):
     name: str
     username: str
     slug: str
-    description: str | None = None
-    order_id: str | None = None
+    description: str | None
+    order_id: str | None
     created_at: int
+    is_deleted: bool = False
 
     @classmethod
     async def from_robot(
@@ -89,48 +90,17 @@ class SingleRobotResponse(BaseModel):
         listing: Listing | None = None,
         creator: User | None = None,
     ) -> "SingleRobotResponse":
-        async def get_listing(listing: Listing | None) -> Listing:
-            if listing is None:
-                if crud is None:
-                    raise HTTPException(
-                        status_code=status.HTTP_404_NOT_FOUND,
-                        detail="Could not find listing associated with the given robot",
-                    )
-                listing = await crud.get_listing(robot.listing_id)
-            if listing is None:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Could not find listing associated with the given robot",
-                )
-            return listing
-
-        async def get_creator(creator: User | None) -> User:
-            if creator is None:
-                if crud is None:
-                    raise HTTPException(
-                        status_code=status.HTTP_404_NOT_FOUND,
-                        detail="Could not find creator associated with the given robot",
-                    )
-                creator = await crud.get_user(robot.user_id)
-            if creator is None:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Could not find creator associated with the given robot",
-                )
-            return creator
-
-        creator_non_null, listing_non_null = await asyncio.gather(get_creator(creator), get_listing(listing))
-
         return cls(
             robot_id=robot.id,
             user_id=robot.user_id,
             listing_id=robot.listing_id,
             name=robot.name,
-            username=creator_non_null.username,
-            slug=listing_non_null.slug,
+            username=creator.username if creator else "Deleted User",
+            slug=listing.slug if listing else "deleted-listing",
             description=robot.description,
             order_id=robot.order_id,
             created_at=robot.created_at,
+            is_deleted=creator is None or listing is None or creator.id == "deleted",
         )
 
 
@@ -151,12 +121,35 @@ async def list_user_robots(
     unique_listing_ids = list(set(robot.listing_id for robot in robots))
     listings = await crud.get_listings_by_ids(unique_listing_ids)
     listing_ids_to_listing = {listing.id: listing for listing in listings}
+
+    deleted_user = User(
+        id="deleted",
+        username="Deleted User",
+        email="",
+        created_at=0,
+        updated_at=0,
+    )
+
     listing_creators = await crud.get_user_batch(list(set(listing.user_id for listing in listings)))
     user_id_to_user = {user.id: user for user in listing_creators}
 
     async def get_robot_response(robot: Robot) -> SingleRobotResponse:
-        listing = listing_ids_to_listing[robot.listing_id]
-        creator = user_id_to_user[listing.user_id]
+        listing = listing_ids_to_listing.get(robot.listing_id)
+        if listing:
+            creator = user_id_to_user.get(listing.user_id, deleted_user)
+        else:
+            listing = Listing(
+                id=robot.listing_id,
+                user_id="deleted",
+                name="Deleted Listing",
+                description="This listing has been deleted",
+                slug="deleted-listing",
+                child_ids=[],
+                created_at=robot.created_at,
+                updated_at=robot.created_at,
+            )
+            creator = deleted_user
+
         return await SingleRobotResponse.from_robot(
             robot,
             crud=crud,

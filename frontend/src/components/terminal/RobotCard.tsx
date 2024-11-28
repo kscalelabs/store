@@ -56,23 +56,27 @@ export default function RobotCard({ robot, onDeleteRobot }: RobotCardProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
             <div>
               <p className="text-gray-400">Listing</p>
-              <Tooltip
-                content="View listing associated with robot"
-                position="bottom"
-              >
-                <Link
-                  to={ROUTES.BOT.buildPath({
-                    username: robot.username,
-                    slug: robot.slug,
-                  })}
-                  className="text-white hover:text-primary-9 flex items-center gap-1 group transition-colors"
+              {robot.is_deleted ? (
+                <p className="text-gray-500 italic">Listing deleted</p>
+              ) : (
+                <Tooltip
+                  content="View listing associated with robot"
+                  position="bottom"
                 >
-                  <span className="group-hover:underline">
-                    {robot.username}/{robot.slug}
-                  </span>
-                  <FaExternalLinkAlt className="h-3 w-3" />
-                </Link>
-              </Tooltip>
+                  <Link
+                    to={ROUTES.BOT.buildPath({
+                      username: robot.username,
+                      slug: robot.slug,
+                    })}
+                    className="text-white hover:text-primary-9 flex items-center gap-1 group transition-colors"
+                  >
+                    <span className="group-hover:underline">
+                      {robot.username}/{robot.slug}
+                    </span>
+                    <FaExternalLinkAlt className="h-3 w-3" />
+                  </Link>
+                </Tooltip>
+              )}
             </div>
             <div>
               <p className="text-gray-400">Registered</p>
