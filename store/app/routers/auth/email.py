@@ -9,8 +9,8 @@ from pydantic.networks import EmailStr
 from store.app.crud.users import UserCrud
 from store.app.db import Crud
 from store.app.model import APIKeySource, User
-from store.app.utils.email import send_signup_email
-from store.app.utils.password import verify_password
+from store.app.utils.email import send_reset_password_email, send_signup_email
+from store.app.utils.password import hash_password, verify_password
 
 router = APIRouter()
 
@@ -146,3 +146,77 @@ async def login_user(data: LoginRequest, user_crud: UserCrud = Depends()) -> Log
         )
 
         return LoginResponse(user_id=user.id, token=api_key.id)
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ForgotPasswordResponse(BaseModel):
+    message: str
+
+
+@router.post("/forgot-password", response_model=ForgotPasswordResponse)
+async def generate_password_reset_token(
+    data: ForgotPasswordRequest, crud: Annotated[Crud, Depends(Crud.get)]
+) -> ForgotPasswordResponse:
+    try:
+        if user := await crud.get_user_from_email(data.email):
+            await crud.delete_password_reset_token_by_email(user.email)
+            reset_token = await crud.create_password_reset_token(email=user.email)
+
+            await send_reset_password_email(email=user.email, token=reset_token.id)
+
+        return ForgotPasswordResponse(message="If the email is registered, a password reset link will be sent.")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+class GetResetTokenResponse(BaseModel):
+    id: str
+    email: str
+
+
+@router.get("/get-reset-token/{id}", response_model=GetResetTokenResponse)
+async def get_reset_password_token(
+    id: str,
+    crud: Annotated[Crud, Depends(Crud.get)],
+) -> GetResetTokenResponse:
+    reset_token = await crud.get_password_reset_token(id)
+    if not reset_token:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid or expired reset token.")
+    return GetResetTokenResponse(id=reset_token.id, email=reset_token.email)
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+
+class ResetPasswordResponse(BaseModel):
+    message: str
+    email: str
+
+
+@router.post("/reset-password", response_model=ResetPasswordResponse)
+async def validate_password_reset_token(
+    data: ResetPasswordRequest, crud: Annotated[Crud, Depends(Crud.get)]
+) -> ResetPasswordResponse:
+    reset_token = await crud.get_password_reset_token(data.token)
+    if not reset_token:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid or expired reset token.")
+
+    user = await crud.get_user_from_email(reset_token.email)
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not Found")
+
+    # Update user password
+    updated_user = await crud.update_user(
+        user_id=user.id, updates={"hashed_password": hash_password(data.new_password)}
+    )
+
+    # Remove reset token
+    await crud.delete_password_reset_token(data.token)
+
+    return ResetPasswordResponse(message="Password updated successful", email=updated_user.email)

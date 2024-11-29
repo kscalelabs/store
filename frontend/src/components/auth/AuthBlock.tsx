@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import AuthProvider from "@/components/auth/AuthProvider";
 import LoginForm from "@/components/auth/LoginForm";
@@ -14,6 +15,7 @@ import Spinner from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
 import { useAlertQueue } from "@/hooks/useAlertQueue";
 import { useAuthentication } from "@/hooks/useAuth";
+import ROUTES from "@/lib/types/routes";
 
 interface AuthBlockProps {
   title?: string | React.ReactNode;
@@ -39,6 +41,7 @@ export const AuthBlockInner: React.FC<{ initialSignup?: boolean }> = ({
   initialSignup,
 }) => {
   const auth = useAuthentication();
+  const navigate = useNavigate();
   const { addErrorAlert } = useAlertQueue();
 
   const [isSignup, setIsSignup] = useState(initialSignup ?? false);
@@ -84,7 +87,14 @@ export const AuthBlockInner: React.FC<{ initialSignup?: boolean }> = ({
       <CardFooter>
         <AuthProvider />
       </CardFooter>
-      <CardFooter>
+      <CardFooter className="flex flex-col">
+        <Button
+          onClick={() => navigate(ROUTES.PASSWORD_RESET.path)}
+          variant="link"
+          className="w-full"
+        >
+          Forgot Password?
+        </Button>
         <Button
           onClick={() => setIsSignup((s) => !s)}
           variant="link"

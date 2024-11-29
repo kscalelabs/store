@@ -21,6 +21,7 @@ import DeleteConnect from "@/components/pages/DeleteConnect";
 import EmailSignup from "@/components/pages/EmailSignup";
 import Eula from "@/components/pages/Eula";
 import FileBrowser from "@/components/pages/FileBrowser";
+import ForgotPassword from "@/components/pages/ForgotPassword";
 import Home from "@/components/pages/Home";
 import KBotPreorderTerms from "@/components/pages/KBotPreorderTerms";
 import LinkRobot from "@/components/pages/LinkRobot";
@@ -41,6 +42,8 @@ import TermsOfService from "@/components/pages/TermsOfService";
 import { AlertQueue, AlertQueueProvider } from "@/hooks/useAlertQueue";
 import { AuthenticationProvider } from "@/hooks/useAuth";
 import ROUTES from "@/lib/types/routes";
+
+import ForgotPasswordForm from "./components/auth/ForgotPasswordForm";
 
 const App = () => {
   return (
@@ -93,6 +96,14 @@ const App = () => {
                           element={<EmailSignup />}
                         />
                         <Route path={ROUTES.KEYS.path} element={<APIKeys />} />
+                        <Route
+                          path={ROUTES.PASSWORD_RESET.path}
+                          element={<ForgotPassword />}
+                        />
+                        <Route
+                          path={ROUTES.PASSWORD_RESET.FORM.path}
+                          element={<ForgotPasswordForm />}
+                        />
                         <Route
                           path={ROUTES.PROFILE.path}
                           element={<Profile />}
