@@ -105,4 +105,4 @@ jobs:
           path: |
             ${{ env.pythonLocation }}
             .mypy_cache/
-          key: ${{ steps.restore-cache.outputs.cache-primary-key }}
+          key: tests-${{ github.event.pull_request.base.sha || github.sha }}

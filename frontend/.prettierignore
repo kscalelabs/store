@@ -1,4 +1,0 @@
-# Ignore codegen files
-src/gen/
-src/lib/klang/
-src/lib/mujoco/

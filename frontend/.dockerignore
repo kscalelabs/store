@@ -1,5 +1,0 @@
-# .dockerignore
-
-# Only add the build directory to Docker.
-*
-!build/
