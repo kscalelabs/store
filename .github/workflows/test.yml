@@ -62,14 +62,14 @@ jobs:
         run: |
           pip install --upgrade --upgrade-strategy eager -e '.[dev]'
 
-      - name: Run static checks
+      - name: Run linting and type checks
         run: |
           mkdir -p .mypy_cache
-          make static-checks
+          make lint
 
       - name: Run unit tests
         run: |
-          make test-backend
+          make test
 
       - name: Save cache
         uses: actions/cache/save@v3
