@@ -1,1 +1,1 @@
-web: gunicorn store.app.main:application --workers=4 --worker-class=uvicorn.workers.UvicornWorker
+web: gunicorn www.app.main:application --workers=4 --worker-class=uvicorn.workers.UvicornWorker

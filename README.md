@@ -14,8 +14,8 @@
 [![black](https://img.shields.io/badge/Code%20Style-Black-black.svg?labelColor=gray)](https://black.readthedocs.io/en/stable/)
 [![ruff](https://img.shields.io/badge/Linter-Ruff-red.svg?labelColor=gray)](https://github.com/charliermarsh/ruff)
 <br />
-[![CI Checks (Linting and Tests)](https://github.com/kscalelabs/store/actions/workflows/test.yml/badge.svg)](https://github.com/kscalelabs/store/actions/workflows/test.yml)
-[![Deploys latest code](https://github.com/kscalelabs/store/actions/workflows/deploy.yml/badge.svg)](https://github.com/kscalelabs/store/actions/workflows/deploy.yml)
+[![CI Checks (Linting and Tests)](https://github.com/kscalelabs/www/actions/workflows/test.yml/badge.svg)](https://github.com/kscalelabs/www/actions/workflows/test.yml)
+[![Deploys latest code](https://github.com/kscalelabs/www/actions/workflows/deploy.yml/badge.svg)](https://github.com/kscalelabs/www/actions/workflows/deploy.yml)
 
 </div>
 

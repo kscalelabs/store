@@ -1,6 +1,6 @@
 """Runs tests on the database model, to ensure that it is functioning correctly."""
 
-from store.app.db import Crud, create_tables
+from www.app.db import Crud, create_tables
 
 
 async def test_model_functions() -> None:

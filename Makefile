@@ -4,35 +4,40 @@
 #          Serve           #
 # ------------------------ #
 
-start-backend:
-	@if [ -f env.sh ]; then source env.sh; fi; fastapi dev 'store/app/main.py' --port 8080
+start:
+	@if [ -f env.sh ]; then source env.sh; fi; fastapi dev 'www/app/main.py' --port 8080
+.PHONY: start
 
 update-api:
 	@cd frontend && rm -rf src/gen/api.ts && openapi-typescript http://localhost:8080/openapi.json --output src/gen/api.ts
+.PHONY: update-api
 
 start-docker-dynamodb:
-	@docker kill store-db || true
-	@docker rm store-db || true
-	@docker run --name store-db -d -p 8000:8000 amazon/dynamodb-local
+	@docker kill www-db || true
+	@docker rm www-db || true
+	@docker run --name www-db -d -p 8000:8000 amazon/dynamodb-local
+.PHONY: start-docker-dynamodb
 
 start-docker-backend:
-	@docker kill store-backend || true
-	@docker rm store-backend || true
-	@docker build -t store-backend .
-	@docker run --name store-backend -d -p 8080:8080 store-backend
+	@docker kill www-backend || true
+	@docker rm www-backend || true
+	@docker build -t www-backend .
+	@docker run --name www-backend -d -p 8080:8080 www-backend
+.PHONY: start-docker-backend
 
 start-docker-localstack:
-	@docker kill store-localstack || true
-	@docker rm store-localstack || true
-	@docker run -d --name store-localstack -p 4566:4566 -p 4571:4571 localstack/localstack
+	@docker kill www-localstack || true
+	@docker rm www-localstack || true
+	@docker run -d --name www-localstack -p 4566:4566 -p 4571:4571 localstack/localstack
+.PHONY: start-docker-localstack
 
 # ------------------------ #
 #      Code Formatting     #
 # ------------------------ #
 
 format:
-	@black store tests
-	@ruff check --fix store tests
+	@black www tests
+	@ruff check --fix www tests
 .PHONY: format
 
 # ------------------------ #
@@ -40,9 +45,9 @@ format:
 # ------------------------ #
 
 lint:
-	@black --diff --check store tests
-	@ruff check store tests
-	@mypy --install-types --non-interactive store tests
+	@black --diff --check www tests
+	@ruff check www tests
+	@mypy --install-types --non-interactive www tests
 .PHONY: lint
 
 # ------------------------ #

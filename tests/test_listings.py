@@ -6,7 +6,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from store.app.model import ListingVote
+from www.app.model import ListingVote
 
 
 def test_listings(test_client: TestClient, tmpdir: Path) -> None:

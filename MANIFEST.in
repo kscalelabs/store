@@ -1,1 +1,1 @@
-recursive-include store/ *.py *.txt py.typed MANIFEST.in
+recursive-include www/ *.py *.txt py.typed MANIFEST.in
