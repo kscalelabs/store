@@ -6,7 +6,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Copy the requirements file first to leverage Docker's cache.
-COPY /store/requirements.txt /app
+COPY /www/requirements.txt /app
 
 # Installs Open3D dependencies.
 RUN apt-get update && apt-get install -y \
@@ -30,4 +30,4 @@ RUN pip install --no-cache-dir .
 EXPOSE 8080
 
 # Run the FastAPI application.
-CMD ["fastapi", "run", "store/app/main.py", "--port", "8080"]
+CMD ["fastapi", "run", "www/app/main.py", "--port", "8080"]
