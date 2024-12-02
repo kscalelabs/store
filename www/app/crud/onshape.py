@@ -16,9 +16,9 @@ from kol.onshape.download import download
 from kol.onshape.postprocess import postprocess
 from PIL import Image
 
-from store.app.crud.base import BaseCrud
-from store.app.crud.listings import ListingsCrud
-from store.app.model import Listing
+from www.app.crud.base import BaseCrud
+from www.app.crud.listings import ListingsCrud
+from www.app.model import Listing
 
 logger = logging.getLogger(__name__)
 

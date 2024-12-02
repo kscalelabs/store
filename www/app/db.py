@@ -5,16 +5,16 @@ import asyncio
 import logging
 from typing import AsyncGenerator, Literal, Self
 
-from store.app.crud.artifacts import ArtifactsCrud
-from store.app.crud.base import TABLE_NAME, BaseCrud
-from store.app.crud.email import EmailCrud
-from store.app.crud.krecs import KRecsCrud
-from store.app.crud.listings import ListingsCrud
-from store.app.crud.onshape import OnshapeCrud
-from store.app.crud.orders import OrdersCrud
-from store.app.crud.robots import RobotsCrud
-from store.app.crud.teleop import TeleopCrud
-from store.app.crud.users import UserCrud
+from www.app.crud.artifacts import ArtifactsCrud
+from www.app.crud.base import TABLE_NAME, BaseCrud
+from www.app.crud.email import EmailCrud
+from www.app.crud.krecs import KRecsCrud
+from www.app.crud.listings import ListingsCrud
+from www.app.crud.onshape import OnshapeCrud
+from www.app.crud.orders import OrdersCrud
+from www.app.crud.robots import RobotsCrud
+from www.app.crud.teleop import TeleopCrud
+from www.app.crud.users import UserCrud
 
 
 class Crud(

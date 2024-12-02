@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-from store.app.routers.teleop.webrtc import router as webrtc_router
+from www.app.routers.teleop.webrtc import router as webrtc_router
 
 router = APIRouter()
 

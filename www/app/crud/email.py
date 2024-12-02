@@ -2,8 +2,8 @@
 
 import asyncio
 
-from store.app.crud.base import BaseCrud
-from store.app.model import EmailSignUpToken
+from www.app.crud.base import BaseCrud
+from www.app.model import EmailSignUpToken
 
 
 class EmailCrud(BaseCrud):

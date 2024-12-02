@@ -2,37 +2,34 @@
 
 import logging
 from contextlib import asynccontextmanager
-from pathlib import Path
 from typing import AsyncGenerator
 
 import uvicorn
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.openapi.utils import get_openapi
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi.security import APIKeyCookie, APIKeyHeader
 
-from store.app.db import create_tables
-from store.app.errors import (
+from www.app.db import create_tables
+from www.app.errors import (
     BadArtifactError,
     InternalError,
     ItemNotFoundError,
     NotAuthenticatedError,
     NotAuthorizedError,
 )
-from store.app.routers.artifacts import router as artifacts_router
-from store.app.routers.auth import router as auth_router
-from store.app.routers.keys import router as keys_router
-from store.app.routers.krecs import router as krecs_router
-from store.app.routers.listings import router as listings_router
-from store.app.routers.onshape import router as onshape_router
-from store.app.routers.orders import router as orders_router
-from store.app.routers.robots import router as robots_router
-from store.app.routers.stripe import router as stripe_router
-from store.app.routers.teleop import router as teleop_router
-from store.app.routers.users import router as users_router
-from store.utils import get_cors_origins
+from www.app.routers.artifacts import router as artifacts_router
+from www.app.routers.auth import router as auth_router
+from www.app.routers.keys import router as keys_router
+from www.app.routers.krecs import router as krecs_router
+from www.app.routers.listings import router as listings_router
+from www.app.routers.onshape import router as onshape_router
+from www.app.routers.orders import router as orders_router
+from www.app.routers.robots import router as robots_router
+from www.app.routers.stripe import router as stripe_router
+from www.app.routers.teleop import router as teleop_router
+from www.app.routers.users import router as users_router
+from www.utils import get_cors_origins
 
 
 @asynccontextmanager
@@ -54,9 +51,9 @@ api_key_header = APIKeyHeader(name="Authorization", auto_error=False)
 app = FastAPI(
     title="K-Scale",
     version="1.0.0",
-    docs_url=None,
-    redoc_url=None,
-    openapi_url=None,
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json",
 )
 
 # Adds CORS middleware.
@@ -120,58 +117,6 @@ async def bad_artifact_exception_handler(request: Request, exc: BadArtifactError
 @app.get("/")
 async def read_root() -> bool:
     return True
-
-
-@app.get("/openapi.json", include_in_schema=False)
-async def get_open_api_endpoint() -> JSONResponse:
-    openapi_schema = get_openapi(title="K-Scale", version="1.0.0", routes=app.routes)
-
-    # Add APIKeyHeader security scheme
-    openapi_schema["components"]["securitySchemes"] = {
-        "APIKeyHeader": {"type": "apiKey", "in": "header", "name": "Authorization"}
-    }
-
-    # Define paths that don't require authorization
-    unsecured_paths = {
-        "/",
-        "/auth/api/logout",
-        "/auth/email/login",
-        "/auth/email/signup",
-        "/auth/email/signup/create",
-        "/auth/email/signup/delete/{id}",
-        "/auth/email/signup/get/{id}",
-        "/auth/github/client-id",
-        "/auth/github/code",
-        "/auth/google/client-id",
-        "/auth/google/login",
-        "/listings/{id}",
-        "/listings/dump",
-        "/listings/search",
-    }
-
-    # Set default security for all paths
-    for path, path_item in openapi_schema["paths"].items():
-        for method in path_item.values():
-            method["security"] = [{"APIKeyHeader": []}]
-
-    # Remove security for unsecured paths
-    for path in unsecured_paths:
-        if path in openapi_schema["paths"]:
-            for method in openapi_schema["paths"][path].values():
-                method.pop("security", None)
-
-    return JSONResponse(openapi_schema)
-
-
-@app.get("/docs", include_in_schema=False)
-async def get_documentation() -> HTMLResponse:
-    return get_swagger_ui_html(openapi_url="/openapi.json", title="docs", oauth2_redirect_url="/docs/oauth2-redirect")
-
-
-@app.get("/docs/oauth2-redirect", include_in_schema=False)
-async def get_oauth2_redirect() -> str:
-    template_path = Path(__file__).parent / "templates" / "oauth2_redirect.html"
-    return template_path.read_text()
 
 
 async def validate_auth_token(auth_token: str = Depends(api_key_header)) -> str:

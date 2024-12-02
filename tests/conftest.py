@@ -69,7 +69,7 @@ def mock_aws() -> Generator[None, None, None]:
 
 @pytest.fixture()
 async def app_client() -> AsyncGenerator[AsyncClient, None]:
-    from store.app.main import app
+    from www.app.main import app
 
     transport = ASGITransport(cast(_ASGIApp, app))
 
@@ -81,8 +81,8 @@ async def app_client() -> AsyncGenerator[AsyncClient, None]:
 def test_client() -> Generator[TestClient, None, None]:
     import asyncio
 
-    from store.app.db import Crud, create_tables
-    from store.app.main import app
+    from www.app.db import Crud, create_tables
+    from www.app.main import app
 
     async def setup() -> None:
         async with Crud() as crud:

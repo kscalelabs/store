@@ -32,6 +32,14 @@ start-docker-localstack:
 .PHONY: start-docker-localstack
 
 # ------------------------ #
+#        Install           #
+# ------------------------ #
+
+install:
+	@pip install -e '[.dev]'
+.PHONY: install
+
+# ------------------------ #
 #      Code Formatting     #
 # ------------------------ #
 

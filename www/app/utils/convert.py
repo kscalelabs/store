@@ -7,7 +7,7 @@ from pathlib import Path
 import trimesh
 from pybullet_utils import bullet_client, urdfEditor
 
-from store.app.utils.formats import mjcf
+from www.app.utils.formats import mjcf
 
 
 def urdf_to_mjcf(urdf_tree: ET.ElementTree, meshes: list[tuple[str, trimesh.Trimesh]]) -> ET.ElementTree:

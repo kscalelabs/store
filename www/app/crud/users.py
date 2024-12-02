@@ -12,9 +12,9 @@ from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from pydantic import BaseModel
 
-from store.app.crud.base import TABLE_NAME, BaseCrud
-from store.app.crud.listings import ListingsCrud
-from store.app.model import (
+from www.app.crud.base import TABLE_NAME, BaseCrud
+from www.app.crud.listings import ListingsCrud
+from www.app.model import (
     APIKey,
     APIKeyPermissionSet,
     APIKeySource,
@@ -23,8 +23,8 @@ from store.app.model import (
     UserPermission,
     UserStripeConnect,
 )
-from store.settings import settings
-from store.utils import cache_async_result
+from www.settings import settings
+from www.utils import cache_async_result
 
 logger = logging.getLogger(__name__)
 

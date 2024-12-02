@@ -8,19 +8,19 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic.main import BaseModel
 from pydantic.networks import EmailStr
 
-from store.app.crud.users import UserPublic
-from store.app.db import Crud
-from store.app.errors import ItemNotFoundError
-from store.app.model import User, UserPermission, UserStripeConnect
-from store.app.security.requests import get_request_api_key_id
-from store.app.security.user import (
+from www.app.crud.users import UserPublic
+from www.app.db import Crud
+from www.app.errors import ItemNotFoundError
+from www.app.model import User, UserPermission, UserStripeConnect
+from www.app.security.requests import get_request_api_key_id
+from www.app.security.user import (
     get_session_user_with_admin_permission,
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
     verify_admin_permission,
     verify_target_not_admin,
 )
-from store.app.utils.email import send_delete_email
+from www.app.utils.email import send_delete_email
 
 logger = logging.getLogger(__name__)
 

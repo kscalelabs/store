@@ -8,9 +8,9 @@ from typing import Any, Callable, Literal, Type, TypeVar, overload
 
 from boto3.dynamodb.conditions import Attr
 
-from store.app.crud.artifacts import ArtifactsCrud
-from store.app.crud.base import TABLE_NAME, BaseCrud, ItemNotFoundError
-from store.app.model import Listing, ListingTag, ListingVote, User
+from www.app.crud.artifacts import ArtifactsCrud
+from www.app.crud.base import TABLE_NAME, BaseCrud, ItemNotFoundError
+from www.app.model import Listing, ListingTag, ListingVote, User
 
 T = TypeVar("T")
 

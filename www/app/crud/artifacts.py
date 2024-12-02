@@ -15,9 +15,9 @@ from boto3.dynamodb.conditions import ComparisonCondition
 from fastapi import UploadFile
 from PIL import Image
 
-from store.app.crud.base import BaseCrud, ItemNotFoundError
-from store.app.errors import BadArtifactError
-from store.app.model import (
+from www.app.crud.base import BaseCrud, ItemNotFoundError
+from www.app.errors import BadArtifactError
+from www.app.model import (
     DOWNLOAD_CONTENT_TYPE,
     Artifact,
     ArtifactSize,
@@ -26,8 +26,8 @@ from store.app.model import (
     SizeMapping,
     get_artifact_name,
 )
-from store.settings import settings
-from store.utils import save_xml
+from www.settings import settings
+from www.utils import save_xml
 
 logger = logging.getLogger(__name__)
 

@@ -12,8 +12,8 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 from fastapi.responses import RedirectResponse
 from pydantic.main import BaseModel
 
-from store.app.db import Crud
-from store.app.model import (
+from www.app.db import Crud
+from www.app.model import (
     Artifact,
     ArtifactSize,
     ArtifactType,
@@ -27,12 +27,12 @@ from store.app.model import (
     get_artifact_type,
     get_artifact_urls,
 )
-from store.app.security.user import (
+from www.app.security.user import (
     get_session_user_with_write_permission,
     maybe_get_user_from_api_key,
 )
-from store.app.utils.cloudfront_signer import CloudFrontUrlSigner
-from store.settings import settings
+from www.app.utils.cloudfront_signer import CloudFrontUrlSigner
+from www.settings import settings
 
 router = APIRouter()
 

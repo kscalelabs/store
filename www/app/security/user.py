@@ -4,10 +4,10 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 
-from store.app.db import Crud
-from store.app.errors import ItemNotFoundError, NotAuthenticatedError
-from store.app.model import User
-from store.app.security.requests import (
+from www.app.db import Crud
+from www.app.errors import ItemNotFoundError, NotAuthenticatedError
+from www.app.model import User
+from www.app.security.requests import (
     get_request_api_key_id,
     maybe_get_request_api_key_id,
 )

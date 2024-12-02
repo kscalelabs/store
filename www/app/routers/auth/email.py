@@ -6,11 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from pydantic.networks import EmailStr
 
-from store.app.crud.users import UserCrud
-from store.app.db import Crud
-from store.app.model import APIKeySource, User
-from store.app.utils.email import send_signup_email
-from store.app.utils.password import verify_password
+from www.app.crud.users import UserCrud
+from www.app.db import Crud
+from www.app.model import APIKeySource, User
+from www.app.utils.email import send_signup_email
+from www.app.utils.password import verify_password
 
 router = APIRouter()
 

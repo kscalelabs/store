@@ -21,10 +21,10 @@ from botocore.exceptions import ClientError
 from types_aiobotocore_dynamodb.service_resource import DynamoDBServiceResource
 from types_aiobotocore_s3.service_resource import S3ServiceResource
 
-from store.app.errors import InternalError, ItemNotFoundError
-from store.app.model import StoreBaseModel
-from store.settings import settings
-from store.utils import get_cors_origins
+from www.app.errors import InternalError, ItemNotFoundError
+from www.app.model import StoreBaseModel
+from www.settings import settings
+from www.utils import get_cors_origins
 
 TABLE_NAME = settings.dynamo.table_name
 

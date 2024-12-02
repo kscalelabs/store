@@ -7,8 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from httpx import AsyncClient, Response as HttpxResponse
 from pydantic.main import BaseModel
 
-from store.app.db import Crud
-from store.settings import settings
+from www.app.db import Crud
+from www.settings import settings
 
 logger = logging.getLogger(__name__)
 

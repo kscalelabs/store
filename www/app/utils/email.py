@@ -9,7 +9,7 @@ from email.mime.text import MIMEText
 
 import aiosmtplib
 
-from store.settings import settings
+from www.settings import settings
 
 logger = logging.getLogger(__name__)
 

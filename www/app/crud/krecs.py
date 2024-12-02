@@ -8,8 +8,8 @@ from typing import Self
 
 from fastapi import UploadFile
 
-from store.app.crud.base import TABLE_NAME, BaseCrud
-from store.app.model import KRec
+from www.app.crud.base import TABLE_NAME, BaseCrud
+from www.app.model import KRec
 
 logger = logging.getLogger(__name__)
 

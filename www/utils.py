@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Awaitable, Callable, Generic, Hashable, ParamSpec, TypeVar, overload
 from xml.etree import ElementTree as ET
 
-from store.settings import settings
+from www.settings import settings
 
 Tk = TypeVar("Tk", bound=Hashable)
 Tv = TypeVar("Tv")

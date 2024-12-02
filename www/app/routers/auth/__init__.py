@@ -2,10 +2,10 @@
 
 from fastapi import APIRouter
 
-from store.app.routers.auth.api import router as api_router
-from store.app.routers.auth.email import router as email_router
-from store.app.routers.auth.github import router as github_router
-from store.app.routers.auth.google import router as google_router
+from www.app.routers.auth.api import router as api_router
+from www.app.routers.auth.email import router as email_router
+from www.app.routers.auth.github import router as github_router
+from www.app.routers.auth.google import router as google_router
 
 router = APIRouter()
 

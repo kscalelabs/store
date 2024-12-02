@@ -5,8 +5,8 @@ from typing import NotRequired, TypedDict
 
 from pydantic import ValidationError
 
-from store.app.crud.base import BaseCrud, ItemNotFoundError
-from store.app.model import InventoryType, Order, OrderStatus
+from www.app.crud.base import BaseCrud, ItemNotFoundError
+from www.app.model import InventoryType, Order, OrderStatus
 
 logger = logging.getLogger(__name__)
 

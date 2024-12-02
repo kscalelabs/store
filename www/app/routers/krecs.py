@@ -7,10 +7,10 @@ from typing import Annotated, NotRequired, TypedDict
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
-from store.app.db import Crud
-from store.app.errors import ItemNotFoundError
-from store.app.model import KRec, User
-from store.app.security.user import (
+from www.app.db import Crud
+from www.app.errors import ItemNotFoundError
+from www.app.model import KRec, User
+from www.app.security.user import (
     get_session_user,
     get_session_user_with_write_permission,
     verify_admin_permission,

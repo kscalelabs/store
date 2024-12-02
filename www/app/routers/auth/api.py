@@ -4,8 +4,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from store.app.db import Crud
-from store.app.security.requests import get_request_api_key_id
+from www.app.db import Crud
+from www.app.security.requests import get_request_api_key_id
 
 router = APIRouter()
 

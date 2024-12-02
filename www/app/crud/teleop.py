@@ -2,8 +2,8 @@
 
 from boto3.dynamodb.conditions import Key
 
-from store.app.crud.base import BaseCrud
-from store.app.model import TeleopICECandidate
+from www.app.crud.base import BaseCrud
+from www.app.model import TeleopICECandidate
 
 
 class TeleopCrud(BaseCrud):

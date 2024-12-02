@@ -11,10 +11,10 @@ from typing import Literal, Self, cast, get_args
 
 from pydantic import BaseModel, field_validator
 
-from store.app.errors import InternalError
-from store.app.utils.password import hash_password
-from store.settings import settings
-from store.utils import new_uuid
+from www.app.errors import InternalError
+from www.app.utils.password import hash_password
+from www.settings import settings
+from www.utils import new_uuid
 
 
 class StoreBaseModel(BaseModel):

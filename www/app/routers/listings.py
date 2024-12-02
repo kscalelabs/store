@@ -16,17 +16,17 @@ from fastapi import (
 )
 from pydantic import BaseModel
 
-from store.app.crud.listings import SortOption
-from store.app.db import Crud
-from store.app.model import Listing, User, can_write_listing
-from store.app.routers.artifacts import SingleArtifactResponse
-from store.app.routers.stripe import create_listing_product
-from store.app.security.user import (
+from www.app.crud.listings import SortOption
+from www.app.db import Crud
+from www.app.model import Listing, User, can_write_listing
+from www.app.routers.artifacts import SingleArtifactResponse
+from www.app.routers.stripe import create_listing_product
+from www.app.security.user import (
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
     maybe_get_user_from_api_key,
 )
-from store.settings.environment import EnvironmentSettings
+from www.settings.environment import EnvironmentSettings
 
 # Create settings instance
 settings = EnvironmentSettings()

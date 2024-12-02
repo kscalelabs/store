@@ -10,15 +10,15 @@ import stripe
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, status
 from pydantic import BaseModel
 
-from store.app.crud.orders import OrderDataCreate, OrderDataUpdate, ProcessPreorderData
-from store.app.db import Crud
-from store.app.model import Listing, Order, User, UserStripeConnect
-from store.app.security.user import (
+from www.app.crud.orders import OrderDataCreate, OrderDataUpdate, ProcessPreorderData
+from www.app.db import Crud
+from www.app.model import Listing, Order, User, UserStripeConnect
+from www.app.security.user import (
     get_session_user_with_admin_permission,
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
 )
-from store.settings import settings
+from www.settings import settings
 
 STRIPE_CONNECT_CHECKOUT_SUCCESS_URL = f"{settings.site.homepage}/order/success?session_id={{CHECKOUT_SESSION_ID}}"
 

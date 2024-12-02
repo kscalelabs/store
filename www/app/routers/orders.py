@@ -7,11 +7,11 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
-from store.app.crud.orders import OrderDataUpdate, OrdersNotFoundError
-from store.app.db import Crud
-from store.app.model import Order, OrderStatus, User
-from store.app.routers import stripe
-from store.app.security.user import (
+from www.app.crud.orders import OrderDataUpdate, OrdersNotFoundError
+from www.app.db import Crud
+from www.app.model import Order, OrderStatus, User
+from www.app.routers import stripe
+from www.app.security.user import (
     get_session_user_with_admin_permission,
     get_session_user_with_write_permission,
 )

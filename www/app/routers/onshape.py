@@ -9,9 +9,9 @@ from fastapi.responses import StreamingResponse
 from kol.onshape.config import ConverterConfig
 from pydantic.main import BaseModel
 
-from store.app.db import Crud
-from store.app.model import User, can_write_listing
-from store.app.security.user import get_session_user_with_write_permission
+from www.app.db import Crud
+from www.app.model import User, can_write_listing
+from www.app.security.user import get_session_user_with_write_permission
 
 router = APIRouter()
 

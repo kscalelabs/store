@@ -6,7 +6,7 @@ from typing import Any, Callable, Generic, TypeVar, cast
 
 from omegaconf import OmegaConf
 
-from store.settings.environment import EnvironmentSettings
+from www.settings.environment import EnvironmentSettings
 
 T = TypeVar("T")
 
