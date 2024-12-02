@@ -29,7 +29,6 @@ env:
   ONSHAPE_API: ${{ secrets.ONSHAPE_API }}
   ONSHAPE_ACCESS_KEY: ${{ secrets.ONSHAPE_ACCESS_KEY }}
   ONSHAPE_SECRET_KEY: ${{ secrets.ONSHAPE_SECRET_KEY }}
-  VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
   STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
   STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
   STRIPE_CONNECT_WEBHOOK_SECRET: ${{ secrets.STRIPE_CONNECT_WEBHOOK_SECRET }}
@@ -39,24 +38,9 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
 
-    # Commenting out because PyTest mocks these services.
-    # services:
-    #   dynamodb-local:
-    #     image: amazon/dynamodb-local
-    #     options: >-
-    #       -p 0:8000
-    #       -v /tmp/dynamodb:/data
-    #     ports:
-    #       - 8000
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "20"
 
       - name: Restore cache
         id: restore-cache
@@ -65,20 +49,9 @@ jobs:
           path: |
             ${{ env.pythonLocation }}
             .mypy_cache/
-            node_modules/
           key: tests-${{ github.event.pull_request.base.sha || github.sha }}
           restore-keys: |
             tests-
-
-      - name: Install Node package
-        working-directory: frontend
-        run: |
-          npm install
-
-      - name: Build frontend
-        run: |
-          npm run build
-        working-directory: frontend
 
       - name: Set up Python
         uses: actions/setup-python@v4
