@@ -183,7 +183,11 @@ LOCALHOST_URLS = [
     "http://127.0.0.1:3000",
     "http://localhost:3000",
 ]
+PRODUCTION_URLS = [
+    "https://kscale.dev",
+    "https://www.kscale.dev",
+]
 
 
 def get_cors_origins() -> list[str]:
-    return list({settings.site.homepage, *LOCALHOST_URLS})
+    return list({settings.site.homepage, *LOCALHOST_URLS, *PRODUCTION_URLS})
