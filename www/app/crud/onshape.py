@@ -181,7 +181,7 @@ class OnshapeCrud(ListingsCrud, BaseCrud):
                     await queue.put(None)
 
         async def worker_with_timeout() -> None:
-            await asyncio.wait_for(worker(onshape_url, listing, config, queue), timeout=120)
+            await asyncio.wait_for(worker(onshape_url, listing, config, queue), timeout=300)
             while not queue.empty():
                 await queue.get()
             await queue.put(None)

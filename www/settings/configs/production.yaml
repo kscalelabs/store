@@ -3,5 +3,7 @@ crypto:
 dynamo:
   table_name: www
 site:
-  homepage: https://kscale.dev
+  homepage:
+    - https://kscale.dev
+    - https://www.kscale.dev
   artifact_base_url: https://media.kscale.store/
