@@ -4,4 +4,4 @@ dynamo:
   table_name: www
 site:
   homepage: https://kscale.dev
-  artifact_base_url: https://media.kscale.store/
+  artifact_base_url: https://media.kscale.dev/
