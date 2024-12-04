@@ -63,7 +63,7 @@ class CreateRefundsRequest(BaseModel):
     amount: int
 
 
-@router.put("/refunds/{order_id}", response_model=Order)
+@router.put("/refunds/{order_id}", response_model=Order, include_in_schema=False)
 async def refund_payment_intent(
     order_id: str,
     refund_request: CreateRefundsRequest,
@@ -117,7 +117,7 @@ async def refund_payment_intent(
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 
-@router.post("/webhook")
+@router.post("/webhook", include_in_schema=False)
 async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> dict[str, str]:
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
@@ -140,7 +140,7 @@ async def stripe_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> di
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/connect/webhook")
+@router.post("/connect/webhook", include_in_schema=False)
 async def stripe_connect_webhook(request: Request, crud: Crud = Depends(Crud.get)) -> dict[str, str]:
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
@@ -303,7 +303,7 @@ class CreateCheckoutSessionResponse(BaseModel):
     stripe_connect_account_id: str
 
 
-@router.post("/checkout-session", response_model=CreateCheckoutSessionResponse)
+@router.post("/checkout-session", response_model=CreateCheckoutSessionResponse, include_in_schema=False)
 async def create_checkout_session(
     request: CreateCheckoutSessionRequest,
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
@@ -463,7 +463,7 @@ class ProductResponse(BaseModel):
     active: bool
 
 
-@router.get("/get-product/{product_id}", response_model=ProductResponse)
+@router.get("/get-product/{product_id}", response_model=ProductResponse, include_in_schema=False)
 async def get_product(product_id: str, crud: Annotated[Crud, Depends(Crud.get)]) -> ProductResponse:
     try:
         listing = await crud.get_listing_by_stripe_product_id(product_id)
@@ -497,7 +497,7 @@ class CreateConnectAccountResponse(BaseModel):
     account_id: str
 
 
-@router.post("/connect/account", response_model=CreateConnectAccountResponse)
+@router.post("/connect/account", response_model=CreateConnectAccountResponse, include_in_schema=False)
 async def create_connect_account(
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -537,7 +537,7 @@ async def create_connect_account(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.post("/connect/account/session")
+@router.post("/connect/account/session", include_in_schema=False)
 async def create_connect_account_session(
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
     account_id: str = Body(..., embed=True),
@@ -577,7 +577,7 @@ class DeleteTestAccountsResponse(BaseModel):
     count: int
 
 
-@router.post("/connect/delete/accounts", response_model=DeleteTestAccountsResponse)
+@router.post("/connect/delete/accounts", response_model=DeleteTestAccountsResponse, include_in_schema=False)
 async def delete_test_accounts(
     user: Annotated[User, Depends(get_session_user_with_read_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -681,7 +681,7 @@ class ProcessPreorderResponse(BaseModel):
     checkout_session: dict[str, Any]
 
 
-@router.post("/process/preorder/{order_id}", response_model=ProcessPreorderResponse)
+@router.post("/process/preorder/{order_id}", response_model=ProcessPreorderResponse, include_in_schema=False)
 async def process_preorder(
     order_id: str,
     crud: Annotated[Crud, Depends(Crud.get)],
