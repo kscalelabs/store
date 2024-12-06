@@ -535,21 +535,6 @@ class ListingVote(StoreBaseModel):
         )
 
 
-OrderStatus = Literal[
-    "processing",
-    "in_development",
-    "being_assembled",
-    "shipped",
-    "delivered",
-    "preorder_placed",
-    "awaiting_final_payment",
-    "cancelled",
-    "refunded",
-]
-
-InventoryType = Literal["finite", "preorder"]
-
-
 class Robot(StoreBaseModel):
     """User registered robots. Associated with a robot listing.
 
