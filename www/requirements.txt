@@ -9,20 +9,19 @@ stripe
 
 # AWS dependencies.
 aioboto3
+boto3-stubs[cognito]
 
 # Crypto dependencies
-argon2-cffi
-pyjwt[asyncio]
-bcrypt
 cryptography
 
 # FastAPI dependencies.
-aiosmtplib
 fastapi[standard]
 pillow
 python-multipart
 httpx
 httpx-ws
+python-jose[cryptography]
+pytest-mock
 
 # Deployment dependencies.
 uvicorn[standard]

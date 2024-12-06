@@ -5,14 +5,15 @@ methods for converting from our input data into the format the database
 expects (for example, converting a UUID into a string).
 """
 
+import hashlib
+import secrets
 import time
 from datetime import datetime, timedelta
-from typing import Literal, Self, cast, get_args
+from typing import ClassVar, Literal, Self, cast, get_args
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field
 
 from www.app.errors import InternalError
-from www.app.utils.password import hash_password
 from www.settings import settings
 from www.utils import new_uuid
 
@@ -42,48 +43,40 @@ class User(StoreBaseModel):
     """Defines the user model for the API.
 
     Users are defined by their id, email, and username (all unique).
-    Hashed password is set if user signs up with email and password, and is
-    left empty if the user signed up with Google or Github OAuth.
+    Authentication is handled through Cognito.
     """
 
     email: str
     username: str
-    hashed_password: str | None = None
     permissions: set[UserPermission] | None = None
     created_at: int
     updated_at: int
-    github_id: str | None = None
-    google_id: str | None = None
     first_name: str | None = None
     last_name: str | None = None
     name: str | None = None
     bio: str | None = None
     stripe_connect: UserStripeConnect | None = None
+    cognito_id: str | None = None
 
     @classmethod
     def create(
         cls,
         email: str,
         username: str,
-        password: str | None = None,
-        github_id: str | None = None,
-        google_id: str | None = None,
+        cognito_id: str,
         first_name: str | None = None,
         last_name: str | None = None,
         name: str | None = None,
         bio: str | None = None,
     ) -> Self:
         now = int(time.time())
-        hashed_pw = hash_password(password) if password else None
         return cls(
             id=new_uuid(),
             email=email,
             username=username,
-            hashed_password=hashed_pw,
+            cognito_id=cognito_id,
             created_at=now,
             updated_at=now,
-            github_id=github_id,
-            google_id=google_id,
             first_name=first_name,
             last_name=last_name,
             name=name,
@@ -121,59 +114,71 @@ class EmailSignUpToken(StoreBaseModel):
         return cls(id=new_uuid(), email=email)
 
 
-class OAuthKey(StoreBaseModel):
-    """Keys for OAuth providers which identify users."""
-
-    user_id: str
-    provider: str
-    user_token: str
-
-    @classmethod
-    def create(cls, user_id: str, provider: str, user_token: str) -> Self:
-        return cls(id=new_uuid(), user_id=user_id, provider=provider, user_token=user_token)
+# Define API key types
+APIKeySource = Literal["cognito"]
+APIKeyPermissionSet = Literal["full"]
 
 
-APIKeySource = Literal["user", "oauth", "password"]
-APIKeyPermission = Literal["read", "write", "admin"]
-APIKeyPermissionSet = set[APIKeyPermission] | Literal["full", None]
+class APIKey(BaseModel):
+    """API keys for user authentication."""
 
+    TYPE: ClassVar[str] = "APIKey"
 
-class APIKey(StoreBaseModel):
-    """The API key is used for querying the API.
-
-    Downstream users keep the API key, and it is used to authenticate
-    requests to the API. The key is stored in the database, and can be
-    revoked by the user at any time.
-    """
-
+    id: str = Field(default_factory=lambda: secrets.token_hex(8))
+    hashed_key: str
     user_id: str
     source: APIKeySource
-    permissions: set[APIKeyPermission] | None = None
-    ttl: int | None = None
+    permissions: APIKeyPermissionSet
     created_at: int
-
-    @field_validator("permissions", mode="before")
-    @classmethod
-    def convert_permissions_to_set(
-        cls, v: list[APIKeyPermission] | set[APIKeyPermission] | None
-    ) -> set[APIKeyPermission] | None:
-        if isinstance(v, list):
-            return set(v)
-        return v
+    expires_at: int | None = None
 
     @classmethod
-    def create(cls, user_id: str, source: APIKeySource, permissions: APIKeyPermissionSet) -> Self:
-        if permissions == "full":
-            permissions = {"read", "write", "admin"}
-        ttl_timestamp = int((datetime.utcnow() + timedelta(days=90)).timestamp())
-        return cls(
-            id=new_uuid(),
-            user_id=user_id,
-            source=source,
-            permissions=permissions,
-            ttl=ttl_timestamp,
-            created_at=int(time.time()),
+    def create(
+        cls,
+        user_id: str,
+        source: APIKeySource = "cognito",
+        permissions: APIKeyPermissionSet = "full",
+        expires_at: int | None = None,
+    ) -> tuple["APIKey", str]:
+        """Create a new API key.
+
+        Returns:
+            Tuple of (APIKey object with hashed key, original unhashed key)
+        """
+        raw_key = secrets.token_hex(8)
+        hashed_key = hashlib.sha256(raw_key.encode()).hexdigest()
+
+        return (
+            cls(
+                hashed_key=hashed_key,
+                user_id=user_id,
+                source=source,
+                permissions=permissions,
+                expires_at=expires_at,
+                created_at=int(time.time()),
+            ),
+            raw_key,
         )
+
+    @staticmethod
+    def hash_key(key: str) -> str:
+        """Hash an API key."""
+        return hashlib.sha256(key.encode()).hexdigest()
+
+    def model_dump(
+        self,
+        *args: tuple[()],  # Empty tuple since model_dump doesn't use positional args
+        **kwargs: bool | set[str] | dict[str, str | bool | int],
+    ) -> dict[str, str | bool | int]:
+        """Override model_dump to include type.
+
+        Args:
+            *args: Passed through to parent model_dump (typically unused)
+            **kwargs: Configuration options like exclude, include, by_alias
+        """
+        data = super().model_dump(*args, **kwargs)
+        data["type"] = self.TYPE
+        return data
 
 
 ArtifactSize = Literal["small", "large"]
@@ -372,15 +377,6 @@ class Listing(StoreBaseModel):
     onshape_url: str | None = None
     views: int = 0
     score: int = 0
-    price_amount: int | None = None  # in cents
-    currency: str = "usd"
-    stripe_product_id: str | None = None
-    stripe_price_id: str | None = None
-    preorder_deposit_amount: int | None = None  # in cents
-    stripe_preorder_deposit_id: str | None = None
-    inventory_type: Literal["finite", "preorder"] = "finite"
-    inventory_quantity: int | None = None
-    preorder_release_date: int | None = None
 
     @classmethod
     def create(
@@ -391,15 +387,6 @@ class Listing(StoreBaseModel):
         child_ids: list[str],
         description: str | None = None,
         onshape_url: str | None = None,
-        price_amount: int | None = None,
-        currency: str = "usd",
-        stripe_product_id: str | None = None,
-        stripe_price_id: str | None = None,
-        preorder_deposit_amount: int | None = None,
-        stripe_preorder_deposit_id: str | None = None,
-        inventory_type: Literal["finite", "preorder"] = "finite",
-        inventory_quantity: int | None = None,
-        preorder_release_date: int | None = None,
     ) -> Self:
         return cls(
             id=new_uuid(),
@@ -413,15 +400,6 @@ class Listing(StoreBaseModel):
             onshape_url=onshape_url,
             views=0,
             score=0,
-            price_amount=price_amount,
-            currency=currency,
-            stripe_product_id=stripe_product_id,
-            stripe_price_id=stripe_price_id,
-            preorder_deposit_amount=preorder_deposit_amount,
-            stripe_preorder_deposit_id=stripe_preorder_deposit_id,
-            inventory_type=inventory_type,
-            inventory_quantity=inventory_quantity,
-            preorder_release_date=preorder_release_date,
         )
 
 
@@ -572,101 +550,6 @@ OrderStatus = Literal[
 InventoryType = Literal["finite", "preorder"]
 
 
-class Order(StoreBaseModel):
-    """Tracks completed user orders through Stripe."""
-
-    user_id: str
-    listing_id: str
-    user_email: str
-    created_at: int
-    updated_at: int
-    status: OrderStatus
-    price_amount: int  # in cents
-    currency: str
-    quantity: int
-    stripe_checkout_session_id: str
-    stripe_connect_account_id: str
-    stripe_product_id: str
-    stripe_price_id: str
-    stripe_payment_intent_id: str
-    preorder_release_date: int | None = None
-    preorder_deposit_amount: int | None = None
-    stripe_preorder_deposit_id: str | None = None
-    inventory_type: Literal["finite", "preorder"]
-    final_payment_checkout_session_id: str | None = None
-    final_payment_intent_id: str | None = None
-    final_payment_date: int | None = None
-    shipping_name: str | None = None
-    shipping_address_line1: str | None = None
-    shipping_address_line2: str | None = None
-    shipping_city: str | None = None
-    shipping_state: str | None = None
-    shipping_postal_code: str | None = None
-    shipping_country: str | None = None
-    shipped_date: int | None = None
-    stripe_refund_id: str | None = None
-    delivered_date: int | None = None
-    cancelled_date: int | None = None
-    refunded_date: int | None = None
-
-    @classmethod
-    def create(
-        cls,
-        user_id: str,
-        user_email: str,
-        listing_id: str,
-        stripe_checkout_session_id: str,
-        stripe_product_id: str,
-        stripe_price_id: str,
-        stripe_connect_account_id: str,
-        quantity: int,
-        price_amount: int,
-        currency: str,
-        stripe_payment_intent_id: str,
-        preorder_release_date: int | None = None,
-        preorder_deposit_amount: int | None = None,
-        stripe_preorder_deposit_id: str | None = None,
-        status: OrderStatus = "processing",
-        inventory_type: Literal["finite", "preorder"] = "finite",
-        shipping_name: str | None = None,
-        shipping_address_line1: str | None = None,
-        shipping_address_line2: str | None = None,
-        shipping_city: str | None = None,
-        shipping_state: str | None = None,
-        shipping_postal_code: str | None = None,
-        shipping_country: str | None = None,
-    ) -> Self:
-        now = int(time.time())
-        return cls(
-            id=new_uuid(),
-            user_id=user_id,
-            listing_id=listing_id,
-            user_email=user_email,
-            created_at=now,
-            updated_at=now,
-            status=status,
-            price_amount=price_amount,
-            currency=currency,
-            quantity=quantity,
-            stripe_checkout_session_id=stripe_checkout_session_id,
-            stripe_product_id=stripe_product_id,
-            stripe_price_id=stripe_price_id,
-            stripe_connect_account_id=stripe_connect_account_id,
-            stripe_payment_intent_id=stripe_payment_intent_id,
-            preorder_release_date=preorder_release_date,
-            preorder_deposit_amount=preorder_deposit_amount,
-            stripe_preorder_deposit_id=stripe_preorder_deposit_id,
-            inventory_type=inventory_type,
-            shipping_name=shipping_name,
-            shipping_address_line1=shipping_address_line1,
-            shipping_address_line2=shipping_address_line2,
-            shipping_city=shipping_city,
-            shipping_state=shipping_state,
-            shipping_postal_code=shipping_postal_code,
-            shipping_country=shipping_country,
-        )
-
-
 class Robot(StoreBaseModel):
     """User registered robots. Associated with a robot listing.
 
@@ -679,7 +562,6 @@ class Robot(StoreBaseModel):
     description: str | None = None
     created_at: int
     updated_at: int
-    order_id: str | None = None
 
     @classmethod
     def create(
@@ -688,7 +570,6 @@ class Robot(StoreBaseModel):
         listing_id: str,
         name: str,
         description: str | None = None,
-        order_id: str | None = None,
     ) -> Self:
         now = int(time.time())
         return cls(
@@ -699,7 +580,6 @@ class Robot(StoreBaseModel):
             description=description,
             created_at=now,
             updated_at=now,
-            order_id=order_id,
         )
 
 

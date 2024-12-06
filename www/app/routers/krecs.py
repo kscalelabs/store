@@ -9,12 +9,9 @@ from pydantic import BaseModel
 
 from www.app.db import Crud
 from www.app.errors import ItemNotFoundError
-from www.app.model import KRec, User
-from www.app.security.user import (
-    get_session_user,
-    get_session_user_with_write_permission,
-    verify_admin_permission,
-)
+from www.app.model import KRec
+from www.app.security.cognito import api_key_header
+from www.app.security.user import verify_admin_permission
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -35,21 +32,25 @@ class CreateKRecResponse(BaseModel):
 @router.post("/upload")
 async def create_krec(
     request: CreateKRecRequest,
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> CreateKRecResponse:
     """Initialize a KRec upload and return a presigned URL."""
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
     robot = await crud.get_robot(request.robot_id)
     if robot is None:
         raise ItemNotFoundError("Robot with ID %s not found", request.robot_id)
-    if robot.user_id != user.id:
+    if robot.user_id != api_key_obj.user_id:
+        user = await crud.get_user(api_key_obj.user_id)
         verify_admin_permission(user, "upload KRecs for a robot by another user")
     if not request.name.endswith(".krec"):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="KRec name must end with .krec")
 
-    # Create KRec record first
     my_krec = KRec.create(
-        user_id=user.id,
+        user_id=api_key_obj.user_id,
         robot_id=request.robot_id,
         name=request.name,
         description=request.description,
@@ -139,10 +140,14 @@ class KRecUrlContent(TypedDict):
 @router.get("/info/{krec_id}", response_model=SingleKRecResponse)
 async def get_krec_info(
     krec_id: str,
-    user: Annotated[User, Depends(get_session_user)],
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> SingleKRecResponse:
     """Get information about a specific KRec, including download URL."""
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
     my_krec = await crud.get_krec(krec_id)
     if my_krec is None:
         raise ItemNotFoundError("KRec with ID %s not found", krec_id)
@@ -150,7 +155,8 @@ async def get_krec_info(
     robot = await crud.get_robot(my_krec.robot_id)
     if robot is None:
         raise ItemNotFoundError("Robot not found")
-    if robot.user_id != user.id:
+    if robot.user_id != api_key_obj.user_id:
+        user = await crud.get_user(api_key_obj.user_id)
         verify_admin_permission(user, "access KRec by another user")
 
     return await SingleKRecResponse.from_krec(my_krec, crud)
@@ -166,10 +172,14 @@ class KRecDownloadResponse(BaseModel):
 @router.get("/download/{krec_id}", response_model=KRecDownloadResponse)
 async def get_krec_download_url(
     krec_id: str,
-    user: Annotated[User, Depends(get_session_user)],
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> KRecDownloadResponse:
     """Get a presigned download URL for a krec."""
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
     my_krec = await crud.get_krec(krec_id)
     if my_krec is None:
         raise ItemNotFoundError("KRec with ID %s not found", krec_id)
@@ -177,7 +187,8 @@ async def get_krec_download_url(
     robot = await crud.get_robot(my_krec.robot_id)
     if robot is None:
         raise ItemNotFoundError("Robot not found")
-    if robot.user_id != user.id:
+    if robot.user_id != api_key_obj.user_id:
+        user = await crud.get_user(api_key_obj.user_id)
         verify_admin_permission(user, "access KRec by another user")
 
     urls = await get_krec_url_response(my_krec, crud)
@@ -192,10 +203,14 @@ async def get_krec_download_url(
 @router.get("/{robot_id}", response_model=list[KRec])
 async def list_krecs(
     robot_id: str,
-    user: Annotated[User, Depends(get_session_user)],
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> list[KRec]:
     """List all krecs for a robot."""
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
     krecs = await crud.list_krecs(robot_id)
     return krecs
 
@@ -203,14 +218,19 @@ async def list_krecs(
 @router.delete("/{krec_id}", response_model=bool)
 async def delete_krec(
     krec_id: str,
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
     """Delete a krec."""
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
     my_krec = await crud.get_krec(krec_id)
     if my_krec is None:
         raise ItemNotFoundError("KRec with ID %s not found", krec_id)
-    if my_krec.user_id != user.id:
+    if my_krec.user_id != api_key_obj.user_id:
+        user = await crud.get_user(api_key_obj.user_id)
         verify_admin_permission(user, "delete KRec by another user")
 
     await crud.delete_krec(krec_id)

@@ -20,9 +20,8 @@ from www.app.crud.listings import SortOption
 from www.app.db import Crud
 from www.app.model import Listing, User, can_write_listing
 from www.app.routers.artifacts import SingleArtifactResponse
-from www.app.routers.stripe import create_listing_product
+from www.app.security.cognito import api_key_header
 from www.app.security.user import (
-    get_session_user_with_read_permission,
     get_session_user_with_write_permission,
     maybe_get_user_from_api_key,
 )
@@ -52,10 +51,15 @@ async def get_featured_listings(
 @router.put("/featured/{listing_id}", response_model=bool)
 async def toggle_featured_listing(
     listing_id: str,
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
     featured: bool = Query(...),
 ) -> bool:
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
+    user = await crud.get_user(api_key_obj.user_id)
     if not user.permissions or ("is_content_manager" not in user.permissions and "is_admin" not in user.permissions):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -91,7 +95,12 @@ async def remove_featured_listing(
     listing_id: str,
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
+    api_key: Annotated[str, Depends(api_key_header)],
 ) -> bool:
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+    user = await crud.get_user(api_key_obj.user_id)
     if not user.permissions or ("content_manager" not in user.permissions and "is_admin" not in user.permissions):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -236,9 +245,14 @@ async def dump_listings(
 @router.get("/user/{user_id}", response_model=ListListingsResponse)
 async def get_user_listings(
     user_id: str,
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
     page: int = Query(1, description="Page number for pagination"),
 ) -> ListListingsResponse:
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
     listings, has_next = await crud.get_user_listings(user_id, page)
     listings_with_usernames = await crud.get_listings_with_usernames(listings)
     listing_infos = [
@@ -250,11 +264,15 @@ async def get_user_listings(
 
 @router.get("/me", response_model=ListListingsResponse)
 async def get_my_listings(
-    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
     page: int = Query(1, description="Page number for pagination"),
 ) -> ListListingsResponse:
-    listings, has_next = await crud.get_user_listings(user.id, page)
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
+    listings, has_next = await crud.get_user_listings(api_key_obj.user_id, page)
     listings_with_usernames = await crud.get_listings_with_usernames(listings)
     listing_infos = [
         ListingInfo(id=listing.id, username=username, slug=listing.slug)
@@ -271,51 +289,21 @@ class NewListingResponse(BaseModel):
 
 @router.post("/add", response_model=NewListingResponse)
 async def add_listing(
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
     name: str = Form(...),
     description: str | None = Form(None),
     child_ids: str = Form(""),
     slug: str = Form(...),
-    price_amount: str | None = Form(None),
-    currency: str = Form("usd"),
-    inventory_type: Literal["finite", "preorder"] = Form("finite"),
-    inventory_quantity: str | None = Form(None),
-    preorder_deposit_amount: str | None = Form(None),
-    preorder_release_date: str | None = Form(None),
     photos: list[UploadFile] = File(None),
 ) -> NewListingResponse:
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
+    user = await crud.get_user(api_key_obj.user_id)
     try:
         logger.info("Starting to process add listing request")
-
-        # Convert string values to appropriate types
-        price_amount_int = int(price_amount) if price_amount else None
-        inventory_quantity_int = int(inventory_quantity) if inventory_quantity else None
-        preorder_release_date_int = int(float(preorder_release_date)) if preorder_release_date else None
-        preorder_deposit_amount_int = int(preorder_deposit_amount) if preorder_deposit_amount else None
-
-        # Initialize Stripe-related variables
-        stripe_product_id = None
-        stripe_price_id = None
-        stripe_preorder_deposit_id = None
-
-        # Create Stripe product if price is set and user has Stripe Connect setup
-        if price_amount_int is not None and user.stripe_connect and user.stripe_connect.account_id:
-            stripe_product = await create_listing_product(
-                name=name,
-                description=description or "",
-                price_amount=price_amount_int,
-                currency=currency,
-                inventory_type=inventory_type,
-                inventory_quantity=inventory_quantity_int,
-                preorder_release_date=preorder_release_date_int,
-                preorder_deposit_amount=preorder_deposit_amount_int,
-                user_id=user.id,
-                stripe_connect_account_id=user.stripe_connect.account_id,
-            )
-            stripe_product_id = stripe_product.stripe_product_id
-            stripe_price_id = stripe_product.stripe_price_id
-            stripe_preorder_deposit_id = stripe_product.stripe_preorder_deposit_id
 
         # Create the listing
         listing = Listing.create(
@@ -324,15 +312,6 @@ async def add_listing(
             child_ids=child_ids.split(",") if child_ids else [],
             slug=slug,
             user_id=user.id,
-            price_amount=price_amount_int,
-            currency=currency,
-            inventory_type=inventory_type,
-            inventory_quantity=inventory_quantity_int,
-            preorder_release_date=preorder_release_date_int,
-            preorder_deposit_amount=preorder_deposit_amount_int,
-            stripe_product_id=stripe_product_id,
-            stripe_price_id=stripe_price_id,
-            stripe_preorder_deposit_id=stripe_preorder_deposit_id,
         )
 
         await crud.add_listing(listing)
@@ -342,12 +321,16 @@ async def add_listing(
         if photos:
             for photo in photos:
                 if photo.filename:
-                    await crud.upload_artifact(
-                        name=photo.filename,
-                        file=photo,
-                        listing=listing,
-                        artifact_type="image",
-                    )
+                    try:
+                        await crud.upload_artifact(
+                            name=photo.filename,
+                            file=photo,
+                            listing=listing,
+                            artifact_type="image",
+                        )
+                    except Exception as upload_error:
+                        logger.error("Error uploading photo %s: %s", photo.filename, str(upload_error))
+                        continue
                 else:
                     logger.warning("Skipping photo upload due to missing filename")
 
@@ -358,15 +341,22 @@ async def add_listing(
         raise
     except Exception as e:
         logger.exception("Unexpected error: %s", e)
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Failed to create listing: {str(e)}"
+        )
 
 
 @router.delete("/delete/{listing_id}", response_model=bool)
 async def delete_listing(
     listing_id: str,
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
+    user = await crud.get_user(api_key_obj.user_id)
     listing = await crud.get_listing(listing_id)
     if listing is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
@@ -386,24 +376,20 @@ class UpdateListingRequest(BaseModel):
     tags: list[str] | None = None
     onshape_url: str | None = None
     slug: str | None = None
-    stripe_product_id: str | None = None
-    stripe_price_id: str | None = None
-    stripe_deposit_price_id: str | None = None
-    price_amount: int | None = None
-    preorder_release_date: int | None = None
-    preorder_deposit_amount: int | None = None
-    stripe_preorder_deposit_id: str | None = None
-    inventory_type: Literal["finite", "preorder"] | None = None
-    inventory_quantity: int | None = None
 
 
 @router.put("/edit/{id}", response_model=bool)
 async def edit_listing(
     id: str,
     listing: UpdateListingRequest,
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> bool:
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
+    user = await crud.get_user(api_key_obj.user_id)
     listing_info = await crud.get_listing(id)
     if listing_info is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found.")
@@ -435,14 +421,6 @@ async def edit_listing(
         tags=listing.tags,
         onshape_url=listing.onshape_url,
         slug=listing.slug,
-        stripe_product_id=listing.stripe_product_id,
-        stripe_price_id=listing.stripe_price_id,
-        price_amount=listing.price_amount,
-        inventory_type=listing.inventory_type,
-        inventory_quantity=listing.inventory_quantity,
-        preorder_release_date=listing.preorder_release_date,
-        preorder_deposit_amount=listing.preorder_deposit_amount,
-        stripe_preorder_deposit_id=listing.stripe_preorder_deposit_id,
     )
     return True
 
@@ -454,11 +432,15 @@ class UpvotedListingsResponse(BaseModel):
 
 @router.get("/upvotes", response_model=ListListingsResponse)
 async def get_upvoted_listings(
-    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
     page: int = Query(1, description="Page number for pagination"),
 ) -> ListListingsResponse:
-    listings, has_next = await crud.get_upvoted_listings(user.id, page)
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
+    listings, has_next = await crud.get_upvoted_listings(api_key_obj.user_id, page)
     listings_with_usernames = await crud.get_listings_with_usernames(listings)
     listing_infos = [
         ListingInfo(id=listing.id, username=username, slug=listing.slug)
@@ -483,15 +465,6 @@ class GetListingResponse(BaseModel):
     user_vote: bool | None
     onshape_url: str | None
     is_featured: bool
-    currency: str | None = None
-    price_amount: int | None = None
-    stripe_product_id: str | None = None
-    stripe_price_id: str | None = None
-    preorder_deposit_amount: int | None = None
-    stripe_preorder_deposit_id: str | None = None
-    preorder_release_date: int | None = None
-    inventory_type: str | None = None
-    inventory_quantity: int | None = None
 
 
 async def get_listing_common(
@@ -541,15 +514,6 @@ async def get_listing_common(
         can_edit=user is not None and await can_write_listing(user, listing),
         user_vote=user_vote,
         onshape_url=listing.onshape_url,
-        price_amount=listing.price_amount,
-        currency=listing.currency,
-        stripe_product_id=listing.stripe_product_id,
-        stripe_price_id=listing.stripe_price_id,
-        preorder_release_date=listing.preorder_release_date,
-        preorder_deposit_amount=listing.preorder_deposit_amount,
-        stripe_preorder_deposit_id=listing.stripe_preorder_deposit_id,
-        inventory_type=listing.inventory_type,
-        inventory_quantity=listing.inventory_quantity,
         is_featured=is_featured,
         score=listing.score,
     )
@@ -560,9 +524,14 @@ async def get_listing_common(
 @router.get("/{listing_id}", response_model=GetListingResponse)
 async def get_listing(
     listing_id: str,
-    user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> GetListingResponse:
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
+    user = await crud.get_user(api_key_obj.user_id)
     listing = await crud.get_listing(listing_id)
     if listing is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
@@ -582,9 +551,14 @@ async def get_listing(
 async def get_listing_by_username_and_slug(
     username: str,
     slug: str,
-    user: Annotated[User | None, Depends(maybe_get_user_from_api_key)],
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> GetListingResponse:
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
+    user = await crud.get_user(api_key_obj.user_id)
     listing = await crud.get_listing_by_username_and_slug(username, slug)
     if listing is None:
         raise HTTPException(status_code=404, detail="Listing not found")
@@ -599,17 +573,25 @@ class VoteListingResponse(BaseModel):
 @router.post("/{id}/vote")
 async def vote_listing(
     id: str,
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
     upvote: bool = Query(..., description="True for upvote, False for downvote"),
 ) -> None:
-    await crud.handle_vote(user.id, id, upvote)
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
+    await crud.handle_vote(api_key_obj.user_id, id, upvote)
 
 
 @router.delete("/{id}/vote")
 async def remove_vote(
     id: str,
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
 ) -> None:
-    await crud.handle_vote(user.id, id, None)
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
+    await crud.handle_vote(api_key_obj.user_id, id, None)

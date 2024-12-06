@@ -1,78 +1,46 @@
 """Defines the API endpoint for creating, deleting and updating user information."""
 
-import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
-from pydantic.main import BaseModel
+from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 
 from www.app.db import Crud
-from www.app.model import APIKeyPermission, User
-from www.app.security.user import get_session_user
-
-logger = logging.getLogger(__name__)
+from www.app.model import User
+from www.app.security.cognito import get_current_user
 
 router = APIRouter()
 
-TOKEN_TYPE = "Bearer"
-
 
 class KeysResponseItem(BaseModel):
+    """Response model for API key information."""
+
     token: str
-    permissions: set[APIKeyPermission] | None
-
-
-class NewKeyRequest(BaseModel):
-    readonly: bool = True
+    permissions: str
 
 
 class NewKeyResponse(BaseModel):
+    """Response model for new API key creation."""
+
     user_id: str
     key: KeysResponseItem
 
 
-@router.post("/new", response_model=NewKeyResponse)
-async def new_key(
-    data: NewKeyRequest,
-    user: Annotated[User, Depends(get_session_user)],
+@router.post("/create", response_model=NewKeyResponse)
+async def create_key(
+    user: Annotated[User, Depends(get_current_user)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> NewKeyResponse:
-    api_key = await crud.add_api_key(
-        user_id=user.id,
-        source="user",
-        permissions={"read"} if data.readonly else {"read", "write"},
-    )
-    return NewKeyResponse(
-        user_id=user.id,
-        key=KeysResponseItem(token=api_key.id, permissions=api_key.permissions),
-    )
-
-
-class ListKeysResponse(BaseModel):
-    keys: list[KeysResponseItem]
-
-
-@router.get("/list", response_model=ListKeysResponse)
-async def list_keys(
-    user: Annotated[User, Depends(get_session_user)],
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> ListKeysResponse:
-    keys = await crud.list_api_keys(user.id)
-    return ListKeysResponse(
-        keys=[
-            KeysResponseItem(
-                token=key.id,
-                permissions=key.permissions,
-            )
-            for key in keys
-        ]
-    )
-
-
-@router.delete("/delete/{key}")
-async def delete_key(
-    key: str,
-    user: Annotated[User, Depends(get_session_user)],
-    crud: Annotated[Crud, Depends(Crud.get)],
-) -> None:
-    await crud.delete_api_key(key)
+    """Create a new API key for the authenticated user."""
+    try:
+        api_key, raw_key = await crud.add_api_key(
+            user_id=user.id,
+            source="cognito",
+            permissions="full",
+        )
+        return NewKeyResponse(
+            user_id=user.id,
+            key=KeysResponseItem(token=raw_key, permissions=api_key.permissions),
+        )
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

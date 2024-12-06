@@ -11,6 +11,7 @@ from pydantic.main import BaseModel
 
 from www.app.db import Crud
 from www.app.model import User, can_write_listing
+from www.app.security.cognito import api_key_header
 from www.app.security.user import get_session_user_with_write_permission
 
 router = APIRouter()
@@ -26,9 +27,15 @@ class SetRequest(BaseModel):
 async def set_onshape_document(
     listing_id: str,
     request: SetRequest,
+    api_key: Annotated[str, Depends(api_key_header)],
     user: Annotated[User, Depends(get_session_user_with_write_permission)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> None:
+    api_key_obj = await crud.get_api_key(api_key)
+    if api_key_obj is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
+    user = await crud.get_user(api_key_obj.user_id)
     listing = await crud.get_listing(listing_id)
     if listing is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
@@ -63,6 +70,7 @@ async def pull_onshape_document_generator(
 
 @router.get("/pull/{listing_id}", response_class=StreamingResponse)
 async def pull_onshape_document(
+    api_key: Annotated[str, Depends(api_key_header)],
     listing_id: str,
     request: Request,
     crud: Annotated[Crud, Depends(Crud.get)],
@@ -77,6 +85,9 @@ async def pull_onshape_document(
     convex_collision_meshes: bool = False,
     add_mjcf: bool = True,
 ) -> StreamingResponse:
+    api_key_obj = await crud.get_api_key(api_key)
+    if api_key_obj is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
     # Because the default EventStream implementation doesn't provide an easy
     # way to pass the token in the header, we have to pass it as a query
     # parameter instead.

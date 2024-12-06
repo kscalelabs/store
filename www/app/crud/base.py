@@ -61,11 +61,13 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
 
     @classmethod
     def get_gsis(cls) -> set[str]:
-        return {"type"}
+        """Get the set of GSIs required for this CRUD class."""
+        return {"type", "hashed_key", "user_id", "cognito_id", "email", "username"}
 
-    @classmethod
-    def get_gsi_index_name(cls, colname: str) -> str:
-        return f"{colname}_index"
+    @staticmethod
+    def get_gsi_index_name(field: str) -> str:
+        """Get the name of a GSI for a given field."""
+        return f"{field}_index"
 
     async def __aenter__(self) -> Self:
         session = aioboto3.Session()
@@ -92,9 +94,13 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         item_data = {k: v for k, v in item_data.items() if v is not None and v != ""}
 
         # DynamoDB-specific requirements
-        if "type" in item_data:
+        if "type" in item_data and not hasattr(item, "TYPE"):
             raise InternalError("Cannot add item with 'type' attribute")
-        item_data["type"] = item.__class__.__name__
+
+        if hasattr(item, "TYPE"):
+            item_data["type"] = item.TYPE
+        else:
+            item_data["type"] = item.__class__.__name__
 
         # Prepare the condition expression
         condition = "attribute_not_exists(id)"
@@ -481,26 +487,9 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
         name: str,
         keys: list[TableKey],
         gsis: list[GlobalSecondaryIndex] | None = None,
-        deletion_protection: bool = False,
     ) -> None:
-        """Creates a table in the Dynamo database if a table of that name does not already exist.
-
-        Args:
-            name: Name of the table.
-            keys: Primary and secondary keys. Do not include non-key attributes.
-            gsis: Making an attribute a GSI is required in order to query
-                against it. Note HASH on a GSI does not actually enforce
-                uniqueness. Instead, the difference is: you cannot query
-                RANGE fields alone, but you may query HASH fields.
-            deletion_protection: Whether the table is protected from being
-                deleted.
-        """
+        """Creates a table in the Dynamo database if a table of that name does not already exist."""
         try:
-            await self.db.meta.client.describe_table(TableName=name)
-            logger.info("Found existing table %s", name)
-        except ClientError:
-            logger.info("Creating %s table", name)
-
             if gsis:
                 table = await self.db.create_table(
                     AttributeDefinitions=[
@@ -519,10 +508,8 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
                             for i, n, _, t in gsis
                         ]
                     ),
-                    DeletionProtectionEnabled=deletion_protection,
                     BillingMode="PAY_PER_REQUEST",
                 )
-
             else:
                 table = await self.db.create_table(
                     AttributeDefinitions=[
@@ -530,11 +517,17 @@ class BaseCrud(AsyncContextManager["BaseCrud"]):
                     ],
                     TableName=name,
                     KeySchema=[{"AttributeName": n, "KeyType": t} for n, _, t in keys],
-                    DeletionProtectionEnabled=deletion_protection,
                     BillingMode="PAY_PER_REQUEST",
                 )
 
-            await table.wait_until_exists()
+            logger.info("Created table %s", name)
+            return table
+
+        except ClientError as e:
+            if e.response["Error"]["Code"] == "ResourceInUseException":
+                logger.info("Table %s already exists", name)
+            else:
+                raise
 
     async def _delete_dynamodb_table(self, name: str) -> None:
         """Deletes a table in the Dynamo database.

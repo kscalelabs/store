@@ -7,10 +7,11 @@ from omegaconf import II, MISSING
 
 @dataclass
 class OauthSettings:
-    github_client_id: str = field(default=II("oc.env:GITHUB_CLIENT_ID"))
-    github_client_secret: str = field(default=II("oc.env:GITHUB_CLIENT_SECRET"))
-    google_client_id: str = field(default=II("oc.env:GOOGLE_CLIENT_ID"))
-    google_client_secret: str = field(default=II("oc.env:GOOGLE_CLIENT_SECRET"))
+    cognito_domain: str = field(default=II("oc.env:COGNITO_DOMAIN"))
+    cognito_client_id: str = field(default=II("oc.env:COGNITO_CLIENT_ID"))
+    cognito_client_secret: str = field(default=II("oc.env:COGNITO_CLIENT_SECRET"))
+    cognito_redirect_uri: str = field(default=II("oc.env:COGNITO_REDIRECT_URI"))
+    cognito_user_pool_id: str = field(default=II("oc.env:COGNITO_USER_POOL_ID"))
 
 
 @dataclass
@@ -80,7 +81,15 @@ class CloudFrontSettings:
 
 
 @dataclass
+class AwsSettings:
+    region: str = field(default=II("oc.env:AWS_DEFAULT_REGION"))
+
+
+@dataclass
 class EnvironmentSettings:
+    environment: str = field(default=II("oc.env:ENVIRONMENT"))
+    debug: bool = field(default=False)
+    aws: AwsSettings = field(default_factory=AwsSettings)
     oauth: OauthSettings = field(default_factory=OauthSettings)
     user: UserSettings = field(default_factory=UserSettings)
     crypto: CryptoSettings = field(default_factory=CryptoSettings)
@@ -90,6 +99,3 @@ class EnvironmentSettings:
     dynamo: DynamoSettings = field(default_factory=DynamoSettings)
     site: SiteSettings = field(default_factory=SiteSettings)
     cloudfront: CloudFrontSettings = field(default_factory=CloudFrontSettings)
-    debug: bool = field(default=False)
-    stripe: StripeSettings = field(default_factory=StripeSettings)
-    environment: str = field(default="local")

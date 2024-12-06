@@ -5,16 +5,13 @@ import asyncio
 import time
 from typing import Annotated, AsyncIterable
 
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from www.app.db import Crud
-from www.app.model import TeleopICECandidate, User
-from www.app.security.user import (
-    get_session_user_with_read_permission,
-    get_session_user_with_write_permission,
-)
+from www.app.model import TeleopICECandidate
+from www.app.security.cognito import api_key_header
 
 router = APIRouter()
 
@@ -47,22 +44,31 @@ async def ice_candidates_generator(
 async def store_ice_candidate(
     robot_id: str,
     candidate: str,
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> None:
-    await crud.store_ice_candidate(TeleopICECandidate.create(user.id, robot_id, candidate))
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
+    await crud.store_ice_candidate(TeleopICECandidate.create(api_key_obj.user_id, robot_id, candidate))
 
 
 @router.websocket("/ws/ice-candidates/{robot_id}")
 async def websocket_ice_candidates(
     robot_id: str,
     websocket: WebSocket,
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> None:
     """Defines the WebSocket endpoint for ICE candidates."""
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return
+
     try:
-        async for candidate in ice_candidates_generator(user.id, robot_id, crud):
+        async for candidate in ice_candidates_generator(api_key_obj.user_id, robot_id, crud):
             await websocket.send_text(candidate)
     except WebSocketDisconnect:
         pass
@@ -71,12 +77,16 @@ async def websocket_ice_candidates(
 @router.get("/poll/ice-candidates/{robot_id}")
 async def poll_ice_candidates(
     robot_id: str,
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> StreamingResponse:
     """Defines the polling endpoint for ICE candidates."""
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
     return StreamingResponse(
-        content=ice_candidates_generator(user.id, robot_id, crud),
+        content=ice_candidates_generator(api_key_obj.user_id, robot_id, crud),
         media_type="text/event-stream",
     )
 
@@ -87,7 +97,12 @@ class CheckAuthResponse(BaseModel):
 
 @router.get("/check", response_model=CheckAuthResponse)
 async def check_auth(
-    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+    api_key: Annotated[str, Depends(api_key_header)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> CheckAuthResponse:
     """Validates the user's API key and returns their user ID."""
-    return CheckAuthResponse(user_id=user.id)
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
+    return CheckAuthResponse(user_id=api_key_obj.user_id)

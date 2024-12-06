@@ -11,10 +11,7 @@ from www.app.crud.base import ItemNotFoundError
 from www.app.crud.robots import RobotData
 from www.app.db import Crud
 from www.app.model import Listing, Robot, User, get_artifact_url
-from www.app.security.user import (
-    get_session_user_with_read_permission,
-    get_session_user_with_write_permission,
-)
+from www.app.security.cognito import api_key_header
 
 router = APIRouter()
 
@@ -33,11 +30,16 @@ class CreateRobotResponse(BaseModel):
 @router.post("/create", response_model=CreateRobotResponse)
 async def create_robot(
     request: CreateRobotRequest,
-    user: Annotated[User, Depends(get_session_user_with_write_permission)],
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> CreateRobotResponse:
     """Create a new robot."""
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
     try:
+        user = await crud.get_user(api_key_obj.user_id)
         robot = await crud.create_robot(
             user_id=user.id,
             listing_id=request.listing_id,
@@ -57,13 +59,17 @@ async def create_robot(
 @router.get("/get/{robot_id}", response_model=Robot)
 async def get_robot(
     robot_id: str,
-    user: Annotated[User, Depends(get_session_user_with_read_permission)],
+    api_key: Annotated[str, Depends(api_key_header)],
     crud: Annotated[Crud, Depends(Crud.get)],
 ) -> Robot:
     """Get a specific robot."""
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
     try:
         robot = await crud.get_robot(robot_id)
-        if robot.user_id != user.id:
+        if robot.user_id != api_key_obj.user_id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to access this robot")
         return robot
     except ItemNotFoundError:
@@ -110,10 +116,15 @@ class RobotListResponse(BaseModel):
 
 @router.get("/list", response_model=RobotListResponse)
 async def list_user_robots(
-    user: User = Depends(get_session_user_with_read_permission),
-    crud: Crud = Depends(Crud.get),
+    api_key: Annotated[str, Depends(api_key_header)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> RobotListResponse:
     """List all robots for the current user."""
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
+    user = await crud.get_user(api_key_obj.user_id)
     robots = await crud.get_robots_by_user_id(user.id)
     if not robots:
         return RobotListResponse(robots=[])
@@ -171,19 +182,22 @@ class UpdateRobotRequest(BaseModel):
 async def update_robot(
     robot_id: str,
     update_data: UpdateRobotRequest,
-    user: User = Depends(get_session_user_with_write_permission),
-    crud: Crud = Depends(Crud.get),
+    api_key: Annotated[str, Depends(api_key_header)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> Robot:
     """Update a robot's information."""
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
     try:
         robot = await crud.get_robot(robot_id)
-        if robot.user_id != user.id:
+        if robot.user_id != api_key_obj.user_id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to update this robot")
 
-        # Convert the update data to a properly typed RobotData dict
         update_dict: RobotData = {
-            "user_id": robot.user_id,  # Required field in RobotData
-            "listing_id": robot.listing_id,  # Required field in RobotData
+            "user_id": robot.user_id,
+            "listing_id": robot.listing_id,
             "name": update_data.name if update_data.name is not None else robot.name,
         }
         if update_data.description is not None:
@@ -200,15 +214,19 @@ async def update_robot(
 @router.delete("/delete/{robot_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_robot(
     robot_id: str,
-    user: User = Depends(get_session_user_with_write_permission),
-    crud: Crud = Depends(Crud.get),
+    api_key: Annotated[str, Depends(api_key_header)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> None:
     """Delete a robot."""
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
     try:
         robot = await crud.get_robot(robot_id)
         if not robot:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Robot not found")
-        if robot.user_id != user.id:
+        if robot.user_id != api_key_obj.user_id:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to delete this robot")
 
         await crud.delete_robot(robot)
@@ -219,17 +237,19 @@ async def delete_robot(
 @router.get("/check-order/{order_id}", response_model=Robot | None)
 async def check_order_robot(
     order_id: str,
-    user: User = Depends(get_session_user_with_read_permission),
-    crud: Crud = Depends(Crud.get),
+    api_key: Annotated[str, Depends(api_key_header)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> Robot | None:
     """Check if an order has an associated robot."""
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
     try:
-        # First verify the order belongs to the user
         order = await crud.get_order(order_id)
-        if not order or order.user_id != user.id:
+        if not order or order.user_id != api_key_obj.user_id:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
 
-        # Then check for an associated robot
         robot = await crud.get_robot_by_order_id(order_id)
         return robot
     except ItemNotFoundError:
@@ -243,9 +263,14 @@ class RobotURDFResponse(BaseModel):
 @router.get("/urdf/{listing_id}", response_model=RobotURDFResponse)
 async def get_robot_urdf(
     listing_id: str,
-    crud: Crud = Depends(Crud.get),
+    api_key: Annotated[str, Depends(api_key_header)],
+    crud: Annotated[Crud, Depends(Crud.get)],
 ) -> RobotURDFResponse:
     """Get the URDF for a robot."""
+    api_key_obj = await crud.get_api_key(api_key)
+    if not api_key_obj:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired API key")
+
     artifacts = await crud.get_listing_artifacts(
         listing_id,
         additional_filter_expression=Key("artifact_type").eq("tgz"),

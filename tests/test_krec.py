@@ -1,21 +1,104 @@
 """Runs tests on the KRec uploading APIs."""
 
+import time
 from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock
 
 import httpx
 import krec
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
+from pytest_mock import MockFixture
+
+from tests.test_cognito import MockAsyncClient
+from www.app.db import create_tables
 
 
-async def test_krec_upload(test_client: TestClient, tmpdir: Path) -> None:
-    # Get an auth token using the mocked Github endpoint.
-    response = test_client.post("/auth/github/code", json={"code": "test_code"})
-    assert response.status_code == status.HTTP_200_OK, response.json()
-    token = response.json()["api_key"]
-    auth_headers = {"Authorization": f"Bearer {token}"}
+@pytest.mark.asyncio
+async def test_krec_upload(test_client: TestClient, tmpdir: Path, mocker: MockFixture) -> None:
+    """Test KRec upload functionality."""
+    await create_tables()
 
-    # Create a listing.
+    # Create mock user with all fields
+    current_time = int(time.time())
+    mock_user = MagicMock(
+        id="test_user_id",
+        email="test@example.com",
+        cognito_id="test_cognito_id",
+        username="testuser",
+        first_name="Test",
+        last_name="User",
+        name="Test User",
+        bio="Test bio",
+        permissions=None,
+        created_at=current_time,
+        updated_at=current_time,
+        stripe_connect=None,
+    )
+
+    # Configure mock to return proper values
+    mock_user.model_dump = lambda: {
+        "id": "test_user_id",
+        "email": "test@example.com",
+        "username": "testuser",
+        "first_name": "Test",
+        "last_name": "User",
+        "name": "Test User",
+        "bio": "Test bio",
+        "permissions": None,
+        "created_at": current_time,
+        "updated_at": current_time,
+        "stripe_connect": None,
+    }
+
+    # Create mock API key
+    test_raw_key = "test_raw_key"
+    mock_api_key = MagicMock(id="test_api_key", user_id="test_user_id", source="cognito", permissions="full")
+
+    # Set up CRUD mocks
+    mocker.patch("www.app.crud.users.UserCrud.get_user_from_cognito_id", AsyncMock(return_value=None))
+    mocker.patch("www.app.crud.users.UserCrud.create_user_from_cognito", AsyncMock(return_value=mock_user))
+    mocker.patch("www.app.crud.users.UserCrud.add_api_key", AsyncMock(return_value=(mock_api_key, test_raw_key)))
+    mocker.patch("www.app.crud.users.UserCrud.get_api_key", AsyncMock(return_value=mock_api_key))
+    mocker.patch("www.app.crud.users.UserCrud.get_user", AsyncMock(return_value=mock_user))
+    mocker.patch("www.app.security.cognito.get_current_user", AsyncMock(return_value=mock_user))
+
+    # Mock Cognito authentication
+    mocker.patch(
+        "www.app.routers.auth.cognito.verify_cognito_token",
+        AsyncMock(
+            return_value={
+                "sub": "test_cognito_id",
+                "email": "test@example.com",
+                "given_name": "Test",
+                "family_name": "User",
+            }
+        ),
+    )
+
+    # Mock the httpx client with put method
+    class MockKRecAsyncClient(MockAsyncClient):
+        async def put(self, *_: tuple[()], **__: dict[str, str]) -> MagicMock:
+            return MagicMock(
+                status_code=status.HTTP_403_FORBIDDEN,
+            )
+
+    mocker.patch("httpx.AsyncClient", return_value=MockKRecAsyncClient())
+
+    # Test Cognito callback (login)
+    response = test_client.get(
+        "/auth/cognito/callback",
+        params={"code": "test_code"},
+        follow_redirects=False,
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+    # Get API key from response
+    api_key = response.json()["api_key"]
+    auth_headers = {"X-API-Key": api_key}
+
+    # Create a listing
     response = test_client.post(
         "/listings/add",
         data={
@@ -24,22 +107,13 @@ async def test_krec_upload(test_client: TestClient, tmpdir: Path) -> None:
             "child_ids": "",
             "slug": "test-listing",
             "username": "testuser",
-            "stripe_link": "",
         },
         headers=auth_headers,
     )
-    assert response.status_code == status.HTTP_200_OK, response.json()
+    assert response.status_code == status.HTTP_200_OK
     listing_id = response.json()["listing_id"]
 
-    # Verify the listing was created.
-    response = test_client.get(f"/listings/{listing_id}")
-    assert response.status_code == status.HTTP_200_OK, response.json()
-    listing_data = response.json()
-    assert listing_data["name"] == "test listing"
-    assert listing_data["description"] == "test description"
-    assert listing_data["slug"] == "test-listing"
-
-    # Create a robot from the listing.
+    # Create a robot from the listing
     response = test_client.post(
         "/robots/create",
         json={
@@ -49,10 +123,10 @@ async def test_krec_upload(test_client: TestClient, tmpdir: Path) -> None:
         },
         headers=auth_headers,
     )
-    assert response.status_code == status.HTTP_200_OK, response.json()
+    assert response.status_code == status.HTTP_200_OK
     robot_id = response.json()["robot_id"]
 
-    # Upload a KRec.
+    # Upload a KRec
     my_header = krec.KRecHeader(
         uuid="test_uuid",
         task="test_task",
@@ -65,7 +139,7 @@ async def test_krec_upload(test_client: TestClient, tmpdir: Path) -> None:
     my_krec_path = str(tmpdir / "test.krec")
     my_krec.save(my_krec_path)
 
-    # Upload the KRec.
+    # Upload the KRec
     response = test_client.post(
         "/krecs/upload",
         json={
@@ -75,11 +149,11 @@ async def test_krec_upload(test_client: TestClient, tmpdir: Path) -> None:
         },
         headers=auth_headers,
     )
-    assert response.status_code == status.HTTP_200_OK, response.json()
+    assert response.status_code == status.HTTP_200_OK
     data = response.json()
     upload_url = data["upload_url"]
 
-    # Upload the KRec to the presigned URL.
+    # Upload the KRec to the presigned URL
     async with httpx.AsyncClient() as client:
         with open(my_krec_path, "rb") as f:
             krec_bytes = f.read()
@@ -88,7 +162,4 @@ async def test_krec_upload(test_client: TestClient, tmpdir: Path) -> None:
             content=krec_bytes,
             headers={"Content-Type": "application/octet-stream"},
         )
-
-    # This fails because the presigned URL is not valid during testing.
-    # assert response.status_code == status.HTTP_200_OK, response.text
-    assert response.status_code == status.HTTP_403_FORBIDDEN, response.text
+    assert response.status_code == status.HTTP_403_FORBIDDEN

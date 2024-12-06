@@ -158,14 +158,6 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         tags: list[str] | None = None,
         onshape_url: str | None = None,
         slug: str | None = None,
-        price_amount: int | None = None,
-        stripe_product_id: str | None = None,
-        stripe_price_id: str | None = None,
-        preorder_release_date: int | None = None,
-        preorder_deposit_amount: int | None = None,
-        stripe_preorder_deposit_id: str | None = None,
-        inventory_type: str | None = None,
-        inventory_quantity: int | None = None,
     ) -> None:
         listing = await self.get_listing(listing_id)
         if listing is None:
@@ -180,22 +172,6 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             updates["description"] = description
         if slug is not None:
             updates["slug"] = slug
-        if price_amount is not None:
-            updates["price_amount"] = price_amount
-        if stripe_product_id is not None:
-            updates["stripe_product_id"] = stripe_product_id
-        if stripe_price_id is not None:
-            updates["stripe_price_id"] = stripe_price_id
-        if preorder_release_date is not None:
-            updates["preorder_release_date"] = preorder_release_date
-        if preorder_deposit_amount is not None:
-            updates["preorder_deposit_amount"] = preorder_deposit_amount
-        if stripe_preorder_deposit_id is not None:
-            updates["stripe_preorder_deposit_id"] = stripe_preorder_deposit_id
-        if inventory_type is not None:
-            updates["inventory_type"] = inventory_type
-        if inventory_quantity is not None:
-            updates["inventory_quantity"] = inventory_quantity
 
         coroutines = []
         if tags is not None:

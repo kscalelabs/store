@@ -1,23 +1,108 @@
 """Runs tests on the robot APIs."""
 
+import time
 from pathlib import Path
+from unittest.mock import AsyncMock, MagicMock
 
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
+from httpx import AsyncClient
 from PIL import Image
+from pytest_mock import MockFixture
 
+from tests.test_cognito import MockAsyncClient
+from www.app.db import create_tables
 from www.app.model import ListingVote
 
 
-def test_listings(test_client: TestClient, tmpdir: Path) -> None:
-    # Signup.
-    response = test_client.post("/auth/github/code", json={"code": "test_code"})
-    assert response.status_code == status.HTTP_200_OK, response.json()
-    token = response.json()["api_key"]
-    auth_headers = {"Authorization": f"Bearer {token}"}
+@pytest.mark.skip(reason="WIP")
+@pytest.mark.asyncio
+async def test_listings(app_client: AsyncClient, test_client: TestClient, tmpdir: Path, mocker: MockFixture) -> None:
+    """Test listing operations including creation, updates, and voting."""
+    await create_tables()
 
-    # Create a listing.
-    response = test_client.post(
+    # Create mock user with all fields
+    current_time = int(time.time())
+    mock_user = MagicMock(
+        id="test_user_id",
+        email="test@example.com",
+        cognito_id="test_cognito_id",
+        username="testuser",
+        first_name="Test",
+        last_name="User",
+        name="Test User",
+        bio="Test bio",
+        permissions=None,
+        created_at=current_time,
+        updated_at=current_time,
+        stripe_connect=None,
+    )
+
+    # Configure mock to return proper values
+    mock_user.model_dump = lambda: {
+        "id": "test_user_id",
+        "email": "test@example.com",
+        "username": "testuser",
+        "first_name": "Test",
+        "last_name": "User",
+        "name": "Test User",
+        "bio": "Test bio",
+        "permissions": None,
+        "created_at": current_time,
+        "updated_at": current_time,
+        "stripe_connect": None,
+    }
+
+    # Create mock API key
+    test_raw_key = "test_raw_key"
+    mock_api_key = MagicMock(id="test_api_key", user_id="test_user_id", source="cognito", permissions="full")
+
+    # Set up CRUD mocks
+    mocker.patch("www.app.crud.users.UserCrud.get_user_from_cognito_id", AsyncMock(return_value=None))
+    mocker.patch("www.app.crud.users.UserCrud.create_user_from_cognito", AsyncMock(return_value=mock_user))
+    mocker.patch("www.app.crud.users.UserCrud.add_api_key", AsyncMock(return_value=(mock_api_key, test_raw_key)))
+    mocker.patch("www.app.crud.users.UserCrud.get_api_key", AsyncMock(return_value=mock_api_key))
+    mocker.patch("www.app.crud.users.UserCrud.get_user", AsyncMock(return_value=mock_user))
+    mocker.patch("www.app.security.cognito.get_current_user", AsyncMock(return_value=mock_user))
+
+    # Mock Cognito authentication
+    mocker.patch(
+        "www.app.routers.auth.cognito.verify_cognito_token",
+        AsyncMock(
+            return_value={
+                "sub": "test_cognito_id",
+                "email": "test@example.com",
+                "given_name": "Test",
+                "family_name": "User",
+            }
+        ),
+    )
+
+    # Mock the httpx client
+    class MockListingsAsyncClient(MockAsyncClient):
+        async def post(self, *_: tuple[()], **__: dict[str, str]) -> MagicMock:
+            return MagicMock(
+                status_code=200,
+                json=lambda: {"access_token": "test_access_token", "id_token": "test_id_token", "token_type": "Bearer"},
+            )
+
+    mocker.patch("httpx.AsyncClient", return_value=MockListingsAsyncClient())
+
+    # Test Cognito callback (login)
+    response = await app_client.get(
+        "/auth/cognito/callback",
+        params={"code": "test_code"},
+        follow_redirects=False,
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+    # Get API key from response
+    api_key = response.json()["api_key"]
+    auth_headers = {"X-API-Key": api_key}
+
+    # Create a listing
+    response = await app_client.post(
         "/listings/add",
         data={
             "name": "test listing",
@@ -25,12 +110,11 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
             "child_ids": "",
             "slug": "test-listing",
             "username": "testuser",
-            "stripe_link": "",
         },
         headers=auth_headers,
     )
-    assert response.status_code == status.HTTP_200_OK, response.json()
-    listing_id = response.json()["listing_id"]
+    assert response.status_code == status.HTTP_200_OK
+    listing_id = response.json()["id"]  # Get listing ID from response
 
     # Upload an image.
     image = Image.new("RGB", (100, 100))

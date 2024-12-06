@@ -1,6 +1,5 @@
 """Defines CRUD interface for user API."""
 
-import asyncio
 import logging
 import random
 import string
@@ -8,33 +7,17 @@ import time
 import warnings
 from typing import Any, Literal, Optional, overload
 
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 from pydantic import BaseModel
 
 from www.app.crud.base import TABLE_NAME, BaseCrud
 from www.app.crud.listings import ListingsCrud
-from www.app.model import (
-    APIKey,
-    APIKeyPermissionSet,
-    APIKeySource,
-    OAuthKey,
-    User,
-    UserPermission,
-    UserStripeConnect,
-)
+from www.app.model import APIKey, User, UserPermission, UserStripeConnect
 from www.settings import settings
 from www.utils import cache_async_result
 
 logger = logging.getLogger(__name__)
-
-
-def github_auth_key(github_id: str) -> str:
-    return f"github:{github_id}"
-
-
-def google_auth_key(google_id: str) -> str:
-    return f"google:{google_id}"
 
 
 class UserNotFoundError(Exception):
@@ -65,7 +48,8 @@ class UserPublic(BaseModel):
 class UserCrud(BaseCrud):
     @classmethod
     def get_gsis(cls) -> set[str]:
-        return super().get_gsis().union({"user_id", "email", "user_token", "username"})
+        """Get the GSIs for the User model."""
+        return {"email", "username", "cognito_id", "user_id", "type", "hashed_key"}
 
     @overload
     async def get_user(self, id: str, throw_if_missing: Literal[True]) -> User: ...
@@ -90,100 +74,6 @@ class UserCrud(BaseCrud):
             return None
         return UserPublic(**user.model_dump())
 
-    async def _create_user_from_email(self, email: str, password: str) -> User:
-        try:
-            base_username = email.split("@")[0]
-            unique_username = await self.generate_unique_username(base_username)
-            user = User.create(email=email, username=unique_username, password=password)
-            await self._add_item(user, unique_fields=["email", "username"])
-            return user
-        except Exception as e:
-            logger.exception("Error in _create_user_from_email: %s", e)
-            raise
-
-    async def _create_user_from_oauth(
-        self,
-        email: str,
-        provider: str,
-        user_token: str,
-        first_name: Optional[str] = None,
-        last_name: Optional[str] = None,
-    ) -> User:
-        try:
-            user = await self.get_user_from_email(email)
-            if user is None:
-                # Generate a unique username based on the email
-                base_username = email.split("@")[0]
-                unique_username = await self.generate_unique_username(base_username)
-
-                user = User.create(
-                    email=email, username=unique_username, first_name=first_name, last_name=last_name, password=None
-                )
-                if provider == "github":
-                    user.github_id = user_token
-                elif provider == "google":
-                    user.google_id = user_token
-                await self._add_item(user, unique_fields=["email", "username"])
-            elif provider == "github":
-                await self._update_item(user.id, User, {"github_id": user_token})
-            elif provider == "google":
-                await self._update_item(user.id, User, {"google_id": user_token})
-
-            oauth_key = OAuthKey.create(user_id=user.id, provider=provider, user_token=user_token)
-            await self._add_item(oauth_key, unique_fields=["user_token"])
-            return user
-        except Exception as e:
-            logger.exception("Error in _create_user_from_oauth: %s", e)
-            raise
-
-    @overload
-    async def _get_oauth_key(self, token: str, throw_if_missing: Literal[True]) -> OAuthKey: ...
-
-    @overload
-    async def _get_oauth_key(self, token: str, throw_if_missing: bool = False) -> OAuthKey | None: ...
-
-    async def _get_oauth_key(self, token: str, throw_if_missing: bool = False) -> OAuthKey | None:
-        return await self._get_unique_item_from_secondary_index(
-            "user_token",
-            token,
-            OAuthKey,
-            throw_if_missing=throw_if_missing,
-        )
-
-    async def _get_user_from_auth_key(self, token: str) -> User | None:
-        key = await self._get_oauth_key(token)
-        return None if key is None else await self.get_user(key.user_id)
-
-    async def get_user_from_github_token(self, token: str, email: str) -> User:
-        try:
-            auth_key = github_auth_key(token)
-            user = await self._get_user_from_auth_key(auth_key)
-            if user is not None:
-                return user
-            return await self._create_user_from_oauth(email, "github", auth_key)
-        except Exception as e:
-            logger.exception("Error in get_user_from_github_token: %s", e)
-            raise
-
-    async def delete_github_token(self, github_id: str) -> None:
-        await self._delete_item(await self._get_oauth_key(github_auth_key(github_id), throw_if_missing=True))
-
-    async def get_user_from_google_token(
-        self, email: str, first_name: Optional[str] = None, last_name: Optional[str] = None
-    ) -> User:
-        try:
-            auth_key = google_auth_key(email)
-            user = await self._get_user_from_auth_key(auth_key)
-            if user is not None:
-                return user
-            return await self._create_user_from_oauth(email, "google", auth_key, first_name, last_name)
-        except Exception as e:
-            logger.exception("Error in get_user_from_google_token: %s", e)
-            raise
-
-    async def delete_google_token(self, google_id: str) -> None:
-        await self._delete_item(await self._get_oauth_key(google_auth_key(google_id), throw_if_missing=True))
-
     async def get_user_from_email(self, email: str) -> User | None:
         return await self._get_unique_item_from_secondary_index("email", email, User)
 
@@ -205,21 +95,45 @@ class UserCrud(BaseCrud):
         return await self._count_items(User)
 
     @cache_async_result(settings.crypto.cache_token_db_result_seconds)
-    async def get_api_key(self, api_key_id: str) -> APIKey:
-        return await self._get_item(api_key_id, APIKey, throw_if_missing=True)
+    async def get_api_key(self, raw_key: str) -> Optional[APIKey]:
+        """Get API key by its raw (unhashed) value."""
+        try:
+            hashed_key = APIKey.hash_key(raw_key)
+            table = await self.db.Table(TABLE_NAME)
+            response = await table.scan(FilterExpression=Key("type").eq("APIKey") & Key("hashed_key").eq(hashed_key))
+            items = response.get("Items", [])
+            if not items:
+                return None
+
+            api_key = APIKey.model_validate(items[0])
+
+            now = int(time.time())
+            if api_key.expires_at and api_key.expires_at < now:
+                return None
+
+            return api_key
+
+        except Exception as e:
+            logger.exception("Error in get_api_key: %s", e)
+            raise
 
     async def add_api_key(
-        self,
-        user_id: str,
-        source: APIKeySource,
-        permissions: APIKeyPermissionSet,
-    ) -> APIKey:
-        user_api_keys = await self.list_api_keys(user_id)
-        if len(user_api_keys) >= 10:
-            await asyncio.gather(*[self.delete_api_key(key.id) for key in user_api_keys[:-10]])
-        api_key = APIKey.create(user_id=user_id, source=source, permissions=permissions)
-        await self._add_item(api_key)
-        return api_key
+        self, user_id: str, source: Literal["cognito"], permissions: Literal["full"], expiration_days: int = 30
+    ) -> tuple[APIKey, str]:
+        """Add or reuse an API key for a user."""
+        try:
+            now = int(time.time())
+            expires_at = now + (expiration_days * 24 * 60 * 60)
+
+            api_key, raw_key = APIKey.create(
+                user_id=user_id, source=source, permissions=permissions, expires_at=expires_at
+            )
+            await self._add_item(api_key)
+            return api_key, raw_key
+
+        except Exception as e:
+            logger.exception("Error in add_api_key: %s", e)
+            raise
 
     async def get_api_key_count(self, user_id: str) -> int:
         table = await self.db.Table(TABLE_NAME)
@@ -231,6 +145,18 @@ class UserCrud(BaseCrud):
         return item_dict["Count"]
 
     async def delete_api_key(self, token: APIKey | str) -> None:
+        """Delete an API key.
+
+        Args:
+            token: Either an APIKey object or a raw key string
+        """
+        if isinstance(token, str):
+            # If string provided, look up the API key first
+            api_key = await self.get_api_key(token)
+            if api_key is None:
+                return  # Key doesn't exist, nothing to delete
+            token = api_key
+
         await self._delete_item(token)
 
     async def list_api_keys(self, user_id: str) -> list[APIKey]:
@@ -315,13 +241,108 @@ class UserCrud(BaseCrud):
         await self._update_item(user_id, User, {"permissions": list(user.permissions)})
         return user
 
+    async def create_user_from_cognito(
+        self,
+        email: str,
+        cognito_id: str,
+        first_name: Optional[str] = None,
+        last_name: Optional[str] = None,
+    ) -> User:
+        """Creates or updates a user from Cognito authentication."""
+        try:
+            user = await self.get_user_from_cognito_id(cognito_id)
+            if user is None:
+                # Create new user
+                base_username = email.split("@")[0]
+                unique_username = await self.generate_unique_username(base_username)
 
-async def test_adhoc() -> None:
-    async with UserCrud() as crud:
-        await crud._create_user_from_email(email="ben@kscale.dev", password="examplepas$w0rd")
-        await crud.get_user_from_github_token(token="gh_token_example", email="oauth_github@kscale.dev")
-        await crud.get_user_from_google_token(email="oauth_google@kscale.dev")
+                user = User.create(
+                    email=email,
+                    username=unique_username,
+                    first_name=first_name,
+                    last_name=last_name,
+                    cognito_id=cognito_id,
+                )
+                await self._add_item(user, unique_fields=["email", "username"])
+            else:
+                updates = {}
+                if user.email != email:
+                    updates["email"] = email
+                if first_name and user.first_name != first_name:
+                    updates["first_name"] = first_name
+                if last_name and user.last_name != last_name:
+                    updates["last_name"] = last_name
 
+                if updates:
+                    await self._update_item(user.id, User, updates)
+                    user = await self.get_user(user.id, throw_if_missing=True)
 
-if __name__ == "__main__":
-    asyncio.run(test_adhoc())
+            return user
+
+        except Exception as e:
+            logger.exception("Error in create_user_from_cognito: %s", e)
+            raise
+
+    async def get_user_from_cognito_token(
+        self,
+        email: str,
+        cognito_id: str,
+        first_name: Optional[str] = None,
+        last_name: Optional[str] = None,
+    ) -> User:
+        """Get or create a user from Cognito token."""
+        try:
+            # Try to get existing user by Cognito ID
+            user = await self.get_user_from_cognito_id(cognito_id)
+            if user is not None:
+                return user
+
+            # Create new user if not found
+            return await self.create_user_from_cognito(
+                email=email,
+                cognito_id=cognito_id,
+                first_name=first_name,
+                last_name=last_name,
+            )
+        except Exception as e:
+            logger.exception("Error in get_user_from_cognito_token: %s", e)
+            raise
+
+    async def get_user_from_cognito_id(self, cognito_id: str) -> Optional[User]:
+        """Get a user by their Cognito ID."""
+        users = await self._get_items_from_secondary_index("cognito_id", cognito_id, User)
+        return users[0] if users else None
+
+    async def cleanup_expired_api_keys(self) -> None:
+        """Remove expired API keys from the database."""
+        try:
+            now = int(time.time())
+            table = await self.db.Table(TABLE_NAME)
+
+            # Get all expired API keys
+            response = await table.query(
+                IndexName="type_index",
+                KeyConditionExpression=Key("type").eq("APIKey"),
+                FilterExpression=Attr("expires_at").lt(now),
+            )
+
+            # Delete expired keys
+            for item in response["Items"]:
+                await self._delete_item(item["id"])
+
+        except Exception as e:
+            logger.exception("Error in cleanup_expired_api_keys: %s", e)
+            raise
+
+    async def update_api_key(self, api_key_id: str, updates: dict) -> None:
+        """Update an API key's attributes.
+
+        Args:
+            api_key_id: The ID of the API key to update
+            updates: Dictionary of attributes to update
+        """
+        try:
+            await self._update_item(api_key_id, APIKey, updates)
+        except Exception as e:
+            logger.exception("Error in update_api_key: %s", e)
+            raise
