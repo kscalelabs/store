@@ -24,9 +24,7 @@ from www.app.routers.keys import router as keys_router
 from www.app.routers.krecs import router as krecs_router
 from www.app.routers.listings import router as listings_router
 from www.app.routers.onshape import router as onshape_router
-from www.app.routers.orders import router as orders_router
 from www.app.routers.robots import router as robots_router
-from www.app.routers.stripe import router as stripe_router
 from www.app.routers.teleop import router as teleop_router
 from www.app.routers.users import router as users_router
 from www.utils import get_cors_origins
@@ -130,9 +128,7 @@ app.include_router(artifacts_router, prefix="/artifacts", tags=["artifacts"])
 app.include_router(keys_router, prefix="/keys", tags=["keys"])
 app.include_router(listings_router, prefix="/listings", tags=["listings"])
 app.include_router(onshape_router, prefix="/onshape", tags=["onshape"])
-app.include_router(orders_router, prefix="/orders", tags=["orders"])
 app.include_router(robots_router, prefix="/robots", tags=["robots"])
-app.include_router(stripe_router, prefix="/stripe", tags=["stripe"])
 app.include_router(users_router, prefix="/users", tags=["users"])
 app.include_router(teleop_router, prefix="/teleop", tags=["teleop"])
 app.include_router(krecs_router, prefix="/krecs", tags=["krecs"])

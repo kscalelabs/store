@@ -28,7 +28,7 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
 
     @classmethod
     def get_gsis(cls) -> set[str]:
-        return super().get_gsis().union({"listing_id", "name", "stripe_product_id"})
+        return super().get_gsis().union({"listing_id", "name"})
 
     @overload
     async def get_listing(self, listing_id: str, throw_if_missing: Literal[True]) -> Listing: ...
@@ -158,14 +158,6 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
         tags: list[str] | None = None,
         onshape_url: str | None = None,
         slug: str | None = None,
-        price_amount: int | None = None,
-        stripe_product_id: str | None = None,
-        stripe_price_id: str | None = None,
-        preorder_release_date: int | None = None,
-        preorder_deposit_amount: int | None = None,
-        stripe_preorder_deposit_id: str | None = None,
-        inventory_type: str | None = None,
-        inventory_quantity: int | None = None,
     ) -> None:
         listing = await self.get_listing(listing_id)
         if listing is None:
@@ -180,22 +172,6 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
             updates["description"] = description
         if slug is not None:
             updates["slug"] = slug
-        if price_amount is not None:
-            updates["price_amount"] = price_amount
-        if stripe_product_id is not None:
-            updates["stripe_product_id"] = stripe_product_id
-        if stripe_price_id is not None:
-            updates["stripe_price_id"] = stripe_price_id
-        if preorder_release_date is not None:
-            updates["preorder_release_date"] = preorder_release_date
-        if preorder_deposit_amount is not None:
-            updates["preorder_deposit_amount"] = preorder_deposit_amount
-        if stripe_preorder_deposit_id is not None:
-            updates["stripe_preorder_deposit_id"] = stripe_preorder_deposit_id
-        if inventory_type is not None:
-            updates["inventory_type"] = inventory_type
-        if inventory_quantity is not None:
-            updates["inventory_quantity"] = inventory_quantity
 
         coroutines = []
         if tags is not None:
@@ -412,11 +388,3 @@ class ListingsCrud(ArtifactsCrud, BaseCrud):
                 "updated_at": int(time.time()),
             }
         )
-
-    async def get_listing_by_stripe_product_id(self, stripe_product_id: str) -> Listing | None:
-        """Get a listing by its stripe product ID."""
-        listings = await self._get_items_from_secondary_index(
-            secondary_index_name="stripe_product_id", secondary_index_value=stripe_product_id, item_class=Listing
-        )
-        # stripe_product_id should be unique, return the first item if it exists
-        return listings[0] if listings else None

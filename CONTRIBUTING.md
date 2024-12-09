@@ -2,7 +2,7 @@
 
 To get started, clone the repository and check out the [Project Tracker](https://github.com/orgs/kscalelabs/projects/8/views/1).
 
-You can contribute to the K-Scale Store project in various ways, such as reporting bugs, submitting pull requests, raising issues, or creating suggestions.
+You can contribute to the K-Scale WWW project in various ways, such as reporting bugs, submitting pull requests, raising issues, or creating suggestions.
 
 > [!IMPORTANT]
 > You **MUST** access the locally run website through `127.0.0.1:3000` and **NOT** `localhost:3000`. This is because the CORS policy is configured to only allow requests from the exact domain `127.0.0.1:3000`.
@@ -29,7 +29,6 @@ You can contribute to the K-Scale Store project in various ways, such as reporti
 4. [Syncing Frontend and Backend](#syncing-frontend-and-backend)
 5. [React Setup](#react-setup)
 6. [Testing](#testing)
-7. [Stripe Setup](#stripe-setup)
 
 ---
 
@@ -37,7 +36,7 @@ You can contribute to the K-Scale Store project in various ways, such as reporti
 
 ### Configuration
 
-Backend settings are located in the `store/settings/` directory. You can specify which settings to use by setting the `ENVIRONMENT` variable to the corresponding config file stem in `store/settings/configs/`. For local development, this should typically be set to `local`.
+Backend settings are located in the `www/settings/` directory. You can specify which settings to use by setting the `ENVIRONMENT` variable to the corresponding config file stem in `www/settings/configs/`. For local development, this should typically be set to `local`.
 
 Place the required environment variables in `env.sh` or `.env.local`.
 
@@ -80,12 +79,6 @@ export VITE_GOOGLE_CLIENT_ID=''
 # For OnShape
 export ONSHAPE_ACCESS_KEY=''
 export ONSHAPE_SECRET_KEY=''
-
-# For Stripe
-export VITE_STRIPE_PUBLISHABLE_KEY=''
-export STRIPE_SECRET_KEY=''
-export STRIPE_WEBHOOK_SECRET=''
-export STRIPE_CONNECT_WEBHOOK_SECRET=''
 ```
 
 ### Google OAuth Configuration
@@ -188,7 +181,7 @@ pip install -e '.[dev]'  # Using vanilla pip
 If additional packages are missing, try:
 
 ```bash
-uv pip install -r store/requirements.txt -r store/requirements-dev.txt  # Using uv
+uv pip install -r www/requirements.txt -r www/requirements-dev.txt  # Using uv
 ```
 
 ### Initializing the Test Databases
@@ -196,7 +189,7 @@ uv pip install -r store/requirements.txt -r store/requirements-dev.txt  # Using 
 Initialize the test databases with:
 
 ```bash
-python -m store.app.db create
+python -m www.app.db create
 ```
 
 ### Running the FastAPI Application
@@ -204,7 +197,7 @@ python -m store.app.db create
 Serve the FastAPI application in development mode:
 
 ```bash
-make start-backend
+make start
 ```
 
 ## Syncing Frontend and Backend
@@ -253,27 +246,7 @@ To run tests, use the following commands:
 
 ```bash
 make test
-make test-frontend  # Run only the frontend tests
-make test-backend  # Run only the backend tests
 ```
-
-## Stripe Setup
-
-Run this to recieve stripe webhooks locally:
-
-```bash
-stripe listen --forward-to localhost:8080/stripe/webhook
-```
-
-Run this to recieve stripe connect webhooks locally:
-
-```bash
-stripe listen --forward-connect-to localhost:8080/stripe/connect/webhook
-```
-
-Make sure to set the `STRIPE_WEBHOOK_SECRET` and `STRIPE_CONNECT_WEBHOOK_SECRET` environment variables to the values
-shown in the terminal and source it to the terminal you are running
-`make start-backend` in.
 
 ## Optional
 

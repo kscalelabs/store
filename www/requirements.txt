@@ -5,7 +5,6 @@ omegaconf
 bson
 pydantic
 email-validator
-stripe
 
 # AWS dependencies.
 aioboto3

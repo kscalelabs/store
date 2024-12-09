@@ -11,7 +11,7 @@ from pydantic.networks import EmailStr
 from www.app.crud.users import UserPublic
 from www.app.db import Crud
 from www.app.errors import ItemNotFoundError
-from www.app.model import User, UserPermission, UserStripeConnect
+from www.app.model import User, UserPermission
 from www.app.security.requests import get_request_api_key_id
 from www.app.security.user import (
     get_session_user_with_admin_permission,
@@ -53,7 +53,6 @@ class MyUserInfoResponse(BaseModel):
     last_name: str | None
     name: str | None
     bio: str | None
-    stripe_connect: UserStripeConnect | None
 
     @classmethod
     def from_user(cls, user: User) -> Self:
@@ -67,7 +66,6 @@ class MyUserInfoResponse(BaseModel):
             last_name=user.last_name,
             name=user.name,
             bio=user.bio,
-            stripe_connect=user.stripe_connect,
         )
 
 
@@ -86,7 +84,6 @@ async def get_user_info_endpoint(
             last_name=user.last_name,
             name=user.name,
             bio=user.bio,
-            stripe_connect=user.stripe_connect,
         )
     except ValueError:
         return None
