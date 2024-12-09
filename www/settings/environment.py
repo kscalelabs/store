@@ -65,14 +65,6 @@ class SiteSettings:
 
 
 @dataclass
-class StripeSettings:
-    publishable_key: str = field(default=II("oc.env:VITE_STRIPE_PUBLISHABLE_KEY"))
-    secret_key: str = field(default=II("oc.env:STRIPE_SECRET_KEY"))
-    webhook_secret: str = field(default=II("oc.env:STRIPE_WEBHOOK_SECRET"))
-    connect_webhook_secret: str = field(default=II("oc.env:STRIPE_CONNECT_WEBHOOK_SECRET"))
-
-
-@dataclass
 class CloudFrontSettings:
     domain: str = field(default=II("oc.env:CLOUDFRONT_DOMAIN"))
     key_id: str = field(default=II("oc.env:CLOUDFRONT_KEY_ID"))
@@ -91,5 +83,4 @@ class EnvironmentSettings:
     site: SiteSettings = field(default_factory=SiteSettings)
     cloudfront: CloudFrontSettings = field(default_factory=CloudFrontSettings)
     debug: bool = field(default=False)
-    stripe: StripeSettings = field(default_factory=StripeSettings)
     environment: str = field(default="local")

@@ -11,7 +11,6 @@ from www.app.crud.email import EmailCrud
 from www.app.crud.krecs import KRecsCrud
 from www.app.crud.listings import ListingsCrud
 from www.app.crud.onshape import OnshapeCrud
-from www.app.crud.orders import OrdersCrud
 from www.app.crud.robots import RobotsCrud
 from www.app.crud.teleop import TeleopCrud
 from www.app.crud.users import UserCrud
@@ -23,7 +22,6 @@ class Crud(
     UserCrud,
     ListingsCrud,
     ArtifactsCrud,
-    OrdersCrud,
     KRecsCrud,
     RobotsCrud,
     TeleopCrud,

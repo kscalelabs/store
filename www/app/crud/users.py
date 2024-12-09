@@ -4,7 +4,6 @@ import asyncio
 import logging
 import random
 import string
-import time
 import warnings
 from typing import Any, Literal, Optional, overload
 
@@ -21,7 +20,6 @@ from www.app.model import (
     OAuthKey,
     User,
     UserPermission,
-    UserStripeConnect,
 )
 from www.settings import settings
 from www.utils import cache_async_result
@@ -59,7 +57,6 @@ class UserPublic(BaseModel):
     last_name: str | None = None
     name: str | None = None
     bio: str | None = None
-    stripe_connect: UserStripeConnect | None = None
 
 
 class UserCrud(BaseCrud):
@@ -291,17 +288,6 @@ class UserCrud(BaseCrud):
             random_suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=5))
             username = f"{base}{random_suffix}"
         return username
-
-    async def update_stripe_connect_status(self, user_id: str, account_id: str, is_completed: bool) -> User:
-        stripe_connect = UserStripeConnect(
-            account_id=account_id,
-            onboarding_completed=is_completed,
-        )
-        updates = {
-            "stripe_connect": stripe_connect.model_dump(),
-            "updated_at": int(time.time()),
-        }
-        return await self.update_user(user_id, updates)
 
     async def set_content_manager(self, user_id: str, is_content_manager: bool) -> User:
         user = await self.get_user(user_id, throw_if_missing=True)

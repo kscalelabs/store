@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from typing import Annotated, Literal
+from typing import Annotated
 
 from fastapi import (
     APIRouter,
@@ -20,7 +20,6 @@ from www.app.crud.listings import SortOption
 from www.app.db import Crud
 from www.app.model import Listing, User, can_write_listing
 from www.app.routers.artifacts import SingleArtifactResponse
-from www.app.routers.stripe import create_listing_product
 from www.app.security.user import (
     get_session_user_with_read_permission,
     get_session_user_with_write_permission,
@@ -146,10 +145,6 @@ class ListingInfoResponse(BaseModel):
     views: int
     score: int
     user_vote: bool | None
-    price_amount: int | None
-    currency: str | None
-    inventory_type: Literal["finite", "preorder"] | None
-    inventory_quantity: int | None
 
 
 class GetBatchListingsResponse(BaseModel):
@@ -210,10 +205,6 @@ async def get_batch_listing_info(
                     views=listing.views,
                     score=listing.score,
                     user_vote=user_votes.get(listing.id),
-                    price_amount=listing.price_amount,
-                    currency=listing.currency,
-                    inventory_type=listing.inventory_type,
-                    inventory_quantity=listing.inventory_quantity,
                 )
                 listing_responses.append(listing_response)
             except Exception as e:
@@ -277,45 +268,10 @@ async def add_listing(
     description: str | None = Form(None),
     child_ids: str = Form(""),
     slug: str = Form(...),
-    price_amount: str | None = Form(None),
-    currency: str = Form("usd"),
-    inventory_type: Literal["finite", "preorder"] = Form("finite"),
-    inventory_quantity: str | None = Form(None),
-    preorder_deposit_amount: str | None = Form(None),
-    preorder_release_date: str | None = Form(None),
     photos: list[UploadFile] = File(None),
 ) -> NewListingResponse:
     try:
         logger.info("Starting to process add listing request")
-
-        # Convert string values to appropriate types
-        price_amount_int = int(price_amount) if price_amount else None
-        inventory_quantity_int = int(inventory_quantity) if inventory_quantity else None
-        preorder_release_date_int = int(float(preorder_release_date)) if preorder_release_date else None
-        preorder_deposit_amount_int = int(preorder_deposit_amount) if preorder_deposit_amount else None
-
-        # Initialize Stripe-related variables
-        stripe_product_id = None
-        stripe_price_id = None
-        stripe_preorder_deposit_id = None
-
-        # Create Stripe product if price is set and user has Stripe Connect setup
-        if price_amount_int is not None and user.stripe_connect and user.stripe_connect.account_id:
-            stripe_product = await create_listing_product(
-                name=name,
-                description=description or "",
-                price_amount=price_amount_int,
-                currency=currency,
-                inventory_type=inventory_type,
-                inventory_quantity=inventory_quantity_int,
-                preorder_release_date=preorder_release_date_int,
-                preorder_deposit_amount=preorder_deposit_amount_int,
-                user_id=user.id,
-                stripe_connect_account_id=user.stripe_connect.account_id,
-            )
-            stripe_product_id = stripe_product.stripe_product_id
-            stripe_price_id = stripe_product.stripe_price_id
-            stripe_preorder_deposit_id = stripe_product.stripe_preorder_deposit_id
 
         # Create the listing
         listing = Listing.create(
@@ -324,15 +280,6 @@ async def add_listing(
             child_ids=child_ids.split(",") if child_ids else [],
             slug=slug,
             user_id=user.id,
-            price_amount=price_amount_int,
-            currency=currency,
-            inventory_type=inventory_type,
-            inventory_quantity=inventory_quantity_int,
-            preorder_release_date=preorder_release_date_int,
-            preorder_deposit_amount=preorder_deposit_amount_int,
-            stripe_product_id=stripe_product_id,
-            stripe_price_id=stripe_price_id,
-            stripe_preorder_deposit_id=stripe_preorder_deposit_id,
         )
 
         await crud.add_listing(listing)
@@ -386,15 +333,6 @@ class UpdateListingRequest(BaseModel):
     tags: list[str] | None = None
     onshape_url: str | None = None
     slug: str | None = None
-    stripe_product_id: str | None = None
-    stripe_price_id: str | None = None
-    stripe_deposit_price_id: str | None = None
-    price_amount: int | None = None
-    preorder_release_date: int | None = None
-    preorder_deposit_amount: int | None = None
-    stripe_preorder_deposit_id: str | None = None
-    inventory_type: Literal["finite", "preorder"] | None = None
-    inventory_quantity: int | None = None
 
 
 @router.put("/edit/{id}", response_model=bool)
@@ -435,14 +373,6 @@ async def edit_listing(
         tags=listing.tags,
         onshape_url=listing.onshape_url,
         slug=listing.slug,
-        stripe_product_id=listing.stripe_product_id,
-        stripe_price_id=listing.stripe_price_id,
-        price_amount=listing.price_amount,
-        inventory_type=listing.inventory_type,
-        inventory_quantity=listing.inventory_quantity,
-        preorder_release_date=listing.preorder_release_date,
-        preorder_deposit_amount=listing.preorder_deposit_amount,
-        stripe_preorder_deposit_id=listing.stripe_preorder_deposit_id,
     )
     return True
 
@@ -483,15 +413,6 @@ class GetListingResponse(BaseModel):
     user_vote: bool | None
     onshape_url: str | None
     is_featured: bool
-    currency: str | None = None
-    price_amount: int | None = None
-    stripe_product_id: str | None = None
-    stripe_price_id: str | None = None
-    preorder_deposit_amount: int | None = None
-    stripe_preorder_deposit_id: str | None = None
-    preorder_release_date: int | None = None
-    inventory_type: str | None = None
-    inventory_quantity: int | None = None
 
 
 async def get_listing_common(
@@ -541,15 +462,6 @@ async def get_listing_common(
         can_edit=user is not None and await can_write_listing(user, listing),
         user_vote=user_vote,
         onshape_url=listing.onshape_url,
-        price_amount=listing.price_amount,
-        currency=listing.currency,
-        stripe_product_id=listing.stripe_product_id,
-        stripe_price_id=listing.stripe_price_id,
-        preorder_release_date=listing.preorder_release_date,
-        preorder_deposit_amount=listing.preorder_deposit_amount,
-        stripe_preorder_deposit_id=listing.stripe_preorder_deposit_id,
-        inventory_type=listing.inventory_type,
-        inventory_quantity=listing.inventory_quantity,
         is_featured=is_featured,
         score=listing.score,
     )

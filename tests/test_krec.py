@@ -24,7 +24,6 @@ async def test_krec_upload(test_client: TestClient, tmpdir: Path) -> None:
             "child_ids": "",
             "slug": "test-listing",
             "username": "testuser",
-            "stripe_link": "",
         },
         headers=auth_headers,
     )

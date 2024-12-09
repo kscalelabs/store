@@ -25,7 +25,6 @@ def test_listings(test_client: TestClient, tmpdir: Path) -> None:
             "child_ids": "",
             "slug": "test-listing",
             "username": "testuser",
-            "stripe_link": "",
         },
         headers=auth_headers,
     )
