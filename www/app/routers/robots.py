@@ -23,7 +23,6 @@ class CreateRobotRequest(BaseModel):
     listing_id: str
     name: str
     description: str | None = None
-    order_id: str | None = None
 
 
 class CreateRobotResponse(BaseModel):
@@ -43,7 +42,6 @@ async def create_robot(
             listing_id=request.listing_id,
             name=request.name,
             description=request.description,
-            order_id=request.order_id,
         )
         return CreateRobotResponse(robot_id=robot.id)
     except ItemNotFoundError as e:
@@ -78,7 +76,6 @@ class SingleRobotResponse(BaseModel):
     username: str
     slug: str
     description: str | None
-    order_id: str | None
     created_at: int
     is_deleted: bool = False
 
@@ -98,7 +95,6 @@ class SingleRobotResponse(BaseModel):
             username=creator.username if creator else "Deleted User",
             slug=listing.slug if listing else "deleted-listing",
             description=robot.description,
-            order_id=robot.order_id,
             created_at=robot.created_at,
             is_deleted=creator is None or listing is None or creator.id == "deleted",
         )
@@ -164,7 +160,6 @@ async def list_user_robots(
 class UpdateRobotRequest(BaseModel):
     name: str | None = None
     description: str | None = None
-    order_id: str | None = None
 
 
 @router.put("/update/{robot_id}", response_model=Robot)
@@ -188,8 +183,6 @@ async def update_robot(
         }
         if update_data.description is not None:
             update_dict["description"] = update_data.description
-        if update_data.order_id is not None:
-            update_dict["order_id"] = update_data.order_id
 
         updated_robot = await crud.update_robot(robot_id, update_dict)
         return updated_robot
@@ -214,26 +207,6 @@ async def delete_robot(
         await crud.delete_robot(robot)
     except ItemNotFoundError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Robot not found")
-
-
-@router.get("/check-order/{order_id}", response_model=Robot | None)
-async def check_order_robot(
-    order_id: str,
-    user: User = Depends(get_session_user_with_read_permission),
-    crud: Crud = Depends(Crud.get),
-) -> Robot | None:
-    """Check if an order has an associated robot."""
-    try:
-        # First verify the order belongs to the user
-        order = await crud.get_order(order_id)
-        if not order or order.user_id != user.id:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
-
-        # Then check for an associated robot
-        robot = await crud.get_robot_by_order_id(order_id)
-        return robot
-    except ItemNotFoundError:
-        return None
 
 
 class RobotURDFResponse(BaseModel):
