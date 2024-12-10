@@ -3,5 +3,5 @@ crypto:
 dynamo:
   table_name: kscale-www-staging-cluster
 site:
-  homepage: https://staging.kscale.dev
+  homepage: https://dashboard-staging.kscale.dev
   artifact_base_url: https://stagingassets.kscale.dev/
