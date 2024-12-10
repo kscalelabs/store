@@ -184,8 +184,8 @@ LOCALHOST_URLS = [
     "http://localhost:3000",
 ]
 PRODUCTION_URLS = [
-    "https://kscale.dev",
-    "https://www.kscale.dev",
+    "https://dashboard.kscale.dev",
+    "https://www.dashboard.kscale.dev",
 ]
 
 
